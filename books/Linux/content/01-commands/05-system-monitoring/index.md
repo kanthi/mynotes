@@ -4,7 +4,7 @@ title: Intro
 
 # Intro
 
-Measure subsystem health over time and debug *why* a host is slow or stuck: virtual memory, disks, CPUs, open files, and syscall/library traces.
+Measure subsystem health over time and debug *why* a host is slow or stuck: virtual memory, disks, CPUs, per-process I/O and bandwidth, open files, and syscall/library traces.
 
 ## Commands in this part
 
@@ -23,23 +23,36 @@ Measure subsystem health over time and debug *why* a host is slow or stuck: virt
 | THP (`/sys/kernel/mm/transparent_hugepage`) | Transparent Huge Pages: read the policy, find who holds 2 MiB pages (`AnonHugePages`), and opt in or out with `madvise`/`prctl`. |
 | PSI (`/proc/pressure`, cgroup `*.pressure`) | Pressure Stall Information: share of time tasks are stalled on CPU, memory or I/O — `some` vs `full`, averages and triggers. |
 | vDSO (`[vdso]`, `[vvar]`) | The kernel-provided shared object that answers `clock_gettime`, `gettimeofday`, `time`, `getcpu` and `getrandom` without a syscall — why `strace` and seccomp never see them, and when they fall back. |
+| `iotop` | iotop is a live `top`-like monitor showing real-time disk reads, writes, and I/O wait per process. |
+| `pidstat` | pidstat (sysstat) prints timestamped per-process/thread CPU, memory, page faults, context switches, and disk I/O over intervals. |
+| `nethogs` | nethogs groups live network send/receive bandwidth by process and PID. |
 
+## Which monitor should I use?
+
+| Bottleneck Symptom | Start With | Then Drill Down With |
+|--------------------|------------|----------------------|
+| High load / CPU / memory pressure | `vmstat 1` & `btop` | `mpstat -P ALL 1`, `pidstat -t 1` |
+| Disk saturated (`%util` / high `await`) | `iostat -xz 1` | `sudo iotop -oP` (who is writing?) |
+| Network link saturated | `nethogs` (by PID) | `ss -tunap`, `tcpdump` |
+| Process stuck or failing silently | `strace -p PID` | `ltrace`, `lsof -p PID` |
+| Native memory leak | `pmap -x PID` | `perf` / `gdb` |
 
 ## Suggested starting points
 
 1. Load vs I/O vs CPU: `vmstat`, `iostat`, `mpstat`, `sar`.
-2. Who holds a file or port: `lsof`.
-3. Why a process fails: `strace` (syscalls), `ltrace` (library calls).
-4. Hotspots: `perf` (and interactive `btop` for a dashboard).
-5. RSS keeps growing: `pmap` (which mapping?), then `strace`/`bpftrace` and `gdb` (who maps it?).
-6. RSS jumps or latency spikes after a THP policy change: Transparent Huge Pages (`AnonHugePages`, `/proc/vmstat` `thp_*`, `compact_stall`).
-7. Latency without obvious saturation: `/proc/pressure/*` and the service cgroup's `*.pressure` (`some` vs `full`).
-8. Timestamps look slow, or `strace` shows no clock reads: the vDSO (`[vdso]` in `/proc/PID/maps`, `current_clocksource`).
+2. Per-process I/O, CPU/threads, and bandwidth: `iotop`, `pidstat`, `nethogs`.
+3. Who holds a file or port: `lsof`.
+4. Why a process fails: `strace` (syscalls), `ltrace` (library calls).
+5. Hotspots: `perf` (and interactive `btop` for a dashboard).
+6. RSS keeps growing: `pmap` (which mapping?), then `strace`/`bpftrace` and `gdb` (who maps it?).
+7. RSS jumps or latency spikes after a THP policy change: Transparent Huge Pages (`AnonHugePages`, `/proc/vmstat` `thp_*`, `compact_stall`).
+8. Latency without obvious saturation: `/proc/pressure/*` and the service cgroup's `*.pressure` (`some` vs `full`).
+9. Timestamps look slow, or `strace` shows no clock reads: the vDSO (`[vdso]` in `/proc/PID/maps`, `current_clocksource`).
 
 ## Related parts
 
 - Processes and jobs — PIDs and signals
 - Storage and filesystems — disk health and space
-- Networking — `ss`/`tcpdump` for network-bound issues
+- Networking — `ss`/`tcpdump`/`iperf3` for network-bound issues
 
 Continue with the individual command pages in this part.
