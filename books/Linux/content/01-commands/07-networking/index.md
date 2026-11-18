@@ -4,7 +4,7 @@ title: Intro
 
 # Intro
 
-Configure and diagnose connectivity: addresses and routes (`ip`), sockets (`ss`), DNS, HTTP clients, SSH/file transfer, firewalls, and packet capture. Prefer modern tools (`ip`/`ss`/`nft`) over legacy ones.
+Configure and diagnose connectivity: addresses and routes (`ip`), sockets (`ss`), DNS, HTTP clients, SSH/file transfer, VPNs (`wg`), firewalls, benchmarking (`iperf3`), and packet capture. Prefer modern tools (`ip`/`ss`/`nft`) over legacy ones.
 
 ## Commands in this part
 
@@ -44,21 +44,22 @@ Configure and diagnose connectivity: addresses and routes (`ip`), sockets (`ss`)
 | `firewall-cmd` | firewall-cmd is the client for firewalld, the dynamic firewall manager on Fedora, RHEL, CentOS Stream, and many… |
 | ssh-agent / ssh-add | ssh-agent holds decrypted private keys in memory; ssh-add loads, lists, locks, and removes those identities. |
 | Certificate renewal audit | Read real certificate lifetimes, ask the CA when to renew (ACME ARI), and find renewal schedules and alerts that hard-code a 90-day lifetime before 64-day (2027) and 45-day (2028) certificates arrive. |
-
+| `iperf3` | iperf3 benchmarks raw TCP/UDP network throughput, parallel streams, jitter, and packet loss between hosts. |
+| `wg` / `wg-quick` | Configures and inspects WireGuard VPN interfaces, Curve25519 keys, and peer handshakes. |
 
 ## Suggested starting points
 
 1. Local stack: `ip`, `ss`, `nmcli`/`resolvectl` as appropriate.
-2. Path checks: `ping`, `traceroute`/`mtr`, then `dig`/`host` for DNS.
+2. Path & speed checks: `ping`, `traceroute`/`mtr`, `iperf3`, then `dig`/`host` for DNS.
 3. HTTP and APIs: `curl` (and `wget` for simple downloads).
-4. Remote admin: `ssh`, keys via `ssh-keygen`/`ssh-copy-id`/`ssh-agent`, files via `scp`/`sftp`/`rsync`.
+4. Remote admin & VPNs: `ssh`, keys via `ssh-keygen`/`ssh-copy-id`/`ssh-agent`, files via `scp`/`sftp`/`rsync`, tunnels via `wg`.
 5. Firewalls: `ufw` (Ubuntu), `firewall-cmd` (firewalld), or `nft`/`iptables`.
 6. Deep debug: `tcpdump`, `nmap`, `openssl`, `ethtool`.
 7. TLS certificates that renew themselves: the certificate renewal audit (ARI, fraction-of-lifetime alerts, deploy hooks).
 
 ## Related parts
 
-- System monitoring — correlate with host load
+- System monitoring — correlate with host load (`nethogs`)
 - Security — host hardening beyond the firewall
 - Services and runtime — network targets and sockets
 
