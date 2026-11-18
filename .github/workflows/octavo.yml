@@ -48,7 +48,11 @@ jobs:
           go-version: stable
           cache: false
       - name: Install Octavo
+        # Ask GitHub for the newest release tag directly: the Go proxy can
+        # take half an hour to notice a new release.
         run: go install github.com/kanthi/octavo/cmd/octavo@latest
+        env:
+          GOPROXY: direct
       - name: Install Typst, for fast PDFs
         uses: typst-community/setup-typst@v5
       - id: pages
