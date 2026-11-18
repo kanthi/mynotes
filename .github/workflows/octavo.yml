@@ -1,0 +1,60 @@
+# Builds the book with Octavo and publishes it on GitHub Pages, on every
+# push to main. Written by "octavo publish --setup github"; edit it freely.
+#
+# Once, on GitHub: Settings > Pages > Build and deployment > Source:
+# "GitHub Actions".
+name: Publish with Octavo
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # a "Run workflow" button on the Actions tab
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One publish at a time; a newer push replaces one that is still waiting.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # all history: "Last updated" dates and book versions come from git
+      - uses: actions/setup-go@v7
+        with:
+          go-version: stable
+          cache: false
+      - name: Install Octavo
+        run: go install github.com/kanthi/octavo/cmd/octavo@latest
+      - name: Install Typst, for fast PDFs
+        uses: typst-community/setup-typst@v5
+      - id: pages
+        uses: actions/configure-pages@v6
+      - name: Build
+        # GitHub gives the address as http:// when the repository does not
+        # enforce HTTPS, though the site is served over https://.
+        run: |
+          export OCTAVO_SITE_URL="${BASE_URL/#http:/https:}/"
+          octavo render
+        env:
+          BASE_URL: ${{ steps.pages.outputs.base_url }}
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: public
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v5
