@@ -4,7 +4,7 @@ title: Intro
 
 # Intro
 
-Filter, reshape, and measure text streams — the core of shell pipelines. Line tools (`grep`/`sed`/`awk`) plus structured JSON/YAML (`jq`, `yq`), unit formatting (`numfmt`), and progress (`pv`).
+Filter, reshape, and measure text streams — the core of shell pipelines. Line tools (`grep`/`sed`/`awk`) plus structured JSON/YAML (`jq`, `yq`), unit formatting (`numfmt`), sampling/reversing (`shuf`, `tac`, `rev`), and progress (`pv`).
 
 ## Commands in this part
 
@@ -30,6 +30,8 @@ Filter, reshape, and measure text streams — the core of shell pipelines. Line 
 | `pv` | pv (Pipe Viewer) shows a progress bar, throughput, and ETA for data moving through a pipeline. |
 | `yq` | yq is a command-line processor for YAML, TOML, XML, and JSON configuration files. |
 | `numfmt` | numfmt converts numbers to and from human-readable units (`Ki`, `Mi`, `Gi`) inside pipelines. |
+| `shuf` | shuf generates random permutations and samples N random lines or integers (`-n`, `-i`). |
+| `tac` / `rev` | tac prints files in reverse line order (newest-first); rev reverses characters per line. |
 
 ## Which tool should I use?
 
@@ -42,6 +44,8 @@ Filter, reshape, and measure text streams — the core of shell pipelines. Line 
 | Structured JSON | `jq` | Never parse JSON with `grep`/`sed`/`awk` |
 | Structured YAML / TOML / XML | `yq` | Preserves YAML formatting and comments with `-i` |
 | Human-readable byte columns | `numfmt` | Formats raw bytes (`--to=iec-i`) while preserving headers |
+| Random sampling or jitter | `shuf` | Reservoir-samples large files (`-n`) or picks random ints (`-i`) |
+| Read huge logs newest-first | `tac` | Seeks backward from EOF (`tac log \| grep -m 1`) |
 | Unique frequency counts | `sort \| uniq -c \| sort -nr` | `uniq` only collapses *adjacent* duplicates |
 
 ## Pipeline Recipes
@@ -58,6 +62,9 @@ pv dump.sql.gz | gzip -dc | psql -U postgres appdb
 
 # 4. Format top memory processes in readable MiB/GiB
 ps -eo pid,comm,rss --sort=-rss | head -n 11 | numfmt --header --to=iec-i --from-unit=1024 --field=3
+
+# 5. Find the most recent error in a huge log without reading from the top
+tac /var/log/app.log | grep -m 1 'ERROR'
 ```
 
 ## Suggested starting points
@@ -65,7 +72,7 @@ ps -eo pid,comm,rss --sort=-rss | head -n 11 | numfmt --header --to=iec-i --from
 1. Filter: `grep` (or `rg` in Files for recursive code search).
 2. Rewrite: `sed`; fields/reports: `awk`.
 3. Columns and sets: `cut`, `sort`, `uniq`, `comm`, `paste`, `column`, `numfmt`.
-4. Edges of streams: `head`, `tail`, `tee`, `xargs`.
+4. Edges, order, & sampling: `head`, `tail`, `tac`, `rev`, `shuf`, `tee`, `xargs`.
 5. Compare: `diff`; JSON/YAML: `jq`, `yq`; progress: `pv`.
 
 ## Related parts
