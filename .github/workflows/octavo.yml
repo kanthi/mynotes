@@ -1,5 +1,16 @@
-# Builds the book with Octavo and publishes it on GitHub Pages, on every
-# push to main. Written by "octavo publish --setup github"; edit it freely.
+# Publishes the library on GitHub Pages on every push to main. Started by
+# "octavo publish --setup github", then changed to rebuild only what changed.
+#
+# Only the books a push changed are rebuilt. The site from the last build is
+# kept in GitHub's cache; the books that did not change keep their copies in
+# it, and the portal and sitemap are refreshed. Everything is rebuilt when
+# that is the safe choice:
+#
+#   - there is no earlier build in the cache (the first run, or it expired);
+#   - a file outside books/ changed (octavo-library.yml, this workflow);
+#   - a book was removed or renamed;
+#   - a different Octavo is building than the one that built the cached site;
+#   - "Run workflow" on the Actions tab, with "Rebuild every book" ticked.
 #
 # Once, on GitHub: Settings > Pages > Build and deployment > Source:
 # "GitHub Actions".
@@ -9,6 +20,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch: # a "Run workflow" button on the Actions tab
+    inputs:
+      full:
+        description: Rebuild every book
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -26,7 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 0 # all history: "Last updated" dates and book versions come from git
+          fetch-depth: 0 # all history: "Last updated" dates come from git, and the changes since the last build
       - uses: actions/setup-go@v7
         with:
           go-version: stable
@@ -37,14 +53,75 @@ jobs:
         uses: typst-community/setup-typst@v5
       - id: pages
         uses: actions/configure-pages@v6
+
+      - name: Restore the last build
+        uses: actions/cache/restore@v6
+        with:
+          path: |
+            public
+            .octavo-build
+          key: site-${{ github.sha }}
+          restore-keys: site-
+
+      - name: Choose the books to rebuild
+        id: plan
+        env:
+          FULL: ${{ inputs.full }}
+        run: |
+          full() { echo "Rebuilding every book: $1"; echo "books=" >> "$GITHUB_OUTPUT"; echo "mode=full" >> "$GITHUB_OUTPUT"; exit 0; }
+          version=$(octavo version | awk '{print $2}')
+          [ "$FULL" = true ] && full "asked for on the Actions tab"
+          [ -f .octavo-build ] && [ -d public ] || full "no earlier build in the cache"
+          read -r built_from built_with < .octavo-build
+          [ "$built_with" = "$version" ] || full "Octavo changed ($built_with -> $version)"
+          git cat-file -e "$built_from^{commit}" 2>/dev/null || full "the last build's commit is no longer in the history"
+          books=""
+          while IFS= read -r file; do
+            case "$file" in
+              books/*/*) name=${file#books/}; name=${name%%/*} ;;
+              README.md|.gitignore) continue ;;
+              *) full "$file changed" ;;
+            esac
+            [ -f "books/$name/octavo.yml" ] || full "book $name was removed or renamed"
+            case " $books " in *" $name "*) ;; *) books="$books $name" ;; esac
+          done < <(git diff --name-only --no-renames "$built_from" HEAD)
+          books=${books# }
+          if [ -z "$books" ]; then
+            echo "No book changed since $built_from; publishing the last build as it is."
+            echo "mode=none" >> "$GITHUB_OUTPUT"
+          else
+            echo "Rebuilding only: $books (changed since $built_from)"
+            echo "mode=some" >> "$GITHUB_OUTPUT"
+          fi
+          echo "books=$books" >> "$GITHUB_OUTPUT"
+
       - name: Build
+        if: steps.plan.outputs.mode != 'none'
         # GitHub gives the address as http:// when the repository does not
         # enforce HTTPS, though the site is served over https://.
-        run: |
-          export OCTAVO_SITE_URL="${BASE_URL/#http:/https:}/"
-          octavo render
         env:
           BASE_URL: ${{ steps.pages.outputs.base_url }}
+          BOOKS: ${{ steps.plan.outputs.books }}
+        run: |
+          export OCTAVO_SITE_URL="${BASE_URL/#http:/https:}/"
+          if [ -n "$BOOKS" ]; then
+            # A book that cannot be built alone (one just made a draft, say)
+            # falls back to a full build.
+            octavo render $BOOKS || { echo "Rebuilding every book instead"; octavo render; }
+          else
+            octavo render
+          fi
+          echo "$GITHUB_SHA $(octavo version | awk '{print $2}')" > .octavo-build
+
+      - name: Keep this build for the next run
+        if: steps.plan.outputs.mode != 'none'
+        uses: actions/cache/save@v6
+        with:
+          path: |
+            public
+            .octavo-build
+          key: site-${{ github.sha }}
+
       - uses: actions/upload-pages-artifact@v5
         with:
           path: public
