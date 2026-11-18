@@ -1,0 +1,152 @@
+---
+title: '020 Project 20: KV HTTP Store'
+---
+
+# 020 Build a Key-Value HTTP Store
+
+A single-process teaching service with CRUD endpoints and periodic snapshots. The durability limits are examined in the distribution extension below.
+
+```text
+HTTP API <-> in-memory map + mutex <-> snapshot.json
+```
+
+## Full `main.go`
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"log"
+	"net/http"
+	"os"
+	"sync"
+	"time"
+)
+
+type store struct {
+	mu sync.RWMutex
+	m  map[string]string
+}
+
+func (s *store) load(path string) {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	_ = json.Unmarshal(b, &s.m)
+}
+
+func (s *store) save(path string) error {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	b, err := json.MarshalIndent(s.m, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(path, b, 0o644)
+}
+
+func main() {
+	s := &store{m: map[string]string{}}
+	snap := "snapshot.json"
+	s.load(snap)
+
+	go func() {
+		t := time.NewTicker(10 * time.Second)
+		defer t.Stop()
+		for range t.C {
+			_ = s.save(snap)
+		}
+	}()
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("PUT /kv/{key}", func(w http.ResponseWriter, r *http.Request) {
+		key := r.PathValue("key")
+		var body struct {
+			Value string `json:"value"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			http.Error(w, "bad json", http.StatusBadRequest)
+			return
+		}
+		s.mu.Lock()
+		s.m[key] = body.Value
+		s.mu.Unlock()
+		w.WriteHeader(http.StatusNoContent)
+	})
+
+	mux.HandleFunc("GET /kv/{key}", func(w http.ResponseWriter, r *http.Request) {
+		key := r.PathValue("key")
+		s.mu.RLock()
+		v, ok := s.m[key]
+		s.mu.RUnlock()
+		if !ok {
+			http.NotFound(w, r)
+			return
+		}
+		_ = json.NewEncoder(w).Encode(map[string]string{"key": key, "value": v})
+	})
+
+	mux.HandleFunc("DELETE /kv/{key}", func(w http.ResponseWriter, r *http.Request) {
+		key := r.PathValue("key")
+		s.mu.Lock()
+		delete(s.m, key)
+		s.mu.Unlock()
+		w.WriteHeader(http.StatusNoContent)
+	})
+
+	mux.HandleFunc("GET /kv", func(w http.ResponseWriter, r *http.Request) {
+		s.mu.RLock()
+		defer s.mu.RUnlock()
+		_ = json.NewEncoder(w).Encode(s.m)
+	})
+
+	log.Println("listening :8081")
+	log.Fatal(http.ListenAndServe(":8081", mux))
+}
+```
+
+## Run
+
+```bash
+go run .
+curl -X PUT localhost:8081/kv/name -d '{"value":"king"}' -H 'content-type: application/json'
+curl localhost:8081/kv/name
+```
+
+## Step-by-Step Explanation
+
+1. Define request and response contracts first.
+2. Validate inbound input before doing any state changes.
+3. Keep handler logic short and move reusable logic into helper functions.
+4. Add timeouts and clear error paths.
+5. Return consistent responses and status codes.
+
+## Code Anatomy
+
+- Handlers parse input, call domain logic, write response.
+- Shared state uses synchronization where needed.
+- Transport concerns stay separate from business rules.
+
+## Learning Goals
+
+- Build reliable service endpoints in Go.
+- Understand API ergonomics and operational safety.
+- Prepare code structure for tests and persistence later.
+
+## Distributed-store design extension
+
+The snapshot build is a single-node teaching service. Its ten-second snapshots can lose recently acknowledged writes; direct snapshot overwrite can leave an incomplete file after a crash. Define those limits before adding replicas. Improve local persistence first with framed WAL records, checksums, a sync/acknowledgment policy, and temporary-file snapshot publication. The [WAL chapter](../17-systems-programming/142b-write-ahead-log.md) provides the recovery exercise.
+
+Define `Put(key, value, expectedVersion)` and return a new version. Conditional updates prevent lost read-modify-write operations. Set maximum key/value sizes and use tombstones so a deleted key cannot reappear from an old replica.
+
+Use [consistent hashing](../18-distributed-infra/150b-consistent-hashing.md) for ownership and choose replicas on distinct physical nodes. Track membership epochs and migration checkpoints. A cache ring does not itself replicate writes, elect a leader, or settle concurrent conflicting values.
+
+Choose and name a consistency contract. A leader-based single-key store can serialize writes through one fenced owner; stale follower reads need an explicit policy. A leaderless quorum design needs version/conflict handling, read/write protocols, and repair. `R + W > N` gives quorum overlap only under its assumptions; it does not by itself guarantee linearizability, especially with sloppy quorums, concurrent writes, or changing membership.
+
+**Build milestones:** durable single-node PUT/GET/DELETE; versioned compare-and-set; ownership-aware routing; then replicated recovery using a proven coordination mechanism or a clearly limited simulator. Keep the HTTP adapter separate from the storage state machine.
+
+**Acceptance evidence:** crash before and after acknowledgment, replay a torn WAL tail, race conditional writes, remove an owner, and reconnect a stale replica after deletion. The test must demonstrate the stated durability and consistency behavior, including explicit unavailability when the write policy cannot be met. Record recovery time, stale reads, repair backlog, and key movement during membership change.

@@ -1,0 +1,412 @@
+---
+title: How Go Code Is Organized
+---
+
+# How Go Code Is Organized
+
+## Overview
+
+Go has strong opinions about code organization. Understanding packages, imports, and project structure is essential for writing maintainable Go programs and for your code to work correctly with the Go toolchain.
+
+## Packages: The Building Blocks
+
+Every Go file belongs to a package. Packages group related code and control visibility.
+
+```go
+// File: greet.go
+package greeting  // Package declaration (first line)
+
+import "fmt"
+
+func Hello(name string) string {
+    return fmt.Sprintf("Hello, %s!", name)
+}
+```
+
+### Package Rules
+
+| Rule | Description |
+|------|-------------|
+| All files in a directory belong to the same package | You can't have `package foo` and `package bar` in the same folder |
+| Package name matches directory name (by convention) | Directory `server/` contains `package server` |
+| `package main` is special | It defines an executable, not a library |
+
+### The `main` Package
+
+Only `package main` can produce an executable. It must have a `main()` function:
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+    fmt.Println("This is the entry point")
+}
+```
+
+## Import System
+
+### Basic Imports
+
+```go
+import "fmt"              // Standard library
+import "net/http"         // Nested standard library package
+import "github.com/user/repo"  // External package
+```
+
+### Import Block (Preferred Style)
+
+```go
+import (
+    // Standard library (grouped first)
+    "fmt"
+    "net/http"
+
+    // Third-party packages (blank line separator)
+    "github.com/gin-gonic/gin"
+
+    // Internal packages (blank line separator)
+    "myproject/internal/config"
+)
+```
+
+### Import Aliases
+
+```go
+import (
+    "crypto/rand"
+    mrand "math/rand"  // Alias to avoid collision
+)
+
+// Usage
+cryptoBytes, _ := rand.Read(buf)
+randomInt := mrand.Intn(100)
+```
+
+### Blank Imports (Side Effects Only)
+
+```go
+import (
+    "database/sql"
+    _ "github.com/lib/pq"  // Import for side effects (driver registration)
+)
+```
+
+### Dot Imports (Avoid in Production)
+
+```go
+import . "fmt"
+
+// Now you can use Println directly
+Println("Hello")  // Instead of fmt.Println
+```
+
+## Visibility: Exported vs Unexported
+
+Go uses capitalization to control visibility:
+
+```go
+package user
+
+// Exported (public) - starts with uppercase
+type User struct {
+    Name  string  // Exported field
+    Email string  // Exported field
+    age   int     // unexported field (private)
+}
+
+// Exported function
+func CreateUser(name string) *User {
+    return &User{Name: name}
+}
+
+// unexported function (private)
+func validate(u *User) bool {
+    return len(u.Name) > 0
+}
+```
+
+| Name | Visibility |
+|------|------------|
+| `User` | Exported (accessible from other packages) |
+| `Name` | Exported field |
+| `age` | Unexported (only accessible within `user` package) |
+| `CreateUser` | Exported function |
+| `validate` | Unexported function |
+
+## Modules: Modern Dependency Management
+
+A **module** is a collection of packages with a `go.mod` file at the root.
+
+### Creating a Module
+
+```bash
+$ mkdir myproject && cd myproject
+$ go mod init github.com/username/myproject
+```
+
+This creates `go.mod`:
+
+```
+module github.com/username/myproject
+
+go 1.27
+```
+
+### Module Structure
+
+```
+github.com/username/myproject/
+├── go.mod
+├── go.sum
+├── main.go
+├── config/
+│   └── config.go      # package config
+├── internal/
+│   └── database/
+│       └── db.go      # package database (private)
+└── pkg/
+    └── api/
+        └── api.go     # package api (public)
+```
+
+## Internal Packages
+
+The `internal/` directory has special meaning: packages inside it can only be imported by code within the same module tree.
+
+```
+myproject/
+├── internal/
+│   └── secret/
+│       └── secret.go   # Only myproject can import this
+└── cmd/
+    └── app/
+        └── main.go     # Can import internal/secret
+```
+
+```go
+// This works (same module)
+import "github.com/username/myproject/internal/secret"
+
+// This fails (different module trying to import internal)
+// Error: use of internal package not allowed
+```
+
+## Standard Project Layout
+
+While Go doesn't mandate a structure, this layout is widely adopted:
+
+```
+myproject/
+├── cmd/                    # Main applications
+│   ├── myapp/
+│   │   └── main.go
+│   └── worker/
+│       └── main.go
+├── internal/               # Private packages
+│   ├── config/
+│   ├── database/
+│   └── service/
+├── pkg/                    # Public libraries (optional)
+│   └── api/
+├── api/                    # OpenAPI/Swagger specs
+├── web/                    # Web assets
+├── scripts/                # Build/install scripts
+├── docs/                   # Documentation
+├── go.mod
+├── go.sum
+└── README.md
+```
+
+### `cmd/` Directory
+Each subdirectory in `cmd/` becomes a separate binary:
+
+```bash
+$ go build ./cmd/myapp
+$ go build ./cmd/worker
+```
+
+## Package Naming Conventions
+
+| ✅ Good | ❌ Bad | Why |
+|--------|--------|-----|
+| `user` | `userPackage` | Avoid redundant suffixes |
+| `http` | `httputil` | Only add suffix if necessary |
+| `strconv` | `stringconversion` | Short but clear |
+| `io` | `inputoutput` | Abbreviations OK if common |
+
+### Avoid Meaningless Names
+- `util` → Use specific names like `stringutil`, `timeutil`
+- `common` → Be specific about what's common
+- `misc` → Break into focused packages
+
+## Circular Import Prevention
+
+Go prohibits circular imports. If you have:
+
+```
+package a → imports → package b
+package b → imports → package a  // Error!
+```
+
+Solutions:
+1. **Extract common code** to a third package
+2. **Use interfaces** to break the dependency
+3. **Restructure** your packages
+
+## Summary
+
+| Concept | Purpose |
+|---------|---------|
+| Package | Groups related code, controls visibility |
+| Module | Collection of packages with version info |
+| `internal/` | Private packages within a module |
+| Uppercase | Exported (public) |
+| Lowercase | Unexported (private) |
+
+## Exercises
+
+1. Create a module with two packages and have one import the other
+2. Create an `internal/` package and verify external code can't import it
+3. Create a project with `cmd/` containing multiple applications
+
+## Related Topics
+- [Core Go Commands](05-core-go-commands.md)
+- [Dependency Management](07-dependency-management.md)
+
+## More examples
+
+### Example: exported vs unexported names
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+// User is exported (other packages could import and use it).
+type User struct {
+	Name string // exported field
+	id   int    // unexported field — same package only
+}
+
+func NewUser(name string, id int) User {
+	return User{Name: name, id: id}
+}
+
+func (u User) ID() int { return u.id }
+
+func main() {
+	u := NewUser("ada", 7)
+	fmt.Println("name:", u.Name)
+	fmt.Println("id:", u.ID())
+	// fmt.Println(u.id) // works only inside this package
+}
+```
+
+Expected:
+
+```text
+name: ada
+id: 7
+```
+
+### Example: package main entry point
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+// helpers in the same package share unexported names.
+func banner() string { return "app" }
+
+func main() {
+	fmt.Println(banner(), "starting")
+	fmt.Println(banner(), "ready")
+}
+```
+
+Expected:
+
+```text
+app starting
+app ready
+```
+
+## Runnable example
+
+Single-file demo of packages’ visibility rules and `package main` as the executable entry point. (In real projects, exported helpers live in other packages; capitalization still decides export.)
+
+Save as `main.go`. From an empty directory:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"strings"
+)
+
+// Exported-style names start with uppercase; unexported stay lowercase.
+// In one package both are visible; other packages would only see uppercase.
+
+type User struct {
+	Name string // exported field
+	age  int    // unexported field
+}
+
+func NewUser(name string, age int) (User, error) {
+	if !validName(name) {
+		return User{}, fmt.Errorf("invalid name %q", name)
+	}
+	return User{Name: name, age: age}, nil
+}
+
+func validName(name string) bool {
+	return strings.TrimSpace(name) != ""
+}
+
+func (u User) Greeting() string {
+	return fmt.Sprintf("Hello, %s (age %d)", u.Name, u.age)
+}
+
+func main() {
+	u, err := NewUser("Ada", 36)
+	if err != nil {
+		fmt.Println("error:", err)
+		return
+	}
+	fmt.Println(u.Greeting())
+	fmt.Printf("type=%T name=%q age_via_method_only\n", u, u.Name)
+
+	if _, err := NewUser("  ", 1); err != nil {
+		fmt.Println("rejected:", err)
+	}
+}
+```
+
+**Expected output** (illustrative):
+
+```text
+Hello, Ada (age 36)
+type=main.User name="Ada" age_via_method_only
+rejected: invalid name "  "
+```
+
+**What to notice:**
+- `package main` + `func main` is what `go run` executes.
+- `Name` is uppercase (exportable); `age` and `validName` are package-private style.
+- Factory `NewUser` validates before constructing—common package API shape.
+- Imports use the standard library grouping style.
+
+**Try next:** Split `User` into a second file in the same directory still declaring `package main` and run `go run .` again.

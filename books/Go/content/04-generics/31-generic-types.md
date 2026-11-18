@@ -1,0 +1,305 @@
+---
+title: Generic Types
+---
+
+# Generic Types
+
+## Overview
+
+Generic types let you create data structures that work with any type while maintaining type safety.
+
+## Basic Syntax
+
+```go
+type TypeName[T constraint] struct {
+    // fields using T
+}
+```
+
+## Stack
+
+```go
+type Stack[T any] struct {
+    items []T
+}
+
+func (s *Stack[T]) Push(item T) {
+    s.items = append(s.items, item)
+}
+
+func (s *Stack[T]) Pop() (T, bool) {
+    if len(s.items) == 0 {
+        var zero T
+        return zero, false
+    }
+    item := s.items[len(s.items)-1]
+    s.items = s.items[:len(s.items)-1]
+    return item, true
+}
+
+// Usage
+stack := &Stack[int]{}
+stack.Push(1)
+stack.Push(2)
+v, _ := stack.Pop()  // 2
+```
+
+## Set
+
+```go
+type Set[T comparable] map[T]struct{}
+
+func NewSet[T comparable]() Set[T] {
+    return make(Set[T])
+}
+
+func (s Set[T]) Add(item T) {
+    s[item] = struct{}{}
+}
+
+func (s Set[T]) Contains(item T) bool {
+    _, ok := s[item]
+    return ok
+}
+
+func (s Set[T]) Remove(item T) {
+    delete(s, item)
+}
+
+// Usage
+set := NewSet[string]()
+set.Add("a")
+set.Contains("a")  // true
+```
+
+## Pair
+
+```go
+type Pair[T, U any] struct {
+    First  T
+    Second U
+}
+
+func NewPair[T, U any](first T, second U) Pair[T, U] {
+    return Pair[T, U]{first, second}
+}
+
+p := NewPair("age", 30)
+// Pair[string, int]{First: "age", Second: 30}
+```
+
+## Result (Option Pattern)
+
+```go
+type Result[T any] struct {
+    value T
+    err   error
+}
+
+func Ok[T any](v T) Result[T] {
+    return Result[T]{value: v}
+}
+
+func Err[T any](err error) Result[T] {
+    return Result[T]{err: err}
+}
+
+func (r Result[T]) Unwrap() (T, error) {
+    return r.value, r.err
+}
+```
+
+## LinkedList
+
+```go
+type Node[T any] struct {
+    Value T
+    Next  *Node[T]
+}
+
+type LinkedList[T any] struct {
+    Head *Node[T]
+}
+
+func (l *LinkedList[T]) Add(v T) {
+    node := &Node[T]{Value: v, Next: l.Head}
+    l.Head = node
+}
+```
+
+These methods use the **type's** type parameter `T`. Go 1.27 also allows a method to declare **additional** type parameters of its own (`func (s *Store) Put[U any](v U)`). See [Methods and Receivers](../03-memory/21-methods-receivers.md).
+
+## Summary
+
+| Type | Purpose |
+|------|---------|
+| `Stack[T]` | LIFO collection |
+| `Set[T]` | Unique elements |
+| `Pair[T, U]` | Key-value tuple |
+| `Result[T]` | Error handling |
+
+## Related Topics
+- [Generic Functions](30-generic-functions.md)
+- [Idiomatic Generics](32-idiomatic-generics.md)
+
+## More examples
+
+### Example: generic Stack
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+type Stack[T any] struct {
+	items []T
+}
+
+func (s *Stack[T]) Push(v T) { s.items = append(s.items, v) }
+
+func (s *Stack[T]) Pop() (T, bool) {
+	var zero T
+	if len(s.items) == 0 {
+		return zero, false
+	}
+	i := len(s.items) - 1
+	v := s.items[i]
+	s.items = s.items[:i]
+	return v, true
+}
+
+func main() {
+	var s Stack[string]
+	s.Push("a")
+	s.Push("b")
+	v, ok := s.Pop()
+	fmt.Println(v, ok)
+	v, ok = s.Pop()
+	fmt.Println(v, ok)
+	v, ok = s.Pop()
+	fmt.Println(v, ok)
+}
+```
+
+Expected:
+
+```text
+b true
+a true
+ false
+```
+
+### Example: generic Pair
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+type Pair[A, B any] struct {
+	First  A
+	Second B
+}
+
+func main() {
+	p := Pair[string, int]{First: "age", Second: 42}
+	fmt.Printf("%s=%d\n", p.First, p.Second)
+	q := Pair[int, bool]{First: 1, Second: true}
+	fmt.Println(q.First, q.Second)
+}
+```
+
+Expected:
+
+```text
+age=42
+1 true
+```
+
+## Runnable example
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import "fmt"
+
+type Stack[T any] struct {
+	items []T
+}
+
+func (s *Stack[T]) Push(item T) {
+	s.items = append(s.items, item)
+}
+
+func (s *Stack[T]) Pop() (T, bool) {
+	if len(s.items) == 0 {
+		var zero T
+		return zero, false
+	}
+	i := len(s.items) - 1
+	item := s.items[i]
+	s.items = s.items[:i]
+	return item, true
+}
+
+type Set[T comparable] map[T]struct{}
+
+func NewSet[T comparable]() Set[T] {
+	return make(Set[T])
+}
+
+func (s Set[T]) Add(item T)      { s[item] = struct{}{} }
+func (s Set[T]) Contains(item T) bool {
+	_, ok := s[item]
+	return ok
+}
+
+type Pair[T, U any] struct {
+	First  T
+	Second U
+}
+
+func main() {
+	st := &Stack[string]{}
+	st.Push("a")
+	st.Push("b")
+	top, ok := st.Pop()
+	fmt.Println("stack pop:", top, ok)
+
+	set := NewSet[int]()
+	set.Add(1)
+	set.Add(1)
+	set.Add(2)
+	fmt.Println("set has 1:", set.Contains(1))
+	fmt.Println("set has 3:", set.Contains(3))
+	fmt.Println("set size:", len(set))
+
+	p := Pair[string, int]{First: "age", Second: 30}
+	fmt.Printf("pair: %s=%d\n", p.First, p.Second)
+}
+```
+
+**Expected output:**
+
+```text
+stack pop: b true
+set has 1: true
+set has 3: false
+set size: 2
+pair: age=30
+```
+
+**What to notice:** `Stack[T]` and `Set[T]` keep a single implementation while the compiler enforces element types. Empty `Pop` returns the type's zero value plus `false` — a common generic API pattern.
+
+**Try next:** Add `Peek() (T, bool)` and `Size() int` to `Stack`; build a `Queue[T]` with head/tail indices.

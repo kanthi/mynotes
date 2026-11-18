@@ -1,0 +1,4 @@
+# Built output. "octavo render" recreates it.
+public/
+_book/
+.DS_Store

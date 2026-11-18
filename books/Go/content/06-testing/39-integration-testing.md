@@ -1,0 +1,451 @@
+---
+title: Integration and System Testing
+---
+
+# Integration and System Testing
+
+## Overview
+
+Integration tests verify components work together, testing against real databases, APIs, and external services.
+
+```text
+Test layers
+
+unit (many, fast)
+   |
+integration (fewer, realistic deps)
+   |
+system/e2e (fewest, highest confidence)
+```
+
+## HTTP Testing
+
+```go
+import "net/http/httptest"
+
+func TestHandler(t *testing.T) {
+    req := httptest.NewRequest("GET", "/users", nil)
+    w := httptest.NewRecorder()
+
+    handler(w, req)
+
+    if w.Code != http.StatusOK {
+        t.Errorf("status = %d; want 200", w.Code)
+    }
+}
+```
+
+## Test Server
+
+```go
+func TestAPIClient(t *testing.T) {
+    // Go 1.27+: in-memory network, auto-cleanup, synctest-safe.
+    server := httptest.NewTestServer(t, http.HandlerFunc(
+        func(w http.ResponseWriter, r *http.Request) {
+            w.Write([]byte(`{"id": 1}`))
+        }))
+
+    resp, err := server.Client().Get("http://example.com/users/1")
+    // Assert...
+}
+```
+
+`NewTestServer` uses an in-memory fake network (no loopback port), registers `t.Cleanup` to shut the server down, and fails the test if the handler panics. Prefer it over `httptest.NewServer` for new tests. `NewServer` still listens on loopback when you need a real TCP address.
+
+## Database Testing
+
+```go
+func TestUserRepository(t *testing.T) {
+    if testing.Short() {
+        t.Skip("skipping integration test")
+    }
+
+    db := setupTestDB(t)
+    t.Cleanup(func() { db.Close() })
+
+    repo := NewUserRepository(db)
+
+    // Test operations
+    err := repo.Create(&User{Name: "test"})
+    if err != nil {
+        t.Fatal(err)
+    }
+}
+```
+
+## Build Tags
+
+```go
+//go:build integration
+// +build integration
+
+package myapp_test
+
+// Only runs with: go test -tags=integration
+```
+
+## Environment-Based Tests
+
+```go
+func TestWithEnv(t *testing.T) {
+    url := os.Getenv("API_URL")
+    if url == "" {
+        t.Skip("API_URL not set")
+    }
+    // Test against real API
+}
+```
+
+## Docker Integration
+
+```go
+func TestWithDocker(t *testing.T) {
+    if testing.Short() {
+        t.Skip("skipping docker test")
+    }
+
+    // Use testcontainers-go or similar
+    container, err := startPostgres()
+    if err != nil {
+        t.Fatal(err)
+    }
+    t.Cleanup(func() { container.Terminate(ctx) })
+
+    // Run tests against container
+}
+```
+
+## Go 1.27 Integration Testing Upgrades
+
+Use a two-lane CI strategy:
+
+1. Default lane (every push): fast unit + short integration.
+2. Full lane (main/nightly): DB containers, external API contract checks, and race detector.
+
+```bash
+# default
+go test ./... -short -shuffle=on
+
+# full
+go test ./... -tags=integration -race -count=1
+```
+
+For external APIs, always assert status + schema shape, not only status codes:
+
+```go
+func assertUserShape(t *testing.T, body []byte) {
+    t.Helper()
+    var got map[string]any
+    if err := json.Unmarshal(body, &got); err != nil {
+        t.Fatal(err)
+    }
+    if _, ok := got["id"]; !ok {
+        t.Fatal("missing id")
+    }
+}
+```
+
+## Summary
+
+| Tool | Use Case |
+|------|----------|
+| `httptest.NewTestServer` | In-memory HTTP (Go 1.27+; default for new tests) |
+| `httptest.NewServer` | Loopback TCP when you need a real URL |
+| Build tags | Separate test suites |
+| Env vars | External dependencies |
+| `testing.Short()` | Skip slow tests |
+
+## Related Topics
+- [Testing Fundamentals](36-testing-fundamentals.md)
+- [Advanced Testing](38-advanced-testing.md)
+
+## Worked example
+
+Handler unit test with `httptest.NewRecorder` plus client test against `httptest.NewServer`.
+
+Save as `api.go` and `api_test.go`. Then:
+
+```bash
+go mod init example
+go test -v
+```
+
+```go
+// api.go
+package main
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+type Item struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+func ItemHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	id := r.PathValue("id")
+	if id == "" {
+		http.Error(w, "missing id", http.StatusBadRequest)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(Item{ID: id, Name: "widget-" + id})
+}
+
+func NewAPI() http.Handler {
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /items/{id}", ItemHandler)
+	return mux
+}
+```
+
+```go
+// api_test.go
+package main
+
+import (
+	"encoding/json"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+)
+
+func TestItemHandlerRecorder(t *testing.T) {
+	req := httptest.NewRequest(http.MethodGet, "/items/7", nil)
+	req.SetPathValue("id", "7")
+	rec := httptest.NewRecorder()
+	ItemHandler(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status=%d", rec.Code)
+	}
+	var item Item
+	if err := json.Unmarshal(rec.Body.Bytes(), &item); err != nil {
+		t.Fatal(err)
+	}
+	if item.ID != "7" || item.Name == "" {
+		t.Fatalf("bad body: %+v", item)
+	}
+}
+
+func TestItemClientServer(t *testing.T) {
+	srv := httptest.NewServer(NewAPI())
+	t.Cleanup(srv.Close)
+
+	res, err := http.Get(srv.URL + "/items/9")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	body, _ := io.ReadAll(res.Body)
+	if res.StatusCode != 200 {
+		t.Fatalf("status=%d body=%s", res.StatusCode, body)
+	}
+	var item Item
+	if err := json.Unmarshal(body, &item); err != nil {
+		t.Fatal(err)
+	}
+	if item.ID != "9" {
+		t.Fatalf("id=%s", item.ID)
+	}
+}
+```
+
+**Expected output:**
+
+```text
+=== RUN   TestItemHandlerRecorder
+--- PASS: TestItemHandlerRecorder (0.00s)
+=== RUN   TestItemClientServer
+--- PASS: TestItemClientServer (0.00s)
+PASS
+```
+
+## More examples
+
+Env-gated “external” test and method-not-allowed check.
+
+```go
+// api_extra_test.go
+package main
+
+import (
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"testing"
+)
+
+func TestPostRejected(t *testing.T) {
+	req := httptest.NewRequest(http.MethodPost, "/items/1", nil)
+	req.SetPathValue("id", "1")
+	rec := httptest.NewRecorder()
+	ItemHandler(rec, req)
+	if rec.Code != http.StatusMethodNotAllowed {
+		t.Fatalf("status=%d", rec.Code)
+	}
+}
+
+func TestExternalURL_SkipIfUnset(t *testing.T) {
+	if os.Getenv("API_URL") == "" {
+		t.Skip("API_URL not set")
+	}
+	// Would hit a real service when configured.
+	t.Log("API_URL=", os.Getenv("API_URL"))
+}
+```
+
+```bash
+go test -v
+API_URL=http://example.invalid go test -v -run External
+```
+
+## Runnable example
+
+Save these two files in `usersvc/`. Then:
+
+```bash
+cd usersvc
+go mod init example/usersvc
+go test -v
+go test -short -v
+```
+
+`handler.go`:
+
+```go
+package usersvc
+
+import (
+	"encoding/json"
+	"net/http"
+	"strings"
+)
+
+type User struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+func UserHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	id := strings.TrimPrefix(r.URL.Path, "/users/")
+	if id == "" || id == r.URL.Path {
+		http.Error(w, "missing id", http.StatusBadRequest)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(User{ID: 1, Name: "Ada"})
+}
+
+func NewMux() http.Handler {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/users/", UserHandler)
+	return mux
+}
+```
+
+`handler_test.go`:
+
+```go
+package usersvc_test
+
+import (
+	"encoding/json"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"example/usersvc"
+)
+
+func TestUserHandler(t *testing.T) {
+	req := httptest.NewRequest(http.MethodGet, "/users/1", nil)
+	rec := httptest.NewRecorder()
+
+	usersvc.UserHandler(rec, req)
+
+	res := rec.Result()
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		t.Fatalf("status=%d", res.StatusCode)
+	}
+	body, _ := io.ReadAll(res.Body)
+	assertUserShape(t, body)
+}
+
+func TestAPIClientAgainstTestServer(t *testing.T) {
+	srv := httptest.NewServer(usersvc.NewMux())
+	t.Cleanup(srv.Close)
+
+	res, err := http.Get(srv.URL + "/users/1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		t.Fatalf("status=%d", res.StatusCode)
+	}
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertUserShape(t, body)
+}
+
+func TestExternalAPI_SkipUnlessConfigured(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping external-style check in short mode")
+	}
+	// In real suites you might also require API_URL; here we keep it offline.
+	req := httptest.NewRequest(http.MethodGet, "/users/1", nil)
+	rec := httptest.NewRecorder()
+	usersvc.UserHandler(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status=%d", rec.Code)
+	}
+}
+
+func assertUserShape(t *testing.T, body []byte) {
+	t.Helper()
+	var got map[string]any
+	if err := json.Unmarshal(body, &got); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := got["id"]; !ok {
+		t.Fatal("missing id")
+	}
+	if _, ok := got["name"]; !ok {
+		t.Fatal("missing name")
+	}
+}
+```
+
+**Expected output:**
+
+```text
+=== RUN   TestUserHandler
+--- PASS: TestUserHandler (0.00s)
+=== RUN   TestAPIClientAgainstTestServer
+--- PASS: TestAPIClientAgainstTestServer (0.00s)
+=== RUN   TestExternalAPI_SkipUnlessConfigured
+--- PASS: TestExternalAPI_SkipUnlessConfigured (0.00s)
+PASS
+```
+
+With `go test -short -v`, the last test is `SKIP`.
+
+**What to notice:** `httptest` exercises handlers without a listening port; `httptest.NewServer` gives a real URL for client code. Assert JSON **shape** (keys/types), not only status codes. Use `-short` / env gates for slower dependency lanes.
+
+**Try next:** Add a `POST` path that returns 405 and test it; introduce a build-tagged file `//go:build integration` that only runs under `go test -tags=integration`.

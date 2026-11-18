@@ -1,0 +1,310 @@
+---
+title: 194 Patterns from Mastering Go (4th ed., 2024)
+---
+
+# 194 Patterns from Mastering Go (4th ed., 2024)
+
+Recent 4th-edition signals emphasize advanced practice: generics, interfaces/reflection, Unix systems work, concurrency, web services, TCP/WebSocket, REST APIs, testing/profiling, fuzzing/observability, and performance.
+
+## What This Adds to Our Book
+
+- Better advanced track sequencing after core language chapters.
+- Stronger focus on performance + fuzz + observability as one reliability loop.
+- More explicit Unix-system programming integration for backend engineers.
+
+## Advanced Engineering Loop
+
+```text
+implement -> test -> fuzz -> profile -> optimize -> observe in runtime -> iterate
+```
+
+## Deep Integration Example: Fuzz-Ready Parser + Profile-Aware Fast Path
+
+```go
+package parser
+
+import (
+	"errors"
+	"strconv"
+	"strings"
+)
+
+var ErrBadRecord = errors.New("bad record")
+
+type Record struct {
+	ID    int64
+	Score float64
+}
+
+func ParseRecord(line string) (Record, error) {
+	parts := strings.Split(line, ",")
+	if len(parts) != 2 {
+		return Record{}, ErrBadRecord
+	}
+
+	id, err := strconv.ParseInt(strings.TrimSpace(parts[0]), 10, 64)
+	if err != nil {
+		return Record{}, ErrBadRecord
+	}
+	score, err := strconv.ParseFloat(strings.TrimSpace(parts[1]), 64)
+	if err != nil {
+		return Record{}, ErrBadRecord
+	}
+	if id <= 0 || score < 0 {
+		return Record{}, ErrBadRecord
+	}
+	return Record{ID: id, Score: score}, nil
+}
+```
+
+```go
+package parser_test
+
+import "testing"
+
+func FuzzParseRecord(f *testing.F) {
+	f.Add("1,2.5")
+	f.Add("x,y")
+	f.Add("")
+
+	f.Fuzz(func(t *testing.T, input string) {
+		_, _ = ParseRecord(input)
+	})
+}
+```
+
+## Why This Matters
+
+As Go systems mature, defects shift from syntax mistakes to boundary and performance defects. Fuzzing and profiling help catch these before they become incidents.
+
+## Curriculum Upgrades Recommended
+
+1. Add a dedicated chapter combining fuzzing, race detection, and pprof for one service.
+2. Add advanced chapter on TCP/WebSocket design under network systems.
+3. Expand performance track with explicit optimization workflow and rollback criteria.
+
+## More examples
+
+### TCP echo with deadlines (systems flavor)
+
+```bash
+mkdir -p /tmp/go-mg-tcp && cd /tmp/go-mg-tcp
+go mod init example.com/mg-tcp
+```
+
+Save as `main.go`:
+
+```go
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"net"
+	"time"
+)
+
+func main() {
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		panic(err)
+	}
+	defer ln.Close()
+	go func() {
+		c, _ := ln.Accept()
+		defer c.Close()
+		_ = c.SetDeadline(time.Now().Add(time.Second))
+		line, _ := bufio.NewReader(c).ReadString('\n')
+		_, _ = c.Write([]byte("echo:" + line))
+	}()
+
+	c, err := net.DialTimeout("tcp", ln.Addr().String(), time.Second)
+	if err != nil {
+		panic(err)
+	}
+	defer c.Close()
+	_ = c.SetDeadline(time.Now().Add(time.Second))
+	_, _ = c.Write([]byte("hi\n"))
+	line, _ := bufio.NewReader(c).ReadString('\n')
+	fmt.Print(line)
+}
+```
+
+```bash
+go run .
+```
+
+**Expected output:**
+
+```
+echo:hi
+```
+
+### Worker pool fan-out / fan-in
+
+```bash
+mkdir -p /tmp/go-mg-pool && cd /tmp/go-mg-pool
+go mod init example.com/mg-pool
+```
+
+Save as `main.go`:
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+func main() {
+	jobs := make(chan int, 8)
+	results := make(chan int, 8)
+	var wg sync.WaitGroup
+	for w := 0; w < 3; w++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for j := range jobs {
+				results <- j * 2
+			}
+		}()
+	}
+	go func() {
+		for i := 1; i <= 5; i++ {
+			jobs <- i
+		}
+		close(jobs)
+		wg.Wait()
+		close(results)
+	}()
+	sum := 0
+	for r := range results {
+		sum += r
+	}
+	fmt.Println("sum:", sum)
+}
+```
+
+```bash
+go run .
+```
+
+**Expected output:**
+
+```
+sum: 30
+```
+
+## Runnable example
+
+Robust parsing + fuzz target: `ParseRecord` never panics on garbage; run unit checks and a short fuzz if supported.
+
+```bash
+mkdir -p /tmp/go-mastering && cd /tmp/go-mastering
+go mod init example.com/mastering
+```
+
+Save as `parse.go`:
+
+```go
+package mastering
+
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)
+
+type Record struct {
+	ID    int
+	Score float64
+}
+
+func ParseRecord(s string) (Record, error) {
+	parts := strings.Split(s, ",")
+	if len(parts) != 2 {
+		return Record{}, fmt.Errorf("want id,score")
+	}
+	id, err := strconv.Atoi(strings.TrimSpace(parts[0]))
+	if err != nil {
+		return Record{}, fmt.Errorf("id: %w", err)
+	}
+	score, err := strconv.ParseFloat(strings.TrimSpace(parts[1]), 64)
+	if err != nil {
+		return Record{}, fmt.Errorf("score: %w", err)
+	}
+	return Record{ID: id, Score: score}, nil
+}
+```
+
+Save as `parse_test.go`:
+
+```go
+package mastering
+
+import "testing"
+
+func TestParseRecord(t *testing.T) {
+	r, err := ParseRecord("1,2.5")
+	if err != nil || r.ID != 1 || r.Score != 2.5 {
+		t.Fatalf("got %+v %v", r, err)
+	}
+	if _, err := ParseRecord("x,y"); err == nil {
+		t.Fatal("expected error")
+	}
+}
+
+func FuzzParseRecord(f *testing.F) {
+	f.Add("1,2.5")
+	f.Add("")
+	f.Add(",,,")
+	f.Fuzz(func(t *testing.T, input string) {
+		_, _ = ParseRecord(input) // must not panic
+	})
+}
+```
+
+Save as `cmd/demo/main.go`:
+
+```go
+package main
+
+import (
+	"fmt"
+
+	"example.com/mastering"
+)
+
+func main() {
+	r, err := mastering.ParseRecord("7, 3.14")
+	fmt.Println(r, err)
+	_, err = mastering.ParseRecord("nope")
+	fmt.Println("bad:", err != nil)
+}
+```
+
+```bash
+go test .
+go test -fuzz=FuzzParseRecord -fuzztime=5s .
+go run ./cmd/demo
+```
+
+**Expected output** (fuzz lines vary):
+
+```
+PASS
+...
+{7 3.14} <nil>
+bad: true
+```
+
+**What to notice**
+
+- Fuzzing finds panics and unexpected paths at boundaries—Mastering Go's maturity theme.
+- Parsers should return errors, never panic, on user input.
+
+**Try next**
+
+- `go test -race` on concurrent map code that shares a cache.
+- Add a benchmark for `ParseRecord` on long inputs.

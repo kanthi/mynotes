@@ -1,0 +1,343 @@
+---
+title: Loops and Iteration
+---
+
+# Loops and Iteration
+
+## Overview
+
+Go has only one looping construct: the `for` loop. This single keyword handles all looping patterns.
+
+## The Basic `for` Loop
+
+```go
+for i := 0; i < 10; i++ {
+    fmt.Println(i)
+}
+```
+
+## The `while` Loop (Condition Only)
+
+```go
+n := 1
+for n < 100 {
+    n *= 2
+}
+```
+
+## The Infinite Loop
+
+```go
+for {
+    if done {
+        break
+    }
+}
+```
+
+## The `range` Loop
+
+### Slices and Arrays
+
+```go
+nums := []int{10, 20, 30}
+
+for i, v := range nums {
+    fmt.Printf("%d: %d\n", i, v)
+}
+
+for _, v := range nums {  // Value only
+    fmt.Println(v)
+}
+```
+
+### Maps
+
+```go
+ages := map[string]int{"Alice": 30, "Bob": 25}
+
+for key, value := range ages {
+    fmt.Printf("%s: %d\n", key, value)
+}
+```
+
+### Strings
+
+```go
+for i, r := range "Hello" {
+    fmt.Printf("%d: %c\n", i, r)
+}
+```
+
+### Channels
+
+```go
+for v := range ch {  // Exits when channel closes
+    fmt.Println(v)
+}
+```
+
+## Iterators (Go 1.23+)
+
+Go 1.23 introduced "range-over-func," allowing you to use `range` with custom iterator functions.
+
+### Sequence Iterators
+
+A sequence iterator is a function that takes a yield function:
+`func(yield func(V) bool)` (single value) or `func(yield func(K, V) bool)` (key-value).
+
+```go
+func All[T any](s []T) iter.Seq[T] {
+    return func(yield func(T) bool) {
+        for _, v := range s {
+            if !yield(v) {
+                return
+            }
+        }
+    }
+}
+
+// Usage
+for v := range All(nums) {
+    fmt.Println(v)
+}
+```
+
+### Pull Iterators
+
+For more control, you can use pull iterators:
+
+```go
+next, stop := iter.Pull(All(nums))
+defer stop()
+
+for {
+    v, ok := next()
+    if !ok {
+        break
+    }
+    fmt.Println(v)
+}
+```
+
+## Loop Control
+
+### `break` and `continue`
+
+```go
+for i := 0; i < 10; i++ {
+    if i == 5 {
+        break     // Exit loop
+    }
+    if i%2 == 0 {
+        continue  // Skip to next iteration
+    }
+    fmt.Println(i)
+}
+```
+
+### Labels for Nested Loops
+
+```go
+outer:
+for i := 0; i < 3; i++ {
+    for j := 0; j < 3; j++ {
+        if i == 1 && j == 1 {
+            break outer  // Break both loops
+        }
+    }
+}
+```
+
+## Common Patterns
+
+```go
+// Reverse iteration
+for i := len(items) - 1; i >= 0; i-- {
+    process(items[i])
+}
+
+// Step by N
+for i := 0; i < 100; i += 10 {
+    fmt.Println(i)
+}
+```
+
+## Summary
+
+| Pattern | Syntax |
+|---------|--------|
+| Classic for | `for i := 0; i < n; i++ {}` |
+| While loop | `for condition {}` |
+| Infinite loop | `for {}` |
+| Range | `for i, v := range slice {}` |
+| Iterators | `for v := range myIter() {}` |
+
+## Related Topics
+- [Arrays and Slices](15-arrays-slices.md)
+- [Maps](17-maps.md)
+
+## More examples
+
+### Example: classic for and range
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	sum := 0
+	for i := 1; i <= 4; i++ {
+		sum += i
+	}
+	fmt.Println("sum:", sum)
+
+	for i, v := range []string{"a", "b", "c"} {
+		fmt.Printf("%d:%s ", i, v)
+	}
+	fmt.Println()
+}
+```
+
+Expected:
+
+```text
+sum: 10
+0:a 1:b 2:c
+```
+
+### Example: break and continue
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	for i := 0; i < 6; i++ {
+		if i%2 == 0 {
+			continue
+		}
+		if i > 3 {
+			break
+		}
+		fmt.Println("odd:", i)
+	}
+}
+```
+
+Expected:
+
+```text
+odd: 1
+odd: 3
+```
+
+## Runnable example
+
+Save as `main.go`. From an empty directory:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	// Classic for
+	sum := 0
+	for i := 1; i <= 5; i++ {
+		sum += i
+	}
+	fmt.Println("sum 1..5:", sum)
+
+	// while-style
+	n := 1
+	for n < 100 {
+		n *= 2
+	}
+	fmt.Println("first power of two >= 100:", n)
+
+	// range over slice
+	nums := []int{10, 20, 30}
+	for i, v := range nums {
+		fmt.Printf("slice[%d]=%d\n", i, v)
+	}
+
+	// range over map (order not guaranteed)
+	ages := map[string]int{"Ada": 36, "Grace": 85}
+	for name, age := range ages {
+		fmt.Printf("%s is %d\n", name, age)
+	}
+
+	// range over string yields runes
+	for i, r := range "Go🚀" {
+		fmt.Printf("string index %d rune %c\n", i, r)
+	}
+
+	// break / continue / labeled break
+	fmt.Print("odds < 5: ")
+	for i := 0; i < 10; i++ {
+		if i >= 5 {
+			break
+		}
+		if i%2 == 0 {
+			continue
+		}
+		fmt.Print(i, " ")
+	}
+	fmt.Println()
+
+outer:
+	for i := 0; i < 3; i++ {
+		for j := 0; j < 3; j++ {
+			if i == 1 && j == 1 {
+				fmt.Printf("breaking outer at i=%d j=%d\n", i, j)
+				break outer
+			}
+		}
+	}
+
+	// reverse step
+	for i := 4; i >= 0; i -= 2 {
+		fmt.Println("reverse step:", i)
+	}
+}
+```
+
+**Expected output** (illustrative; map line order may vary):
+
+```text
+sum 1..5: 15
+first power of two >= 100: 128
+slice[0]=10
+slice[1]=20
+slice[2]=30
+Ada is 36
+Grace is 85
+string index 0 rune G
+string index 1 rune o
+string index 2 rune 🚀
+odds < 5: 1 3
+breaking outer at i=1 j=1
+reverse step: 4
+reverse step: 2
+reverse step: 0
+```
+
+**What to notice:**
+- One keyword (`for`) covers C-style, while-style, and infinite loops.
+- `range` adapts to slices, maps, and strings (byte index + rune).
+- `continue` / `break` and labels control nested loops cleanly.
+- Map iteration order is randomized—never rely on it.
+
+**Try next:** Change the string to include combining characters or emoji and print both `i` and `len("…")`.

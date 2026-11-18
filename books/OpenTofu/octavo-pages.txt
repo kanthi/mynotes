@@ -1,0 +1,25 @@
+# Every page address this book's website has had, kept by Octavo so that
+# links to moved chapters keep working. Commit this file with the book.
+# Each line: the page, a tab, then its chapter title, or "-> " and the page
+# its old address now forwards to.
+content/01-first-principles/01-the-opentofu-story.html	The OpenTofu Story: From Terraform to Open Source
+content/01-first-principles/02-architecture-and-core-concepts.html	Architecture and Core Concepts
+content/01-first-principles/03-installation-and-project-structure.html	Installation and Project Structure
+content/02-language/04-hcl-syntax.html	HCL Syntax and Language Fundamentals
+content/02-language/05-variables-locals-outputs.html	Variables, Locals, and Outputs
+content/02-language/05a-convert-and-assume-functions.html	Telling Plan What Apply Will Know: convert and the assume Functions
+content/03-providers-and-state/06-providers-resources-data-sources.html	Providers, Resources, and Data Sources in Depth
+content/03-providers-and-state/07-state-and-backends.html	State Management and Backends
+content/04-composition/08-modules.html	Modules: Building Reusable Infrastructure Components
+content/04-composition/08a-refactoring-moved-removed.html	Refactoring Without Replacement: moved, removed and Deprecations
+content/04-composition/09-workspaces-lifecycle-dependencies.html	Workspaces, Lifecycle Rules, and Dependencies
+content/04-composition/09a-provider-instances-and-enabled.html	Provider Instances with for_each and the enabled Meta-Argument
+content/04-composition/10-provisioners-and-import.html	Provisioners and Importing Existing Infrastructure
+content/05-confidence/11-testing-validation-policy.html	Testing, Validation, Formatting, and Policy Enforcement
+content/05-confidence/11b-mocks-and-overrides-in-tofu-test.html	Mocks and Overrides in tofu test
+content/05-confidence/12-security-and-secrets.html	Security Best Practices and Secrets Management
+content/05-confidence/12a-ephemeral-values-and-write-only-attributes.html	Ephemeral Values and Write-Only Attributes
+content/06-enterprise/13-cicd-gitops.html	CI/CD Integration, GitOps, and Automation Workflows
+content/06-enterprise/14-enterprise-patterns.html	Enterprise-Scale Patterns and Production Operations
+content/06-enterprise/15-conclusion.html	Conclusion: Delivering on the Infrastructure-as-Code Promise
+index.html	OpenTofu

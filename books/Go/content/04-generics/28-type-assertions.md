@@ -1,0 +1,258 @@
+---
+title: Type Assertions and Reflection Boundaries
+---
+
+# Type Assertions and Reflection Boundaries
+
+## Overview
+
+Type assertions extract concrete types from interfaces. Reflection provides runtime type inspection but should be used sparingly.
+
+## Type Assertions
+
+```go
+var i interface{} = "hello"
+
+s := i.(string)        // Panic if wrong type
+s, ok := i.(string)    // Safe: ok is false if wrong type
+
+if s, ok := i.(string); ok {
+    fmt.Println(s)
+}
+```
+
+## Type Switches
+
+```go
+func describe(i interface{}) {
+    switch v := i.(type) {
+    case int:
+        fmt.Println("int:", v*2)
+    case string:
+        fmt.Println("string:", len(v))
+    case bool:
+        fmt.Println("bool:", !v)
+    default:
+        fmt.Printf("unknown: %T\n", v)
+    }
+}
+```
+
+## The reflect Package
+
+```go
+import "reflect"
+
+v := 42
+t := reflect.TypeOf(v)   // int
+val := reflect.ValueOf(v)  // 42
+
+fmt.Println(t.Name())      // "int"
+fmt.Println(t.Kind())      // int
+fmt.Println(val.Int())     // 42
+```
+
+### Struct Reflection
+
+```go
+type User struct {
+    Name string `json:"name"`
+    Age  int    `json:"age"`
+}
+
+u := User{Name: "Alice", Age: 30}
+t := reflect.TypeOf(u)
+
+for i := 0; i < t.NumField(); i++ {
+    field := t.Field(i)
+    fmt.Printf("%s: %s\n", field.Name, field.Tag.Get("json"))
+}
+```
+
+## When to Use Reflection
+
+✅ **Good uses:**
+- Serialization (JSON, XML)
+- ORM field mapping
+- Generic testing utilities
+- Dependency injection
+
+❌ **Avoid for:**
+- Performance-critical code
+- Simple type checking
+- Normal business logic
+
+## Performance Cost
+
+```go
+// Direct access: ~1ns
+user.Name
+
+// Reflection: ~100ns+
+reflect.ValueOf(user).FieldByName("Name").String()
+```
+
+## Prefer Generics Over Reflection
+
+```go
+// Go 1.18+: Use generics instead of reflect
+func PrintSlice[T any](s []T) {
+    for _, v := range s {
+        fmt.Println(v)
+    }
+}
+```
+
+## Summary
+
+| Approach | Use Case |
+|----------|----------|
+| Type assertion | Extract known concrete type |
+| Type switch | Handle multiple types |
+| reflect | Runtime introspection (last resort) |
+| Generics | Compile-time type safety |
+
+## Related Topics
+- [Why Generics Matter](29-generics-intro.md)
+- [Encoding and Serialization](../16-web/66-encoding.md)
+
+## More examples
+
+### Example: safe comma-ok assertion
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func asInt(v any) {
+	if n, ok := v.(int); ok {
+		fmt.Println("int:", n)
+		return
+	}
+	fmt.Printf("not int: %T\n", v)
+}
+
+func main() {
+	asInt(7)
+	asInt("nope")
+}
+```
+
+Expected:
+
+```text
+int: 7
+not int: string
+```
+
+### Example: type switch
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func classify(v any) {
+	switch x := v.(type) {
+	case int:
+		fmt.Println("int", x*2)
+	case string:
+		fmt.Println("string len", len(x))
+	default:
+		fmt.Printf("other %T\n", x)
+	}
+}
+
+func main() {
+	classify(3)
+	classify("go")
+	classify(true)
+}
+```
+
+Expected:
+
+```text
+int 6
+string len 2
+other bool
+```
+
+## Runnable example
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"reflect"
+)
+
+func describe(i any) {
+	switch v := i.(type) {
+	case int:
+		fmt.Println("int:", v*2)
+	case string:
+		fmt.Println("string len:", len(v))
+	case bool:
+		fmt.Println("bool not:", !v)
+	default:
+		fmt.Printf("unknown: %T\n", v)
+	}
+}
+
+type User struct {
+	Name string `json:"name"`
+	Age  int    `json:"age"`
+}
+
+func main() {
+	var i any = "hello"
+	s, ok := i.(string)
+	fmt.Println("assert string:", s, ok)
+	n, ok := i.(int)
+	fmt.Println("assert int:", n, ok)
+
+	describe(21)
+	describe("go")
+	describe(true)
+	describe(3.14)
+
+	// Reflection: useful for tags/serialization; prefer assertions/generics elsewhere.
+	u := User{Name: "Ada", Age: 36}
+	t := reflect.TypeOf(u)
+	for j := 0; j < t.NumField(); j++ {
+		f := t.Field(j)
+		fmt.Printf("field %s json=%q\n", f.Name, f.Tag.Get("json"))
+	}
+}
+```
+
+**Expected output:**
+
+```text
+assert string: hello true
+assert int: 0 false
+int: 42
+string len: 2
+bool not: false
+unknown: float64
+field Name json="name"
+field Age json="age"
+```
+
+**What to notice:** The comma-ok form never panics; a type switch is clearer than a chain of assertions. Reflection can read struct tags but costs more and loses static checking.
+
+**Try next:** Replace the default branch with a generic `PrintSlice[T any]` for slice values, or make a failing assertion `i.(int)` without `ok` and observe the panic.

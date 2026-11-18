@@ -1,0 +1,183 @@
+book:
+  title: Python
+  author: K19G
+  date: '2026-11-17'
+  description: Python, from the language to real projects
+  chapters:
+  - index.md
+  - part: Python Foundations
+    contents:
+    - part: Intro
+      contents:
+      - content/01-python-foundations/01-intro/01-what-is-python.md
+      - content/01-python-foundations/01-intro/02-modern-toolchain-uv.md
+      - content/01-python-foundations/01-intro/03-developer-environment-and-ruff.md
+      - content/01-python-foundations/01-intro/04-editor-setup-vscode.md
+    - part: Variables
+      contents:
+      - content/01-python-foundations/02-variables/01-names-and-binding.md
+      - content/01-python-foundations/02-variables/02-memory-model-and-identity.md
+      - content/01-python-foundations/02-variables/03-naming-conventions-and-unpacking.md
+      - content/01-python-foundations/02-variables/04-scopes-and-lifetimes.md
+    - part: Data Types
+      contents:
+      - content/01-python-foundations/03-data-types/01-integers-and-arbitrary-precision.md
+      - content/01-python-foundations/03-data-types/02-floating-point-numbers.md
+      - content/01-python-foundations/03-data-types/03-booleans-and-truthiness.md
+      - content/01-python-foundations/03-data-types/04-strings-and-text-representation.md
+      - content/01-python-foundations/03-data-types/04b-utf-8-default-encoding.md
+      - content/01-python-foundations/03-data-types/05-type-conversions-and-inspection.md
+      - content/01-python-foundations/03-data-types/06-template-strings.md
+      - content/01-python-foundations/03-data-types/07-none-aware-operators-pep823.md
+    - part: Functions
+      contents:
+      - content/01-python-foundations/04-functions/01-defining-functions-and-returns.md
+      - content/01-python-foundations/04-functions/02-positional-keyword-and-defaults.md
+      - content/01-python-foundations/04-functions/02b-sentinel-values.md
+      - content/01-python-foundations/04-functions/03-variadic-args-and-kwargs.md
+      - content/01-python-foundations/04-functions/04-first-class-functions-and-lambdas.md
+      - content/01-python-foundations/04-functions/05-closures-and-lexical-scoping.md
+      - content/01-python-foundations/04-functions/06-generator-functions-and-yield-from.md
+    - part: Control Flow
+      contents:
+      - content/01-python-foundations/05-control-flow/01-if-elif-else.md
+      - content/01-python-foundations/05-control-flow/02-conditional-expressions.md
+      - content/01-python-foundations/05-control-flow/03-while-loops.md
+      - content/01-python-foundations/05-control-flow/04-for-loops.md
+      - content/01-python-foundations/05-control-flow/05-loop-controls-break-continue.md
+      - content/01-python-foundations/05-control-flow/06-iteration-utilities.md
+      - content/01-python-foundations/05-control-flow/07-pattern-matching.md
+      - content/01-python-foundations/05-control-flow/08-comprehensions.md
+      - content/01-python-foundations/05-control-flow/09-generator-expressions.md
+    - part: Data Structures
+      contents:
+      - content/01-python-foundations/06-data-structures/01-lists.md
+      - content/01-python-foundations/06-data-structures/02-tuples.md
+      - content/01-python-foundations/06-data-structures/03-dictionaries.md
+      - content/01-python-foundations/06-data-structures/03b-frozendict.md
+      - content/01-python-foundations/06-data-structures/04-sets.md
+      - content/01-python-foundations/06-data-structures/05-advanced-slicing-and-unpacking.md
+      - content/01-python-foundations/06-data-structures/05b-pep798-unpacking-in-comprehensions.md
+      - content/01-python-foundations/06-data-structures/06-bisect-and-heapq-algorithms.md
+      - content/01-python-foundations/06-data-structures/07-memory-views-and-bytearrays.md
+    - part: Error Handling
+      contents:
+      - content/01-python-foundations/07-error-handling/01-exceptions-and-call-stack.md
+      - content/01-python-foundations/07-error-handling/02-custom-exceptions.md
+      - content/01-python-foundations/07-error-handling/03-context-managers-and-raii.md
+      - content/01-python-foundations/07-error-handling/04-exception-groups-and-except-star.md
+    - part: Objects and Classes
+      contents:
+      - content/01-python-foundations/08-objects-and-classes/01-classes-and-attributes.md
+      - content/01-python-foundations/08-objects-and-classes/02-the-python-data-model.md
+      - content/01-python-foundations/08-objects-and-classes/03-inheritance-and-composition.md
+      - content/01-python-foundations/08-objects-and-classes/04-dataclasses-and-declarative-models.md
+      - content/01-python-foundations/08-objects-and-classes/04b-dataclass-slots.md
+      - content/01-python-foundations/08-objects-and-classes/05-decorators-and-metaprogramming.md
+      - content/01-python-foundations/08-objects-and-classes/06-descriptors-and-property-protocol.md
+      - content/01-python-foundations/08-objects-and-classes/07-metaclasses-and-class-creation.md
+      - content/01-python-foundations/08-objects-and-classes/08-abstract-base-classes-and-protocols.md
+    - part: Modules and Packages
+      contents:
+      - content/01-python-foundations/09-modules-and-packages/01-modules-and-import-system.md
+      - content/01-python-foundations/09-modules-and-packages/02-packages-and-namespaces.md
+      - content/01-python-foundations/09-modules-and-packages/03-workspaces-and-dependencies.md
+      - content/01-python-foundations/09-modules-and-packages/04-import-hooks-and-sys-meta-path.md
+      - content/01-python-foundations/09-modules-and-packages/05-lazy-imports.md
+    - part: Standard Library
+      contents:
+      - content/01-python-foundations/10-standard-library/01-specialized-collections.md
+      - content/01-python-foundations/10-standard-library/02-itertools-and-functools.md
+      - content/01-python-foundations/10-standard-library/03-text-processing-and-regex.md
+      - content/01-python-foundations/10-standard-library/04-filesystem-and-pathlib.md
+      - content/01-python-foundations/10-standard-library/04b-pathlib-path-walk.md
+      - content/01-python-foundations/10-standard-library/05-data-serialization-json-csv-toml.md
+      - content/01-python-foundations/10-standard-library/06-embedded-storage-sqlite3.md
+      - content/01-python-foundations/10-standard-library/07-dates-times-and-zoneinfo.md
+      - content/01-python-foundations/10-standard-library/08-math-random-and-cryptography.md
+      - content/01-python-foundations/10-standard-library/08b-math-integer.md
+      - content/01-python-foundations/10-standard-library/09-os-sys-and-subprocess.md
+      - content/01-python-foundations/10-standard-library/10-cli-parsing-and-logging.md
+      - content/01-python-foundations/10-standard-library/11-compression-and-archives.md
+      - content/01-python-foundations/10-standard-library/12-networking-sockets-and-ipaddress.md
+      - content/01-python-foundations/10-standard-library/13-signal-and-process-lifecycle.md
+      - content/01-python-foundations/10-standard-library/14-http-servers-and-clients.md
+      - content/01-python-foundations/10-standard-library/15-memory-mapped-files-mmap.md
+      - content/01-python-foundations/10-standard-library/16-inspect-and-runtime-introspection.md
+      - content/01-python-foundations/10-standard-library/17-weak-references-and-garbage-collection.md
+      - content/01-python-foundations/10-standard-library/18-mocking-and-test-doubles.md
+      - content/01-python-foundations/10-standard-library/19-binary-data-and-network-protocols-struct.md
+      - content/01-python-foundations/10-standard-library/20-object-serialization-and-caching-pickle.md
+      - content/01-python-foundations/10-standard-library/21-functools-cache-vs-lru-cache.md
+      - content/01-python-foundations/10-standard-library/22-base64-throughput-on-3-15.md
+      - content/01-python-foundations/10-standard-library/23-tomllib-read-only-toml.md
+      - content/01-python-foundations/10-standard-library/23b-ssl-trust-stores-certifi-and-ca-distrust.md
+    - part: Typing and Testing
+      contents:
+      - content/01-python-foundations/11-typing-and-testing/01-modern-typing-and-static-analysis.md
+      - content/01-python-foundations/11-typing-and-testing/02-unit-and-integration-testing-pytest.md
+      - content/01-python-foundations/11-typing-and-testing/03-packaging-wheels-and-publishing.md
+      - content/01-python-foundations/11-typing-and-testing/03b-wheel-variants.md
+      - content/01-python-foundations/11-typing-and-testing/04-advanced-type-system-pep695-and-narrowing.md
+      - content/01-python-foundations/11-typing-and-testing/05-deferred-annotations.md
+      - content/01-python-foundations/11-typing-and-testing/05b-typeddict-closed-and-extra-items.md
+      - content/01-python-foundations/11-typing-and-testing/05c-disjoint-bases-pep800.md
+      - content/01-python-foundations/11-typing-and-testing/05d-typeform-pep747.md
+      - content/01-python-foundations/11-typing-and-testing/06-typevartuple-array-shapes.md
+      - content/01-python-foundations/11-typing-and-testing/07-choosing-a-type-checker.md
+    - part: Concurrency and Internals
+      contents:
+      - content/01-python-foundations/12-concurrency-and-internals/01-cpython-vm-and-bytecode.md
+      - content/01-python-foundations/12-concurrency-and-internals/02-memory-allocator-and-gc.md
+      - content/01-python-foundations/12-concurrency-and-internals/03-gil-and-free-threading.md
+      - content/01-python-foundations/12-concurrency-and-internals/03b-stable-abi-free-threaded.md
+      - content/01-python-foundations/12-concurrency-and-internals/04-multithreading-and-multiprocessing.md
+      - content/01-python-foundations/12-concurrency-and-internals/04b-subinterpreters.md
+      - content/01-python-foundations/12-concurrency-and-internals/04c-interpreter-pool-executor.md
+      - content/01-python-foundations/12-concurrency-and-internals/04d-numpy-limited-api-heap-types.md
+      - content/01-python-foundations/12-concurrency-and-internals/04e-thread-safe-iterators.md
+      - content/01-python-foundations/12-concurrency-and-internals/05-asyncio-and-taskgroups.md
+      - content/01-python-foundations/12-concurrency-and-internals/05b-asyncio-task-start-semantics.md
+      - content/01-python-foundations/12-concurrency-and-internals/05c-blocking-the-event-loop.md
+      - content/01-python-foundations/12-concurrency-and-internals/05d-contextvars-request-scoped-state.md
+      - content/01-python-foundations/12-concurrency-and-internals/05e-asyncio-taskgroup.md
+      - content/01-python-foundations/12-concurrency-and-internals/05f-asyncio-call-graph-introspection.md
+      - content/01-python-foundations/12-concurrency-and-internals/06-profiling-and-native-interop.md
+      - content/01-python-foundations/12-concurrency-and-internals/06b-attach-to-a-live-process.md
+      - content/01-python-foundations/12-concurrency-and-internals/06c-sampling-profiler-tachyon.md
+      - content/01-python-foundations/12-concurrency-and-internals/06d-frame-pointers-by-default.md
+      - content/01-python-foundations/12-concurrency-and-internals/06e-sys-monitoring.md
+      - content/01-python-foundations/12-concurrency-and-internals/06f-experimental-jit-measure.md
+      - content/01-python-foundations/12-concurrency-and-internals/07-capstone-foundations-engine.md
+      - content/01-python-foundations/12-concurrency-and-internals/08-tracing-numpy-add-dispatch.md
+  - part: Data Structures and Algorithms
+    contents:
+    - content/02-data-structures-and-algorithms/01-algorithmic-complexity.md
+    - content/02-data-structures-and-algorithms/02-stacks-queues-and-deques.md
+    - content/02-data-structures-and-algorithms/03-linked-lists.md
+    - content/02-data-structures-and-algorithms/04-binary-search-trees.md
+    - content/02-data-structures-and-algorithms/05-heaps-and-priority-queues.md
+    - content/02-data-structures-and-algorithms/06-tries-and-prefix-trees.md
+    - content/02-data-structures-and-algorithms/07-sorting-algorithms.md
+    - content/02-data-structures-and-algorithms/08-binary-search-and-bisect.md
+    - content/02-data-structures-and-algorithms/09-graphs-and-traversals.md
+    - content/02-data-structures-and-algorithms/09b-topological-sort.md
+    - content/02-data-structures-and-algorithms/10-shortest-paths-dijkstra.md
+    - content/02-data-structures-and-algorithms/11-string-search-and-bloom-filters.md
+    - content/02-data-structures-and-algorithms/12-union-find-disjoint-set.md
+  - part: Long Term Engineering
+    contents:
+    - content/03-long-term-engineering/01-inspect-and-reflection.md
+    - content/03-long-term-engineering/02-ctypes-and-ffi.md
+    - content/03-long-term-engineering/03-performance-tuning.md
+    - content/03-long-term-engineering/04-designing-for-the-long-term.md
+  - part: Appendices
+    contents:
+    - content/99-appendices/01-glossary.md
+    - content/99-appendices/02-command-cheat-sheet.md
+format:
+  html:
+    theme: auto
+  epub: {}
+  pdf:
+    paper: A4

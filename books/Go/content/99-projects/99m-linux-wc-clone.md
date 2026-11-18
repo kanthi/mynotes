@@ -1,0 +1,204 @@
+---
+title: '013 Project 13: Build a wc Clone'
+---
+
+# 013 Build a `wc` Clone
+
+Count lines, words, and bytes across files—streaming with `bufio.Scanner` and Unicode-aware word boundaries via `unicode.IsSpace`.
+
+```text
+file -> scanner/read -> count L/W/B -> per file + total
+```
+
+## Problem statement
+
+```text
+gwc [file...]
+```
+
+- No files → read stdin
+- Print `lines words bytes [filename]`
+- Multiple files → final `total` row
+- Words: maximal non-space sequences (Unicode spaces)
+
+## Acceptance criteria
+
+- [ ] Correct counts on simple fixtures
+- [ ] Stdin mode works
+- [ ] Multi-file total row
+- [ ] Missing file: stderr + continue
+- [ ] Stdlib only
+
+## Setup
+
+```bash
+mkdir gwc && cd gwc
+go mod init example.com/gwc
+# go 1.27
+```
+
+## Full `main.go`
+
+```go
+package main
+
+import (
+	"bufio"
+	"flag"
+	"fmt"
+	"io"
+	"os"
+	"unicode"
+)
+
+type counts struct {
+	lines int
+	words int
+	bytes int
+}
+
+func countReader(r io.Reader) (counts, error) {
+	var c counts
+	s := bufio.NewScanner(r)
+	// Note: Scanner strips newlines; we approximate bytes as len(line)+1 per line.
+	// For exact byte counts matching GNU wc, use raw Read and dual-pass logic (stretch).
+	buf := make([]byte, 0, 64*1024)
+	s.Buffer(buf, 1024*1024)
+	for s.Scan() {
+		line := s.Text()
+		c.lines++
+		c.bytes += len(line) + 1 // +1 for '\n' (last line without newline is imperfect)
+		inWord := false
+		for _, ch := range line {
+			if unicode.IsSpace(ch) {
+				inWord = false
+				continue
+			}
+			if !inWord {
+				c.words++
+				inWord = true
+			}
+		}
+	}
+	return c, s.Err()
+}
+
+func printCounts(c counts, name string) {
+	if name == "" {
+		fmt.Printf("%8d %8d %8d\n", c.lines, c.words, c.bytes)
+		return
+	}
+	fmt.Printf("%8d %8d %8d %s\n", c.lines, c.words, c.bytes, name)
+}
+
+func main() {
+	flag.Parse()
+	if flag.NArg() == 0 {
+		c, err := countReader(os.Stdin)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		printCounts(c, "")
+		return
+	}
+
+	var total counts
+	var hadErr bool
+	for _, path := range flag.Args() {
+		f, err := os.Open(path)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s: %v\n", path, err)
+			hadErr = true
+			continue
+		}
+		c, err := countReader(f)
+		_ = f.Close()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s: %v\n", path, err)
+			hadErr = true
+			continue
+		}
+		total.lines += c.lines
+		total.words += c.words
+		total.bytes += c.bytes
+		printCounts(c, path)
+	}
+	if flag.NArg() > 1 {
+		printCounts(total, "total")
+	}
+	if hadErr {
+		os.Exit(1)
+	}
+}
+```
+
+## Step-by-step build path
+
+1. `countReader(io.Reader)` returns struct.
+2. Word state machine with `unicode.IsSpace`.
+3. Stdin vs files branching.
+4. Aggregate totals.
+5. Document newline/byte caveats vs GNU wc.
+
+## Run and verification
+
+```bash
+printf 'hello world\n\nfoo\n' > t.txt
+go run . t.txt
+echo 'a b c' | go run .
+go run . t.txt t.txt
+```
+
+## Tests
+
+```go
+package main
+
+import (
+	"strings"
+	"testing"
+)
+
+func TestCountReader(t *testing.T) {
+	c, err := countReader(strings.NewReader("hi there\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c.lines != 1 || c.words != 2 {
+		t.Fatalf("%+v", c)
+	}
+}
+
+func TestEmpty(t *testing.T) {
+	c, err := countReader(strings.NewReader(""))
+	if err != nil || c.lines != 0 || c.words != 0 {
+		t.Fatalf("%+v %v", c, err)
+	}
+}
+```
+
+```bash
+go test ./...
+```
+
+## Stretch goals
+
+1. Exact byte count with `io.Copy` to `byteCounter` writer.
+2. Flags `-l`, `-w`, `-c` to select columns.
+3. Read from multiple compressed files.
+4. Match GNU wc on files without trailing newline.
+
+## Pitfalls
+
+| Pitfall | Fix |
+|---------|-----|
+| Byte count vs scanner | document or dual-count |
+| ASCII-only words | use unicode |
+| Huge lines | Scanner.Buffer |
+
+## Learning goals
+
+- Streaming text metrics
+- Unicode word splitting
+- Multi-file CLI totals

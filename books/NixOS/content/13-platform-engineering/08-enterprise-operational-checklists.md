@@ -1,0 +1,152 @@
+---
+title: Enterprise Operational Checklists
+---
+
+# Enterprise Operational Checklists
+
+A wiki of “remember to” is how generations rot. The boring default is: **scripts in the repo that run `flake check`, `restic`, and `colmena apply --dry-run` — not a PDF**.
+
+## Mental model
+
+If it is not a command, it will not happen on Friday. Map each ritual to something you already have: GC, restic, sops rekey, Colmena, the 26.05 lock.
+
+Commit `scripts/desk-daily.sh` and a systemd timer on `ops-01` if humans forget. The timer is a NixOS module, not a crontab someone added by hand.
+
+```
+ops-01 timer  →  scripts/desk-daily.sh
+weekly timer  →  GC + restic snapshots
+human         →  dry-run + canary before fleet
+```
+
+## Worked examples
+
+### Case 1: Daily
+
+Save as `scripts/desk-daily.sh`:
+
+```bash
+# scripts/desk-daily.sh
+#!/usr/bin/env bash
+set -euo pipefail
+nix flake check -L
+systemctl --failed --no-pager
+df -h /nix /boot /persist
+```
+
+```bash
+chmod +x scripts/desk-daily.sh
+./scripts/desk-daily.sh
+```
+
+Non-zero `flake check` means do not deploy. Wire the same script as a CI job so ops and GitHub disagree less.
+
+Save as `modules/desk-daily.nix` on `ops-01`:
+
+```nix
+# modules/desk-daily.nix
+{
+  systemd.services.desk-daily = {
+    serviceConfig.Type = "oneshot";
+    serviceConfig.ExecStart = "/persist/desk/scripts/desk-daily.sh";
+  };
+  systemd.timers.desk-daily = {
+    wantedBy = [ "timers.target" ];
+    timerConfig.OnCalendar = "09:00";
+  };
+}
+```
+
+### Case 2: Weekly disk
+
+Save as `scripts/desk-weekly.sh`:
+
+```bash
+# scripts/desk-weekly.sh
+#!/usr/bin/env bash
+set -euo pipefail
+sudo nix-collect-garbage --delete-older-than 14d
+sudo nix-store --optimise
+systemctl status restic-backups-desk --no-pager || true
+sudo restic snapshots | tail
+```
+
+Save as `modules/boot-limit.nix`:
+
+```nix
+# modules/boot-limit.nix
+{
+  boot.loader.systemd-boot.configurationLimit = 8;
+  nix.gc.automatic = true;
+  nix.gc.dates = "weekly";
+  nix.gc.options = "--delete-older-than 14d";
+}
+```
+
+Fourteen days of generations is enough to roll back a bad Friday. The ESP fills if you skip `configurationLimit`. The weekly script must `git -C /persist/desk pull --ff-only` or it checks last month’s flake.
+
+### Case 3: Before fleet apply
+
+```bash
+git log -1 --oneline
+nix flake metadata
+nix flake check -L
+colmena apply --dry-run --on app-01
+colmena apply --on app-01
+# watch journalctl -u desk-api on app-01
+colmena apply --on @app
+```
+
+Never `@all` for a kernel bump. `db-01` is serial, after a restic snapshot.
+
+### Case 4: Advisory day
+
+```bash
+nix flake update nixpkgs
+nix flake check -L
+sudo nixos-rebuild dry-activate --flake .#desk-lab
+# lab switch, then Case 3
+```
+
+Do not wait for the quarterly bump if nixpkgs already has the fix. Do not `nix flake update` with no arguments (that bumps every input). Changelog the rev.
+
+### Case 5: New host (checklist that is also git)
+
+Save as `docs/new-host.md` in the same repo:
+
+```markdown
+# docs/new-host.md
+- Disko by-id + LUKS + @persist
+- sops recipient + rekey
+- stateVersion = "26.05"  (new metal only)
+- WireGuard IP in the mesh module
+- restic paths
+- nixos-anywhere once
+- Colmena targetHost + tag
+```
+
+Tick by merging a PR that adds the host — not by editing a spreadsheet. The PR is the checklist completing.
+
+```bash
+git grep -n 'stateVersion' -- '*.nix'
+```
+
+Every **new** host in that PR must be `"26.05"`. Old hosts keep their birth value. The checklist is wrong if the PR “tidies” `stateVersion` to match the channel.
+
+## The trap
+
+The trap is **a 90-line Confluence page** and no `scripts/`. Five commands in git beat a beautiful table nobody runs. The other trap is a timer that runs `flake check` against a dirty `/persist` checkout nobody pulls.
+
+## The boring rule
+
+- Commands in git. 26.05. sops. restic. Colmena.
+- Dry-run, canary, then fleet. Never `@all` for kernels.
+- 14-day GC. ESP `configurationLimit`.
+- New hosts born on `"26.05"`.
+- Advisories: lock bump the same day, changelog the rev.
+
+## Try this
+
+1. Add Case 1; run it in CI as well as on ops.
+2. Time `nix flake check`; if >10 minutes, split `checks`.
+3. `restic snapshots` — newest < 48h.
+4. Walk Case 5 on a throwaway VM and file the PR that adds it.

@@ -1,0 +1,151 @@
+---
+title: Build Optimization and Performance Tuning
+---
+
+# Build Optimization and Performance Tuning
+
+Waiting on eval is not a personality trait. The boring default is: **substituters first, `auto-optimise-store`, filtered `src`, honest `max-jobs`, and a profiler only when `nix develop` takes minutes to *start***.
+
+## Mental model
+
+| Slow | Fix |
+|---|---|
+| Download | Team cache, `builders-use-substitutes` |
+| Compile | Remote builder; do not rebuild gcc locally |
+| Eval | No IFD; `fileset`; one nixpkgs |
+| Disk | GC window + `--optimise` |
+
+Laptops: default `max-jobs` is fine. An 8-core CI runner should say `max-jobs = 8`. A 64G builder with `max-jobs = 1` is a mis-copied gist.
+
+`cores = 0` lets each job use all CPUs and oversubscribe. Prefer a number on a shared builder. Cache hits make `cores` irrelevant — check substituters before you tune jobs.
+
+## Worked examples
+
+### Case 1: NixOS 26.05 knobs
+
+Save as `nix-build.nix`:
+
+```nix
+# nix-build.nix
+{
+  nix.settings = {
+    max-jobs = 8;
+    cores = 4;
+    substituters = [
+      "https://cache.nixos.org"
+      "https://desk-cache.cachix.org"
+    ];
+    trusted-public-keys = [
+      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+      "desk-cache.cachix.org-1:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+    ];
+    auto-optimise-store = true;
+    builders-use-substitutes = true;
+  };
+}
+```
+
+```bash
+nix show-config | grep -E 'max-jobs|cores|substituters|auto-optimise'
+```
+
+You should see the team cache, not only `cache.nixos.org`. Missing `trusted-public-keys` is why substitutes are silently ignored.
+
+### Case 2: No IFD on the hot path
+
+**Bad** — eval must **build** before it can parse:
+
+```nix
+# do not
+{
+  deskLib = import "${pkgs.fetchFromGitHub {
+    owner = "desk";
+    repo = "lib";
+    rev = "abc123";
+    hash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+  }}/default.nix";
+}
+```
+
+**Fix** — flake input or a vendored file:
+
+```nix
+# flake.nix
+{
+  inputs.desk-lib.url = "github:desk/lib/abc123";
+  outputs = { self, nixpkgs, desk-lib }: {
+    # import desk-lib as an input, not a fetch inside eval
+  };
+}
+```
+
+IFD is serial and hostile to flakes. `callPackage ./vendored.nix` is also fine.
+
+Confirm you are not IFDing by accident:
+
+```bash
+nix flake show 2>&1 | grep -i 'building.*fetch' || echo 'no fetch during eval (good)'
+```
+
+A `building '/nix/store/…-source.drv'` line during `flake show` is IFD. Move that fetch to a flake input.
+
+### Case 3: Measure eval
+
+```bash
+time nix flake show
+time nix eval .#packages.x86_64-linux.desk-api --raw
+```
+
+If `flake show` is minutes, you import too much at the top. Split packages; avoid reading the whole monorepo in `outputs`. Filter `src` with `lib.fileset` so a README does not re-eval Go.
+
+### Case 4: `--dry-run` after a docs edit
+
+```bash
+nix build .#desk-api --dry-run
+echo x >> README.md
+nix build .#desk-api --dry-run
+```
+
+Second list must not include gcc. If it does, `src` is unfiltered (`src = ./.;` at repo root).
+
+### Case 5: Heavy compiles belong on the builder
+
+Chromium, Firefox, LLVM: `nix.buildMachines` + cache. Confirm with:
+
+```bash
+nix build nixpkgs#hello --max-jobs 0 --dry-run
+```
+
+`--max-jobs 0` means “do not build locally.” If hello is not substituted, the cache is wrong — fix that before tuning `cores`. A laptop compiling LLVM is a missing substituter, not a missing `-j`.
+
+```bash
+nix build nixpkgs#hello --print-build-logs 2>&1 | grep -E 'copying path|building' | head
+```
+
+`copying path` from `cache.nixos.org` (or the team cache) is the win. `building` hello on a workstation means substituters are empty or unsigned.
+
+```bash
+free -h
+nproc
+```
+
+Set `max-jobs` from RAM and cores you actually have during a **real** build, not from a blog.
+
+## The trap
+
+The trap is **turning `max-jobs` down to 1 on a big box** because a blog mentioned RAM. Watch `free -h` during a real build; then set jobs. The other trap is eval-profiler cargo-cult without reading `--dry-run`. Filter `src` first.
+
+## The boring rule
+
+- Cache, then jobs, then eval hygiene.
+- No IFD on the hot path.
+- `--dry-run` after trivia. Filtered `src`.
+- Heavy derivations on the builder. `--max-jobs 0` on the laptop.
+- `auto-optimise-store` on 26.05.
+
+## Try this
+
+1. `nix show-config | grep max-jobs` and the substituter list.
+2. Case 4 on a filtered package.
+3. `time nix flake show` vs `time nix build nixpkgs#hello` when hello is cached.
+4. Enable `auto-optimise-store`; `systemctl status nix-optimise.timer` if you also set the timer.

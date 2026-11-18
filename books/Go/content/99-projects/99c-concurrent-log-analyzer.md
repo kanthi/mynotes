@@ -1,0 +1,208 @@
+---
+title: '003 Project 3: Concurrent Log Analyzer'
+---
+
+# 003 Build a Concurrent Log Analyzer
+
+Read a log file and count log levels using a **worker pool**. Practice fan-out (lines to workers), local aggregation, and fan-in merge without shared mutable maps.
+
+```text
+file -> producer -> jobs channel -> N workers -> partial counts -> merge -> report
+```
+
+## Problem statement
+
+```text
+log-analyzer [-w N] <file>
+```
+
+- Stream lines from a file
+- Workers count INFO/WARN/ERROR/DEBUG substrings (case-sensitive tokens)
+- Merge partial maps in main
+- Print a summary table
+
+## Acceptance criteria
+
+- [ ] Worker count configurable (`-w`, default `NumCPU`)
+- [ ] No shared map writes from workers (each has a local map)
+- [ ] Correct totals on a fixture file
+- [ ] Terminates cleanly (channels closed, WaitGroup)
+- [ ] `go run -race` clean
+
+## Setup
+
+```bash
+mkdir logan && cd logan
+go mod init example.com/logan
+# go 1.27
+```
+
+## Full `main.go`
+
+```go
+package main
+
+import (
+	"bufio"
+	"flag"
+	"fmt"
+	"os"
+	"runtime"
+	"strings"
+	"sync"
+)
+
+var levels = []string{"INFO", "WARN", "ERROR", "DEBUG"}
+
+func worker(lines <-chan string, out chan<- map[string]int) {
+	local := map[string]int{}
+	for _, lvl := range levels {
+		local[lvl] = 0
+	}
+	for line := range lines {
+		for _, level := range levels {
+			if strings.Contains(line, level) {
+				local[level]++
+			}
+		}
+	}
+	out <- local
+}
+
+func analyze(path string, workers int) (map[string]int, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	if workers < 1 {
+		workers = 1
+	}
+
+	jobs := make(chan string, 1024)
+	partials := make(chan map[string]int, workers)
+	var wg sync.WaitGroup
+
+	for i := 0; i < workers; i++ {
+		wg.Go(func() {
+			worker(jobs, partials)
+		})
+	}
+
+	go func() {
+		scanner := bufio.NewScanner(f)
+		buf := make([]byte, 0, 64*1024)
+		scanner.Buffer(buf, 1024*1024)
+		for scanner.Scan() {
+			jobs <- scanner.Text()
+		}
+		close(jobs)
+		wg.Wait()
+		close(partials)
+		// surface scan error via second channel in production; simplified here
+		_ = scanner.Err()
+	}()
+
+	total := map[string]int{}
+	for _, lvl := range levels {
+		total[lvl] = 0
+	}
+	for p := range partials {
+		for k, v := range p {
+			total[k] += v
+		}
+	}
+	return total, nil
+}
+
+func main() {
+	workers := flag.Int("w", runtime.NumCPU(), "worker count")
+	flag.Parse()
+	if flag.NArg() != 1 {
+		fmt.Fprintln(os.Stderr, "usage: log-analyzer [-w N] <file>")
+		os.Exit(2)
+	}
+
+	total, err := analyze(flag.Arg(0), *workers)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "open failed: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Println("Log Summary")
+	for _, lvl := range levels {
+		fmt.Printf("%-6s %d\n", lvl+":", total[lvl])
+	}
+}
+```
+
+## Step-by-step build path
+
+1. Sequential single-goroutine counter first (correctness baseline).
+2. Introduce jobs channel + N workers with **local** maps.
+3. Merge partials in one owner goroutine/main.
+4. Add `-race` and large fixture stress.
+5. Extend matchers (regex, JSON field).
+
+## Run and verification
+
+```bash
+printf 'INFO start\nERROR boom\nWARN x\nINFO ok\nDEBUG d\nERROR e2\n' > app.log
+go run . -w 4 app.log
+go run -race . -w 8 app.log
+```
+
+## Tests
+
+```go
+package main
+
+import (
+	"os"
+	"path/filepath"
+	"testing"
+)
+
+func TestAnalyze(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "a.log")
+	content := "INFO a\nINFO b\nERROR x\n"
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	total, err := analyze(path, 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if total["INFO"] != 2 || total["ERROR"] != 1 {
+		t.Fatalf("%v", total)
+	}
+}
+```
+
+```bash
+go test -race ./...
+```
+
+## Stretch goals
+
+1. JSON output (`-json`).
+2. Per-service breakdown if lines contain `service=`.
+3. Top-N error messages (heap).
+4. Multi-file args.
+
+## Pitfalls
+
+| Pitfall | Fix |
+|---------|-----|
+| Shared map++ from workers | local maps + merge |
+| Forgetting close(partials) | close after Wait |
+| Scanner default 64K | Buffer increase |
+| Substring false positives | word boundaries / regex |
+
+## Learning goals
+
+- Leak-free worker pools
+- Fan-out / fan-in architecture
+- Race-free aggregation patterns

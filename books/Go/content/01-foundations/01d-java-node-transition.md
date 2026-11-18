@@ -1,0 +1,241 @@
+---
+title: Transitioning to Go
+---
+
+# Transitioning to Go: For Java and Node.js Developers
+
+If you are coming from an Object-Oriented (Java/C#) or Event-Driven (Node.js/JS) background, Go will feel familiar yet frustratingly different. This chapter maps your existing mental models to Go's reality.
+
+## For the Java Developer
+
+| Java Concept | Go Equivalent | The Shift in Thinking |
+| :--- | :--- | :--- |
+| **Class** | **Struct** | Data and behavior are separate. Classes bundles them; Go defines a `type` (data) and `func (t MyType)` (behavior). |
+| **Interface** | **Interface** | **Implicit.** You don't `implement` interfaces. If you have the methods, you satisfy the interface. This decouples packages. |
+| **Exception** | **Error** | Errors are **values**, not control flow events. You check them (`if err != nil`), you don't catch them. |
+| **ThreadPool** | **Goroutines** | Threads are expensive (MBs); Goroutines are cheap (KBs). You can spawn 100k goroutines without blinking. |
+| **Annotation** | **Struct Tag** | Used strictly for metadata (JSON, DB), not for behavior injection (like Spring Magic). |
+| **Maven/Gradle** | **Go Modules** | Simplistic dependency graph. No `mvn install`. Just `go mod tidy`. |
+
+### The "Spring" Trap
+Don't try to build "Spring in Go". Dependency Injection containers are largely unnecessary in Go. Pass dependencies explicitly in constructors (struct factories).
+```go
+// Java: @Autowired Service service;
+// Go:
+func NewServer(db *sql.DB, logger *Logger) *Server {
+    return &Server{db: db, logger: logger}
+}
+```
+
+---
+
+## For the Node.js Developer
+
+| Node.js Concept | Go Equivalent | The Shift in Thinking |
+| :--- | :--- | :--- |
+| **Promise / Async Await** | **Blocking Code** | Go code *looks* synchronous but runs concurrently. The runtime handles the I/O scheduling. No "Callback Hell" or unwieldy `await` chains. |
+| **npm** | **Go Modules** | No `node_modules` black hole. Dependencies are compiled into a single binary. |
+| **Event Loop** | **Go Scheduler** | Node has one thread; block it and you die. Go has M:N scheduling; if one goroutine blocks, others keep running on other OS threads. |
+| **Dynamic Types** | **Static Types** | You catch typos at compile time, not runtime. `interface{}` (or `any`) exists but use it sparingly. |
+| **Express/NestJS** | **net/http** | The stdlib is production-ready. You often don't need a framework. `Chi` or `Echo` are light routers, not heavy frameworks. |
+
+### The "Concurrency" Trap
+In Node, you rely on `Promise.all` for concurrency. In Go, you use **Channels** and **WaitGroups**.
+```javascript
+// Node
+await Promise.all([task1(), task2()]);
+```
+```go
+// Go
+var wg sync.WaitGroup
+wg.Add(2)
+go func() { defer wg.Done(); task1() }()
+go func() { defer wg.Done(); task2() }()
+wg.Wait()
+```
+
+## Universal Truths in Go
+
+1.  **Composition over Inheritance:** You don't extend classes. You embed structs.
+2.  **Explicit is better than Implicit:** No magic checking. No global state if avoidable.
+3.  **Values matter:** Learn distinction between passing a copy (`T`) vs passing a pointer (`*T`). In JS/Java, object references are implicit; in Go, pointers are explicit.
+
+## Summary
+
+*   **Java Docs:** Drop the AbstractFactoryPatterns. Build simple structs.
+*   **Node Devs:** Embrace the type system and true parallelism (multi-core).
+*   **Everyone:** Respect the error. `if err != nil` is the heartbeat of a Go program.
+
+## More examples
+
+### Example: explicit constructor DI (not Spring)
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+type Clock interface {
+	NowLabel() string
+}
+
+type fixedClock struct{ label string }
+
+func (c fixedClock) NowLabel() string { return c.label }
+
+type Server struct {
+	dbName string
+	clock  Clock
+}
+
+// NewServer takes dependencies as parameters—no container, no annotations.
+func NewServer(dbName string, clock Clock) *Server {
+	return &Server{dbName: dbName, clock: clock}
+}
+
+func (s *Server) Handle() string {
+	return fmt.Sprintf("%s @ %s", s.dbName, s.clock.NowLabel())
+}
+
+func main() {
+	srv := NewServer("users", fixedClock{label: "t0"})
+	fmt.Println(srv.Handle())
+	srv2 := NewServer("orders", fixedClock{label: "t1"})
+	fmt.Println(srv2.Handle())
+}
+```
+
+Expected:
+
+```text
+users @ t0
+orders @ t1
+```
+
+### Example: value vs pointer is explicit
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+type Counter struct{ N int }
+
+func bumpValue(c Counter) {
+	c.N++
+}
+
+func bumpPointer(c *Counter) {
+	c.N++
+}
+
+func main() {
+	c := Counter{N: 1}
+	bumpValue(c)
+	fmt.Println("after value bump:", c.N) // still 1 — copy
+
+	bumpPointer(&c)
+	fmt.Println("after pointer bump:", c.N) // 2 — shared
+}
+```
+
+Expected:
+
+```text
+after value bump: 1
+after pointer bump: 2
+```
+
+## Runnable example
+
+Java → errors as values; Node → concurrency without `Promise.all` ceremony.
+
+Save as `main.go`. From an empty directory:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"errors"
+	"fmt"
+	"sync"
+	"time"
+)
+
+// Service is a plain struct: data + methods, no class hierarchy.
+type Service struct {
+	Name string
+}
+
+func NewService(name string) *Service {
+	// Explicit constructor-style factory—no DI container.
+	return &Service{Name: name}
+}
+
+func (s *Service) Fetch(id int) (string, error) {
+	if id <= 0 {
+		return "", errors.New("id must be positive")
+	}
+	time.Sleep(30 * time.Millisecond)
+	return fmt.Sprintf("%s-item-%d", s.Name, id), nil
+}
+
+func main() {
+	svc := NewService("catalog")
+
+	// Errors are values, not exceptions.
+	if _, err := svc.Fetch(0); err != nil {
+		fmt.Println("expected failure:", err)
+	}
+
+	// Concurrent work looks sequential in each goroutine.
+	ids := []int{1, 2, 3}
+	results := make([]string, len(ids))
+	errs := make([]error, len(ids))
+
+	var wg sync.WaitGroup
+	for i, id := range ids {
+		wg.Add(1)
+		go func(i, id int) {
+			defer wg.Done()
+			val, err := svc.Fetch(id)
+			results[i], errs[i] = val, err
+		}(i, id)
+	}
+	wg.Wait()
+
+	for i := range ids {
+		if errs[i] != nil {
+			fmt.Printf("id %d error: %v\n", ids[i], errs[i])
+			continue
+		}
+		fmt.Printf("id %d -> %s\n", ids[i], results[i])
+	}
+}
+```
+
+**Expected output** (illustrative):
+
+```text
+expected failure: id must be positive
+id 1 -> catalog-item-1
+id 2 -> catalog-item-2
+id 3 -> catalog-item-3
+```
+
+**What to notice:**
+- No `@Autowired`: dependencies would be constructor parameters (here, none).
+- `if err != nil` replaces try/catch as the normal control path.
+- `WaitGroup` + goroutines replace `Promise.all` for parallel work.
+- Struct methods attach behavior without inheritance.
+
+**Try next:** Pass a `*log.Logger` into `NewService` and log each fetch—explicit DI.

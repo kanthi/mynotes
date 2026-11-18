@@ -1,0 +1,296 @@
+---
+title: Why Generics Matter
+---
+
+# Why Generics Matter
+
+## Overview
+
+Generics (type parameters), introduced in Go 1.18, allow writing functions and types that work with multiple types while maintaining type safety.
+
+## The Problem Before Generics
+
+```go
+// Without generics: duplicate code or use interface{}
+func MinInt(a, b int) int {
+    if a < b { return a }
+    return b
+}
+
+func MinFloat(a, b float64) float64 {
+    if a < b { return a }
+    return b
+}
+
+// Or lose type safety
+func Min(a, b interface{}) interface{} {
+    // Requires type assertions, runtime checks
+}
+```
+
+## With Generics
+
+```go
+func Min[T constraints.Ordered](a, b T) T {
+    if a < b {
+        return a
+    }
+    return b
+}
+
+Min(1, 2)         // int
+Min(1.5, 2.5)     // float64
+Min("a", "b")     // string
+```
+
+## Type Parameters
+
+```go
+func Print[T any](v T) {
+    fmt.Println(v)
+}
+
+// Multiple type parameters
+func Pair[K, V any](k K, v V) (K, V) {
+    return k, v
+}
+```
+
+## Constraints
+
+```go
+import "golang.org/x/exp/constraints"
+
+// Built-in constraints
+any           // No requirements
+comparable    // Supports == and !=
+
+// From constraints package
+constraints.Ordered    // Supports < > <= >=
+constraints.Integer    // Int types
+constraints.Float      // Float types
+```
+
+### Custom Constraints
+
+```go
+type Number interface {
+    int | int32 | int64 | float32 | float64
+}
+
+func Sum[T Number](nums []T) T {
+    var total T
+    for _, n := range nums {
+        total += n
+    }
+    return total
+}
+```
+
+## Generic Type Aliases (Go 1.24+)
+
+Go 1.24 introduced support for generic type aliases, allowing you to create aliases for generic types.
+
+```go
+type Set[T comparable] map[T]struct{}
+
+// Type alias (Go 1.24+)
+type IntSet = Set[int]
+type AnySet[T comparable] = Set[T]
+```
+
+This is particularly useful for refactoring and maintaining compatibility while migrating to generic implementations.
+
+## Self-Referential Generics (Go 1.26+)
+
+Go 1.26 lifted the restriction that prevented generic type parameters from referring to their enclosing type definition in constraint declarations. This allows fluent builder interfaces and self-referential tree nodes with static type safety:
+
+```go
+// Self-referential constraint allowed in Go 1.26+
+type Node[T Node[T]] interface {
+    Value() string
+    Next() T
+}
+
+type MyNode struct {
+    val  string
+    next *MyNode
+}
+
+func (m *MyNode) Value() string { return m.val }
+func (m *MyNode) Next() *MyNode { return m.next }
+```
+
+## Generic Methods (Go 1.27+)
+
+A method declaration may declare its own type parameters. Use this when the operation belongs on a concrete type but the argument/result type varies:
+
+```go
+func (r *rand.Rand) N[Int intType](n Int) Int
+```
+
+That is **not** the same as a method on a generic type (`func (s *Stack[T]) Push(T)`), which has been valid since Go 1.18. Interface methods still cannot be generic, and a generic method cannot satisfy an interface method.
+
+Function type inference is also broader in 1.27: a generic function can be assigned, converted, sent on a channel, or placed in a composite literal without spelling the type arguments when the destination type is a matching function type. See [Generic Functions](30-generic-functions.md).
+
+## Benefits
+
+1. **Type safety**: Errors caught at compile time
+2. **No code duplication**: One implementation for many types
+3. **Performance**: No interface boxing/unboxing
+4. **Better documentation**: Types are explicit
+
+## Summary
+
+| Before | After |
+|--------|-------|
+| Code duplication | Single generic function |
+| `interface{}` | Type parameters |
+| Runtime errors | Compile-time errors |
+| Type assertions | Direct usage |
+
+## Related Topics
+- [Generic Functions](30-generic-functions.md)
+- [Generic Types](31-generic-types.md)
+
+## More examples
+
+### Example: before generics—duplication
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func maxInt(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func maxFloat(a, b float64) float64 {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func main() {
+	fmt.Println(maxInt(3, 7))
+	fmt.Println(maxFloat(3.5, 2.1))
+}
+```
+
+Expected:
+
+```text
+7
+3.5
+```
+
+### Example: one generic Max
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import (
+	"cmp"
+	"fmt"
+)
+
+func Max[T cmp.Ordered](a, b T) T {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func main() {
+	fmt.Println(Max(3, 7))
+	fmt.Println(Max(3.5, 2.1))
+	fmt.Println(Max("a", "z"))
+}
+```
+
+Expected:
+
+```text
+7
+3.5
+z
+```
+
+## Runnable example
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"cmp"
+	"fmt"
+)
+
+// cmp.Ordered covers types that support < (stdlib; no x/exp needed).
+func Min[T cmp.Ordered](a, b T) T {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func Pair[K, V any](k K, v V) (K, V) {
+	return k, v
+}
+
+// Custom constraint with a type set (stdlib only).
+type Number interface {
+	~int | ~int64 | ~float64
+}
+
+func Sum[T Number](nums []T) T {
+	var total T
+	for _, n := range nums {
+		total += n
+	}
+	return total
+}
+
+func main() {
+	fmt.Println("Min int:", Min(3, 1))
+	fmt.Println("Min float:", Min(2.5, 2.7))
+	fmt.Println("Min string:", Min("go", "ai"))
+
+	k, v := Pair("age", 30)
+	fmt.Printf("Pair: %s=%d\n", k, v)
+
+	fmt.Println("Sum ints:", Sum([]int{1, 2, 3}))
+	fmt.Println("Sum floats:", Sum([]float64{0.5, 1.5}))
+}
+```
+
+**Expected output:**
+
+```text
+Min int: 1
+Min float: 2.5
+Min string: ai
+Pair: age=30
+Sum ints: 6
+Sum floats: 2
+```
+
+**What to notice:** One `Min` works for any ordered type with compile-time safety; `cmp.Ordered` lives in the standard library. Type sets let you restrict `Sum` to numeric-ish types without `interface{}` assertions.
+
+**Try next:** Call `Min` on a struct (should fail to compile); add `~string` to a constraint and write `Join[T ~string](parts []T) T`.

@@ -1,0 +1,105 @@
+---
+unnumbered: true
+---
+
+# Notes on Nix & NixOS
+
+Personal **journey notes** for learning **Nix** and **NixOS** the way practitioners who already live in this ecosystem would sequence the work: early feedback loops, modern defaults, depth when you have something real to debug.
+
+**Baseline:** Nix **2.35** (upstream tag **2.35.6**, 10 November 2026; NixOS 26.05 packages 2.35.3 on the tip checked 13 November 2026) · NixOS / nixpkgs **26.05 “Yarara”**. 26.11 “Zokor” is scheduled for 30 November 2026 and is not the pin until it is released.
+
+This is a **normal topic-oriented book** (parts and chapters), not a day-calendar or certification track. Chapter contract: **[Syllabus](content/00-front-matter/00-syllabus.md)**.
+
+## What “done” looks like
+
+- Explain store, derivations, evaluation vs realization, generations, and GC roots in plain language
+- Run **one** flake-defined NixOS 26.05 host; break it, roll back, recover
+- Prefer **modern CLI + flakes** as the default; recognize classic commands when you meet them
+- Separate **system** (NixOS) and **user** (Home Manager) concerns cleanly
+- Package something you actually use; write modules with real options
+- Keep secrets out of the store; layout disks with Disko when you reinstall
+- Deploy beyond one box, use a binary cache and CI, harden without cargo-cult
+
+## How the book is organized
+
+| Part | Path | Focus |
+|------|------|--------|
+| Front matter | `00-front-matter/` | Syllabus, Reproducibility Crisis + **Lab 0** |
+| Concepts | `01-concepts/` | Why Nix, store, language, CLI, flakes |
+| **Nix on Linux** | `02-nix-on-linux/` | **Fedora 44+** official Nix; dual-stack bridge to NixOS |
+| NixOS host | `03-nixos-host/` | Install, rebuild, users, net, modules, boot |
+| Home & layout | `04-home-and-flake-layout/` | Flake layout, locks, Home Manager, shells/editors, polyglot devShells, Docker migration |
+| Services & security | `05-services-and-security/` | Secrets (SOPS/Agenix/Vault), hardening, TLS front door, containers |
+| Packaging | `06-packaging/` | stdenv, overlays, caches, language ecosystems, cross-compilation, **ROS 2** |
+| Ops & fleet | `07-ops-and-fleet/` | Disko, deploy, tests, CI, images, backups |
+| Internals | `08-internals/` | Evaluator, module system, upgrades, troubleshooting |
+| Capstone | `09-capstone/` | Rebuildability proof and recovery notes |
+| **CI/CD** | `10-cicd/` | Binary caches, GitHub Actions, GitLab CI, remote builders, caching |
+| **Containers & K8s** | `11-containers-and-kubernetes/` | Nix-built container images, K8s modules, Helm charts, Argo/Flux GitOps |
+| **IaC & Cloud** | `12-iac-and-cloud/` | Terraform/OpenTofu with Nix, Ansible provisioning, multi-cloud |
+| **Platform Engineering** | `13-platform-engineering/` | Internal developer platform, monorepos, Colmena fleet deploys, MicroVMs |
+| **Production Labs** | `14-production-labs/` | Infrastructure audits, operator keys, builder factories, channel promotion |
+| **Production Capstones**| `15-production-capstones/` | Multi-region production infrastructure deployment & Conclusion |
+| **Misc** | `16-misc/` | Current pin (Nix 2.35 / NixOS 26.05), how a release is built, minimal ISO to a desktop, a builder that sleeps |
+| **Projects** | `99-projects/` | Derivations + branded distro (ISO, themes, editions) |
+| **Appendices** | `100-appendices/` | Master glossary, CLI cheatsheets, Nix language syntax reference |
+
+Chapters are **topics**, not “Day 1…Day 90”. Read in order when learning; use the sidebar as a reference index when you already know where to jump.
+
+## Recommended path if your daily driver is Fedora
+
+1. **Concepts** — store, language, flakes
+2. **Nix on Linux** — `dnf install nix` on **Fedora 44+**, profiles, devShells, standalone Home Manager, dnf coexistence
+3. **NixOS host** — when ready, same skills apply to a full OS flake
+
+See [Nix on Linux — Fedora bridge path](content/02-nix-on-linux/00-index.md).
+
+## Lab 0 (recommended before first host work)
+
+If you have a spare machine (example profile: **HP Elitebook 2570p · 16 GB**), set up the lab first:
+
+1. Roles & topology — [`01a-lab-overview-and-roles.md`](content/00-front-matter/01a-lab-overview-and-roles.md)
+2. Journey single-server (KVM, VMs, containers) — [`01b-lab-journey-single-server.md`](content/00-front-matter/01b-lab-journey-single-server.md)
+3. NixOS **dev** machine — [`01c-lab-nixos-dev-machine.md`](content/00-front-matter/01c-lab-nixos-dev-machine.md)
+4. Elitebook hardware profile — [`01d-lab-elitebook-2570p.md`](content/00-front-matter/01d-lab-elitebook-2570p.md)
+5. Ops cheatsheet — [`01e-lab-ops-cheatsheet.md`](content/00-front-matter/01e-lab-ops-cheatsheet.md)
+
+## How I intend to study
+
+| Slice | Share | Purpose |
+|-------|-------|---------|
+| Concept | ~25% | Manuals, mental models, *why* |
+| Hands-on | ~55% | Configs and builds that can fail |
+| Review | ~20% | Refactor modules, commit, write gotchas |
+
+Rules that match expert practice:
+
+- **Disposable VM** (or spare disk) for breakage; keep a daily driver safe
+- **Flakes + modern CLI by default** from early chapters
+- **One change → rebuild → observe** — avoid huge untested diffs
+- Budget disk for `/nix/store`
+- Pin **26.05** deliberately; upgrade only with a written plan
+
+## Prerequisites
+
+- Comfortable Unix shell
+- Processes, files, SSH, basic networking
+- Willingness to reinstall a VM
+
+## Related books
+
+| Book | Overlap |
+|------|---------|
+| **Linux** | Classic ops literacy before (and beside) NixOS |
+| **VCS** | Flake repos, CI, and signed history |
+| **Networking** | Lab networks you may declare on NixOS hosts |
+
+## Formats
+
+HTML (primary), PDF, and EPUB via the library portal when built.
+
+## Acknowledgments
+
+Path designed as an expert learning sequence for Nix/NixOS. Topic inventory drawn from personal study notes and production practice.
+
+Official docs (nixos.org, nix.dev, release notes) win when notes and reality disagree. No exam-vendor affiliation.

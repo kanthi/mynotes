@@ -1,0 +1,604 @@
+book:
+  title: VCS
+  author: K19G
+  date: '2026-11-17'
+  description: Version control, with Git in depth
+  chapters:
+  - index.md
+  - part: Git Foundations
+    contents:
+    - part: Mental Model
+      contents:
+      - content/01-git-foundations/01-mental-model/00-theory.md
+      - content/01-git-foundations/01-mental-model/01-version-control-landscape.md
+      - content/01-git-foundations/01-mental-model/02-directed-acyclic-graph.md
+      - content/01-git-foundations/01-mental-model/03-three-tree-model.md
+      - content/01-git-foundations/01-mental-model/04-object-types.md
+      - content/01-git-foundations/01-mental-model/05-references.md
+      - content/01-git-foundations/01-mental-model/06-distributed-model.md
+      - content/01-git-foundations/01-mental-model/07-detached-head.md
+      - content/01-git-foundations/01-mental-model/08-revisions-and-ranges.md
+      - content/01-git-foundations/01-mental-model/09-ref-name-rules.md
+    - part: Install and Config
+      contents:
+      - content/01-git-foundations/02-install-and-config/00-theory.md
+      - content/01-git-foundations/02-install-and-config/01-installing-git.md
+      - content/01-git-foundations/02-install-and-config/02-config-layers.md
+      - content/01-git-foundations/02-install-and-config/03-identity.md
+      - content/01-git-foundations/02-install-and-config/04-ssh-vs-https.md
+      - content/01-git-foundations/02-install-and-config/05-editor-pager-difftool.md
+      - content/01-git-foundations/02-install-and-config/06-aliases.md
+      - content/01-git-foundations/02-install-and-config/07-updating-git.md
+    - part: First Repository
+      contents:
+      - content/01-git-foundations/03-first-repository/00-theory.md
+      - content/01-git-foundations/03-first-repository/01-initializing.md
+      - content/01-git-foundations/03-first-repository/02-add-commit-cycle.md
+      - content/01-git-foundations/03-first-repository/03-status-log-diff.md
+      - content/01-git-foundations/03-first-repository/04-undoing-mistakes.md
+      - content/01-git-foundations/03-first-repository/05-hands-on-tiny-project.md
+      - content/01-git-foundations/03-first-repository/06-gitignore.md
+      - content/01-git-foundations/03-first-repository/07-interactive-add.md
+      - content/01-git-foundations/03-first-repository/08-rm-and-mv.md
+      - content/01-git-foundations/03-first-repository/09-what-not-to-commit.md
+    - part: Inspecting History
+      contents:
+      - content/01-git-foundations/04-inspecting-history/00-theory.md
+      - content/01-git-foundations/04-inspecting-history/01-log-advanced.md
+      - content/01-git-foundations/04-inspecting-history/02-ranges-two-dot-three-dot.md
+      - content/01-git-foundations/04-inspecting-history/03-git-show-and-stat.md
+      - content/01-git-foundations/04-inspecting-history/04-blame-and-annotate.md
+      - content/01-git-foundations/04-inspecting-history/05-pickaxe-and-follow.md
+      - content/01-git-foundations/04-inspecting-history/05b-log-L-function-history.md
+      - content/01-git-foundations/04-inspecting-history/06-shortlog.md
+      - content/01-git-foundations/04-inspecting-history/07-hands-on-archaeology.md
+      - content/01-git-foundations/04-inspecting-history/08-blame-through-reformats.md
+    - part: Ignore, Attributes, and LFS
+      contents:
+      - content/01-git-foundations/05-ignore-attributes-lfs/00-theory.md
+      - content/01-git-foundations/05-ignore-attributes-lfs/01-gitignore-patterns.md
+      - content/01-git-foundations/05-ignore-attributes-lfs/02-gitattributes.md
+      - content/01-git-foundations/05-ignore-attributes-lfs/03-export-ignore-and-archive.md
+      - content/01-git-foundations/05-ignore-attributes-lfs/04-git-lfs.md
+      - content/01-git-foundations/05-ignore-attributes-lfs/05-hands-on-ignore-and-lfs.md
+  - part: Everyday Workflows
+    contents:
+    - part: Commits and History
+      contents:
+      - content/02-everyday-workflows/01-commits-and-history/00-theory.md
+      - content/02-everyday-workflows/01-commits-and-history/01-commit-anatomy.md
+      - content/02-everyday-workflows/01-commits-and-history/02-conventional-commits.md
+      - content/02-everyday-workflows/01-commits-and-history/03-amending-messages.md
+      - content/02-everyday-workflows/01-commits-and-history/04-unstaging.md
+      - content/02-everyday-workflows/01-commits-and-history/05-hands-on-amend.md
+      - content/02-everyday-workflows/01-commits-and-history/06-commit-templates.md
+      - content/02-everyday-workflows/01-commits-and-history/07-empty-and-split-commits.md
+      - content/02-everyday-workflows/01-commits-and-history/08-trailers-and-mailmap.md
+      - content/02-everyday-workflows/01-commits-and-history/09-git-show.md
+      - content/02-everyday-workflows/01-commits-and-history/10-diff-algorithms-myers-patience-histogram.md
+      - content/02-everyday-workflows/01-commits-and-history/11-git-log-max-count-oldest.md
+      - content/02-everyday-workflows/01-commits-and-history/12-git-range-diff.md
+      - content/02-everyday-workflows/01-commits-and-history/13-git-notes.md
+    - part: Reset, Restore, and Checkout
+      contents:
+      - content/02-everyday-workflows/02-reset-restore-checkout/00-theory.md
+      - content/02-everyday-workflows/02-reset-restore-checkout/01-three-modes-of-reset.md
+      - content/02-everyday-workflows/02-reset-restore-checkout/02-restore-vs-reset-vs-revert.md
+      - content/02-everyday-workflows/02-reset-restore-checkout/03-reset-paths.md
+      - content/02-everyday-workflows/02-reset-restore-checkout/04-switch-restore-checkout.md
+      - content/02-everyday-workflows/02-reset-restore-checkout/05-hands-on-reset.md
+    - part: Branching and Merging
+      contents:
+      - content/02-everyday-workflows/03-branching-and-merging/00-theory.md
+      - content/02-everyday-workflows/03-branching-and-merging/01-creating-switching-branches.md
+      - content/02-everyday-workflows/03-branching-and-merging/02-merge-types.md
+      - content/02-everyday-workflows/03-branching-and-merging/03-three-way-merge.md
+      - content/02-everyday-workflows/03-branching-and-merging/04-merge-conflicts.md
+      - content/02-everyday-workflows/03-branching-and-merging/05-fast-forward-clean-history.md
+      - content/02-everyday-workflows/03-branching-and-merging/06-hands-on-merge-conflict.md
+      - content/02-everyday-workflows/03-branching-and-merging/07-mergetool.md
+      - content/02-everyday-workflows/03-branching-and-merging/08-ours-theirs-and-renames.md
+      - content/02-everyday-workflows/03-branching-and-merging/09-orphan-branches.md
+      - content/02-everyday-workflows/03-branching-and-merging/10-comparing-branches.md
+      - content/02-everyday-workflows/03-branching-and-merging/11-rerere.md
+      - content/02-everyday-workflows/03-branching-and-merging/12-git-2-56-daily-work.md
+      - content/02-everyday-workflows/03-branching-and-merging/13-git-add-resolved.md
+      - content/02-everyday-workflows/03-branching-and-merging/14-custom-merge-drivers.md
+    - part: Rebasing
+      contents:
+      - content/02-everyday-workflows/04-rebasing/00-theory.md
+      - content/02-everyday-workflows/04-rebasing/01-why-rebase.md
+      - content/02-everyday-workflows/04-rebasing/02-interactive-rebase.md
+      - content/02-everyday-workflows/04-rebasing/03-rebase-conflicts.md
+      - content/02-everyday-workflows/04-rebasing/04-pull-with-rebase.md
+      - content/02-everyday-workflows/04-rebasing/05-rebase-vs-merge.md
+      - content/02-everyday-workflows/04-rebasing/06-hands-on-messy-history.md
+      - content/02-everyday-workflows/04-rebasing/07-rebase-onto.md
+      - content/02-everyday-workflows/04-rebasing/08-autosquash-and-fixup.md
+      - content/02-everyday-workflows/04-rebasing/09-rebase-exec.md
+      - content/02-everyday-workflows/04-rebasing/10-update-refs-and-keep-base.md
+      - content/02-everyday-workflows/04-rebasing/11-rebase-interactive-from-merge-base.md
+    - part: Cherry-Pick and Revert
+      contents:
+      - content/02-everyday-workflows/05-cherry-pick-and-revert/00-theory.md
+      - content/02-everyday-workflows/05-cherry-pick-and-revert/01-cherry-pick.md
+      - content/02-everyday-workflows/05-cherry-pick-and-revert/02-hotfixes-and-backports.md
+      - content/02-everyday-workflows/05-cherry-pick-and-revert/03-revert-and-unmerge.md
+      - content/02-everyday-workflows/05-cherry-pick-and-revert/04-production-emergencies.md
+      - content/02-everyday-workflows/05-cherry-pick-and-revert/05-ranges-and-x.md
+      - content/02-everyday-workflows/05-cherry-pick-and-revert/06-empty-picks.md
+    - part: Remotes
+      contents:
+      - content/02-everyday-workflows/06-remotes/00-theory.md
+      - content/02-everyday-workflows/06-remotes/01-fetch-pull-push.md
+      - content/02-everyday-workflows/06-remotes/02-multiple-remotes.md
+      - content/02-everyday-workflows/06-remotes/03-force-push.md
+      - content/02-everyday-workflows/06-remotes/04-pull-requests.md
+      - content/02-everyday-workflows/06-remotes/05-hands-on-two-clones.md
+      - content/02-everyday-workflows/06-remotes/06-tracking-and-upstream.md
+      - content/02-everyday-workflows/06-remotes/07-refspecs.md
+      - content/02-everyday-workflows/06-remotes/08-git-bundle.md
+      - content/02-everyday-workflows/06-remotes/09-prune-and-rename.md
+      - content/02-everyday-workflows/06-remotes/10-forks-vs-clones.md
+      - content/02-everyday-workflows/06-remotes/11-email-patch-workflow.md
+    - part: Stash, Tags, and Cleanup
+      contents:
+      - content/02-everyday-workflows/07-stash-tags-cleanup/00-theory.md
+      - content/02-everyday-workflows/07-stash-tags-cleanup/01-stash.md
+      - content/02-everyday-workflows/07-stash-tags-cleanup/02-tags.md
+      - content/02-everyday-workflows/07-stash-tags-cleanup/03-cleanup.md
+      - content/02-everyday-workflows/07-stash-tags-cleanup/04-hands-on-stash.md
+      - content/02-everyday-workflows/07-stash-tags-cleanup/05-stash-branch.md
+      - content/02-everyday-workflows/07-stash-tags-cleanup/06-git-describe.md
+      - content/02-everyday-workflows/07-stash-tags-cleanup/07-git-archive.md
+    - part: Hooks
+      contents:
+      - content/02-everyday-workflows/08-hooks/00-theory.md
+      - content/02-everyday-workflows/08-hooks/01-hook-types.md
+      - content/02-everyday-workflows/08-hooks/02-writing-a-hook.md
+      - content/02-everyday-workflows/08-hooks/03-templates-and-ci.md
+      - content/02-everyday-workflows/08-hooks/04-hands-on-pre-commit.md
+      - content/02-everyday-workflows/08-hooks/05-prepare-commit-msg.md
+      - content/02-everyday-workflows/08-hooks/06-post-checkout-and-post-merge.md
+      - content/02-everyday-workflows/08-hooks/07-no-verify.md
+      - content/02-everyday-workflows/08-hooks/08-config-based-hooks.md
+      - content/02-everyday-workflows/08-hooks/09-pre-push-large-file-guard.md
+    - part: Submodules and Worktrees
+      contents:
+      - content/02-everyday-workflows/09-submodules-and-worktrees/00-theory.md
+      - content/02-everyday-workflows/09-submodules-and-worktrees/01-submodules.md
+      - content/02-everyday-workflows/09-submodules-and-worktrees/02-worktrees.md
+      - content/02-everyday-workflows/09-submodules-and-worktrees/03-when-to-use-which.md
+      - content/02-everyday-workflows/09-submodules-and-worktrees/04-hands-on-submodule-worktree.md
+      - content/02-everyday-workflows/09-submodules-and-worktrees/05-foreach-and-sync.md
+      - content/02-everyday-workflows/09-submodules-and-worktrees/06-deinit-and-absorb.md
+      - content/02-everyday-workflows/09-submodules-and-worktrees/07-worktree-locks.md
+      - content/02-everyday-workflows/09-submodules-and-worktrees/08-worktree-lifecycle-parallel-work.md
+    - part: Branching Workflows
+      contents:
+      - content/02-everyday-workflows/10-branching-workflows/00-theory.md
+      - content/02-everyday-workflows/10-branching-workflows/01-git-flow.md
+      - content/02-everyday-workflows/10-branching-workflows/02-github-flow-and-trunk.md
+      - content/02-everyday-workflows/10-branching-workflows/03-feature-flags.md
+      - content/02-everyday-workflows/10-branching-workflows/04-monorepos-vs-polyrepos.md
+      - content/02-everyday-workflows/10-branching-workflows/05-choosing-a-strategy.md
+      - content/02-everyday-workflows/10-branching-workflows/06-forking-workflow.md
+      - content/02-everyday-workflows/10-branching-workflows/07-stacked-changes.md
+      - content/02-everyday-workflows/10-branching-workflows/08-release-tags-and-changelogs.md
+  - part: Power Skills
+    contents:
+    - part: Internals
+      contents:
+      - content/03-power-skills/01-internals/00-theory.md
+      - content/03-power-skills/01-internals/01-object-store.md
+      - content/03-power-skills/01-internals/02-content-addressing.md
+      - content/03-power-skills/01-internals/03-packfiles-and-log.md
+      - content/03-power-skills/01-internals/04-internals-for-servers.md
+      - content/03-power-skills/01-internals/05-hands-on-cat-file.md
+      - content/03-power-skills/01-internals/06-reftable-ref-backend.md
+      - content/03-power-skills/01-internals/07-git-replace-and-grafts.md
+    - part: Reflog
+      contents:
+      - content/03-power-skills/02-reflog/00-theory.md
+      - content/03-power-skills/02-reflog/01-how-reflog-works.md
+      - content/03-power-skills/02-reflog/02-recover-deleted-branches.md
+      - content/03-power-skills/02-reflog/03-thirty-day-window.md
+      - content/03-power-skills/02-reflog/04-recovery-scenarios.md
+    - part: Bisect
+      contents:
+      - content/03-power-skills/03-bisect/00-theory.md
+      - content/03-power-skills/03-bisect/01-binary-search-bugs.md
+      - content/03-power-skills/03-bisect/02-automate-with-tests.md
+      - content/03-power-skills/03-bisect/03-production-debugging.md
+      - content/03-power-skills/03-bisect/04-hands-on-bisect.md
+    - part: Performance and Scale
+      contents:
+      - content/03-power-skills/04-performance-and-scale/00-theory.md
+      - content/03-power-skills/04-performance-and-scale/01-large-repositories.md
+      - content/03-power-skills/04-performance-and-scale/02-shallow-sparse-partial.md
+      - content/03-power-skills/04-performance-and-scale/03-performance-tuning.md
+      - content/03-power-skills/04-performance-and-scale/04-git-maintenance.md
+      - content/03-power-skills/04-performance-and-scale/05-agent-scale-git-infrastructure.md
+      - content/03-power-skills/04-performance-and-scale/05-git-under-agentic-load.md
+    - part: Git Security
+      contents:
+      - content/03-power-skills/05-git-security/00-theory.md
+      - content/03-power-skills/05-git-security/01-signed-commits-and-tags.md
+      - content/03-power-skills/05-git-security/02-secrets-in-history.md
+      - content/03-power-skills/05-git-security/03-audit-trails.md
+      - content/03-power-skills/05-git-security/04-security-scanning.md
+      - content/03-power-skills/05-git-security/05-hands-on-remove-secret.md
+    - part: Troubleshooting
+      contents:
+      - content/03-power-skills/06-troubleshooting/00-theory.md
+      - content/03-power-skills/06-troubleshooting/01-fsck-and-repair.md
+      - content/03-power-skills/06-troubleshooting/02-common-error-patterns.md
+      - content/03-power-skills/06-troubleshooting/03-recovery-procedures.md
+      - content/03-power-skills/06-troubleshooting/04-hands-on-corrupted-repo.md
+  - part: Hosting Platforms
+    contents:
+    - part: GitHub Monoculture
+      contents:
+      - content/04-platforms/01-github-monoculture/00-theory.md
+      - content/04-platforms/01-github-monoculture/01-how-github-became-default.md
+      - content/04-platforms/01-github-monoculture/02-platform-lock-in.md
+      - content/04-platforms/01-github-monoculture/03-regulatory-and-geopolitical.md
+      - content/04-platforms/01-github-monoculture/04-beyond-github.md
+      - content/04-platforms/01-github-monoculture/05-framework-for-this-part.md
+    - part: Platform Architecture
+      contents:
+      - content/04-platforms/02-platform-architecture/00-theory.md
+      - content/04-platforms/02-platform-architecture/01-git-alone-vs-hosting.md
+      - content/04-platforms/02-platform-architecture/02-core-components.md
+      - content/04-platforms/02-platform-architecture/03-protocol-stack.md
+      - content/04-platforms/02-platform-architecture/04-storage-architectures.md
+      - content/04-platforms/02-platform-architecture/05-authn-authz-identity.md
+      - content/04-platforms/02-platform-architecture/06-extensibility.md
+      - content/04-platforms/02-platform-architecture/07-monolith-vs-microservices.md
+      - content/04-platforms/02-platform-architecture/08-operational-complexity.md
+    - part: GitLab
+      contents:
+      - content/04-platforms/03-gitlab/00-theory.md
+      - content/04-platforms/03-gitlab/01-history-and-philosophy.md
+      - content/04-platforms/03-gitlab/02-architecture.md
+      - content/04-platforms/03-gitlab/03-feature-set.md
+      - content/04-platforms/03-gitlab/04-operations-and-licensing.md
+      - content/04-platforms/03-gitlab/05-hands-on-gitlab.md
+      - content/04-platforms/03-gitlab/06-when-gitlab-fits.md
+    - part: Gitea and Forgejo
+      contents:
+      - content/04-platforms/04-gitea-and-forgejo/00-theory.md
+      - content/04-platforms/04-gitea-and-forgejo/01-origins-and-philosophy.md
+      - content/04-platforms/04-gitea-and-forgejo/02-forgejo-fork.md
+      - content/04-platforms/04-gitea-and-forgejo/03-comparison.md
+      - content/04-platforms/04-gitea-and-forgejo/04-deployment-and-scaling.md
+      - content/04-platforms/04-gitea-and-forgejo/05-hands-on-gitea-forgejo.md
+      - content/04-platforms/04-gitea-and-forgejo/06-when-gitea-or-forgejo-fits.md
+    - part: Bitbucket
+      contents:
+      - content/04-platforms/05-bitbucket/00-theory.md
+      - content/04-platforms/05-bitbucket/01-cloud-vs-data-center.md
+      - content/04-platforms/05-bitbucket/02-architecture.md
+      - content/04-platforms/05-bitbucket/03-atlassian-ecosystem.md
+      - content/04-platforms/05-bitbucket/04-enterprise-features.md
+      - content/04-platforms/05-bitbucket/05-comparison.md
+      - content/04-platforms/05-bitbucket/06-hands-on-bitbucket.md
+      - content/04-platforms/05-bitbucket/07-when-bitbucket-fits.md
+    - part: Gerrit
+      contents:
+      - content/04-platforms/06-gerrit/00-theory.md
+      - content/04-platforms/06-gerrit/01-what-gerrit-is.md
+      - content/04-platforms/06-gerrit/02-change-ids-and-reviews.md
+      - content/04-platforms/06-gerrit/03-ci-integration.md
+      - content/04-platforms/06-gerrit/04-operations.md
+      - content/04-platforms/06-gerrit/05-in-practice.md
+      - content/04-platforms/06-gerrit/06-hands-on-gerrit.md
+      - content/04-platforms/06-gerrit/07-when-gerrit-fits.md
+    - part: SourceHut
+      contents:
+      - content/04-platforms/07-sourcehut/00-theory.md
+      - content/04-platforms/07-sourcehut/01-philosophy.md
+      - content/04-platforms/07-sourcehut/02-srht-suite.md
+      - content/04-platforms/07-sourcehut/03-architecture.md
+      - content/04-platforms/07-sourcehut/04-comparison.md
+      - content/04-platforms/07-sourcehut/05-hands-on-sourcehut.md
+      - content/04-platforms/07-sourcehut/06-when-sourcehut-fits.md
+    - part: Niche Platforms
+      contents:
+      - content/04-platforms/08-niche-platforms/00-theory.md
+      - content/04-platforms/08-niche-platforms/01-codeberg.md
+      - content/04-platforms/08-niche-platforms/02-gitbucket.md
+      - content/04-platforms/08-niche-platforms/03-gogs.md
+      - content/04-platforms/08-niche-platforms/04-phorge-and-arcanist.md
+      - content/04-platforms/08-niche-platforms/05-github-enterprise-server.md
+      - content/04-platforms/08-niche-platforms/06-summary.md
+  - part: Operating a Platform
+    contents:
+    - part: Identity
+      contents:
+      - content/05-operating/01-identity/00-theory.md
+      - content/05-operating/01-identity/01-password-ssh-oauth-saml.md
+      - content/05-operating/01-identity/02-ldap-and-directory.md
+      - content/05-operating/01-identity/03-rbac.md
+      - content/05-operating/01-identity/04-ssh-keys-at-scale.md
+      - content/05-operating/01-identity/05-mfa-and-hardening.md
+    - part: Governance
+      contents:
+      - content/05-operating/02-governance/00-theory.md
+      - content/05-operating/02-governance/01-enforcement-implications.md
+      - content/05-operating/02-governance/02-protecting-branches.md
+      - content/05-operating/02-governance/03-monorepo-vs-polyrepo.md
+      - content/05-operating/02-governance/04-governance-automation.md
+    - part: CI/CD
+      contents:
+      - content/05-operating/03-cicd/00-theory.md
+      - content/05-operating/03-cicd/01-webhooks.md
+      - content/05-operating/03-cicd/02-native-ci.md
+      - content/05-operating/03-cicd/03-external-ci.md
+      - content/05-operating/03-cicd/04-pipelines-and-runners.md
+      - content/05-operating/03-cicd/05-gitops-preview.md
+    - part: Packages
+      contents:
+      - content/05-operating/04-packages/00-theory.md
+      - content/05-operating/04-packages/01-container-registries.md
+      - content/05-operating/04-packages/02-language-packages.md
+      - content/05-operating/04-packages/03-retention-and-ci.md
+      - content/05-operating/04-packages/04-self-hosted-registry.md
+    - part: Security
+      contents:
+      - content/05-operating/05-security/00-theory.md
+      - content/05-operating/05-security/01-signed-commits-on-server.md
+      - content/05-operating/05-security/02-dependency-scanning.md
+      - content/05-operating/05-security/03-sbom.md
+      - content/05-operating/05-security/04-secrets-detection.md
+      - content/05-operating/05-security/05-supply-chain-attacks.md
+      - content/05-operating/05-security/06-platform-hardening.md
+      - content/05-operating/05-security/07-git-argument-injection-end-of-options.md
+      - content/05-operating/05-security/08-missing-dotgit-forged-config-fsmonitor.md
+    - part: Federation
+      contents:
+      - content/05-operating/06-federation/00-theory.md
+      - content/05-operating/06-federation/01-git-as-decentralization.md
+      - content/05-operating/06-federation/02-federated-hosting.md
+      - content/05-operating/06-federation/03-are-we-ready.md
+    - part: Storage and Scale
+      contents:
+      - content/05-operating/07-storage-and-scale/00-theory.md
+      - content/05-operating/07-storage-and-scale/01-repository-growth.md
+      - content/05-operating/07-storage-and-scale/02-storage-options.md
+      - content/05-operating/07-storage-and-scale/03-clone-and-fetch-performance.md
+      - content/05-operating/07-storage-and-scale/04-database-scaling.md
+      - content/05-operating/07-storage-and-scale/05-cdn-and-geo.md
+      - content/05-operating/07-storage-and-scale/06-benchmarks.md
+    - part: HA and DR
+      contents:
+      - content/05-operating/08-ha-and-dr/00-theory.md
+      - content/05-operating/08-ha-and-dr/01-backup-strategies.md
+      - content/05-operating/08-ha-and-dr/02-point-in-time-recovery.md
+      - content/05-operating/08-ha-and-dr/03-geo-redundant.md
+      - content/05-operating/08-ha-and-dr/04-dr-planning.md
+      - content/05-operating/08-ha-and-dr/05-monitoring-repo-health.md
+    - part: Observability
+      contents:
+      - content/05-operating/09-observability/00-theory.md
+      - content/05-operating/09-observability/01-operational-metrics.md
+      - content/05-operating/09-observability/02-log-aggregation.md
+      - content/05-operating/09-observability/03-audit-logging.md
+      - content/05-operating/09-observability/04-tracing-user-actions.md
+      - content/05-operating/09-observability/05-compliance-frameworks.md
+      - content/05-operating/09-observability/06-security-monitoring.md
+    - part: Enterprise and Air-Gap
+      contents:
+      - content/05-operating/10-enterprise-and-airgap/00-theory.md
+      - content/05-operating/10-enterprise-and-airgap/01-air-gapped.md
+      - content/05-operating/10-enterprise-and-airgap/02-multi-cloud-hybrid.md
+      - content/05-operating/10-enterprise-and-airgap/03-data-residency.md
+      - content/05-operating/10-enterprise-and-airgap/04-support-and-slas.md
+      - content/05-operating/10-enterprise-and-airgap/05-capacity-and-tco.md
+    - part: Migration and Future
+      contents:
+      - content/05-operating/11-migration-and-future/00-theory.md
+      - content/05-operating/11-migration-and-future/01-migration-strategies.md
+      - content/05-operating/11-migration-and-future/02-preserving-history.md
+      - content/05-operating/11-migration-and-future/03-interoperability.md
+      - content/05-operating/11-migration-and-future/04-emerging-trends.md
+      - content/05-operating/11-migration-and-future/05-decision-framework.md
+      - content/05-operating/11-migration-and-future/06-future-of-code-hosting.md
+      - content/05-operating/11-migration-and-future/07-jj-working-copy-as-commit.md
+      - content/05-operating/11-migration-and-future/08-majjit-jj-dag-tui.md
+  - part: GitHub Actions
+    contents:
+    - part: Fundamentals
+      contents:
+      - content/06-github-actions/01-fundamentals/00-theory.md
+      - content/06-github-actions/01-fundamentals/01-automate-with-actions.md
+      - content/06-github-actions/01-fundamentals/02-workflow-anatomy.md
+      - content/06-github-actions/01-fundamentals/03-runtime-and-contexts.md
+      - content/06-github-actions/01-fundamentals/04-authoring-and-debugging.md
+      - content/06-github-actions/01-fundamentals/05-building-and-validating.md
+    - part: Custom Actions and Releases
+      contents:
+      - content/06-github-actions/02-custom-actions-and-releases/00-theory.md
+      - content/06-github-actions/02-custom-actions-and-releases/01-building-custom-actions.md
+      - content/06-github-actions/02-custom-actions-and-releases/02-reuse-matrix-cache.md
+      - content/06-github-actions/02-custom-actions-and-releases/03-releasing-software.md
+      - content/06-github-actions/02-custom-actions-and-releases/04-security-notes.md
+      - content/06-github-actions/02-custom-actions-and-releases/04b-workflow-dependency-lockfiles.md
+  - part: GitOps
+    contents:
+    - part: What Is GitOps
+      contents:
+      - content/07-gitops/01-what-is-gitops/00-theory.md
+      - content/07-gitops/01-what-is-gitops/01-devops-pain-points.md
+      - content/07-gitops/01-what-is-gitops/02-four-pillars.md
+      - content/07-gitops/01-what-is-gitops/03-benefits.md
+      - content/07-gitops/01-what-is-gitops/04-push-vs-pull.md
+      - content/07-gitops/01-what-is-gitops/05-environment-repos.md
+      - content/07-gitops/01-what-is-gitops/06-trunk-vs-prs.md
+      - content/07-gitops/01-what-is-gitops/07-gitops-vs-other-ops.md
+      - content/07-gitops/01-what-is-gitops/08-when-to-use-gitops.md
+    - part: Flux Quickstart
+      contents:
+      - content/07-gitops/02-flux-quickstart/00-theory.md
+      - content/07-gitops/02-flux-quickstart/01-app-and-env-repos.md
+      - content/07-gitops/02-flux-quickstart/02-cd-with-actions.md
+      - content/07-gitops/02-flux-quickstart/03-flux-operator.md
+      - content/07-gitops/02-flux-quickstart/04-future-of-gitops.md
+  - part: Argo CD
+    contents:
+    - part: Concepts and Architecture
+      contents:
+      - content/08-argo-cd/01-concepts-and-architecture/00-theory.md
+      - content/08-argo-cd/01-concepts-and-architecture/01-where-argo-came-from.md
+      - content/08-argo-cd/01-concepts-and-architecture/02-reconciliation-and-immutable.md
+      - content/08-argo-cd/01-concepts-and-architecture/03-reconciliation-loop.md
+      - content/08-argo-cd/01-concepts-and-architecture/04-components.md
+      - content/08-argo-cd/01-concepts-and-architecture/05-applications-and-projects.md
+      - content/08-argo-cd/01-concepts-and-architecture/06-git-to-cluster.md
+      - content/08-argo-cd/01-concepts-and-architecture/07-desired-vs-actual.md
+    - part: Install and Lab
+      contents:
+      - content/08-argo-cd/02-install-and-lab/00-theory.md
+      - content/08-argo-cd/02-install-and-lab/01-lab-shape.md
+      - content/08-argo-cd/02-install-and-lab/02-k3s-and-kubectl.md
+      - content/08-argo-cd/02-install-and-lab/03-install-methods.md
+      - content/08-argo-cd/02-install-and-lab/04-ui-cli-clusters.md
+    - part: Applications and Sync
+      contents:
+      - content/08-argo-cd/03-applications-and-sync/00-theory.md
+      - content/08-argo-cd/03-applications-and-sync/01-first-application.md
+      - content/08-argo-cd/03-applications-and-sync/02-sync-policy.md
+      - content/08-argo-cd/03-applications-and-sync/03-pruning.md
+      - content/08-argo-cd/03-applications-and-sync/04-retries-and-sync-options.md
+      - content/08-argo-cd/03-applications-and-sync/05-namespace-labels-history.md
+      - content/08-argo-cd/03-applications-and-sync/06-recap-exercise.md
+    - part: Clusters and Diff
+      contents:
+      - content/08-argo-cd/04-clusters-and-diff/00-theory.md
+      - content/08-argo-cd/04-clusters-and-diff/01-cluster-registration.md
+      - content/08-argo-cd/04-clusters-and-diff/02-polling-vs-webhooks.md
+      - content/08-argo-cd/04-clusters-and-diff/03-diff-algorithms.md
+      - content/08-argo-cd/04-clusters-and-diff/04-application-health.md
+    - part: Hooks and Waves
+      contents:
+      - content/08-argo-cd/05-hooks-and-waves/00-theory.md
+      - content/08-argo-cd/05-hooks-and-waves/01-sync-phases.md
+      - content/08-argo-cd/05-hooks-and-waves/02-generate-name-and-waves.md
+      - content/08-argo-cd/05-hooks-and-waves/03-hook-failures.md
+      - content/08-argo-cd/05-hooks-and-waves/04-hook-anti-patterns.md
+    - part: Users and RBAC
+      contents:
+      - content/08-argo-cd/06-users-and-rbac/00-theory.md
+      - content/08-argo-cd/06-users-and-rbac/01-creating-a-user.md
+      - content/08-argo-cd/06-users-and-rbac/02-p-and-g-lines.md
+      - content/08-argo-cd/06-users-and-rbac/03-verifying-grants.md
+    - part: Helm
+      contents:
+      - content/08-argo-cd/07-helm/00-theory.md
+      - content/08-argo-cd/07-helm/01-helm-vs-plain.md
+      - content/08-argo-cd/07-helm/02-charts-and-repos.md
+      - content/08-argo-cd/07-helm/03-deploy-and-values.md
+      - content/08-argo-cd/07-helm/04-helm-hooks-vs-argo-hooks.md
+    - part: ApplicationSets and Patterns
+      contents:
+      - content/08-argo-cd/08-applicationsets-and-patterns/00-theory.md
+      - content/08-argo-cd/08-applicationsets-and-patterns/01-applicationsets.md
+      - content/08-argo-cd/08-applicationsets-and-patterns/02-app-of-apps.md
+      - content/08-argo-cd/08-applicationsets-and-patterns/03-multi-branch.md
+      - content/08-argo-cd/08-applicationsets-and-patterns/04-build-to-update.md
+    - part: Notifications, Secrets, and Blue-Green
+      contents:
+      - content/08-argo-cd/09-notifications-secrets-bluegreen/00-theory.md
+      - content/08-argo-cd/09-notifications-secrets-bluegreen/01-slack-notifications.md
+      - content/08-argo-cd/09-notifications-secrets-bluegreen/02-secret-management.md
+      - content/08-argo-cd/09-notifications-secrets-bluegreen/03-blue-green.md
+    - part: Argo vs Alternatives
+      contents:
+      - content/08-argo-cd/10-argo-vs-alternatives/00-theory.md
+      - content/08-argo-cd/10-argo-vs-alternatives/01-argo-vs-flux-and-friends.md
+      - content/08-argo-cd/10-argo-vs-alternatives/02-choosing-an-engine.md
+  - part: Argo Rollouts
+    contents:
+    - part: Introducing Rollouts
+      contents:
+      - content/09-argo-rollouts/01-introducing-rollouts/00-theory.md
+      - content/09-argo-rollouts/01-introducing-rollouts/01-beyond-rollingupdate.md
+      - content/09-argo-rollouts/01-introducing-rollouts/02-canary-and-blue-green.md
+      - content/09-argo-rollouts/01-introducing-rollouts/03-gradual-releases.md
+    - part: Resources and Lifecycle
+      contents:
+      - content/09-argo-rollouts/02-resources-and-lifecycle/00-theory.md
+      - content/09-argo-rollouts/02-resources-and-lifecycle/01-rollout-vs-deployment.md
+      - content/09-argo-rollouts/02-resources-and-lifecycle/02-stable-and-canary.md
+      - content/09-argo-rollouts/02-resources-and-lifecycle/03-analysis-and-experiments.md
+    - part: Rollouts Lab
+      contents:
+      - content/09-argo-rollouts/03-rollouts-lab/00-theory.md
+      - content/09-argo-rollouts/03-rollouts-lab/01-lab-stack.md
+      - content/09-argo-rollouts/03-rollouts-lab/02-manifests-and-verify.md
+    - part: First Canary
+      contents:
+      - content/09-argo-rollouts/04-first-canary/00-theory.md
+      - content/09-argo-rollouts/04-first-canary/01-canary-steps.md
+      - content/09-argo-rollouts/04-first-canary/02-promote-abort-inspect.md
+    - part: Istio Canaries
+      contents:
+      - content/09-argo-rollouts/05-istio-canaries/00-theory.md
+      - content/09-argo-rollouts/05-istio-canaries/01-istio-traffic.md
+      - content/09-argo-rollouts/05-istio-canaries/02-subsets-and-weights.md
+      - content/09-argo-rollouts/05-istio-canaries/03-replica-vs-traffic.md
+    - part: Analysis and Prometheus
+      contents:
+      - content/09-argo-rollouts/06-analysis-and-prometheus/00-theory.md
+      - content/09-argo-rollouts/06-analysis-and-prometheus/01-analysistemplate.md
+      - content/09-argo-rollouts/06-analysis-and-prometheus/02-success-failure-aborts.md
+      - content/09-argo-rollouts/06-analysis-and-prometheus/03-inline-vs-background.md
+    - part: Experiments
+      contents:
+      - content/09-argo-rollouts/07-experiments/00-theory.md
+      - content/09-argo-rollouts/07-experiments/01-side-by-side.md
+      - content/09-argo-rollouts/07-experiments/02-analysis-during-experiments.md
+      - content/09-argo-rollouts/07-experiments/03-experiments-vs-analysis.md
+    - part: HPA and Canary
+      contents:
+      - content/09-argo-rollouts/08-hpa-and-canary/00-theory.md
+      - content/09-argo-rollouts/08-hpa-and-canary/01-hpa-problem.md
+      - content/09-argo-rollouts/08-hpa-and-canary/02-metrics-and-scaling.md
+      - content/09-argo-rollouts/08-hpa-and-canary/03-setcanaryscale.md
+    - part: Blue-Green
+      contents:
+      - content/09-argo-rollouts/09-blue-green/00-theory.md
+      - content/09-argo-rollouts/09-blue-green/01-active-and-preview.md
+      - content/09-argo-rollouts/09-blue-green/02-promotion-analysis.md
+      - content/09-argo-rollouts/09-blue-green/03-promote-and-rollback.md
+    - part: Rollout Notifications
+      contents:
+      - content/09-argo-rollouts/10-rollout-notifications/00-theory.md
+      - content/09-argo-rollouts/10-rollout-notifications/01-architecture-and-scope.md
+      - content/09-argo-rollouts/10-rollout-notifications/02-triggers-and-slack.md
+      - content/09-argo-rollouts/10-rollout-notifications/03-troubleshooting.md
+    - part: Migrating to Rollouts
+      contents:
+      - content/09-argo-rollouts/11-migrating-to-rollouts/00-theory.md
+      - content/09-argo-rollouts/11-migrating-to-rollouts/01-workloadref.md
+      - content/09-argo-rollouts/11-migrating-to-rollouts/02-direct-conversion.md
+      - content/09-argo-rollouts/11-migrating-to-rollouts/03-canary-migration.md
+      - content/09-argo-rollouts/11-migrating-to-rollouts/04-statefulset-limits.md
+    - part: Capstone
+      contents:
+      - content/09-argo-rollouts/12-capstone/00-theory.md
+      - content/09-argo-rollouts/12-capstone/01-mental-model-end-to-end.md
+      - content/09-argo-rollouts/12-capstone/02-larger-environments.md
+  - part: Appendices
+    contents:
+    - content/99-appendices/01-questions-and-answers.md
+    - content/99-appendices/02-competency-checklists.md
+    - content/99-appendices/03-scenario-playbook.md
+    - content/99-appendices/04-lab-environment.md
+    - content/99-appendices/05-glossary-and-quick-reference.md
+format:
+  html:
+    theme: auto
+  epub: {}
+  pdf:
+    paper: A4

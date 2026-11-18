@@ -1,0 +1,418 @@
+---
+title: Test Organization and Coverage
+---
+
+# Test Organization and Coverage
+
+## Overview
+
+Well-organized tests and good coverage help maintain code quality over time.
+
+## File Organization
+
+```
+mypackage/
+├── user.go          # Implementation
+├── user_test.go     # Tests
+├── user_internal_test.go  # Internal tests
+└── testdata/        # Test fixtures
+    └── users.json
+```
+
+## Package Naming
+
+```go
+// Same package (white-box testing)
+package mypackage
+
+// External package (black-box testing)
+package mypackage_test
+```
+
+## Testdata Directory
+
+```go
+func TestParseConfig(t *testing.T) {
+    data, err := os.ReadFile("testdata/config.json")
+    if err != nil {
+        t.Fatal(err)
+    }
+    // Use data
+}
+```
+
+## Code Coverage
+
+```bash
+# Show coverage percentage
+go test -cover
+
+# Generate coverage profile
+go test -coverprofile=coverage.out
+
+# View in browser
+go tool cover -html=coverage.out
+
+# Show coverage by function
+go tool cover -func=coverage.out
+```
+
+## Coverage Modes
+
+```bash
+# Statement coverage (default)
+go test -covermode=set
+
+# Count mode (how many times)
+go test -covermode=count
+
+# Atomic (for concurrent tests)
+go test -covermode=atomic
+```
+
+## Test Groups
+
+```go
+func TestUser(t *testing.T) {
+    t.Run("Create", func(t *testing.T) {
+        // Test creation
+    })
+
+    t.Run("Update", func(t *testing.T) {
+        // Test update
+    })
+
+    t.Run("Delete", func(t *testing.T) {
+        // Test deletion
+    })
+}
+```
+
+## Skipping Tests
+
+```go
+func TestIntegration(t *testing.T) {
+    if testing.Short() {
+        t.Skip("skipping in short mode")
+    }
+    // Long test
+}
+```
+
+```bash
+go test -short  # Skip long tests
+```
+
+## `gotestsum`: local feedback and CI reports
+
+[gotestsum](https://github.com/gotestyourself/gotestsum) wraps `go test -json`
+to present results and save reports. Keep ordinary `testing` package tests;
+no separate test framework is needed.
+
+```bash
+go install gotest.tools/gotestsum@v1.13.0
+gotestsum --format testname -- -race -count=1 ./...
+```
+
+Arguments after `--` go to `go test`. `-count=1` requests a fresh run instead
+of a cached result. For CI, retain structured output:
+
+```bash
+mkdir -p test-results
+gotestsum --junitfile test-results/junit.xml \
+    --jsonfile test-results/tests.json -- -race -count=1 ./...
+gotestsum tool slowest --jsonfile test-results/tests.json --threshold 500ms
+```
+
+Publish the report files as CI artifacts, including on failure. JUnit XML
+lets a CI system display test results, and the JSON preserves the test event
+stream. Test failures still fail the command. The `slowest` command above
+reports timings; it does not rewrite tests.
+
+For local feedback, `gotestsum --watch --format testname` reruns tests as Go
+files change. Keep the first failure visible when investigating flakes;
+automatic retries can conceal a broken test or shutdown sequence.
+
+## Summary
+
+| Flag | Purpose |
+|------|---------|
+| `-cover` | Show coverage % |
+| `-coverprofile=file` | Generate profile |
+| `-short` | Skip long tests |
+| `-run=Pattern` | Run matching tests |
+
+## Related Topics
+- [Testing Fundamentals](36-testing-fundamentals.md)
+- [Advanced Testing](38-advanced-testing.md)
+
+## Worked example
+
+White-box vs black-box packages and `testdata` fixtures side by side.
+
+Save under `greet/`. Then:
+
+```bash
+cd greet
+go mod init example/greet
+go test -v ./...
+go test -cover
+```
+
+```go
+// greet.go
+package greet
+
+import "fmt"
+
+func Hello(name string) string {
+	if name == "" {
+		name = defaultName()
+	}
+	return fmt.Sprintf("Hello, %s!", name)
+}
+
+func defaultName() string { return "world" }
+```
+
+```go
+// greet_internal_test.go — white-box (same package)
+package greet
+
+import "testing"
+
+func TestDefaultName(t *testing.T) {
+	if defaultName() != "world" {
+		t.Fatalf("got %q", defaultName())
+	}
+}
+```
+
+```go
+// greet_test.go — black-box (external test package)
+package greet_test
+
+import (
+	"os"
+	"strings"
+	"testing"
+
+	"example/greet"
+)
+
+func TestHelloFromFixture(t *testing.T) {
+	data, err := os.ReadFile("testdata/names.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range strings.Split(strings.TrimSpace(string(data)), "\n") {
+		got := greet.Hello(name)
+		if !strings.Contains(got, name) {
+			t.Errorf("Hello(%q)=%q", name, got)
+		}
+	}
+}
+
+func TestHelloEmpty(t *testing.T) {
+	if greet.Hello("") != "Hello, world!" {
+		t.Fatal(greet.Hello(""))
+	}
+}
+```
+
+`testdata/names.txt`:
+
+```text
+Ada
+Grace
+```
+
+**Expected output:** (`go test -v`)
+
+```text
+=== RUN   TestDefaultName
+--- PASS: TestDefaultName (0.00s)
+=== RUN   TestHelloFromFixture
+--- PASS: TestHelloFromFixture (0.00s)
+=== RUN   TestHelloEmpty
+--- PASS: TestHelloEmpty (0.00s)
+PASS
+```
+
+## More examples
+
+Grouped subtests + `-short` skip for slow suites.
+
+```go
+// suite_test.go
+package greet_test
+
+import (
+	"testing"
+
+	"example/greet"
+)
+
+func TestHelloSuite(t *testing.T) {
+	t.Run("named", func(t *testing.T) {
+		if greet.Hello("Lin") != "Hello, Lin!" {
+			t.Fatal("named")
+		}
+	})
+	t.Run("default", func(t *testing.T) {
+		if greet.Hello("") != "Hello, world!" {
+			t.Fatal("default")
+		}
+	})
+	t.Run("slow", func(t *testing.T) {
+		if testing.Short() {
+			t.Skip("skipping slow case")
+		}
+		// pretend expensive integration work
+		_ = greet.Hello("slow")
+	})
+}
+```
+
+```bash
+go test -short -v -run TestHelloSuite
+```
+
+## Runnable example
+
+Save these files under `mathx/`. Create `testdata/cases.txt` as shown. Then:
+
+```bash
+cd mathx
+go mod init example/mathx
+go test -v
+go test -cover
+go test -short -v
+go test -coverprofile=coverage.out && go tool cover -func=coverage.out
+```
+
+`mathx.go`:
+
+```go
+package mathx
+
+import (
+	"strconv"
+	"strings"
+)
+
+func Add(a, b int) int { return a + b }
+
+// ParseSum reads lines of "a+b" and returns the sums.
+func ParseSum(data string) ([]int, error) {
+	lines := strings.Split(strings.TrimSpace(data), "\n")
+	out := make([]int, 0, len(lines))
+	for _, line := range lines {
+		if line == "" {
+			continue
+		}
+		parts := strings.Split(line, "+")
+		if len(parts) != 2 {
+			return nil, errString("bad line: " + line)
+		}
+		a, err := strconv.Atoi(strings.TrimSpace(parts[0]))
+		if err != nil {
+			return nil, err
+		}
+		b, err := strconv.Atoi(strings.TrimSpace(parts[1]))
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, Add(a, b))
+	}
+	return out, nil
+}
+
+type errString string
+
+func (e errString) Error() string { return string(e) }
+```
+
+`mathx_test.go` (black-box: external test package):
+
+```go
+package mathx_test
+
+import (
+	"os"
+	"testing"
+
+	"example/mathx"
+)
+
+func TestAdd(t *testing.T) {
+	t.Run("positive", func(t *testing.T) {
+		if got := mathx.Add(2, 3); got != 5 {
+			t.Fatalf("got %d", got)
+		}
+	})
+	t.Run("negative", func(t *testing.T) {
+		if got := mathx.Add(-2, -3); got != -5 {
+			t.Fatalf("got %d", got)
+		}
+	})
+}
+
+func TestParseSumFromTestdata(t *testing.T) {
+	data, err := os.ReadFile("testdata/cases.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	sums, err := mathx.ParseSum(string(data))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []int{5, 0, 9}
+	if len(sums) != len(want) {
+		t.Fatalf("len=%d want %d", len(sums), len(want))
+	}
+	for i := range want {
+		if sums[i] != want[i] {
+			t.Errorf("sums[%d]=%d want %d", i, sums[i], want[i])
+		}
+	}
+}
+
+func TestSlow(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping slow test in short mode")
+	}
+	// Pretend this is an expensive integration-style check.
+	if mathx.Add(100, 1) != 101 {
+		t.Fatal("unexpected")
+	}
+}
+```
+
+`testdata/cases.txt`:
+
+```text
+2+3
+-1+1
+4+5
+```
+
+**Expected output:** (`go test -v` without `-short`)
+
+```text
+=== RUN   TestAdd
+=== RUN   TestAdd/positive
+=== RUN   TestAdd/negative
+--- PASS: TestAdd (0.00s)
+=== RUN   TestParseSumFromTestdata
+--- PASS: TestParseSumFromTestdata (0.00s)
+=== RUN   TestSlow
+--- PASS: TestSlow (0.00s)
+PASS
+```
+
+With `go test -short -v`, `TestSlow` reports `SKIP`.
+
+**What to notice:** `package mathx_test` only sees exported API (black-box). `testdata/` is the conventional place for fixtures. Subtests (`t.Run`) organize cases; `-short` skips long work.
+
+**Try next:** Generate an HTML coverage report with `go tool cover -html=coverage.out`; add an internal white-box test file with `package mathx` that exercises an unexported helper.

@@ -1,0 +1,318 @@
+---
+title: panic, recover, and Failure Modes
+---
+
+# panic, recover, and Failure Modes
+
+## Overview
+
+`panic` and `recover` handle unrecoverable errors. Unlike normal errors, panics crash the program unless recovered.
+
+## When to Panic
+
+✅ **Appropriate:**
+- Programmer errors (bugs)
+- Impossible conditions
+- Failed invariants
+- During initialization
+
+❌ **Avoid for:**
+- Expected errors (file not found, network timeout)
+- User input validation
+- Anything recoverable
+
+## Panic
+
+```go
+func divide(a, b int) int {
+    if b == 0 {
+        panic("division by zero")  // Terminates program
+    }
+    return a / b
+}
+```
+
+### Common Panic Sources
+
+```go
+// nil pointer dereference
+var p *int
+*p = 1  // panic
+
+// Index out of range
+arr := []int{1, 2}
+arr[10]  // panic
+
+// Invalid type assertion
+var i interface{} = "string"
+i.(int)  // panic
+```
+
+## Recover
+
+Recover catches panics in deferred functions:
+
+```go
+func safeCall() (err error) {
+    defer func() {
+        if r := recover(); r != nil {
+            err = fmt.Errorf("panic recovered: %v", r)
+        }
+    }()
+
+    dangerousOperation()
+    return nil
+}
+```
+
+## HTTP Server Pattern
+
+```go
+func handler(w http.ResponseWriter, r *http.Request) {
+    defer func() {
+        if err := recover(); err != nil {
+            log.Printf("panic: %v\n%s", err, debug.Stack())
+            http.Error(w, "Internal Server Error", 500)
+        }
+    }()
+
+    // Handle request
+}
+```
+
+## Panic vs Error
+
+```go
+// Return error for expected failures
+func ReadFile(name string) ([]byte, error) {
+    if !exists(name) {
+        return nil, ErrNotFound  // Expected case
+    }
+    // ...
+}
+
+// Panic for bugs
+func MustCompile(pattern string) *Regexp {
+    r, err := Compile(pattern)
+    if err != nil {
+        panic(err)  // Invalid pattern is programmer error
+    }
+    return r
+}
+```
+
+## Summary
+
+| Keyword | Purpose |
+|---------|---------|
+| `panic` | Unrecoverable error (crash) |
+| `recover` | Catch panic in defer |
+| `error` | Expected, recoverable failures |
+
+| Use panic for | Use error for |
+|---------------|---------------|
+| Bugs | Expected failures |
+| Invariant violations | User/external input |
+| Initialization failures | I/O, network errors |
+
+## Related Topics
+- [Errors as Values](33-errors-values.md)
+- [Testing Fundamentals](../06-testing/36-testing-fundamentals.md)
+
+## Worked example
+
+Boundary recover that turns a panic into an `error` (HTTP/worker style).
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"runtime/debug"
+)
+
+func protect(label string, fn func() error) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			// In real servers, log debug.Stack() and return a generic 500.
+			_ = debug.Stack()
+			err = fmt.Errorf("%s: panic: %v", label, r)
+		}
+	}()
+	return fn()
+}
+
+func parseAge(s string) (int, error) {
+	if s == "" {
+		return 0, fmt.Errorf("empty age")
+	}
+	// Bug-style panic: index out of range on bad internal invariant.
+	if s[0] == '!' {
+		_ = []int{}[1]
+	}
+	n := 0
+	for _, r := range s {
+		if r < '0' || r > '9' {
+			return 0, fmt.Errorf("bad digit in %q", s)
+		}
+		n = n*10 + int(r-'0')
+	}
+	return n, nil
+}
+
+func main() {
+	err := protect("handler", func() error {
+		age, err := parseAge("34")
+		if err != nil {
+			return err
+		}
+		fmt.Println("age:", age)
+		return nil
+	})
+	fmt.Println("ok path err:", err)
+
+	err = protect("handler", func() error {
+		_, err := parseAge("")
+		return err
+	})
+	fmt.Println("expected error:", err)
+
+	err = protect("handler", func() error {
+		_, err := parseAge("!boom")
+		return err
+	})
+	fmt.Println("recovered panic:", err)
+}
+```
+
+**Expected output:**
+
+```text
+age: 34
+ok path err: <nil>
+expected error: empty age
+recovered panic: handler: panic: runtime error: index out of range [1] with length 0
+```
+
+## More examples
+
+`recover` only works on the **same** goroutine that panics.
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+func main() {
+	var wg sync.WaitGroup
+
+	// Wrong: recover in parent does not catch child panic.
+	// We catch inside the child instead.
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Println("child recovered:", r)
+			}
+		}()
+		panic("child boom")
+	}()
+	wg.Wait()
+	fmt.Println("parent still running")
+}
+```
+
+**Expected output:**
+
+```text
+child recovered: child boom
+parent still running
+```
+
+## Runnable example
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"regexp"
+)
+
+func mustCompile(pattern string) *regexp.Regexp {
+	r, err := regexp.Compile(pattern)
+	if err != nil {
+		panic(err) // invalid pattern is a programmer error at init
+	}
+	return r
+}
+
+func safeCall(fn func()) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic recovered: %v", r)
+		}
+	}()
+	fn()
+	return nil
+}
+
+func divide(a, b int) int {
+	if b == 0 {
+		panic("division by zero")
+	}
+	return a / b
+}
+
+func main() {
+	re := mustCompile(`^\d+$`)
+	fmt.Println("regex match 42:", re.MatchString("42"))
+
+	err := safeCall(func() {
+		fmt.Println("divide:", divide(10, 2))
+	})
+	fmt.Println("safe ok:", err)
+
+	err = safeCall(func() {
+		_ = divide(1, 0)
+	})
+	fmt.Println("safe recovered:", err)
+
+	// Prefer error returns for expected failure modes.
+	if !re.MatchString("xx") {
+		fmt.Println("expected validation failure handled without panic")
+	}
+}
+```
+
+**Expected output:**
+
+```text
+regex match 42: true
+divide: 5
+safe ok: <nil>
+safe recovered: panic recovered: division by zero
+expected validation failure handled without panic
+```
+
+**What to notice:** `recover` only works inside deferred functions on the panicking goroutine. Convert panics to errors at boundaries (workers, HTTP handlers); keep normal validation on the `error` path.
+
+**Try next:** Panic inside a new goroutine without recover and observe process exit; wrap a handler-style function that always recovers and logs.

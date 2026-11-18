@@ -1,0 +1,99 @@
+---
+title: Supply Chain and Dependencies
+---
+
+# Supply Chain and Dependencies
+
+## Overview
+
+Your binary includes every module you import. Supply-chain hygiene: pin versions, review updates, scan vulns, reproduce builds.
+
+## Minimal practices
+
+| Practice | Tool / habit |
+|----------|----------------|
+| Modules | `go.mod` / `go.sum` committed |
+| Vuln scan | `govulncheck ./...` |
+| Minimal deps | resist “one function” modules |
+| Checksums | `go.sum` authenticity via sumdb |
+| CI | fail on known critical vulns |
+
+```bash
+go install golang.org/x/vuln/cmd/govulncheck@latest
+govulncheck ./...
+```
+
+## OSV-Scanner: scan a repository's dependencies
+
+[OSV-Scanner](https://google.github.io/osv-scanner/usage/scan-source) finds
+dependency manifests and checks their versions against the OSV vulnerability
+database. It is useful when a Go service shares a repository with other
+dependency manifests or when you need a repository-wide inventory scan.
+
+For the pinned [v2.7.0 source build](https://github.com/google/osv-scanner/blob/v2.7.0/go.mod),
+use Go 1.27 or newer:
+
+```bash
+go install github.com/google/osv-scanner/v2/cmd/osv-scanner@v2.7.0
+osv-scanner scan source -r .
+```
+
+Prebuilt binaries are available through the
+[installation guide](https://google.github.io/osv-scanner/installation/).
+The recursive scan searches nested directories; `.gitignore` affects which
+files it discovers. Run it at the intended repository root and check the
+reported inputs before treating the scan as complete.
+
+Keep `govulncheck ./...` as the focused Go-module workflow. OSV-Scanner also
+supports Go call analysis through the `govulncheck` library, enabled by default
+for Go; it needs the Go command on `PATH`. The two tools can therefore overlap
+in their Go findings. Review affected versions and call-analysis evidence,
+upgrade the dependency, and rerun the scan and tests. Schedule the broader
+scan when its extra manifest coverage is useful.
+
+## go.mod hygiene
+
+```bash
+go get module@vX.Y.Z   # explicit
+go mod tidy
+go mod download
+```
+
+Prefer **semantic import versions** and avoid `replace` to random forks in production without review.
+
+## Vendoring (optional)
+
+```bash
+go mod vendor
+# build with -mod=vendor for airgapped CI
+```
+
+## Reproducible builds
+
+```bash
+CGO_ENABLED=0 go build -trimpath -ldflags="-s -w -X main.version=$VER"
+```
+
+Document Go version (toolchain line in `go.mod`).
+
+## Private modules
+
+```text
+GOPRIVATE=github.com/myorg/*
+```
+
+Don’t leak private paths to public proxies.
+
+## Rules of thumb
+
+| Do | Don't |
+|----|--------|
+| Run govulncheck in CI | Ignore `go.sum` conflicts blindly |
+| Review upgrades | Auto-merge major deps without tests |
+| Pin actions SHA in CI | `uses: foo@main` for build |
+
+## Try next
+
+1. Run `govulncheck` on this repo’s modules.
+2. Add CI step.
+3. Build with `-trimpath` and compare reproducibility notes.

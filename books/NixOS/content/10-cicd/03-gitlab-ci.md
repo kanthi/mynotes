@@ -1,0 +1,168 @@
+---
+title: GitLab CI Integration
+---
+
+# GitLab CI Integration
+
+GitLab jobs are containers. The boring default is: **a Nix image (or a runner that already has Nix), flakes enabled, `nix flake check` / `nix build`, and a cache that is not `GIT_STRATEGY: none` plus hope**.
+
+## Mental model
+
+| Runner kind | How Nix appears |
+|---|---|
+| Shared SaaS runner | Job image `nixos/nix` (or `gitpod/workspace-nix`) |
+| Self-hosted with Nix | `image:` optional; use the host store + a mounted `/nix` |
+| Kubernetes executor | Persistent `/nix` volume or you download the world every job |
+
+`NIX_CONFIG` in `variables:` is the reliable way to turn on flakes inside `nixos/nix` images that ship a conservative `nix.conf`.
+
+The same binary cache as GitHub Actions applies. Cachix works from GitLab. `CACHIX_AUTH_TOKEN` is a GitLab CI/CD variable, masked, protected if it can write.
+
+## Worked examples
+
+### Case 1: Official Nix image, flakes on
+
+Save as `.gitlab-ci.yml`:
+
+```yaml
+# .gitlab-ci.yml
+image: nixos/nix:2.35.2
+
+variables:
+  NIX_CONFIG: "experimental-features = nix-command flakes"
+
+stages:
+  - test
+  - build
+
+test-job:
+  stage: test
+  script:
+    - nix flake check
+
+build-job:
+  stage: build
+  script:
+    - nix build --print-build-logs
+    - nix path-info -Shr ./result
+```
+
+Pin the image tag (`2.35.2`), not `latest`.
+
+### Case 2: Cachix from GitLab
+
+```yaml
+# .gitlab-ci.yml
+image: nixos/nix:2.35.2
+
+variables:
+  NIX_CONFIG: "experimental-features = nix-command flakes"
+
+before_script:
+  - nix-env -iA nixpkgs.cachix
+  - cachix use desk-cache
+  - echo "$CACHIX_AUTH_TOKEN" | cachix authtoken --stdin
+
+build:
+  script:
+    - nix flake check
+    - nix build
+    - cachix push desk-cache ./result
+```
+
+`nix-env -iA` for **cachix the client** on a throwaway image is acceptable. Do not use it to install the application under test.
+
+A cleaner variant: `nix run github:NixOS/nixpkgs/nixos-26.05#cachix -- use desk-cache`.
+
+Pin the image by digest when the runner can pull it:
+
+```yaml
+image: nixos/nix:2.35.2@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+```
+
+`GIT_STRATEGY: clone` plus a shallow clone is fine. `GIT_STRATEGY: none` plus a mystery workspace is how you test last week's `flake.lock`.
+
+### Case 3: Cache `/nix` on a self-hosted runner
+
+On a runner VM that keeps its disk:
+
+```yaml
+# .gitlab-ci.yml
+default:
+  tags: [nix-runner]
+  image: nixos/nix:2.35.2
+  cache:
+    key: nix-store
+    paths:
+      - /nix/store
+```
+
+GitLab's `cache: paths` on `/nix/store` is **slow and incomplete** (no `db.sqlite`). Prefer a **persistent runner** with Nix installed on the host and:
+
+```yaml
+# .gitlab-ci.yml
+default:
+  tags: [nix-host]
+  # no image: — job runs on the host
+variables:
+  NIX_CONFIG: "experimental-features = nix-command flakes"
+build:
+  script:
+    - nix flake check
+    - nix build
+```
+
+The host store **is** the cache. GC with `--delete-older-than 7d` in a nightly cron.
+
+### Case 4: `rules` so forks do not push
+
+```yaml
+# .gitlab-ci.yml
+push-cache:
+  script:
+    - nix build
+    - cachix push desk-cache ./result
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+```
+
+Write tokens stay on the default branch.
+
+### Case 5: Show what you shipped
+
+```yaml
+# .gitlab-ci.yml
+build:
+  script:
+    - nix build
+    - nix path-info -Shr ./result
+    - nix-store -q --tree ./result | head -40
+  artifacts:
+    paths:
+      - result
+    expire_in: 1 day
+```
+
+The `result` symlink as an artifact is **not** a closure. It is a pointer that will not work on a machine without `/nix`. Use `nix copy --to file://$PWD/nar` and artifact `nar/` if humans must download.
+
+## The trap
+
+The trap is **`image: ubuntu:24.04` plus `curl | sh` the Nix installer on every job**. You pay minutes and get a different Nix version than last week. Use a Nix image or a Nix-equipped runner.
+
+The other trap is caching only `result` in GitLab artifacts and calling it a binary cache. Artifacts are not signed NARs.
+
+## The boring rule
+
+- Pin `nixos/nix:<version>` (digest if you can) or use a self-hosted runner that already has Nix.
+- `nix run nixpkgs#cachix`, not `nix-env` for the app under test.
+- `NIX_CONFIG` enables flakes inside the job.
+- Same team cache as GitHub Actions and laptops.
+- Write tokens only on the default branch.
+- `nix path-info -Shr` in the log so a fat closure is visible in review.
+
+## Try this
+
+1. Run Case 1 against a flake that builds `hello`. Confirm the job log contains `Hello` or a store path for hello.
+2. Pin the image digest (`nixos/nix:2.35.2@sha256:…`) and record why that is stricter than a moving tag.
+3. Add `nix path-info -Shr ./result` and paste the closure size into the merge request template once.
+4. On a self-hosted runner, run `nix-collect-garbage --delete-older-than 7d` after a week and note `df -h /nix`.

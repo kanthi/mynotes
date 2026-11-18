@@ -1,0 +1,118 @@
+# C Programming
+
+A modular C library: foundations through systems topics, with a separate workbook for extra drills and projects.
+
+This book uses **C17** as the default dialect. Examples prefer:
+
+```bash
+gcc -std=c17 -Wall -Wextra -Wpedantic -o prog prog.c
+./prog
+```
+
+Clang is fine as a drop-in for learning:
+
+```bash
+clang -std=c17 -Wall -Wextra -Wpedantic -o prog prog.c
+```
+
+## Who this is for
+
+**Path A — Beginner (language first)**
+Start at Module 1 and move in order through Module 5 before jumping ahead. Type every full program. Treat warnings as errors in practice (`-Werror` once you are comfortable). Goal: confident control flow, functions, arrays/strings, and a first honest encounter with pointers.
+
+**Path B — Systems-oriented (already know some C syntax)**
+Skim Module 1 for the compile/link mental model and warning flags, then prioritize Modules 6–8 (pointers, structures, file/system I/O). Use Modules 11–15 when you need sockets, embedded patterns, performance, testing, or threads. Still run Module 1’s multi-file and I/O labs if those habits are rusty.
+
+**Both paths** should enable warnings early and avoid treating “it compiled” as “it is correct.” Undefined behavior is introduced early for a reason.
+
+## How to use this book
+
+1. Read a section, then **type** the programs (do not only read them).
+2. Compile with `-std=c17 -Wall -Wextra -Wpedantic`.
+3. Break one thing on purpose; read the diagnostic; fix it.
+4. Do the chapter exercises before moving on.
+5. Use the workbook when you want more reps or a larger project—not as a substitute for chapter work.
+
+## How to compile examples
+
+From any directory where you saved a single-file example:
+
+```bash
+gcc -std=c17 -Wall -Wextra -Wpedantic -o hello hello.c
+./hello
+```
+
+Multi-file:
+
+```bash
+gcc -std=c17 -Wall -Wextra -Wpedantic -o app main.c util.c
+# or
+gcc -std=c17 -Wall -Wextra -Wpedantic -c main.c
+gcc -std=c17 -Wall -Wextra -Wpedantic -c util.c
+gcc -o app main.o util.o
+```
+
+Useful extras:
+
+| Flags | Purpose |
+|-------|---------|
+| `-g -O0` | Debug builds |
+| `-O2` | Optimized builds |
+| `-fsanitize=address,undefined` | Runtime checks (GCC/Clang, host-dependent) |
+
+Workbook demos live under `content/99-workbook/examples/` (per module). Some multi-file folders include a `Makefile`—read it, then still know how to issue the raw `gcc` line yourself.
+
+## Workbook (`content/99-workbook`)
+
+| Area | Path | Use for |
+|------|------|---------|
+| Examples | `content/99-workbook/examples/0N-…/` | Runnable demos aligned to modules |
+| Exercises | `content/99-workbook/exercises/0N-…/` | Extra problem sets |
+| Projects | `content/99-workbook/projects/` | Beginner → capstone project prompts |
+
+Suggested rhythm: finish the module chapters → attempt workbook exercises for that module → pick a project only when the drills feel mechanical.
+
+Appendices under `content/100-appendices/` hold resources, quick reference material, and solution notes.
+
+## Related books
+
+| Book | Overlap |
+|------|---------|
+| **Linux** | Toolchain, make, and systems environment |
+| **Go** | Contrasting memory and concurrency models |
+| **Maths** | Discrete math and complexity behind algorithms chapters |
+
+## Modules (15 + workbook + appendices)
+
+1. **Foundations and Environment** — history and process model, toolchain, first programs, console I/O
+2. **Data Types and Variables** — types, storage, conversions, operators
+3. **Control Flow** — decisions, loops, non-local flow
+4. **Functions and Modularity** — design, linkage, library overview
+5. **Arrays and Strings** — contiguous data and text
+6. **Pointers and Memory** — addresses, dynamic allocation, pitfalls
+7. **Structures and Types** — `struct`, `union`, `enum`, simple ADTs
+8. **File I/O and System Programming** — streams and system-facing I/O
+9. **Modern C Standards** — C99 through C23 and modern practice
+10. **Data Structures and Algorithms** — lists, trees, tables, graphs, sorting
+11. **Network Programming** — sockets and protocols
+12. **Embedded Systems** — constrained and hardware-oriented C
+13. **Performance Optimization** — measure, then improve
+14. **Testing and Debugging** — quality, debug, error handling
+15. **Advanced Topics and Capstone** — concurrency, systems topics, capstone
+
+Plus **99-workbook** (examples, exercises, projects) and **appendices**.
+
+## Prerequisites
+
+- Comfort using a text editor and a terminal
+- Ability to install a C compiler (GCC, Clang, or MSVC/MinGW on Windows)
+- No prior programming required for Path A; Path B assumes basic syntax familiarity
+
+## Getting started
+
+1. [Introduction to C](content/01-foundations/01-intro-to-c.md) — mental model and first mini-programs
+2. [Development Environment](content/01-foundations/02-dev-environment.md) — install and verify the toolchain
+3. [Your First C Program](content/01-foundations/03-first-program.md) — compile, multi-file, labs
+4. [Basic I/O](content/01-foundations/04-basic-io.md) — `printf` / `scanf` / `fgets`
+
+Then continue through the modules in order (Path A) or jump to pointers and systems modules (Path B) once foundations are solid.

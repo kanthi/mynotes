@@ -1,0 +1,156 @@
+# Every page address this book's website has had, kept by Octavo so that
+# links to moved chapters keep working. Commit this file with the book.
+# Each line: the page, a tab, then its chapter title, or "-> " and the page
+# its old address now forwards to.
+content/00-intro/00-intro.html	The Evolution of Mathematics: From Ancient Counting to Modern Abstractions
+content/01-arithmetic/00-intro.html	Introduction to Arithmetic: The Foundation of All Mathematics
+content/01-arithmetic/01-numbers-and-counting.html	Numbers and Counting: The Foundation of Mathematics
+content/01-arithmetic/02-addition.html	Addition: Combining Quantities
+content/01-arithmetic/03-subtraction.html	Subtraction: Finding Differences and Taking Away
+content/01-arithmetic/04-multiplication.html	Multiplication: Repeated Addition and Scaling
+content/01-arithmetic/05-division.html	Division: Sharing Equally and Finding How Many Groups
+content/01-arithmetic/06-fractions.html	Fractions: Parts of a Whole
+content/01-arithmetic/07-decimals.html	Decimals: Another Way to Express Parts
+content/01-arithmetic/08-percentages.html	Percentages: Parts per Hundred
+content/02-geometry/00-intro.html	Introduction to Geometry: The Study of Shape and Space
+content/02-geometry/01-points-lines-planes.html	Points, Lines, and Planes: The Building Blocks of Geometry
+content/02-geometry/02-angles.html	Angles: Measuring Direction and Turn
+content/02-geometry/03-triangles.html	Triangles: The Strongest Shape
+content/02-geometry/04-quadrilaterals.html	Quadrilaterals: Four-Sided Figures
+content/02-geometry/05-circles.html	Circles: Perfect Curves and Endless Possibilities
+content/02-geometry/06-area-perimeter.html	Area and Perimeter: Measuring Space and Boundary
+content/02-geometry/07-pi-in-lp-norms.html	How Big Is π? The Unit Circle Under L^p Norms
+content/02-geometry/08-squaring-the-triangle.html	Squaring the Triangle: Equal Area Means Cut-and-Rearrange
+content/02-geometry/09-sphere-packing-e8-and-leech.html	Sphere Packing: Kissing Numbers, E8 and the Linear-Programming Bound
+content/03-pre-algebra/00-intro.html	Introduction to Pre-Algebra: The Bridge to Abstract Mathematics
+content/03-pre-algebra/01-variables-expressions.html	Variables and Expressions: The Language of Algebra
+content/03-pre-algebra/02-solving-equations.html	Solving Equations: Finding the Unknown
+content/03-pre-algebra/03-inequalities.html	Inequalities: When Things Are Not Equal
+content/03-pre-algebra/04-graphing-linear-equations.html	Graphing Linear Equations: Visualizing Relationships
+content/04-algebra/00-intro.html	Introduction to Algebra: The Language of Mathematical Relationships
+content/04-algebra/01-linear-equations.html	Linear Equations: The Foundation of Algebraic Problem Solving
+content/04-algebra/02-quadratic-equations.html	Quadratic Equations: Exploring Parabolic Relationships
+content/04-algebra/03-polynomials.html	Polynomials: Building Blocks of Advanced Algebra
+content/04-algebra/04-rational-expressions.html	Rational Expressions: Working with Algebraic Fractions
+content/05-linear-algebra/00-intro.html	Introduction to Linear Algebra: The Mathematics of Vector Spaces
+content/05-linear-algebra/01-vectors.html	Vectors: The Foundation of Linear Algebra
+content/05-linear-algebra/02-matrices.html	Matrices: Organizing and Transforming Linear Information
+content/05-linear-algebra/03-systems-of-equations.html	Systems of Linear Equations: Solving Multiple Relationships Simultaneously
+content/05-linear-algebra/04-vector-spaces-bases.html	Vector Spaces, Spans, and Bases
+content/05-linear-algebra/05-determinants-inverses.html	Determinants, Inverses, and Volume
+content/05-linear-algebra/07-montgomery-modular-multiplication.html	Montgomery Modular Multiplication
+content/06-discrete-mathematics/00-intro.html	Introduction to Discrete Mathematics: The Mathematics of Distinct Objects
+content/06-discrete-mathematics/01-logic-and-proofs.html	Logic and Proofs: The Foundation of Mathematical Reasoning
+content/06-discrete-mathematics/02-sets-and-relations.html	Sets and Relations: The Language of Mathematical Structure
+content/06-discrete-mathematics/03-combinatorics.html	Combinatorics: The Art and Science of Counting
+content/06-discrete-mathematics/04-recurrence-relations.html	Recurrence Relations
+content/06-discrete-mathematics/05-induction-and-invariants.html	Induction and Invariants
+content/06-discrete-mathematics/06-category-theory-of-terms.html	Category Theory of Terms: Argument Lists as Morphisms
+content/06-discrete-mathematics/07-lean-4-35-vcgen.html	Lean 4.35: vcgen and lake check
+content/06-discrete-mathematics/08-penrose-tilings.html	Penrose Tilings
+content/06-discrete-mathematics/09-banach-tarski-paradox.html	The Banach–Tarski Paradox
+content/06-discrete-mathematics/10-schreier-sims-permutation-groups.html	Schreier–Sims: Computing with Permutation Groups
+content/06-discrete-mathematics/11-finite-field-kakeya.html	Kakeya Sets over Finite Fields: Dvir's Polynomial Method
+content/07-statistics/00-intro.html	Introduction to Statistics: Making Sense of Data in an Uncertain World
+content/07-statistics/01-descriptive-statistics.html	Descriptive Statistics: Summarizing and Visualizing Data
+content/07-statistics/02-probability.html	Probability: The Mathematics of Uncertainty
+content/07-statistics/03-random-variables.html	Random Variables and Common Distributions
+content/07-statistics/04-statistical-inference.html	Statistical Inference: Confidence and Hypothesis Tests
+content/07-statistics/05-regression-and-experiments.html	Regression and Experimental Design
+content/07-statistics/06-bayes-odds-and-likelihood-ratios.html	Bayes with odds: prior odds, likelihood ratios, posterior probability
+content/08-calculus/00-intro.html	Calculus for Computer Science and AI
+content/08-calculus/01-limits-continuity.html	Limits and Continuity
+content/08-calculus/02-derivatives-applications.html	Derivatives and Applications in Computer Science
+content/08-calculus/03-integrals-and-accumulation.html	Integrals and Accumulation
+content/08-calculus/04-multivariable-calculus.html	Multivariable Calculus for ML
+content/08-calculus/05-series-and-approximations.html	Taylor Series and Approximations
+content/08-calculus/06-noether-theorem.html	Noether's Theorem: Symmetries Are Conservation Laws
+content/09-number-theory/00-intro.html	Number Theory for Computer Science
+content/09-number-theory/01-divisibility-gcd.html	Divisibility, GCD, and the Euclidean Algorithm
+content/09-number-theory/02-modular-arithmetic.html	Modular Arithmetic and Congruences
+content/09-number-theory/03-primes-and-crypto.html	Prime Numbers and Cryptography Basics
+content/09-number-theory/04-lattices-and-learning-with-errors.html	Lattices and Learning With Errors: the Mathematics of ML-KEM
+content/09-number-theory/05-alphaproof-nexus-erdos.html	AlphaProof Nexus: Lean-Verified Erdős Problems
+content/09-number-theory/06-reed-solomon-erasure-coding.html	Reed–Solomon Erasure Coding over GF(2^8): Why Object Stores Beat Replication
+content/09-number-theory/07-chinese-remainder-theorem.html	The Chinese Remainder Theorem
+content/09-number-theory/08-hasse-bound-and-weil-zeta.html	Counting Points mod p: Hasse's Bound and the Weil Zeta Function
+content/09-number-theory/09-lonely-runner-conjecture.html	The Lonely Runner Conjecture
+content/09-number-theory/10-prime-number-theorem-by-the-numbers.html	The Prime Number Theorem by the Numbers: pi(x), li(x) and Chebyshev's psi
+content/10-information-theory/00-intro.html	Information Theory for Computer Science
+content/10-information-theory/01-entropy-information.html	Entropy and Information Content
+content/10-information-theory/02-mutual-information-and-capacity.html	Mutual Information and Channel Capacity
+content/10-information-theory/03-kl-divergence-and-coding.html	KL Divergence, Cross-Entropy, and Coding
+content/10-information-theory/04-information-applications.html	Information Theory Applications
+content/10-information-theory/05-bloom-filters.html	Bloom Filters — False Positives by Design
+content/11-optimization/00-intro.html	Optimization Theory for Computer Science
+content/11-optimization/01-convexity.html	Convexity Foundations
+content/11-optimization/02-constrained-optimization.html	Constrained Optimization and KKT Conditions
+content/11-optimization/03-regularization-and-generalization.html	Regularization and Generalization
+content/11-optimization/04-first-order-methods-playbook.html	First-Order Methods Playbook
+content/11-optimization/05-gradient-methods.html	Gradient-Based Optimization Methods
+content/12-machine-learning-math/00-intro.html	Mathematics for Machine Learning
+content/12-machine-learning-math/01-linear-algebra-ml.html	Linear Algebra for Machine Learning
+content/12-machine-learning-math/02-gradients-and-loss.html	Gradients, Loss Functions, and Backprop Sketch
+content/12-machine-learning-math/03-probability-for-ml.html	Probability for Machine Learning
+content/12-machine-learning-math/04-neural-nets-math-sketch.html	Neural Networks: A Mathematical Sketch
+content/12-machine-learning-math/05-matrix-calculus-ml.html	Matrix Calculus for ML (Practical Identities)
+content/12-machine-learning-math/06-automatic-differentiation.html	Automatic Differentiation from First Principles: Dual Numbers, the Tape, and Adjoint Greeks
+content/13-algorithms-complexity/00-intro.html	Algorithms and Computational Complexity
+content/13-algorithms-complexity/01-asymptotic-analysis.html	Asymptotic Analysis and Big O Notation
+content/13-algorithms-complexity/02-complexity-classes-and-reductions.html	Complexity Classes and Reductions
+content/13-algorithms-complexity/03-randomized-and-approximation.html	Randomized and Approximation Algorithms
+content/13-algorithms-complexity/04-fast-integer-multiplication.html	How Fast Can We Multiply Integers? Karatsuba, Toom–Cook, FFTs, n log n, and the 2026 Claim Below It
+content/13-algorithms-complexity/05-karatsuba-multiplication.html	Karatsuba Multiplication
+content/13-algorithms-complexity/06-strassen-matrix-multiplication.html	Strassen's algorithm and the exponent of matrix multiplication
+content/14-graph-theory/00-intro.html	Graph Theory for Computer Science
+content/14-graph-theory/01-graph-basics.html	Graph Basics and Representations
+content/14-graph-theory/02-trees-and-spanning.html	Trees and Spanning Trees
+content/14-graph-theory/03-shortest-paths.html	Shortest Paths
+content/14-graph-theory/04-connectivity-and-flow.html	Connectivity, Components, and Network Flow
+content/14-graph-theory/05-graph-algorithms-in-cs.html	Graph Algorithms in Real Systems
+content/14-graph-theory/06-graph-exercises-workshop.html	Graph Theory Workshop: Exercises and Diagrams
+content/14-graph-theory/07-ramsey-numbers.html	Ramsey Numbers: Order You Cannot Avoid
+content/14-graph-theory/08-moore-bound-and-high-girth-graphs.html	Girth, the Moore Bound and High-Girth Regular Graphs
+content/15-numerical-methods/00-intro.html	Numerical Methods for Computer Science
+content/15-numerical-methods/01-floating-point-and-error.html	Floating-Point Arithmetic, Error, and Stability
+content/15-numerical-methods/02-root-finding.html	Root Finding: Bisection, Newton, and Secant
+content/15-numerical-methods/03-linear-systems.html	Numerical Linear Systems
+content/15-numerical-methods/04-numerical-optimization.html	Numerical Optimization in Practice
+content/15-numerical-methods/05-fft-and-dft.html	Discrete Fourier Transforms and the FFT
+content/15-numerical-methods/06-ode-solvers.html	Numerical Methods for Ordinary Differential Equations
+content/15-numerical-methods/07-numerical-integration.html	Numerical Integration (Quadrature)
+content/15-numerical-methods/08-interval-arithmetic-and-certified-computation.html	Interval Arithmetic and Certified Computation
+content/15-numerical-methods/09-ozaki-scheme.html	The Ozaki Scheme: Emulating FP64 GEMM with Integer Slices
+content/15-numerical-methods/10-growth-factor-partial-pivoting.html	Why Gaussian Elimination with Partial Pivoting Works: The Growth Factor, Wilkinson's 2^(n−1), and the 2026 Proof
+content/15-numerical-methods/11-hilbert-condition-numbers.html	Hilbert matrices and the 2-norm condition number
+content/15-numerical-methods/12-qr-decomposition.html	QR decomposition and Gram-Schmidt
+content/16-data-science-math/00-intro.html	Mathematics for Data Science
+content/16-data-science-math/01-statistical-foundations.html	Statistical Foundations for Data Science
+content/16-data-science-math/02-sampling-and-bias.html	Sampling, Bias, and Representativeness
+content/16-data-science-math/03-hypothesis-testing-for-data.html	Hypothesis Testing for Data Work
+content/16-data-science-math/04-dimensionality-features.html	Dimensionality, Features, and the Curse
+content/16-data-science-math/05-hyperloglog-cardinality-estimation.html	HyperLogLog: Counting Distinct Items in a Few Kilobytes
+content/16-data-science-math/06-count-min-sketch.html	Count-Min Sketch: Frequencies with a Provable Error Bound
+content/16-data-science-math/07-minhash-jaccard-similarity.html	MinHash: Estimating Jaccard Similarity from Tiny Signatures
+content/17-probability-advanced/00-intro.html	Advanced Probability for CS and AI
+content/17-probability-advanced/01-random-variables-distributions.html	Random Variables and Distributions
+content/17-probability-advanced/02-expectation-variance.html	Expectation, Variance, and Covariance
+content/17-probability-advanced/03-limit-theorems.html	Law of Large Numbers and Central Limit Theorem
+content/17-probability-advanced/04-bayesian-inference.html	Bayesian Inference
+content/17-probability-advanced/05-markov-chains.html	Markov Chains and Stochastic Processes
+content/17-probability-advanced/05b-riffle-shuffles-and-mixing-time.html	How Many Riffle Shuffles Mix a Deck? Gilbert-Shannon-Reeds and Total Variation
+content/17-probability-advanced/06-thresholds-expectation-kahn-kalai.html	Thresholds in Random Structures: Expectation Thresholds and the Park–Pham Theorem
+content/18-linear-algebra-advanced/00-intro.html	Advanced Linear Algebra for CS/ML
+content/18-linear-algebra-advanced/01-eigenvalues-eigenvectors.html	Eigenvalues and Eigenvectors
+content/18-linear-algebra-advanced/02-orthogonality-projections.html	Orthogonality and Projections
+content/18-linear-algebra-advanced/03-svd-and-pca.html	SVD and PCA
+content/18-linear-algebra-advanced/04-least-squares-conditioning.html	Least Squares and Conditioning
+content/18-linear-algebra-advanced/05-spectral-thinking.html	Spectral Thinking: Eigenvalues in Practice
+content/18-linear-algebra-advanced/06-random-rotations-jl-hadamard.html	Random Rotations, Johnson–Lindenstrauss, and Hadamard Transforms
+content/18-linear-algebra-advanced/07-linear-algebra-of-llms.html	The Linear Algebra Inside a Large Language Model
+content/19-complexity-theory/00-intro.html	Complexity Theory for Computer Science
+content/19-complexity-theory/01-reductions-and-np-complete.html	Reductions and NP-Completeness
+content/19-complexity-theory/02-randomized-and-approximation.html	Randomized and Approximation Complexity
+content/19-complexity-theory/03-space-complexity.html	Space Complexity
+content/19-complexity-theory/04-fine-grained-3sum-apsp.html	Fine-Grained Complexity Breaks: Truly Subquadratic 3SUM and Subcubic APSP
+index.html	Maths library

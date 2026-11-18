@@ -1,0 +1,73 @@
+---
+unnumbered: true
+---
+
+# Maths library
+
+A **broad mathematics library** for computer science and technical practice: arithmetic through discrete math, linear algebra, probability, graphs, optimization, and ML-facing math.
+
+## Structure
+
+Content lives under `content/` by topic area (numeric parts):
+
+| Area | Topics |
+|------|--------|
+| **Foundations** | Arithmetic, geometry, pre-algebra, algebra |
+| **Core CS math** | Discrete math, number theory, graph theory, algorithms & complexity |
+| **Continuous / classical** | Calculus, linear algebra (+ advanced), statistics, probability (advanced) |
+| **Applied / modern** | Optimization, ML math, numerical methods, information theory, data-science math |
+
+Use the sidebar (HTML) or the generated table of contents for navigation.
+
+## How chapters are written
+
+Most chapters include:
+
+- **Definitions** in plain language + notation
+- **ASCII diagrams** (portable in HTML / PDF / EPUB)
+- **Worked examples**
+- **Exercises** (often with short check answers)
+- **CS / ML maps** where relevant
+
+Optional calculator or computer algebra only to **check** work after a hand solution.
+
+## Suggested learning paths
+
+```text
+Path A — CS undergrad spine
+  Discrete → Number theory → Graphs → Algorithms/complexity
+  + Linear algebra → Probability/stats
+
+Path B — ML practitioner
+  Linear algebra → Calc (derivatives) → Probability
+  → Optimization → ML math → Data-science math
+
+Path C — refresh from zero
+  Arithmetic → Pre-algebra → Algebra → Geometry
+  then join Path A or B
+```
+
+## How to use this book
+
+| Format | Role |
+|--------|------|
+| **HTML** | Primary — search, dark/light theme |
+| **PDF / EPUB** | Offline reading |
+
+## Prerequisites
+
+- Willingness to write definitions and work examples by hand
+- High-school algebra is enough to *start*; later chapters build up
+- Programming snippets (when present) are optional checks, not the core
+
+## Related books
+
+| Book | Overlap |
+|------|---------|
+| **Go** / **C** | Algorithms, complexity, and numeric code practice |
+| **Networking** | Graph ideas and addressing as applied math |
+| **NixOS** | Optional: evaluation/store models (not formal math) |
+
+## Acknowledgments
+
+Companion textbooks remain useful for extra drill (Rosen, MIT MCS, Concrete Mathematics, standard calc/LA texts). This book is part of a personal study library, not a substitute for a full university course when you need one.

@@ -1,0 +1,204 @@
+---
+title: Advanced Profiling (pprof/trace)
+---
+
+# Performance: Deep Dives with pprof & trace
+
+Optimization without measurement is just guesswork. Go has arguably the best built-in profiling tools of any compiled language.
+
+## 1. pprof: The Sampling Profiler
+`pprof` creates a statistical profile of your program.
+
+### Usage
+Add one line to your `main`:
+```go
+import _ "net/http/pprof"
+
+func main() {
+    go func() {
+        http.ListenAndServe("localhost:6060", nil)
+    }()
+    // ... app code ...
+}
+```
+
+Now, while your app runs under load, grab a profile:
+```bash
+go tool pprof -http=:8081 http://localhost:6060/debug/pprof/profile?seconds=30
+```
+This opens a web UI. Look at:
+*   **Flame Graph:** The widest bars are using the most CPU.
+*   **Alloc Space:** Who allocated the most memory (Heap).
+*   **Alloc Objects:** Who created the most *count* of objects (high GC pressure).
+*   **Goroutine leak profile (Go 1.27+):** `/debug/pprof/goroutineleak` lists Gs blocked on unreachable concurrency primitives.
+
+### Mutex Profiling
+If your CPU usage is low but performance sucks, you have contention.
+Enable mutex profiling in code:
+`runtime.SetMutexProfileFraction(1)`
+Then look at `/debug/pprof/mutex` to see who is waiting for locks.
+
+## 2. Execution Tracer (`go tool trace`)
+While pprof aggregates data, **Trace** shows you a timeline of *every event*.
+*   When did a Goroutine start?
+*   When did it block on a channel?
+*   When did GC pause execution?
+
+Capture a trace:
+```bash
+curl -o trace.out http://localhost:6060/debug/pprof/trace?seconds=5
+go tool trace trace.out
+```
+
+Go 1.27: `go tool trace -http=:6060` listens on **localhost** only (same as `pprof`). Bind all interfaces with `-http=0.0.0.0:6060`.
+
+**Use Case:** Debugging latency spikes. You might see a 100ms gap where *nothing* ran. Zooming in, you might find a Stop-The-World GC event or a single mutex holding up 50 goroutines.
+
+## 3. Benchmarks as Profiling Inputs
+You can profile specific functions using benchmarks:
+```bash
+go test -bench=. -cpuprofile=cpu.out
+go tool pprof -http=:8080 cpu.out
+```
+
+## Summary
+*   **pprof:** For "Where is my CPU/RAM going?"
+*   **trace:** For "Why is there latency?" and "What is the scheduler doing?"
+*   Optimization loop: Measure -> Fix -> Verify (Benchmark).
+
+## Worked example
+
+Two algorithms, one clear allocation winner—profile-friendly benchmarks.
+
+Save as `join_test.go`. Then:
+
+```bash
+go mod init example
+go test -bench=. -benchmem
+go test -bench=Builder -cpuprofile=cpu.out -benchmem
+```
+
+```go
+package main
+
+import (
+	"strings"
+	"testing"
+)
+
+func joinPlus(parts []string) string {
+	s := ""
+	for _, p := range parts {
+		s += p
+	}
+	return s
+}
+
+func joinBuilder(parts []string) string {
+	var b strings.Builder
+	for _, p := range parts {
+		b.WriteString(p)
+	}
+	return b.String()
+}
+
+var parts = []string{"go", "is", "fast", "enough", "when", "measured"}
+
+func BenchmarkPlus(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_ = joinPlus(parts)
+	}
+}
+
+func BenchmarkBuilder(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_ = joinBuilder(parts)
+	}
+}
+```
+
+**Expected output:** (Builder lower B/op and allocs/op)
+
+```text
+BenchmarkPlus-8        ...   ... ns/op   ... B/op   ... allocs/op
+BenchmarkBuilder-8     ...   ... ns/op   ... B/op   ~1 allocs/op
+```
+
+## More examples
+
+Emit a short execution trace from a benchmark.
+
+```bash
+go test -bench=Builder -trace=trace.out
+# go tool trace trace.out
+```
+
+```go
+// same package as above; no extra code required for -trace
+```
+
+## Runnable example
+
+Save as `alloc_test.go`. Then:
+
+```bash
+go mod init example
+go test -bench=. -benchmem
+# optional: write a CPU profile for go tool pprof
+go test -bench=SumPrealloc -cpuprofile=cpu.out -benchmem
+```
+
+```go
+package main
+
+import "testing"
+
+func sumAlloc(n int) int {
+	// allocates a new backing array every call
+	s := make([]int, 0)
+	for i := 0; i < n; i++ {
+		s = append(s, i)
+	}
+	total := 0
+	for _, v := range s {
+		total += v
+	}
+	return total
+}
+
+func sumPrealloc(n int) int {
+	s := make([]int, 0, n)
+	for i := 0; i < n; i++ {
+		s = append(s, i)
+	}
+	total := 0
+	for _, v := range s {
+		total += v
+	}
+	return total
+}
+
+func BenchmarkSumAlloc(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_ = sumAlloc(1024)
+	}
+}
+
+func BenchmarkSumPrealloc(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_ = sumPrealloc(1024)
+	}
+}
+```
+
+**Expected output:** (`SumPrealloc` should show ~1 alloc/op vs many for `SumAlloc`)
+
+```text
+BenchmarkSumAlloc-8      	  100000	     12000 ns/op	   20000 B/op	      10 allocs/op
+BenchmarkSumPrealloc-8   	  200000	      6000 ns/op	    8192 B/op	       1 allocs/op
+PASS
+```
+
+**What to notice:** Benchmarks are excellent profiling inputs—no long-running server required. Allocation differences show up clearly with `-benchmem` before you open a flame graph. For live services, the chapter’s `net/http/pprof` endpoints are the online equivalent.
+
+**Try next:** `go tool pprof -http=:8080 cpu.out` after the profile command. Capture a short trace with `go test -trace=trace.out -bench=SumPrealloc` then `go tool trace trace.out`.

@@ -1,0 +1,461 @@
+---
+title: Constants and Literals
+---
+
+# Constants and Literals
+
+## Overview
+
+Constants in Go are values determined at compile time that cannot be changed during program execution. Go distinguishes between typed and untyped constants, with untyped constants having special flexibility.
+
+## Declaring Constants
+
+### Basic Declaration
+
+```go
+const Pi = 3.14159
+const MaxSize = 1024
+const Greeting = "Hello, World!"
+```
+
+### Constant Block
+
+```go
+const (
+    StatusOK       = 200
+    StatusNotFound = 404
+    StatusError    = 500
+)
+```
+
+### Typed vs Untyped Constants
+
+```go
+// Untyped constant (more flexible)
+const untypedPi = 3.14159
+
+// Typed constant (explicit type)
+const typedPi float64 = 3.14159
+```
+
+## Untyped Constants
+
+Untyped constants have a **kind** but not a fixed type, allowing them to adapt:
+
+```go
+const answer = 42  // Untyped integer constant
+
+var i int = answer       // Works: becomes int
+var f float64 = answer   // Works: becomes float64
+var c complex128 = answer // Works: becomes complex128
+```
+
+### Why This Matters
+
+```go
+// Untyped constant can be used with any compatible type
+const billion = 1e9
+
+var i int64 = billion     // ✓ Works
+var f float32 = billion   // ✓ Works
+
+// Typed constant is locked to its type
+const typedBillion int64 = 1e9
+var f float64 = typedBillion  // ✗ Error: cannot use int64 as float64
+```
+
+## Constant Kinds
+
+| Kind | Examples |
+|------|----------|
+| Boolean | `true`, `false` |
+| Integer | `42`, `0x2A`, `0b101010` |
+| Floating-point | `3.14`, `6.022e23` |
+| Complex | `1 + 2i` |
+| String | `"hello"`, `` `raw string` `` |
+| Rune | `'A'`, `'世'` |
+
+## The `iota` Constant Generator
+
+`iota` generates sequential integer constants, starting from 0 and incrementing by 1 for each constant in the block.
+
+### Basic Usage
+
+```go
+const (
+    Sunday = iota    // 0
+    Monday           // 1
+    Tuesday          // 2
+    Wednesday        // 3
+    Thursday         // 4
+    Friday           // 5
+    Saturday         // 6
+)
+```
+
+### Skip Values
+
+```go
+const (
+    _ = iota         // 0 (skipped)
+    KB = 1 << (10 * iota)  // 1 << 10 = 1024
+    MB                     // 1 << 20 = 1,048,576
+    GB                     // 1 << 30 = 1,073,741,824
+    TB                     // 1 << 40
+)
+```
+
+### Bit Flags with iota
+
+```go
+const (
+    FlagRead    = 1 << iota  // 1 (0001)
+    FlagWrite                // 2 (0010)
+    FlagExecute              // 4 (0100)
+)
+
+permissions := FlagRead | FlagWrite  // 3 (0011)
+
+hasRead := permissions & FlagRead != 0   // true
+hasExec := permissions & FlagExecute != 0 // false
+```
+
+### Multiple iota in One Line
+
+```go
+const (
+    A, B = iota, iota + 10  // A=0, B=10
+    C, D                    // C=1, D=11
+    E, F                    // E=2, F=12
+)
+```
+
+### Reset iota
+
+Each `const` block resets `iota` to 0:
+
+```go
+const (
+    First = iota   // 0
+    Second         // 1
+)
+
+const (
+    Third = iota   // 0 (reset!)
+    Fourth         // 1
+)
+```
+
+## Constant Expressions
+
+Constants can be computed from other constants at compile time:
+
+```go
+const (
+    SecondsPerMinute = 60
+    MinutesPerHour   = 60
+    SecondsPerHour   = SecondsPerMinute * MinutesPerHour
+    SecondsPerDay    = SecondsPerHour * 24
+)
+```
+
+### Allowed in Constant Expressions
+
+- Arithmetic operators: `+`, `-`, `*`, `/`, `%`
+- Comparison operators: `==`, `!=`, `<`, `>`, `<=`, `>=`
+- Logical operators: `&&`, `||`, `!`
+- Bit operators: `&`, `|`, `^`, `<<`, `>>`, `&^`
+- Built-in functions: `len()`, `cap()` (for some values), `real()`, `imag()`, `complex()`
+
+### Not Allowed
+
+```go
+const x = math.Sin(0)  // Error: function call not allowed
+const y = len(someVar)  // Error: variable not allowed
+```
+
+## Numeric Literals
+
+### Integer Literals
+
+```go
+decimal := 42          // Base 10
+binary := 0b101010     // Base 2 (Go 1.13+)
+octal := 0o52          // Base 8 (Go 1.13+)
+oldOctal := 052        // Base 8 (legacy)
+hex := 0x2A            // Base 16
+```
+
+### Floating-Point Literals
+
+```go
+f1 := 3.14
+f2 := .5               // 0.5
+f3 := 1.               // 1.0
+f4 := 6.022e23         // Scientific notation
+f5 := 6.022E23         // Same
+f6 := 1.5e-10          // 0.00000000015
+```
+
+### Hexadecimal Floats (Go 1.13+)
+
+```go
+f := 0x1.fp+2  // (1 + 15/16) * 2^2 = 7.75
+```
+
+### Imaginary Literals
+
+```go
+i := 3i
+c := 2 + 3i
+```
+
+### Digit Separators
+
+Go 1.13+ allows underscores in numeric literals for readability:
+
+```go
+billion := 1_000_000_000
+binary := 0b_1010_1010
+hex := 0xFF_FF_FF_FF
+```
+
+## String and Rune Literals
+
+### Interpreted Strings
+
+```go
+s := "Hello, World!\n"  // Escape sequences processed
+s := "Tab:\tNewline:\n"
+s := "Quote: \"Go\""
+```
+
+### Escape Sequences
+
+| Escape | Meaning |
+|--------|---------|
+| `\n` | Newline |
+| `\t` | Tab |
+| `\\` | Backslash |
+| `\"` | Double quote |
+| `\r` | Carriage return |
+| `\xNN` | Hex byte |
+| `\uNNNN` | Unicode code point (4 hex) |
+| `\UNNNNNNNN` | Unicode code point (8 hex) |
+
+### Raw String Literals
+
+```go
+raw := `No escape sequences: \n \t \\
+Multiple lines work!
+Useful for regex: \d+\.\d+`
+```
+
+### Rune Literals
+
+```go
+r1 := 'A'      // 65
+r2 := '世'     // 19990
+r3 := '\n'     // 10
+r4 := '\x41'   // 65 (hex)
+r5 := '\u4e16' // 19990 (unicode)
+```
+
+## Common Patterns
+
+### Enum Pattern
+
+```go
+type Status int
+
+const (
+    StatusPending Status = iota
+    StatusApproved
+    StatusRejected
+)
+
+func (s Status) String() string {
+    switch s {
+    case StatusPending:
+        return "Pending"
+    case StatusApproved:
+        return "Approved"
+    case StatusRejected:
+        return "Rejected"
+    default:
+        return "Unknown"
+    }
+}
+```
+
+### Configuration Constants
+
+```go
+const (
+    DefaultTimeout = 30 * time.Second
+    MaxRetries     = 3
+    BufferSize     = 4096
+)
+```
+
+## Summary
+
+| Concept | Description |
+|---------|-------------|
+| `const` | Compile-time immutable value |
+| Untyped | Flexible, adapts to context |
+| Typed | Fixed to a specific type |
+| `iota` | Auto-incrementing generator |
+| Literal | Numeric, string, or rune value in source |
+
+## Related Topics
+- [Predeclared Types](09-predeclared-types.md)
+- [Variables and Scope](12-variables-scope.md)
+
+## More examples
+
+### Example: iota enums
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+const (
+	StatusDraft = iota
+	StatusOpen
+	StatusClosed
+)
+
+func main() {
+	fmt.Println("Draft:", StatusDraft)
+	fmt.Println("Open:", StatusOpen)
+	fmt.Println("Closed:", StatusClosed)
+}
+```
+
+Expected:
+
+```text
+Draft: 0
+Open: 1
+Closed: 2
+```
+
+### Example: untyped constant flexibility
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+const Answer = 42 // untyped integer constant
+
+func main() {
+	var i int = Answer
+	var i64 int64 = Answer
+	var f float64 = Answer
+	fmt.Println(i, i64, f)
+}
+```
+
+Expected:
+
+```text
+42 42 42
+```
+
+## Runnable example
+
+Save as `main.go`. From an empty directory:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import "fmt"
+
+type Status int
+
+const (
+	StatusPending Status = iota
+	StatusApproved
+	StatusRejected
+)
+
+func (s Status) String() string {
+	switch s {
+	case StatusPending:
+		return "Pending"
+	case StatusApproved:
+		return "Approved"
+	case StatusRejected:
+		return "Rejected"
+	default:
+		return "Unknown"
+	}
+}
+
+const (
+	_  = iota
+	KB = 1 << (10 * iota) // 1 << 10
+	MB
+	GB
+)
+
+const (
+	FlagRead = 1 << iota // 1
+	FlagWrite            // 2
+	FlagExecute          // 4
+)
+
+func main() {
+	// Untyped constant adapts to destination types.
+	const answer = 42
+	var i int = answer
+	var f float64 = answer
+	fmt.Printf("untyped answer as int=%d float64=%g\n", i, f)
+
+	fmt.Printf("status: %s=%d %s=%d\n", StatusPending, StatusPending, StatusApproved, StatusApproved)
+	fmt.Printf("sizes: KB=%d MB=%d GB=%d\n", KB, MB, GB)
+
+	perms := FlagRead | FlagWrite
+	fmt.Printf("perms=%04b read=%v write=%v exec=%v\n",
+		perms,
+		perms&FlagRead != 0,
+		perms&FlagWrite != 0,
+		perms&FlagExecute != 0,
+	)
+
+	// Literals
+	fmt.Printf("bases: %d %d %d %d\n", 42, 0b101010, 0o52, 0x2A)
+	fmt.Printf("rune %q is %d; raw=`%s`\n", '世', '世', `line\nnot escaped`)
+}
+```
+
+**Expected output** (illustrative):
+
+```text
+untyped answer as int=42 float64=42
+status: Pending=0 Approved=1
+sizes: KB=1024 MB=1048576 GB=1073741824
+perms=0011 read=true write=true exec=false
+bases: 42 42 42 42
+rune '世' is 19990; raw=`line\nnot escaped`
+```
+
+**What to notice:**
+- `iota` auto-numbers enums and builds power-of-two sizes/flags.
+- Untyped constants convert cleanly into both `int` and `float64`.
+- Bit flags combine with `|` and test with `&`.
+- Raw string literals do not interpret `\n`.
+
+**Try next:** Add `TB` after `GB` in the size block and print it; confirm `1 << 40`.

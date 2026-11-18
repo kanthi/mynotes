@@ -1,0 +1,162 @@
+---
+title: Multi-Platform Development and Distribution
+---
+
+# Multi-Platform Development and Distribution
+
+`x86_64-linux` CI does not prove `aarch64-darwin`. The boring default is: **`lib.genAttrs` over the systems humans use, native remote builders for foreign `system`, and no QEMU-on-the-laptop as the production path**.
+
+## Mental model
+
+| What | How |
+|---|---|
+| Same shell on Mac + Linux | `devShells.${system}` from nixpkgs 26.05 |
+| Linux binary from a Mac | Remote Linux builder (`ssh-ng`) |
+| Raspberry Pi image | `aarch64-linux` builder or `nixos-generators` `sd-aarch64` |
+
+`pkgsCross` is **cross**. A remote builder is **native**. Native is faster and hits the team cache. Cross is for when you do not have the hardware (Go `GOOS`/`GOARCH` is a third path — still not QEMU).
+
+```
+each system  →  packages.${system}.desk-api
+             →  devShells.${system}.default
+foreign linux  →  --max-jobs 0  +  ssh-ng builder
+```
+
+Two archs are two cache objects. `nix copy` each one.
+
+## Worked examples
+
+### Case 1: Enumerate systems without flake-utils
+
+Save as `flake.nix`:
+
+```nix
+# flake.nix
+{
+  description = "Desk multi-system";
+
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+
+  outputs = { self, nixpkgs }:
+    let
+      systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" ];
+      forAll = f: nixpkgs.lib.genAttrs systems (system: f {
+        inherit system;
+        pkgs = nixpkgs.legacyPackages.${system};
+      });
+    in
+    {
+      packages = forAll ({ pkgs, ... }: {
+        default = pkgs.hello;
+        desk-api = pkgs.hello; # replace with callPackage
+      });
+      devShells = forAll ({ pkgs, ... }: {
+        default = pkgs.mkShell { packages = [ pkgs.go pkgs.gopls ]; };
+      });
+    };
+}
+```
+
+`flake-utils` is optional sugar. One extra input is one extra `follows` to forget. `lib.genAttrs` is enough.
+
+```bash
+nix flake show
+```
+
+You should see three systems. Skip `x86_64-darwin` for new work: nixpkgs 26.11 drops it. 26.05 still builds it until EOL.
+
+### Case 2: Native remote builder, not qemu
+
+On the Darwin laptop, do not emulate `aarch64-linux` as the release path:
+
+```bash
+nix build .#packages.aarch64-linux.desk-api --max-jobs 0
+```
+
+`--max-jobs 0` forbids local realisation. Nix must use `ssh-ng` to an aarch64 (or x86_64-linux) builder. If you have no builder:
+
+```
+error: a 'aarch64-linux' with features {} is required to build '…', but I am a 'aarch64-darwin'
+```
+
+That error is correct. Add a builder; do not reach for `qemu-binfmt` for the artefact you ship.
+
+Save as `builders.nix` on the Darwin (or laptop) NixOS/nix-darwin host:
+
+```nix
+# builders.nix
+{
+  nix.buildMachines = [{
+    hostName = "builder.desk.internal";
+    system = "x86_64-linux";
+    protocol = "ssh-ng";
+    maxJobs = 8;
+    speedFactor = 2;
+    supportedFeatures = [ "kvm" "nixos-test" "big-parallel" ];
+  }];
+  nix.distributedBuilds = true;
+  nix.settings.max-jobs = 0;
+}
+```
+
+`supportedFeatures` must include `kvm` if you offload `runNixOSTest`. A missing flag is why tests compile on the laptop anyway.
+
+### Case 3: CI matrix for the OS humans use
+
+```yaml
+# .github/workflows/build.yml
+name: build
+on: [pull_request]
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: nix build .#packages.${{ matrix.os == 'macos-latest' && 'aarch64-darwin' || 'x86_64-linux' }}.desk-api
+```
+
+Each job `nix build`. Cache per system. Do not emulate `aarch64-linux` on GHA ubuntu unless you accept 10× time and flaky KVM.
+
+### Case 4: Release two closures
+
+```bash
+nix build .#packages.x86_64-linux.desk-api -o result-x86
+nix build .#packages.aarch64-linux.desk-api -o result-arm
+nix path-info -Shr ./result-x86
+nix path-info -Shr ./result-arm
+nix copy --to ssh://cache.desk.internal ./result-x86 ./result-arm
+```
+
+Two closures. Two cache keys. Goreleaser is optional; `nix build` + `nix copy` is enough for internal desk tools.
+
+### Case 5: `file` the toolchain, not your hopes
+
+On Apple silicon:
+
+```bash
+nix develop --command bash -c 'file "$(which go)"'
+```
+
+You want `arm64`, not `x86_64`. A hardcoded `system = "x86_64-linux"` in a flake used on a Mac may still eval; `go` is then the wrong ELF.
+
+## The trap
+
+The trap is **`system = "x86_64-linux"` hardcoded** in a flake used on Apple silicon, or `builtins.currentSystem` inside a flake (impure). Enumerate systems. Use `builtins.currentSystem` only inside impure `nix-shell`, not in flakes.
+
+## The boring rule
+
+- Enumerate systems with `lib.genAttrs`. 26.05 pin.
+- Native remote builders for foreign Linux. Not laptop QEMU for releases.
+- CI matrix for the OS humans actually use.
+- Do not plan on `x86_64-darwin` past 26.05.
+- Two archs = two cache objects = two `nix copy`s.
+
+## Try this
+
+1. `nix flake show` and list systems.
+2. On a Mac, `file $(nix develop --command which go)` — arm64 on Apple silicon.
+3. `nix build .#packages.aarch64-linux.default --max-jobs 0` without a builder and read the error.
+4. Note the 26.11 darwin x86_64 drop in the version appendix; do not add that system to new flakes.

@@ -1,0 +1,215 @@
+---
+title: '021 Project 21: WebSocket Chat'
+---
+
+# 021 Build a WebSocket Chat Server
+
+A minimal real-time chat backend with a broadcast hub. Clients connect to `/ws`, send text frames, and receive every message fan-out to all peers.
+
+```text
+clients <-> hub (mutex + map) <-> broadcast WriteMessage
+```
+
+## Problem statement
+
+- Upgrade HTTP → WebSocket on `/ws`
+- Track connected clients
+- Broadcast each inbound text message to all clients
+- Remove clients on read error/close
+- Lab-friendly: `CheckOrigin` allows all (document prod hardening)
+
+## Acceptance criteria
+
+- [ ] Two clients can exchange messages
+- [ ] Disconnect does not crash the server
+- [ ] Mutex protects the client map (race-clean under `-race`)
+- [ ] Builds with gorilla/websocket or nhooyr/coder websocket
+- [ ] Clear run instructions
+
+## Setup
+
+```bash
+mkdir gochat && cd gochat
+go mod init example.com/gochat
+go get github.com/gorilla/websocket@latest
+# go 1.27
+go mod tidy
+```
+
+## Full `main.go`
+
+```go
+package main
+
+import (
+	"log"
+	"net/http"
+	"sync"
+	"time"
+
+	"github.com/gorilla/websocket"
+)
+
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool { return true }, // lab only
+}
+
+type hub struct {
+	mu      sync.Mutex
+	clients map[*websocket.Conn]struct{}
+}
+
+func (h *hub) add(c *websocket.Conn) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	h.clients[c] = struct{}{}
+}
+
+func (h *hub) del(c *websocket.Conn) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	delete(h.clients, c)
+	_ = c.Close()
+}
+
+func (h *hub) broadcast(msg []byte) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	for c := range h.clients {
+		_ = c.SetWriteDeadline(time.Now().Add(5 * time.Second))
+		if err := c.WriteMessage(websocket.TextMessage, msg); err != nil {
+			delete(h.clients, c)
+			_ = c.Close()
+		}
+	}
+}
+
+func main() {
+	h := &hub{clients: map[*websocket.Conn]struct{}{}}
+
+	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		c, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			return
+		}
+		h.add(c)
+		defer h.del(c)
+
+		for {
+			_, msg, err := c.ReadMessage()
+			if err != nil {
+				return
+			}
+			h.broadcast(msg)
+		}
+	})
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_, _ = w.Write([]byte(indexHTML))
+	})
+
+	log.Println("chat on http://localhost:8090/  ws://localhost:8090/ws")
+	log.Fatal(http.ListenAndServe(":8090", nil))
+}
+
+const indexHTML = `<!doctype html>
+<title>gochat</title>
+<pre id="log"></pre>
+<input id="m" placeholder="message"/><button onclick="send()">send</button>
+<script>
+const log = (t) => { logEl.textContent += t + "\n"; };
+const logEl = document.getElementById("log");
+const ws = new WebSocket("ws://" + location.host + "/ws");
+ws.onmessage = (e) => log("< " + e.data);
+ws.onopen = () => log("connected");
+function send() {
+  const v = document.getElementById("m").value;
+  ws.send(v);
+  log("> " + v);
+}
+</script>`
+```
+
+## Run and verification
+
+```bash
+go run .
+# open two browser tabs to http://localhost:8090/
+# send messages; both tabs should show traffic
+
+go test -race ./...   # if you extract hub tests
+```
+
+Manual wscat-style:
+
+```bash
+# if you have websocat or similar
+# websocat ws://localhost:8090/ws
+```
+
+## Tests
+
+```go
+package main
+
+import (
+	"testing"
+)
+
+func TestHubAddDel(t *testing.T) {
+	h := &hub{clients: map[*websocket.Conn]struct{}{}}
+	// without real conn, just ensure map ops are safe with nil key edge
+	// prefer integration test with httptest.Server for deeper coverage
+	if len(h.clients) != 0 {
+		t.Fatal()
+	}
+}
+```
+
+Better: use `httptest.NewServer` + gorilla dialer (stretch in repo).
+
+## Step-by-step build path
+
+1. Upgrade handler.
+2. Hub with mutexed set of conns.
+3. Read loop → broadcast.
+4. Remove on error; write deadlines.
+5. Tiny HTML client for demo.
+
+## Stretch goals
+
+1. Per-client send goroutine + outbound queue (avoid slow-client blocking hub).
+2. Nicknames and join/leave system messages.
+3. Rooms via path `/ws/{room}`.
+4. Origin allowlist for production.
+5. Ping/pong keepalive.
+
+## Pitfalls
+
+| Pitfall | Fix |
+|---------|-----|
+| Concurrent map without mutex | data race | always lock |
+| Broadcast write blocks hub | per-conn writer queues |
+| CheckOrigin true in prod | CSRF-ish WS risks | allowlist |
+| No write deadline | hung peers stall all |
+
+## Learning goals
+
+- WebSocket upgrade and framing
+- Fan-out hub patterns
+- Synchronization around connection sets
+
+## System-design extension: durable multi-instance chat
+
+The browser demo broadcasts through one in-memory hub. For a durable chat service, store rooms, memberships, messages, and per-room sequence numbers. Authenticate before upgrade and verify room membership on send and history retrieval. Use a trusted origin policy in the upgraded implementation.
+
+Assign a client message ID scoped to sender and room. Insert it under a uniqueness constraint and assign a room sequence transactionally. Acknowledge after the chosen durable commit. Retries return the original message ID and sequence, even when the client lost its acknowledgment. The sequence is a room ordering contract; timestamps alone cannot provide it across instances.
+
+Use an outbox event to fan committed messages to connected gateways. Every connection gets one writer goroutine and a bounded outbound queue. Broadcast by enqueueing to those queues without holding a global lock through network writes. Cap message size, configure read/write deadlines and ping/pong handling, and disconnect slow clients with an explicit reconnect policy.
+
+Pub/sub delivers live hints; durable history repairs missed hints. Let reconnecting clients request messages after their last received sequence. Handle gaps and page limits, and deduplicate by message identity. For the first implementation, define the cursor per connection; an account-level read receipt is separate from transport delivery and can differ across devices.
+
+Presence and typing indicators can expire and be lossy. Durable chat messages must obey their stronger contract. Adding gateways requires shared room-event routing and membership state; process-local maps no longer contain all recipients.
+
+**Acceptance evidence:** connect users to two Go instances, send while one gateway restarts, duplicate a client message, and reconnect after missing live events. Assert one stored message and consistent per-room replay. Fill one client's send queue and show other recipients remain responsive. Revoke membership and verify both live send and history policy. Measure commit-to-delivery lag, reconnect replay volume, and disconnected slow consumers.

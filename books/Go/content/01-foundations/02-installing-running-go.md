@@ -1,0 +1,366 @@
+---
+title: Installing and Running Go
+---
+
+# Installing and Running Go
+
+## Overview
+
+Setting up a Go development environment is straightforward. This chapter covers installation, verification, and the fundamental `go run` and `go build` workflow that you'll use throughout your Go journey.
+
+## Installation
+
+### macOS
+
+Using Homebrew (recommended):
+```bash
+brew install go
+```
+
+Or download from [go.dev/dl](https://go.dev/dl) and run the installer package.
+
+### Linux
+
+Download and extract:
+```bash
+# Download the latest version (check go.dev/dl for current version)
+wget https://go.dev/dl/go1.27.1.linux-amd64.tar.gz
+
+# Remove any previous installation and extract
+sudo rm -rf /usr/local/go
+sudo tar -C /usr/local -xzf go1.27.1.linux-amd64.tar.gz
+
+# Add to PATH (add to ~/.bashrc or ~/.zshrc)
+export PATH=$PATH:/usr/local/go/bin
+```
+
+### Windows
+
+Download the MSI installer from [go.dev/dl](https://go.dev/dl) and run it. The installer adds Go to your PATH automatically.
+
+## Verify Installation
+
+```bash
+$ go version
+go version go1.27.1 darwin/arm64
+```
+
+Go 1.27 requires **macOS 13 Ventura or later**. Linux and Windows binaries from [go.dev/dl](https://go.dev/dl) remain the supported install path; always pick the current patch (1.27.1 at this writing).
+
+## Environment Variables
+
+| Variable | Purpose | Default |
+|----------|---------|---------|
+| `GOROOT` | Go installation directory | Auto-detected |
+| `GOPATH` | Workspace directory | `$HOME/go` |
+| `GOBIN` | Binary installation directory | `$GOPATH/bin` |
+
+Check your environment:
+```bash
+$ go env
+# Shows all Go environment variables
+
+$ go env GOPATH
+/Users/yourname/go
+```
+
+## Your First Go Program
+
+Create a file named `hello.go`:
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+    fmt.Println("Hello, Go!")
+}
+```
+
+## The `go run` Command
+
+`go run` compiles and executes in one step—perfect for development:
+
+```bash
+$ go run hello.go
+Hello, Go!
+```
+
+### How It Works
+1. Compiles the source to a temporary binary
+2. Executes that binary
+3. Cleans up the temporary file
+
+### Running Multiple Files
+```bash
+# Run multiple files
+$ go run main.go utils.go
+
+# Run all Go files in current directory
+$ go run .
+```
+
+## The `go build` Command
+
+`go build` creates a permanent executable:
+
+```bash
+$ go build hello.go
+$ ls
+hello    hello.go
+
+$ ./hello
+Hello, Go!
+```
+
+### Common Build Options
+
+```bash
+# Specify output name
+$ go build -o myapp hello.go
+
+# Build for different OS/architecture
+$ GOOS=linux GOARCH=amd64 go build -o myapp-linux
+
+# Build with optimizations (strip debug info)
+$ go build -ldflags="-s -w" -o myapp
+```
+
+### Cross-Compilation
+
+Go makes cross-compilation trivial:
+
+```bash
+# Build for Linux from macOS
+$ GOOS=linux GOARCH=amd64 go build -o app-linux
+
+# Build for Windows
+$ GOOS=windows GOARCH=amd64 go build -o app.exe
+
+# Build for ARM (Raspberry Pi)
+$ GOOS=linux GOARCH=arm GOARM=7 go build -o app-arm
+```
+
+## The Build Lifecycle
+
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│ Source Code │────▶│  Compiler   │────▶│   Binary    │
+│   (.go)     │     │             │     │ (executable)│
+└─────────────┘     └─────────────┘     └─────────────┘
+                           │
+                    ┌──────┴──────┐
+                    │             │
+              ┌─────▼────┐ ┌──────▼─────┐
+              │ go run   │ │  go build  │
+              │(temp bin)│ │(perm. bin) │
+              └──────────┘ └────────────┘
+```
+
+## IDE and Editor Setup
+
+### Visual Studio Code
+1. Install the [Go extension](https://marketplace.visualstudio.com/items?itemName=golang.go)
+2. Open any `.go` file
+3. Accept prompts to install Go tools
+
+### Recommended Tools (installed automatically)
+- `gopls` - Language server
+- `dlv` - Debugger
+- `staticcheck` - Linter
+
+### GoLand
+JetBrains GoLand is a commercial IDE with excellent Go support out of the box.
+
+### Neovim/Vim
+Use `gopls` with your LSP client of choice (nvim-lspconfig, coc.nvim, etc.).
+
+## Project Structure Basics
+
+```
+myproject/
+├── go.mod          # Module definition
+├── go.sum          # Dependency checksums
+├── main.go         # Entry point
+├── internal/       # Private packages
+│   └── config/
+│       └── config.go
+└── pkg/            # Public packages (optional)
+    └── utils/
+        └── utils.go
+```
+
+## Common Pitfalls
+
+### GOPATH vs Modules
+Modern Go uses **modules** (introduced in Go 1.11). You don't need to work inside `$GOPATH/src` anymore:
+
+```bash
+# Initialize a new module anywhere
+$ mkdir myproject && cd myproject
+$ go mod init github.com/username/myproject
+```
+
+### Executable vs Library
+Only `package main` with a `main()` function creates executables:
+
+```go
+// This creates a binary
+package main
+
+func main() { }
+```
+
+```go
+// This is a library (cannot run directly)
+package mylib
+
+func Helper() { }
+```
+
+## Summary
+
+| Command | Purpose |
+|---------|---------|
+| `go run` | Compile and run (temporary) |
+| `go build` | Compile to binary |
+| `go install` | Compile and install to `$GOBIN` |
+| `go env` | Show environment variables |
+| `go version` | Show Go version |
+
+## Exercises
+
+1. Install Go and verify with `go version`
+2. Create a "Hello, World!" program and run it with `go run`
+3. Build the same program with `go build` and execute the binary
+4. Cross-compile for a different operating system
+
+## Related Topics
+- [Why Go Exists](01-why-go-exists.md)
+- [Learning Go in 2026](01a-learning-path-2026.md)
+- [How Go Code Is Organized](03-code-organization.md)
+- [Core Go Commands](05-core-go-commands.md)
+
+## More examples
+
+### Example: classic Hello, World
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("Hello, World!")
+	fmt.Println("from go run")
+}
+```
+
+Expected:
+
+```text
+Hello, World!
+from go run
+```
+
+### Example: exit codes and stderr
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+func main() {
+	if len(os.Args) < 2 {
+		fmt.Fprintln(os.Stderr, "usage: go run . <name>")
+		os.Exit(2)
+	}
+	fmt.Println("hello,", os.Args[1])
+}
+```
+
+Expected (with `go run . gopher`):
+
+```text
+hello, gopher
+```
+
+Expected (with bare `go run .`):
+
+```text
+usage: go run . <name>
+```
+
+## Runnable example
+
+Print Go runtime and build info from inside a program (complements `go version` / `go env` on the CLI).
+
+Save as `main.go`. From an empty directory:
+
+```bash
+go mod init example
+go run .
+go build -o hello .
+./hello
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"runtime"
+	"runtime/debug"
+)
+
+func main() {
+	fmt.Printf("Go version (runtime): %s\n", runtime.Version())
+	fmt.Printf("OS/Arch: %s/%s\n", runtime.GOOS, runtime.GOARCH)
+	fmt.Printf("NumCPU: %d\n", runtime.NumCPU())
+
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		fmt.Println("build info: unavailable")
+		return
+	}
+	fmt.Printf("module path: %s\n", info.Main.Path)
+	fmt.Printf("go version (build): %s\n", info.GoVersion)
+	for _, s := range info.Settings {
+		switch s.Key {
+		case "GOOS", "GOARCH", "vcs.revision", "vcs.modified", "-compiler":
+			fmt.Printf("setting %s=%s\n", s.Key, s.Value)
+		}
+	}
+	fmt.Println("Hello from a complete Go program")
+}
+```
+
+**Expected output** (illustrative; values depend on your machine):
+
+```text
+Go version (runtime): go1.22.5
+OS/Arch: darwin/arm64
+NumCPU: 8
+module path: example
+go version (build): go1.22.5
+setting GOOS=darwin
+setting GOARCH=arm64
+setting -compiler=gc
+Hello from a complete Go program
+```
+
+**What to notice:**
+- `runtime.Version()` matches the idea of `go version` from inside your app.
+- `debug.ReadBuildInfo()` reports the module path from `go mod init`.
+- The same source works with `go run` and `go build`.
+- Cross-compile targets show up as `GOOS`/`GOARCH` in build settings when set.
+
+**Try next:** Build with `GOOS=linux GOARCH=amd64 go build -o hello-linux .` and inspect the binary name; run the program natively again and compare `OS/Arch`.

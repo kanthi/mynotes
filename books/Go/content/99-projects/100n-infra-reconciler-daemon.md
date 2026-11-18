@@ -1,0 +1,199 @@
+---
+title: '040 Project 40: Infra Reconciler Daemon'
+---
+
+# 040 Build an Infra Reconciler Daemon
+
+Model a control-loop daemon that continuously moves **actual** state toward **desired** state. This is the same mental model as Kubernetes controllers and GitOps agents, stripped to a few dozen lines you can reason about.
+
+```text
+desired config -> diff -> apply one action -> observe -> repeat
+```
+
+## Problem statement
+
+Daemon-style process:
+
+- Holds `Desired` and `Actual` integers (stand-in for replica counts, firewall rules, …)
+- Every tick, apply **at most one** idempotent action
+- Desired can change mid-run (config reload simulation)
+- Actual can drift (external change)
+- Logs every action for auditability
+- Stops after max ticks or SIGINT
+
+## Acceptance criteria
+
+- [ ] `diff` and `apply` are pure/testable
+- [ ] Converges when desired stable
+- [ ] Survives desired changes and drift
+- [ ] Graceful shutdown on signal
+- [ ] Stdlib only
+
+## Setup
+
+```bash
+mkdir reconcilerd && cd reconcilerd
+go mod init example.com/reconcilerd
+# go 1.27
+```
+
+## Full `main.go`
+
+```go
+package main
+
+import (
+	"context"
+	"flag"
+	"fmt"
+	"math/rand"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+)
+
+type state struct {
+	Desired int
+	Actual  int
+}
+
+func diff(s state) int { return s.Desired - s.Actual }
+
+func apply(s *state) string {
+	d := diff(*s)
+	switch {
+	case d > 0:
+		s.Actual++
+		return "scale_up"
+	case d < 0:
+		s.Actual--
+		return "scale_down"
+	default:
+		return "noop"
+	}
+}
+
+func main() {
+	desired := flag.Int("desired", 5, "initial desired")
+	actual := flag.Int("actual", 1, "initial actual")
+	ticks := flag.Int("ticks", 40, "max ticks (0=until signal)")
+	interval := flag.Duration("interval", 200*time.Millisecond, "tick interval")
+	seed := flag.Int64("seed", 1, "drift rng seed")
+	driftProb := flag.Float64("drift", 0.1, "per-tick drift probability")
+	flag.Parse()
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	s := state{Desired: *desired, Actual: *actual}
+	rng := rand.New(rand.NewSource(*seed))
+	ticker := time.NewTicker(*interval)
+	defer ticker.Stop()
+
+	fmt.Printf("reconciler start desired=%d actual=%d\n", s.Desired, s.Actual)
+
+	for i := 0; *ticks == 0 || i < *ticks; i++ {
+		select {
+		case <-ctx.Done():
+			fmt.Println("shutdown")
+			return
+		case <-ticker.C:
+		}
+
+		// simulate config reload
+		if i == 10 {
+			s.Desired = 3
+			fmt.Printf("tick=%02d CONFIG desired=%d\n", i, s.Desired)
+		}
+
+		// simulate external drift
+		if rng.Float64() < *driftProb {
+			delta := rng.Intn(3) - 1
+			s.Actual += delta
+			if s.Actual < 0 {
+				s.Actual = 0
+			}
+			fmt.Printf("tick=%02d DRIFT delta=%+d actual=%d\n", i, delta, s.Actual)
+		}
+
+		action := apply(&s)
+		fmt.Printf("tick=%02d desired=%d actual=%d action=%s diff=%d\n",
+			i, s.Desired, s.Actual, action, diff(s))
+	}
+	fmt.Println("max ticks reached")
+}
+```
+
+## Architecture
+
+```text
+┌─────────────┐   watch/load    ┌──────────────┐
+│ desired.yaml│ ──────────────► │  reconciler  │
+└─────────────┘                 │  loop        │
+                                └──────┬───────┘
+                                       │ apply
+                                       ▼
+                                ┌──────────────┐
+                                │ actual world │
+                                └──────────────┘
+```
+
+## Run and verification
+
+```bash
+go run . -desired 5 -actual 0 -ticks 25 -drift 0.15 -interval 50ms
+# expect scale_up to 5, config change to 3, scale_down, occasional drift recovery
+```
+
+## Tests
+
+```go
+package main
+
+import "testing"
+
+func TestApplyConverges(t *testing.T) {
+	s := state{Desired: 3, Actual: 0}
+	for i := 0; i < 10; i++ {
+		apply(&s)
+	}
+	if s.Actual != 3 || diff(s) != 0 {
+		t.Fatalf("%+v", s)
+	}
+}
+
+func TestNoop(t *testing.T) {
+	s := state{Desired: 2, Actual: 2}
+	if apply(&s) != "noop" {
+		t.Fatal()
+	}
+}
+```
+
+```bash
+go test -race ./...
+```
+
+## Stretch goals
+
+1. Load desired from JSON file; reload on `SIGHUP`.
+2. Workqueue of resource IDs.
+3. Per-resource last-error backoff.
+4. Metrics: reconciles_total, drift_total.
+5. Multi-field state (not just int).
+
+## Pitfalls
+
+| Pitfall | Fix |
+|---------|-----|
+| Applying huge diffs in one tick | one step; requeue |
+| No drift handling | re-observe actual every tick |
+| Busy loop | ticker / event driven |
+| Non-idempotent apply | same desired → safe noop |
+
+## Learning goals
+
+- Level-triggered reconciliation
+- Drift and config change handling
+- Daemon lifecycle with signals

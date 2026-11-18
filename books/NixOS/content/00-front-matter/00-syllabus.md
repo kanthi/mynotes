@@ -1,0 +1,446 @@
+---
+title: Syllabus
+---
+
+# Syllabus — expert path for Nix & NixOS
+
+**Status:** Canonical outline for this **standalone NixOS book**.
+**Baseline:** Nix **2.35** · NixOS / nixpkgs **26.05 “Yarara”** (checked 13 November 2026). Upstream tag is 2.35.6. Stock 26.05 is `nixVersions.stable` (2.34.9 on that tip); `nix.package = pkgs.nixVersions.nix_2_35` is 2.35.3 on that tip. 26.11 is scheduled, not current.
+**Voice:** Topic-oriented journey notebook. **Ordering:** expert pedagogy by **theme**—not a day calendar and not a 90-day program.
+
+> [!IMPORTANT]
+> Chapters follow **this** topic path. Source documents supply topics and exercises; they do not override the sequence below. There is **no** required joint schedule with any other book or series.
+
+
+---
+
+# Why this order (expert rationale)
+
+Nix rewards **tight feedback loops**. Long theory blocks before a real rebuild create fragile knowledge. Production NixOS work in 2026 is overwhelmingly **flake-pinned, module-composed, and generation-rollback based**. The path below matches that world.
+
+| Principle | What we do | What we avoid |
+|-----------|------------|----------------|
+| **Feedback early** | Install Nix early; first NixOS host soon after | Weeks of pure language before any OS |
+| **Modern defaults** | Flakes + `nix` CLI as default; classic CLI as literacy | Building muscle memory on `nix-env` / channels as primary |
+| **Host before packaging craft** | Configure and consume packages on a real system first | Deep `stdenv` before you have felt closure size and rebuilds |
+| **System then user** | NixOS host stable → Home Manager for the user layer | Dotfiles-only Nix that never owns the machine |
+| **Just-in-time depth** | Module *types* catalog after you have written real modules | A full type catalog before `services.openssh.enable` |
+| **Patterns over product zoo** | Proxy, secrets, one DB, CI, observability as *patterns* | Required chapters for every self-hosted app |
+| **Internals last** | Evaluator, daemon, CA derivations after you can operate | Sandbox namespaces before you can roll back a bad config |
+| **Prove rebuildability** | Capstone = wipe + rebuild from flake | “It worked once on my laptop” |
+
+### How source notes were used
+
+| Source | Role |
+|--------|------|
+| Personal lab notes | Mini-projects, 26.05 notes, deploy/secrets tool names |
+| Depth checklists | Language, store, module types, HM, troubleshooting |
+| Production syllabus notes | Stack defaults, hardening, multi-node capstone bar |
+
+**Rejected as primary structure:** day calendars; flakes-before-any-OS schedules; long language-only front loads; “install every service” tables; cert/exam framing; cross-links to series volumes.
+
+### Other languages (including Go)
+
+This book does not teach Go or any application language. At packaging stages, any real binary you care about is a valid target. Do not stall NixOS waiting for another curriculum.
+
+---
+
+# Modern stack (defaults for this book)
+
+| Layer | Default choice |
+|-------|----------------|
+| Pinning | **Flakes** + `flake.lock` |
+| CLI | Modern `nix` (`build`, `run`, `develop`, `flake`, `shell`, `profile`) |
+| System | NixOS modules + `nixos-rebuild` / `nixos-rebuild --flake` |
+| User | **Home Manager** as NixOS module (standalone when on non-NixOS) |
+| Disks | **Disko** when reinstalling or provisioning |
+| Secrets | **sops-nix** (primary); **agenix** compared once |
+| Deploy | **deploy-rs** (single/simple) then **Colmena** (fleet) |
+| Images | **nixos-generators** |
+| Cache | cache.nixos.org + **Cachix** or self-hosted **Attic**/**Harmonia** |
+| Boot security | **Lanzaboote** / Secure Boot when hardware allows |
+| Tests | **nixosTest** + flake `checks` |
+
+Classic `nix-*` commands appear for reading older docs and mental models—not as the preferred daily driver.
+
+---
+
+# Part map (topic book)
+
+This **standalone NixOS book** is a **normal topic-oriented** manuscript. Parts and chapters are **not** a day calendar. Study pacing is yours.
+
+| Part | Directory | Theme | You can leave when… |
+|------|-----------|--------|---------------------|
+| Front matter | `00-front-matter/` | Syllabus + Introduction + Lab 0 | Lab topology is clear; Elitebook/KVM ready; reproducibility crisis framed |
+| Concepts | `01-concepts/` | Why Nix, store, language, CLI, flakes | You can explain a store path and use a flake devShell |
+| **Nix on Linux** | `02-nix-on-linux/` | **Fedora 44+** packaged Nix; dual-stack; HM standalone; bridge | You run flakes/HM on an existing distro and know what NixOS still adds |
+| NixOS host | `03-nixos-host/` | Install, rebuild, users, net, modules | You rebuild and roll back a flake host |
+| Home & layout | `04-home-and-flake-layout/` | Layout, locks, Home Manager, shells/editors, polyglot devShells | System + user config + dev environments live cleanly in flakes |
+| Services & security | `05-services-and-security/` | Secrets (SOPS, Agenix, Vault), hardening, proxy, containers | A small server slice is declarative, secret-safe, and audited |
+| Packaging | `06-packaging/` | stdenv, overlays, ecosystems, cross-compilation, caches | You ship native and cross-compiled packages from source |
+| Ops & fleet | `07-ops-and-fleet/` | Disko, deploy, tests, CI | You can deploy and test beyond one laptop |
+| Internals | `08-internals/` | Evaluator, modules, upgrades | You can debug eval/store issues and plan upgrades |
+| Capstone | `09-capstone/` | Rebuildability | Wipe/rebuild proof (+ optional multi-node bar) |
+| **CI/CD** | `10-cicd/` | Binary caches, GitHub Actions, GitLab CI, remote builders, caching | Automated hermetic build & test pipelines push trusted caches |
+| **Containers & K8s** | `11-containers-and-kubernetes/` | Nix-built container images, K8s modules, Helm charts, Argo/Flux GitOps | Declarative containers & GitOps pipelines without Dockerfile drift |
+| **IaC & Cloud** | `12-iac-and-cloud/` | Terraform/OpenTofu with Nix, Ansible provisioning, multi-cloud | Provisioning and cloud state managed through deterministic definitions |
+| **Platform Engineering** | `13-platform-engineering/` | Internal developer platform, monorepos, Colmena fleet deploys, MicroVMs | Enterprise scale platforms operate with automated maintenance & checklists |
+| **Production Labs** | `14-production-labs/` | Infrastructure audits, operator keys, builder factories, channel promotion | Real-world infra patterns extracted and hardened |
+| **Production Capstones**| `15-production-capstones/` | Multi-region production infrastructure deployment & conclusion | Automated fleet rollout, disaster recovery drills & the path forward |
+| Projects | `99-projects/` | Derivations + distro branding | Hands-on artifacts exist |
+| Appendices | `100-appendices/` | Master glossary, CLI cheatsheets, version reference | Reference tables at hand |
+
+**Suggested mix when learning:** ~25% concept / ~55% hands-on / ~20% review. Skip freely when using the book as a reference.
+
+---
+
+# Front matter — Foundations & Lab 0 (before Concepts)
+
+| Chapter | Purpose |
+|---------|---------|
+| Introduction: The Reproducibility Crisis | The Heisenbugs that cost teams, why traditional tooling fails, and the declarative immutable alternative |
+| Lab overview & roles | Host vs journey guest vs dev role |
+| Journey single-server | KVM/libvirt (default) and optional Incus |
+| NixOS dev machine | Editor, flakes, SSH, caches, drift discipline |
+| Elitebook 2570p profile | Concrete 16 GB RAM/CPU/disk/BIOS plan |
+| Ops cheatsheet | Daily commands |
+
+**Exit criteria for Lab 0:** spare machine boots; virt enabled; at least one NixOS VM; wipe boundaries known; git holds host/guest intent.
+
+---
+
+# Concepts — Foundations
+
+**Goal:** Correct mental model + modern toolchain before owning a machine.
+
+| Focus | Expert emphasis | Hands-on |
+|--------|-----------------|----------|
+| Why Nix exists | Dependency hell, snowflake servers, honesty about limits; language vs package manager vs NixOS | Install Nix (multi-user); enable flakes + new CLI; first `nix repl` |
+| Store & closures | Content addressing, store paths, GC roots at a glance | Inspect a package closure; find what keeps it alive |
+| Language: values & attrsets | Types, `let`, nested sets, `inherit` — **only what you need to read nixpkgs** | Model a small config as an attrset |
+| Language: functions | `{ a, b ? d }:`, `@`, ellipsis, composition | Write helpers used later in a flake |
+| Laziness, imports, `lib` | Imports are eager, values lazy; `lib` as standard library | Multi-file expression; one `lib` pipeline |
+| Derivations as idea | Evaluation vs realization; `.drv` vs outputs; sandbox *why* | `nix build` something tiny; read `nix log` |
+| Modern CLI fluency | `build` / `run` / `develop` / `shell` / `flake show` | Prefer modern CLI for all tasks |
+| First flake (project) | `inputs` / `outputs` / lock; **devShell before OS** | Flake with `devShells.default` for a real project |
+| Classic CLI literacy | Map old → new (`nix-build`, `nix-shell`, channels as history) | Same task once classic, once modern |
+| **Gate** | Foundations review | Pin nixpkgs; recreate shell on a clean machine/VM user |
+
+**Depth to weave in (do not front-load a long language-only block):** conditionals/operators, `with` pitfalls, string interpolation, type checks, fixed-point *awareness*, FOD concept, sandbox/substitute vocabulary.
+
+**Exit criteria:** Explain store path + lock file; `nix develop` works offline after first populate; no dependency on channels for your project.
+
+---
+
+# Nix on Linux — Fedora bridge (recommended before host cutover)
+
+**Goal:** Master the **package manager on a normal Linux daily driver**—especially **Fedora 44+**, which ships Nix officially (`dnf install nix`, flakes OOTB, `/nix` + SELinux story)—so NixOS later is “machine modules + boot generations,” not a total reboot of your mental model.
+
+| Focus | Expert emphasis | Hands-on |
+|--------|-----------------|----------|
+| Why Nix-on-Linux first | Split OS owner (dnf) vs Nix owner (store/flakes/HM) | Write a dual-stack charter |
+| Fedora 44 install | Multi-user daemon; single-user/rootless/Atomic notes | `dnf install nix`; `systemctl enable nix-daemon`; `nix run nixpkgs#hello` |
+| Store, profiles, GC | Same roots model as NixOS minus bootloader | Thin profile; `nix store gc`; inspect roots |
+| CLI + devShells + direnv | Project flakes as SoT | Real repo with `flake.lock` + `use flake` |
+| Home Manager standalone | User generations without NixOS | `home-manager switch --flake` |
+| dnf coexistence | PATH policy; no dual services | Label tools dnf vs Nix |
+| SELinux / Atomic / ops | Stay enforcing; bind-mount `/nix` when needed | Day-2 daemon + disk checklist |
+| Bridge to NixOS | Port HM; add `nixosConfigurations` | VM plan + monorepo sketch |
+| **Gate** | Fedora path solid | Ready for `03-nixos-host` without relearning flakes |
+
+**Exit criteria:** Flakes + HM work on Fedora after reboot; you can explain what NixOS still adds (modules, system generations, boot).
+
+**Skip only if** you already live on NixOS or will only use disposable NixOS VMs and never a foreign distro—still skim the bridge chapter for dual-machine layouts.
+
+---
+
+# NixOS host
+
+**Goal:** Generations, rollback, and “the module system as a user” before authoring a framework.
+
+> [!TIP]
+> **Expert default:** Install and manage the first host **with flakes from the first NixOS install**. Do not invest weeks in a non-flake `configuration.nix` only to rewrite it.
+
+
+| Focus | Expert emphasis | Hands-on |
+|--------|-----------------|----------|
+| Install | VM/spare disk; UEFI; **Disko intro** or manual once; generate hardware config | Bootable NixOS 26.05 lab |
+| Flake host skeleton | `nixosConfigurations`; `nixos-rebuild switch --flake .#host` | First flake-defined rebuild |
+| Rebuild modes & generations | switch / test / boot / build; boot menu rollback | Deliberate break → roll back |
+| Users & access | Declarative users; **SSH keys only** for remote | Non-root admin pattern |
+| Networking & firewall | networkd vs NM; open only what you need | Static or known DHCP + SSH |
+| Packages & programs | `environment.systemPackages` vs `programs.*` modules | Install daily tools declaratively |
+| systemd via Nix | One custom service + timer | Module snippet that generates units |
+| Modules as consumer | Read `options` + source for 2–3 nixpkgs modules; `mkIf` / `mkDefault` | Change behavior via options, not forks |
+| First custom module | `options` + `config`, imports, one assertion | Extract something into a module |
+| Boot & hardware | systemd-boot vs GRUB; kernel packages; firmware | Document your boot path |
+| Filesystems intro | Mounts; state vs store; impermanence *idea* only | Label what must persist |
+| **Gate** | Minimal production-shaped host | Users, SSH, firewall, one service, one custom module — all in flake |
+
+**Defer later:** full Disko redesign, multi-host, secrets machinery, deep type catalogs.
+
+**Exit criteria:** From cold boot you can roll back; flake is the only source of truth for the lab host.
+
+---
+
+# Home Manager and flake layout
+
+**Goal:** Structure that scales past one file; user environment without polluting system closure carelessly.
+
+| Focus | Expert emphasis | Hands-on |
+|--------|-----------------|----------|
+| Flake layout | Split `hosts/` / `modules/` / `homes/`; avoid 2k-line `flake.nix` | Refactor host work into layout |
+| Lock discipline | Selective `flake update`; pin strategy; registries lightly | Update one input only; explain lock diff |
+| Home Manager on NixOS | **HM as NixOS module** first (one activation story) | User programs: shell, git, ssh |
+| HM files & XDG | `home.file`, `xdg.configFile`; theming only if you care | Migrate real dotfiles |
+| Shell & editor configuration | Shells (bash/fish), starship, tmux/zellij, neovim/helix LSP | Zero-state declarative terminal & editor |
+| HM services | User systemd timers/services | One user service you actually want |
+| Dev shells + direnv | Project shells *outside* systemPackages | `use flake` on a repo |
+| Multi-language dev environments | Polyglot Go, Rust, Python, Node, C native headers in mkShell | Isolated toolchains without global managers |
+| Docker Desktop to devShells | VM overhead vs native store isolation; decoupled OCI services | Native execution speed with zero idle RAM tax |
+| flake-parts (or discipline) | Reduce boilerplate **or** hand-roll cleanly — pick one style | Consistent multi-output flake |
+| Checks | `nix flake check`; format/lint as checks | Fail CI-shaped check locally |
+| Overlays (light) | Pin or patch one package for the host | Overlay consumed by host + shell |
+| **Gate** | Workstation/server skeleton | Host + HM + devShell + checks in one flake |
+
+**HM depth (across HM chapters):** programs modules, file permissions/templating, XDG, multi-machine user splits as *pattern*.
+
+**Exit criteria:** New machine of same role = clone flake + hardware config + rebuild.
+
+---
+
+# Services and security
+
+**Goal:** Operate services like production without leaking secrets into the store.
+
+| Focus | Expert emphasis | Hands-on |
+|--------|-----------------|----------|
+| Secret problem | Why strings in Nix are dangerous; store world-readable truth | Find a “secret” anti-pattern and remove it |
+| sops-nix | Encrypted-in-repo, decrypt at activation | One secret end-to-end |
+| agenix comparison | Age keys; trade-offs; pick a **house default** | Same secret second way once |
+| HashiCorp Vault | AppRole auth, dynamic short-lived DB leases, LoadCredential | Centralized audit logs & zero-downtime rotation |
+| Hardening baseline | SSH, sudo, unused services off, kernel defaults carefully | Apply a small hardening module |
+| Firewall discipline | Per-service ports; deny by default | Audit open ports |
+| TLS front door | ACME + Caddy **or** Nginx — one reverse-proxy pattern | HTTPS to a static or app backend |
+| Data service pattern | PostgreSQL **or** other **one** DB — modules, state dirs, backups *thought* | Declarative DB + app user |
+| nixos-containers / OCI | When containers help on NixOS; not “Docker first” | One declarative container or nspawn |
+| Podman/Docker modules | Rootless notes; prefer OCI module over snowflake | Compare to NixOS containers |
+| Observability pattern | Prometheus + Grafana **or** minimal logs first | Metrics for one service |
+| Optional: k3s lite | Only if you need k8s; single-node | Skip cleanly if not |
+| **Gate** | Lab slice | Proxy + secret + one app/data path + firewall story |
+
+**Not required:** Matrix, Nextcloud, Jitsi, full “homelab app of the day” lists. Revisit after Capstone if you want.
+
+**Exit criteria:** Repo has no live secrets in plaintext; slice rebuilds on a fresh VM from flake + keys.
+
+---
+
+# Packaging craft
+
+**Goal:** Produce software, not only consume it—after you know how packages feel on a host.
+
+| Focus | Expert emphasis | Hands-on |
+|--------|-----------------|----------|
+| stdenv phases | unpack→install→fixup; hooks; build vs native inputs | Package a small C/shell tool properly |
+| Fetchers & FODs | Hash mismatch workflow; `fetchFromGitHub` | Package from a tag |
+| Language ecosystem A | Your primary language helper (`buildGoModule`, etc.) | Package a tool you use |
+| Language ecosystem B | Second ecosystem for pattern transfer | Smaller package |
+| Patching & overrides | `overrideAttrs`, patches, overlays composition | Fix or pin something broken |
+| Multiple outputs | Closure size discipline | Split out/dev/doc |
+| Debug builds | `nix log`, `--keep-failed`, `breakpointHook` | Break and recover |
+| nixpkgs layout | `by-name`, conventions, meta | PR-shaped package (submit optional) |
+| Binary caches | Push/pull; trust/signatures awareness | Private or Cachix push |
+| Remote builders | Offload when useful | Second VM as builder |
+| Cross-compilation | `buildPlatform` vs `hostPlatform`, `pkgsCross` | Compile ARM64/RISC-V from x86 without QEMU |
+| **ROS 2 / nix-ros-overlay** (elective) | Overlay pin, `rosPackages.*`, underlay `buildEnv`, caches | Flake `devShell` + talker/listener; colcon workspace |
+| Reproducibility honesty | What is and is not bit-for-bit | Clean rebuild comparison |
+| **Gate** | Package + cache | Flake output used by your host or CI |
+
+**Exit criteria:** Someone else (or future you) builds your package from lock alone.
+
+---
+
+# Ops and fleet
+
+**Goal:** Provision and deploy like infra, not like a pet SSH session.
+
+| Focus | Expert emphasis | Hands-on |
+|--------|-----------------|----------|
+| Disko for real | Declarative disks on reinstall/cloud | Install/reinstall with Disko |
+| Impermanence (optional commit) | Persist deliberately | Prove reboot drops unpersisted state **or** document why you skip |
+| deploy-rs | Simple push deploy | Deploy lab to remote VM |
+| Colmena | Tags, multi-host, parallel | Two hosts (one may be local) |
+| Shared modules | Roles vs hosts; no copy-paste drift | `roles/web.nix` pattern |
+| Images & generators | Cloud image / custom ISO | Boot generated image |
+| Terraform boundary | TF provisions, Nix configures | Sketch only is enough |
+| nixosTest | VM tests for *your* modules | Test proxy or hardened SSH module |
+| More tests | Expand suite; flake checks in CI shape | Several meaningful tests |
+| CI pipeline | GHA/GitLab + Nix installer; cache write | PR build of flake |
+| GC & store hygiene | Roots, retention, optimise | Policy + measured store size |
+| Secure Boot / TPM path | Lanzaboote / LUKS unlock — hardware permitting | Document supported path or lab limits |
+| Backup story | Borg/Restic/ZFS — pick one; declare it | Restore drill of *state* |
+| **Gate** | Remote lab | Flake deploy + CI + cache + test green |
+
+**Exit criteria:** New host of an existing role is boring.
+
+---
+
+# Internals and currency
+
+**Goal:** Debug and upgrade without superstition.
+
+| Focus | Expert emphasis | Hands-on |
+|--------|-----------------|----------|
+| Evaluator | Thunks, infinite recursion patterns | Trace a tricky eval |
+| Module system deep | Full **type catalog**; `mkMerge` / priorities | Redesign one module with proper types |
+| Store & daemon | Substituters, signatures, sandbox namespaces | Explain roots + one sandbox log |
+| Performance | `max-jobs` / cores / eval cost | Speed a full rebuild with measurement |
+| CA derivations | Experimental awareness | Optional experiment or status memo |
+| nixosTest mastery | Flaky tests, networking in tests | Harden test suite |
+| Ecosystem map | devenv, Snowfall, nix-darwin — **try one**, don’t collect all | Written comparison to your layout |
+| Comparative landscape | Guix / image-based distros / Ansible — trade-offs | Honest scorecard + essay |
+| 26.05 release notes | Primary source, not blogs | Annotate impact on *your* flake |
+| Upgrade planning | 26.05 → next release dry-run | Written upgrade runbook |
+| Troubleshooting drill | Boot, build, service, network matrix | Fix injected failures |
+| **Architecture review** | Map prior parts onto design | Gap list before Capstone |
+
+**Exit criteria:** You can diagnose eval/store issues and produce IMPACT + upgrade artifacts.
+
+---
+
+# Capstone and recovery
+
+## Capstone A — required
+
+Build (or finish) a **flake-defined lab** that includes:
+
+1. At least one NixOS host role you understand end-to-end
+2. Home Manager for your user (if workstation) **or** minimal service user story (if server-only)
+3. Secrets via sops-nix **or** agenix (house default)
+4. One reverse-proxy or equivalent edge pattern
+5. Deploy path (deploy-rs and/or Colmena)
+6. At least one `nixosTest` or flake check that would catch a real regression
+7. CI that builds and preferably pushes a cache
+8. **Disaster recovery:** wipe lab disk/VM; rebuild from flake + keys alone
+9. Rollback drill + full test suite + troubleshooting checklist
+10. Retrospective: teach plan + roadmap (next release, nixpkgs PR, optional Capstone B)
+
+| Capstone chapter theme | Focus |
+|------------------------|--------|
+| Scope and plan | Close structural P0s; host skeleton |
+| Implement | Secrets + proxy E2E |
+| Harden and document | Deploy + CI + cache |
+| Prove rebuildability | Tests + runbook + diagrams |
+| Optional multi-node / freeze | Feature freeze tag; optional second node |
+| Disaster recovery | Timed wipe + rebuild |
+| Rollback and tests | Generation rollback + suite green |
+| Retrospective | Teach plan + roadmap; no rewrite thrash |
+
+## Capstone B — stretch
+
+Only after A:
+
+- ≥3 nodes, Colmena + Disko
+- LUKS (+ TPM if available)
+- Secure Boot / Lanzaboote if feasible
+- Fleet observability
+- CI → cache → deploy automation
+
+---
+
+# Projects (optional depth track)
+
+| Track | Projects |
+|-------|----------|
+| Packaging | Hello CLI → script wrap → language package → overlay |
+| Distro product | Identity → ISO/themes → complete multi-edition flake |
+
+Projects sit after packaging theory (or alongside late packaging). They force **demoable artifacts**, not only reading.
+
+---
+
+# Review habit
+
+Every substantial study block:
+
+1. Refactor modules (DRY, naming, options)
+2. Re-read one official manual page you used
+3. Write 5 “gotchas” in your own words
+4. Delete or quarantine experiments that taught something but should not ship
+
+---
+
+# Completeness audit (sources → parts)
+
+| Theme | Part(s) |
+|-------|---------|
+| Philosophy, reproducibility crisis, store, GC, sandbox | Front matter, Concepts, Internals |
+| Language depth | Concepts (JIT), Internals types revisit |
+| Modern + classic CLI | Concepts |
+| Flakes, locks, checks | Concepts, Home & layout |
+| First host, rebuild, boot, net, users | NixOS host |
+| Module system practice → deep types | Host, Internals |
+| Home Manager depth, shell/editor configs | Home & layout |
+| Polyglot dev shells, direnv, Docker migration | Concepts, Home & layout |
+| Secrets (SOPS, Agenix, Vault), hardening, proxy, DB pattern | Services & security |
+| Containers / optional k3s | Services & security |
+| Packaging, ecosystems, cross-compilation, overlays, caches | Packaging |
+| Disko, deploy, images, CI, tests | Ops & fleet |
+| Secure Boot / TPM / Lanzaboote | Ops, Capstone stretch |
+| Internals, upgrades, ecosystem | Internals |
+| Capstone rebuild proof | Capstone |
+| CI/CD automation & cache distribution | CI/CD |
+| Container images (dockerTools) & Kubernetes GitOps | Containers & Kubernetes |
+| Terraform/OpenTofu integration & Ansible provisioning | IaC & Cloud |
+| Internal developer platform, monorepos, MicroVMs | Platform Engineering |
+| Production audits, operator keys, builder factories | Production Labs |
+| Multi-region fleet capstones, recovery & path forward | Production Capstones |
+| Custom distro product & derivations | Projects |
+| App product zoo | **Out** (optional post-book) |
+| Cert tracks | **Out** |
+| Day calendars / series cross-links | **Out** |
+
+---
+
+# Explicitly out of scope
+
+- Go (or other language) full curriculum — separate books
+- Certification branding or exam prep
+- Exhaustive self-hosted app catalog as required chapters
+- Replacing nixos.org / nix.dev
+- Required pacing as “Day N”
+
+---
+
+# Resources (primary, not blogs-of-2022)
+
+- *Nix Pills* — store/derivation intuition (Concepts)
+- *nix.dev* — maintained tutorials (Concepts–layout)
+- Official NixOS & Nix manuals + **26.05 release notes**
+- *NixOS & Flakes Book* (community) — companion for flake layouts
+- Upstream READMEs: sops-nix, agenix, Disko, deploy-rs, Colmena, Lanzaboote
+
+---
+
+# Writing rule for future chapters
+
+1. Follow **parts in pedagogical order** when learning linearly.
+2. Each chapter: mental model → minimal working flake/config → break it → gotchas.
+3. Prefer the **default stack** table unless hardware forces a fork (document the fork).
+4. After content moves, update `octavo.yml` to match.
+5. Syllabus changes first if scope changes.
+6. **Topic book language only**—no day-calendar framing.
+
+---
+
+# Lab hardware default (this book)
+
+| Item | Default |
+|------|---------|
+| Primary lab chassis | HP Elitebook 2570p · 16 GB (or similar spare laptop) |
+| Hypervisor | libvirt/KVM default; Incus optional |
+| Journey guest | `nixlab` 4–6 GB |
+| Deploy target | `deploy-a` ~2 GB optional |
+| Host OS | NixOS 26.05 preferred |
+
+See Lab 0 chapters for concrete commands, failure modes, and acceptance criteria.

@@ -1,0 +1,67 @@
+---
+title: Glossary of Terms
+---
+
+# Glossary of Terms
+
+A concise reference for Nix and NixOS terminology used in this book.
+
+### Derivation (`.drv`)
+The build specification Nix evaluates to before any compiler runs. An immutable file in `/nix/store` listing the builder, environment, and input paths required to produce an output.
+
+### Nix Store (`/nix/store`)
+Read-only tree of hashed paths. Identity is the hash; the name-version suffix is a label. Nothing is overwritten in place.
+
+### Closure
+The store path plus every path it references, transitively. The **runtime** closure is what you copy to production. The **build-time** closure includes compilers and is not what you deploy.
+
+### Reference scanning
+Nix greps output files for other store hashes. A path mentioned in a binary becomes a runtime reference; gcc used only during the compile does not.
+
+### Flake
+`flake.nix` + `flake.lock`: hermetic evaluation, pinned inputs, standard outputs (`packages`, `devShells`, `nixosConfigurations`, `checks`).
+
+### DevShell
+An isolated environment from `nix develop` / `mkShell` with exactly the tools the project listed.
+
+### Binary cache / substituter
+HTTP service (`cache.nixos.org`, Cachix, Attic, Harmonia) that serves signed NARs. Nix queries substituters before building.
+
+### NAR
+Nix ARchive: the serialisation of a store path used for copy and substitute.
+
+### GC root
+A pointer outside the store (`/run/current-system`, `~/.nix-profile`, `result`, `.direnv/flake-profile`) that keeps a closure alive. Unreachable paths are garbage.
+
+### Home Manager
+NixOS module system aimed at `$HOME`: user packages, dotfiles, user services.
+
+### Overlay
+Function `final: prev: { … }` that patches `nixpkgs` without editing upstream.
+
+### Module system
+Typed `options` + merging `config`. Powers NixOS and Home Manager.
+
+### Fixed-output derivation (FOD)
+A derivation allowed to use the network whose **output hash** you declared. Fetchers (`fetchurl`, `fetchFromGitHub`) are FODs. Identity is the hash, not the URL.
+
+### RUNPATH
+ELF field pointing at store library directories. Replaces a global `/lib` search.
+
+### nix-ld
+NixOS compatibility loader at `/lib64/ld-linux-…` so vendor ELFs can find Nix-provided libraries without a global `LD_LIBRARY_PATH`.
+
+### FHS env (`buildFHSEnv`)
+Bubblewrapped filesystem that looks like `/usr` for vendor installers that refuse to run on a NixOS host.
+
+### Remote builder
+A machine that realises `.drv` files over SSH (`ssh-ng`). Caches move results; builders move work.
+
+### stateVersion
+Birth release of a NixOS or Home Manager config. Not an upgrade knob. Leave it until a release note says otherwise.
+
+### Generation
+One successful `nixos-rebuild switch` or `home-manager switch`. The bootloader (and `home-manager generations`) lists them for rollback.
+
+### Impermanence
+Root filesystem thrown away at boot; state lives on `/persist`. Requires backups of `/persist`, not of `/nix/store`.

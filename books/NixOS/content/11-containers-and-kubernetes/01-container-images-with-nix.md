@@ -1,0 +1,213 @@
+---
+title: Creating Container Images with Nix (dockerTools)
+---
+
+# Creating Container Images with Nix (dockerTools)
+
+`FROM debian:latest` plus `apt-get` is a different closure every Tuesday. The boring default is: **`pkgs.dockerTools.buildLayeredImage` (or `streamLayeredImage`) from nixpkgs 26.05, no daemon at build time, `cacert` if you speak TLS**.
+
+## Mental model
+
+Nix builds an OCI tarball from store paths. Layers split by derivation so glibc stays cached when `desk-api` changes. No `/bin/bash` unless you listed `pkgs.bash`.
+
+| Function | Output |
+|---|---|
+| `buildLayeredImage` | `.tar.gz` you `docker load` / `podman load` |
+| `streamLayeredImage` | a **script** that writes the tarball to stdout (`./result \| podman load`) — smaller NAR in CI |
+
+`contents` is **deprecated**. Use `copyToRoot`. `fakeNss` is `/etc/passwd` + `/etc/group` + nsswitch (root + nobody). Without it, `User = "65534"` fails with "no such user". `extraCommands` runs with the image root as cwd (`mkdir -p tmp && chmod 1777 tmp`). `pkgs.iana-etc` if you see `getProtocolByName: no such protocol name: tcp`.
+
+Podman and Docker both load the archive. Building does **not** need root or a daemon.
+
+```
+desk-api drv  +  cacert  →  layered OCI  →  docker load / podman load
+```
+
+## Worked examples
+
+### Case 1: Layered image
+
+Save as `image.nix`:
+
+```nix
+# image.nix
+{ pkgs ? import <nixpkgs> {} }:
+
+let
+  deskApp = pkgs.writeShellApplication {
+    name = "desk-api";
+    text = ''
+      echo "desk-api listening (fake)"
+    '';
+  };
+in
+pkgs.dockerTools.buildLayeredImage {
+  name = "desk-api";
+  tag = "1.0.0";
+  copyToRoot = [
+    deskApp
+    pkgs.cacert
+    pkgs.dockerTools.fakeNss
+  ];
+  extraCommands = ''
+    mkdir -p tmp
+    chmod 1777 tmp
+  '';
+  config = {
+    Cmd = [ "${deskApp}/bin/desk-api" ];
+    ExposedPorts."8080/tcp" = { };
+    Env = [ "SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt" ];
+    User = "65534:65534";
+  };
+}
+```
+
+```bash
+nix-build image.nix
+podman load < result
+podman run --rm desk-api:1.0.0
+```
+
+Output (shape):
+
+```
+desk-api listening (fake)
+```
+
+Prefer a version tag over `latest`. `User = "65534:65534"` is nobody from `fakeNss`. Numeric IDs skip a name lookup; still ship `fakeNss` so glibc `getpwuid` does not panic. The process cannot write `/` — that is the point. Writable dirs (`/tmp`, maybe a volume for `/var/lib/desk-api`) come from `extraCommands`. `extraCommands` runs at **image build** time as root in that fake root, not as `User` at runtime.
+
+`streamLayeredImage` takes the **same** attr set as `buildLayeredImage`. The derivation is a script: `nix build .#imageStream && ./result | podman load`. CI prefers the stream so the NAR is the script, not a multi-hundred-megabyte tarball sitting in the cache twice.
+
+### Case 2: `vendorHash` for a real Go module
+
+```nix
+# image-go.nix
+{ pkgs ? import <nixpkgs> {} }:
+
+let
+  deskApp = pkgs.buildGoModule {
+    pname = "desk-api";
+    version = "1.0.0";
+    src = pkgs.lib.cleanSource ./.;
+    vendorHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+  };
+in
+pkgs.dockerTools.buildLayeredImage {
+  name = "desk-api";
+  tag = "1.0.0";
+  copyToRoot = [ deskApp pkgs.cacert pkgs.tzdata pkgs.dockerTools.fakeNss ];
+  config = {
+    Cmd = [ "${deskApp}/bin/desk-api" ];
+    User = "65534:65534";
+  };
+}
+```
+
+Probe `vendorHash` once. `null` is not a pin.
+
+### Case 3: Inspect layers
+
+```bash
+tar -tf result | head
+nix path-info -Shr result | tail -1
+```
+
+The image closure should be the app + libc + certs, not gcc. If gcc is in `path-info -r`, you copied `buildInputs` into `copyToRoot`. `contents = [ pkgs.stdenv ];` is the same bug under the old name.
+
+### Case 4: Flake package
+
+One file returns the **attr set**, not an image. Both builders take that set:
+
+```nix
+# image-args.nix
+{ pkgs, deskApp }:
+
+{
+  name = "desk-api";
+  tag = "1.0.0";
+  copyToRoot = [ deskApp pkgs.cacert pkgs.dockerTools.fakeNss ];
+  extraCommands = ''
+    mkdir -p tmp
+    chmod 1777 tmp
+  '';
+  config = {
+    Cmd = [ "${deskApp}/bin/desk-api" ];
+    User = "65534:65534";
+    Env = [ "SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt" ];
+  };
+}
+```
+
+```nix
+# flake.nix
+{
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+  outputs = { self, nixpkgs }:
+    let
+      system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
+      deskApp = pkgs.writeShellApplication {
+        name = "desk-api";
+        text = ''echo "desk-api listening (fake)"'';
+      };
+      imageArgs = import ./image-args.nix { inherit pkgs deskApp; };
+    in
+    {
+      packages.${system}.image = pkgs.dockerTools.buildLayeredImage imageArgs;
+      packages.${system}.imageStream = pkgs.dockerTools.streamLayeredImage imageArgs;
+    };
+}
+```
+
+```bash
+nix build .#image
+skopeo copy docker-archive:./result docker://registry.desk.internal/desk-api:1.0.0
+```
+
+```bash
+nix build .#imageStream
+./result | podman load
+# CI: stream to a temp archive, then skopeo (stdin support varies)
+./result > /tmp/desk-api.tar
+skopeo copy docker-archive:/tmp/desk-api.tar docker://registry.desk.internal/desk-api:1.0.0
+```
+
+CI does not start dockerd. `skopeo` talks to the registry. Pin the tag; do not push `latest` from `main` unless that is an explicit contract.
+
+### Case 5: Nobody is home in the image
+
+```bash
+podman run --rm --entrypoint /bin/sh desk-api:1.0.0
+```
+
+Output:
+
+```
+Error: no such file or directory
+```
+
+That is success for a production image. Debug with a **separate** image that includes `pkgs.busybox`. Do not ship busybox in the API tag.
+
+## The trap
+
+The trap is **forgetting `cacert`**. HTTPS fails with `x509: certificate signed by unknown authority`. Include `pkgs.cacert` and `SSL_CERT_FILE` (or `dockerTools.caCertificates`).
+
+The other trap is `copyToRoot = [ pkgs.stdenv ];` (or deprecated `contents`) so "debug is easy." You just shipped a compiler.
+
+A third: **root in the image** because `fakeNss` was omitted and `User` was left unset. A fourth: no `/tmp` (mode `1777`) so the Go runtime cannot create scratch files.
+
+## The boring rule
+
+- `copyToRoot`, not deprecated `contents`. `buildLayeredImage` or `streamLayeredImage` from the **same** args.
+- Pin tags. `cacert` + `fakeNss` + `/tmp`. `User` is not root.
+- `vendorHash` is a FOD. Probe once.
+- Build in CI without dockerd. `skopeo copy` after.
+- Debug images are a different output, not extra packages in prod.
+
+## Try this
+
+1. Build Case 1, `tar -tf result | wc -l`.
+2. Drop `cacert`, run a one-liner that `curl https://example.com` (add curl), read the TLS error, put cacert back.
+3. `nix path-info -Shr result` and confirm gcc is absent.
+4. Tag `1.0.0` and `1.0.1` after a script change; confirm the base layers' hashes stayed when only the top layer moved.
+5. `podman inspect desk-api:1.0.0 --format '{{.Config.User}}'` — `65534:65534`. Drop `fakeNss`, run, read the getpwuid error, put it back.

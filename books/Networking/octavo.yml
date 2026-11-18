@@ -1,0 +1,338 @@
+book:
+  title: Networking
+  author: K19G
+  date: '2026-11-17'
+  description: From first principles to NetOps, with Containerlab labs
+  chapters:
+  - index.md
+  - part: Lab Platform
+    contents:
+    - content/01-lab-platform/01-lab-host-macos.md
+    - content/01-lab-platform/02-lab-host-linux.md
+    - content/01-lab-platform/02b-netplan-yaml-renderers.md
+    - content/01-lab-platform/03-containerlab-fundamentals.md
+    - content/01-lab-platform/03b-netlab-fundamentals.md
+    - content/01-lab-platform/03c-containerlab-persistent-state.md
+    - content/01-lab-platform/03e-containerlab-inspect-graph-ssh.md
+    - content/01-lab-platform/03f-netlab-modules-provision-validate.md
+    - content/01-lab-platform/03g-clabernetes-c9s-runtime.md
+    - content/01-lab-platform/04-free-image-matrix.md
+    - content/01-lab-platform/05-linux-networking-for-labs.md
+    - content/01-lab-platform/06-lab-hygiene.md
+  - part: Networking Foundations
+    contents:
+    - content/02-networking-foundations/01-what-is-networking.md
+    - content/02-networking-foundations/02-tcpip-and-layered-models.md
+    - content/02-networking-foundations/03-packets-frames-encapsulation.md
+    - content/02-networking-foundations/04-link-layer-and-ethernet.md
+    - content/02-networking-foundations/04b-physical-ethernet-diagnostics.md
+    - content/02-networking-foundations/05-ipv4-addressing-and-subnetting.md
+    - content/02-networking-foundations/06-ipv6-essentials.md
+    - content/02-networking-foundations/06b-slaac-ra-flags-and-dhcpv6.md
+    - content/02-networking-foundations/06c-ipv6-extension-headers-and-fragmentation.md
+    - content/02-networking-foundations/07-arp-nd-and-local-resolution.md
+    - content/02-networking-foundations/07b-neighbour-tables-timers-limits-arp-flux.md
+    - content/02-networking-foundations/07c-ipv4-address-conflict-detection.md
+    - content/02-networking-foundations/08-icmp-and-path-diagnostics.md
+    - content/02-networking-foundations/09-transport-tcp-udp.md
+    - content/02-networking-foundations/10-common-application-protocols.md
+    - content/02-networking-foundations/11-host-forwarding-and-routing-intro.md
+    - content/02-networking-foundations/12-control-data-management-planes.md
+    - content/02-networking-foundations/13-encrypted-dns-doh-dot.md
+  - part: Layer 2
+    contents:
+    - content/03-layer-2/01-ethernet-mac.md
+    - content/03-layer-2/02-vlans-trunks.md
+    - content/03-layer-2/02b-private-vlans-port-isolation-qinq.md
+    - content/03-layer-2/03-loop-prevention.md
+    - content/03-layer-2/03b-spanning-tree-election.md
+    - content/03-layer-2/04-link-aggregation.md
+    - content/03-layer-2/05-l2-failure-drills.md
+    - content/03-layer-2/06-wireless-lan-fundamentals.md
+  - part: IP Routing and Services
+    contents:
+    - content/04-ip-routing-services/01-ip-addressing.md
+    - content/04-ip-routing-services/02-routing-fundamentals.md
+    - content/04-ip-routing-services/03-static-routing-labs.md
+    - content/04-ip-routing-services/04-icmp-path-mtu.md
+    - content/04-ip-routing-services/04b-pmtu-black-holes-and-plpmtud.md
+    - content/04-ip-routing-services/07-vrf-and-policy-routing.md
+    - content/04-ip-routing-services/08-linux-ecmp-nexthop-groups.md
+    - content/04-ip-routing-services/09-multicast-distribution.md
+  - part: Network Services
+    contents:
+    - content/04-network-services/01-first-hop-redundancy.md
+    - content/04-network-services/02-dhcp-relay-and-nat.md
+    - content/04-network-services/02b-network-boot-pxe-ipxe-tftp.md
+    - content/04-network-services/02c-dhcp-option-82-relay-agent-information.md
+    - content/04-network-services/02d-dhcp-lease-relay-diagnostics.md
+    - content/04-network-services/03-name-time-log-hygiene.md
+    - content/04-network-services/03b-ptp-precision-time.md
+    - content/04-network-services/03c-nts-for-ntp.md
+    - content/04-network-services/05-dns-authoritative-and-recursive.md
+    - content/04-network-services/05b-linux-stub-resolver.md
+    - content/04-network-services/05c-zone-transfers-notify-tsig.md
+    - content/04-network-services/05d-dns-rebinding-defenses.md
+    - content/04-network-services/05e-dns-negative-answers-and-caching.md
+    - content/04-network-services/05f-edns-client-subnet-and-split-horizon.md
+    - content/04-network-services/05g-dns-cache-poisoning-0x20-cookies.md
+    - content/04-network-services/05h-svcb-https-records.md
+    - content/04-network-services/17-dns-message-size-edns-tcp-fallback.md
+    - content/04-network-services/18-cname-chains-and-answer-order.md
+    - content/04-network-services/19-anycast-services-and-dns.md
+    - content/04-network-services/21-nat64-dns64-464xlat.md
+    - content/04-network-services/21b-ds-lite-map-e-map-t-6rd.md
+    - content/04-network-services/22-dhcpv6-prefix-delegation.md
+    - content/04-network-services/24-mdns-dns-sd-service-discovery.md
+  - part: Dynamic Routing
+    contents:
+    - content/05-dynamic-routing/00-dynamic-routing-ideas.md
+    - content/05-dynamic-routing/01-ospf-basics.md
+    - content/05-dynamic-routing/01b-ospf-adjacency-diagnostics.md
+    - content/05-dynamic-routing/02-bgp-basics.md
+    - content/05-dynamic-routing/03-policy-and-filters.md
+    - content/05-dynamic-routing/03b-redistribution-design.md
+    - content/05-dynamic-routing/04-bfd-fast-failure-detection.md
+    - content/05-dynamic-routing/05-rpki-route-origin-validation.md
+    - content/05-dynamic-routing/06-segment-routing-srv6-ti-lfa.md
+    - content/05-dynamic-routing/06b-ti-lfa-repair-lists-sr-mpls.md
+    - content/05-dynamic-routing/06c-igp-flexible-algorithm.md
+    - content/05-dynamic-routing/07-bgp-route-reflectors.md
+    - content/05-dynamic-routing/08-bgp-ipv4-routes-ipv6-next-hops-rfc8950.md
+    - content/05-dynamic-routing/09-isis-basics.md
+    - content/05-dynamic-routing/09-netlab-bgp-lab.md
+    - content/05-dynamic-routing/11-ipv6-igp-notes.md
+    - content/05-dynamic-routing/12-bgp-path-exploration-and-mrai.md
+    - content/05-dynamic-routing/13-bgp-graceful-restart-llgr-gshut.md
+    - content/05-dynamic-routing/14-bgp-error-handling-rfc7606.md
+  - part: Policy, QoS, and Hardening
+    contents:
+    - content/06-policy-qos-hardening/01-acl-thinking.md
+    - content/06-policy-qos-hardening/02-control-plane-protection.md
+    - content/06-policy-qos-hardening/02b-bgp-session-protection-md5-ao-gtsm.md
+    - content/06-policy-qos-hardening/02c-device-aaa-radius-tacacs-blastradius.md
+    - content/06-policy-qos-hardening/02d-network-access-8021x.md
+    - content/06-policy-qos-hardening/03-qos-vocabulary.md
+    - content/06-policy-qos-hardening/03b-qos-queues-and-token-buckets.md
+    - content/06-policy-qos-hardening/04-hardening-checklists.md
+    - content/06-policy-qos-hardening/05-syn-floods-and-listen-queues.md
+    - content/06-policy-qos-hardening/06-fq-codel-and-cake.md
+    - content/06-policy-qos-hardening/06b-ecn-and-l4s.md
+    - content/06-policy-qos-hardening/07-nftables-fundamentals.md
+    - content/06-policy-qos-hardening/08-conntrack-exhaustion.md
+    - content/06-policy-qos-hardening/09-macsec-and-mka.md
+    - content/06-policy-qos-hardening/10-rtbh-and-flowspec.md
+    - content/06-policy-qos-hardening/11-ipv6-first-hop-security.md
+  - part: Security Operations
+    contents:
+    - content/06-security-operations/01-observability-for-networks.md
+    - content/06-security-operations/01b-flow-export-ipfix.md
+    - content/06-security-operations/01c-bmp-bgp-monitoring.md
+    - content/06-security-operations/01d-stamp-active-measurement.md
+    - content/06-security-operations/01e-snmpv3-usm-and-vacm.md
+    - content/06-security-operations/02-automation-lab-as-code.md
+    - content/06-security-operations/04-network-xray-live-bgp-decisions.md
+    - content/06-security-operations/05-ss-tcpdump-mtr.md
+    - content/06-security-operations/05b-linux-drop-counters.md
+    - content/06-security-operations/05c-paris-traceroute-ecmp.md
+    - content/06-security-operations/06-yang-netconf-gnmi.md
+    - content/06-security-operations/06b-api-conditional-updates.md
+    - content/06-security-operations/07-containerlab-in-ci.md
+    - content/06-security-operations/09-runbooks-and-incident-notes.md
+  - part: Overlays and Tunnels
+    contents:
+    - content/07-a-overlays-tunnels/01-why-encapsulate.md
+    - content/07-a-overlays-tunnels/02-site-tunnels.md
+    - content/07-a-overlays-tunnels/02b-wireguard-cryptokey-routing-and-psk.md
+    - content/07-a-overlays-tunnels/02c-openvpn-data-channel-offload.md
+    - content/07-a-overlays-tunnels/02d-wireguard-multi-tunnel.md
+    - content/07-a-overlays-tunnels/02e-wireguard-mtu-and-fragmentation.md
+    - content/07-a-overlays-tunnels/02f-ipsec-esp-xfrm-and-ikev2.md
+    - content/07-a-overlays-tunnels/02g-dhcp-option-121-vpn-route-leaks.md
+    - content/07-a-overlays-tunnels/03-vxlan-data-plane.md
+    - content/07-a-overlays-tunnels/04-evpn-control-plane-intro.md
+    - content/07-a-overlays-tunnels/04b-evpn-multihoming-esi-df-election.md
+    - content/07-a-overlays-tunnels/05-overlay-lab.md
+    - content/07-a-overlays-tunnels/06-tailscale-vxlan-sites.md
+    - content/07-a-overlays-tunnels/06b-shared-address-space-overlay-collisions.md
+    - content/07-a-overlays-tunnels/07-multicast-essentials.md
+    - content/07-a-overlays-tunnels/08-nat-traversal-stun-hole-punching.md
+    - content/07-a-overlays-tunnels/08b-turn-relays-and-peer-policy.md
+    - content/07-a-overlays-tunnels/09-masque-connect-udp-ip.md
+    - content/07-a-overlays-tunnels/10-mpls-label-switching.md
+    - content/07-a-overlays-tunnels/10b-bgp-mpls-l3vpn.md
+  - part: Fabrics and Multi-Area
+    contents:
+    - content/07-b-fabrics-multi-area/01-clos-leaf-spine.md
+    - content/07-b-fabrics-multi-area/02-multi-area-ospf.md
+    - content/07-b-fabrics-multi-area/03-fabric-with-frr.md
+    - content/07-b-fabrics-multi-area/04-multi-implementation-lab.md
+    - content/07-b-fabrics-multi-area/05-underlay-design-choices.md
+  - part: BGP Security
+    contents:
+    - content/08-bgp-security/00-why-routing-security-is-harder-than-it-looks.md
+    - content/08-bgp-security/01-architecture-of-global-connectivity.md
+    - content/08-bgp-security/02-interdomain-routing-fundamentals.md
+    - content/08-bgp-security/03-bgp-protocol-architecture.md
+    - content/08-bgp-security/04-bgp-path-attributes-and-policy-expression.md
+    - content/08-bgp-security/05-bgp-decision-process-and-route-selection.md
+    - content/08-bgp-security/06-convergence-stability-and-propagation-dynamics.md
+    - content/08-bgp-security/07-historical-design-decisions-and-security-consequences.md
+    - content/08-bgp-security/08-threat-landscape-accidents-and-attacks.md
+    - content/08-bgp-security/09-origin-hijacking-attacks-mechanics-impact-detection.md
+    - content/08-bgp-security/10-route-leaks-and-policy-abuse.md
+    - content/08-bgp-security/11-advanced-and-emerging-routing-threats.md
+    - content/08-bgp-security/12-routing-registries-irrs-and-limitations.md
+    - content/08-bgp-security/13-rpki-architecture-resource-certificates-and-trust-anchors.md
+    - content/08-bgp-security/14-route-origin-authorizations-core-object.md
+    - content/08-bgp-security/15-rpki-validation-validators-vrps-relying-parties.md
+    - content/08-bgp-security/16-rpki-to-router-rtr-and-route-origin-validation-rov.md
+    - content/08-bgp-security/17-operational-consequences-of-rov.md
+    - content/08-bgp-security/18-scope-and-limits-of-rpki-and-rov.md
+    - content/08-bgp-security/19-complementary-mechanisms-irr-prefix-aspath-filters.md
+    - content/08-bgp-security/20-route-leak-detection-and-prevention-mechanisms.md
+    - content/08-bgp-security/21-bgpsec-architecture-guarantees-deployment-reality.md
+    - content/08-bgp-security/22-aspa-autonomous-system-provider-authorizations.md
+    - content/08-bgp-security/23-designing-and-implementing-routing-security.md
+    - content/08-bgp-security/24-configuration-examples-vendor-specific-considerations.md
+    - content/08-bgp-security/25-troubleshooting-routing-security-controls.md
+    - content/08-bgp-security/26-monitoring-measurement-and-testing.md
+    - content/08-bgp-security/27-case-studies-documented-routing-incidents.md
+    - content/08-bgp-security/28-economics-governance-human-dimension.md
+    - content/08-bgp-security/29-current-state-and-future-of-internet-routing-security.md
+    - content/08-bgp-security/30-05-bgp-no-export-community.md
+    - content/08-bgp-security/30-06-rpki-roa-maxlength.md
+  - part: Network Forensics
+    contents:
+    - content/08-network-forensics/00-advanced-behavior-based-network-forensics.md
+    - content/08-network-forensics/01-introduction-to-advanced-network-forensics.md
+    - content/08-network-forensics/02-fundamentals-of-network-forensics-and-log-analysis.md
+    - content/08-network-forensics/03-building-a-network-forensics-lab-environment.md
+    - content/08-network-forensics/04-behavioral-analysis-in-cybersecurity.md
+    - content/08-network-forensics/05-cyber-forensics-behavioral-analysis-cfba.md
+    - content/08-network-forensics/06-advanced-techniques-and-tools.md
+    - content/08-network-forensics/07-machine-learning-and-artificial-intelligence-in-forensics.md
+    - content/08-network-forensics/08-siem-configuration-for-behavioral-log-collection.md
+    - content/08-network-forensics/09-collecting-log-streams-enterprise-edge-honeypots-auth.md
+    - content/08-network-forensics/10-correlation-and-investigation-within-siem.md
+    - content/08-network-forensics/11-specialized-forensics-by-domain.md
+    - content/08-network-forensics/12-case-studies-in-advanced-behavior-based-network-forensics.md
+    - content/08-network-forensics/13-the-future-of-network-forensics-and-cyberpsychology.md
+  - part: Transport and Applications
+    contents:
+    - content/08-transport-and-applications/06-quic-v2-and-version-negotiation.md
+    - content/08-transport-and-applications/06b-quic-loss-recovery.md
+    - content/08-transport-and-applications/07-happy-eyeballs-v2-v3.md
+    - content/08-transport-and-applications/08-quic-load-balancing-with-nftables.md
+    - content/08-transport-and-applications/09-http3-stream-cancellation.md
+    - content/08-transport-and-applications/09a-tcp-states-lab.md
+    - content/08-transport-and-applications/09b-hpack-qpack-header-compression.md
+    - content/08-transport-and-applications/09b-tcp-nagle-and-delayed-ack.md
+    - content/08-transport-and-applications/09c-http-request-smuggling.md
+    - content/08-transport-and-applications/09c-tcp-fast-open.md
+    - content/08-transport-and-applications/09d-tcp-time-wait.md
+    - content/08-transport-and-applications/09e-msg-zerocopy-sends.md
+    - content/08-transport-and-applications/09f-so-reuseport-listener-groups.md
+    - content/08-transport-and-applications/09g-multipath-tcp-subflows-lab.md
+    - content/08-transport-and-applications/09h-tcp-congestion-cubic-bbr.md
+    - content/08-transport-and-applications/09i-udp-latency-budget-timestamping.md
+    - content/08-transport-and-applications/09j-tcp-dead-peer-detection.md
+    - content/08-transport-and-applications/09k-tcp-loss-recovery-sack-rack-tlp.md
+    - content/08-transport-and-applications/09l-tcp-windows-buffers-bdp.md
+    - content/08-transport-and-applications/09m-udp-batching-mmsg-gso-gro.md
+    - content/08-transport-and-applications/09n-source-port-selection-ephemeral-range.md
+    - content/08-transport-and-applications/09o-tcp-rfc5961-challenge-acks.md
+    - content/08-transport-and-applications/10-caddy-slowloris-idle-timeouts.md
+    - content/08-transport-and-applications/10-tls13-key-schedule.md
+    - content/08-transport-and-applications/11-root-ksk-rollover-rfc5011.md
+    - content/08-transport-and-applications/12-tls13-0rtt-replay.md
+    - content/08-transport-and-applications/12b-tls-session-resumption-and-ticket-keys.md
+    - content/08-transport-and-applications/13-ipcrypt-log-privacy.md
+    - content/08-transport-and-applications/14-encrypted-client-hello.md
+    - content/08-transport-and-applications/15-dnssec-failure-modes.md
+    - content/08-transport-and-applications/15b-dane-tlsa-smtp.md
+    - content/08-transport-and-applications/15c-mta-sts-and-tlsrpt.md
+    - content/08-transport-and-applications/16-load-balancer-hashing-maglev.md
+    - content/08-transport-and-applications/20-merkle-tree-certificates.md
+    - content/08-transport-and-applications/20b-caa-acme-and-revocation.md
+    - content/08-transport-and-applications/20c-x509-path-building-name-constraints.md
+    - content/08-transport-and-applications/23-dns-nist-sp-800-81r3-audit.md
+    - content/08-transport-and-applications/25-proxy-protocol.md
+    - content/08-transport-and-applications/26-forward-proxies-connect-socks.md
+  - part: Lab Workbook
+    contents:
+    - content/09-lab-workbook/00-workbook-guide.md
+    - content/09-lab-workbook/01-lab-host-and-images.md
+    - content/09-lab-workbook/02-three-router-forwarding.md
+    - content/09-lab-workbook/03-ceos-interfaces-and-lldp.md
+    - content/09-lab-workbook/04-vlans-and-trunks.md
+    - content/09-lab-workbook/05-spanning-tree.md
+    - content/09-lab-workbook/06-link-aggregation.md
+    - content/09-lab-workbook/07-inter-vlan-and-dhcp.md
+    - content/09-lab-workbook/08-vrrp-and-varp.md
+    - content/09-lab-workbook/09-static-routes.md
+    - content/09-lab-workbook/10-ospf-one-area.md
+    - content/09-lab-workbook/11-ospf-areas-cost-bfd.md
+    - content/09-lab-workbook/12-isis.md
+    - content/09-lab-workbook/13-ebgp.md
+    - content/09-lab-workbook/14-ibgp-route-reflector.md
+    - content/09-lab-workbook/15-bgp-policy.md
+    - content/09-lab-workbook/16-acls-and-nat.md
+    - content/09-lab-workbook/17-ipv6.md
+    - content/09-lab-workbook/18-vxlan-bridge.md
+    - content/09-lab-workbook/19-evpn-vxlan.md
+    - content/09-lab-workbook/20-gnmi-srlinux.md
+    - content/09-lab-workbook/21-production-failure-drills.md
+    - content/09-lab-workbook/22-mtu-and-mss.md
+    - content/09-lab-workbook/23-stp-edge-guards.md
+    - content/09-lab-workbook/24-dhcp-snooping-and-dai.md
+    - content/09-lab-workbook/25-mlag.md
+    - content/09-lab-workbook/26-vrf-lite.md
+    - content/09-lab-workbook/27-ospf-stub-and-summary.md
+    - content/09-lab-workbook/28-redistribute-and-tag.md
+    - content/09-lab-workbook/29-bgp-med-prepend-ecmp.md
+    - content/09-lab-workbook/30-policy-routing.md
+    - content/09-lab-workbook/31-urpf.md
+    - content/09-lab-workbook/32-span.md
+    - content/09-lab-workbook/33-gre.md
+    - content/09-lab-workbook/34-control-plane-acl.md
+    - content/09-lab-workbook/35-ipv6-slaac.md
+    - content/09-lab-workbook/36-ntp-and-syslog.md
+    - content/09-lab-workbook/37-dscp-and-delay.md
+    - content/09-lab-workbook/38-ospf-authentication.md
+    - content/09-lab-workbook/39-multicast-failure-exercises.md
+    - content/09-lab-workbook/40-policy-lookup-and-throw.md
+    - content/09-lab-workbook/41-address-planning-and-summary.md
+    - content/09-lab-workbook/42-isolated-forwarding-return-path.md
+    - content/09-lab-workbook/43-ipv6-neighbor-discovery-filter.md
+    - content/09-lab-workbook/44-vlan-access-membership.md
+    - content/09-lab-workbook/45-tagged-trunk-failure.md
+    - content/09-lab-workbook/46-stateful-acl-direction.md
+    - content/09-lab-workbook/47-source-nat-observe.md
+    - content/09-lab-workbook/48-destination-nat-observe.md
+    - content/09-lab-workbook/49-dhcpv4-wire-exchange.md
+    - content/09-lab-workbook/50-vrf-overlap-and-fallback.md
+    - content/09-lab-workbook/51-ecmp-real-flows.md
+    - content/09-lab-workbook/52-classic-stp-triangle.md
+    - content/09-lab-workbook/53-lacp-member-failure.md
+    - content/09-lab-workbook/54-ebgp-gobgp-namespaces.md
+    - content/09-lab-workbook/55-ebgp-import-policy.md
+  - part: Projects
+    contents:
+    - content/09-projects/03-capstone-outline.md
+    - content/09-projects/03b-campus-vlan-vrrp-ospf.md
+    - content/09-projects/03c-campus-failure-domain-design.md
+    - content/09-projects/04-edge-dual-home-lab.md
+  - part: Command Reference
+    contents:
+    - content/10-command-reference/01-commands.md
+    - content/10-command-reference/02-frr.md
+    - content/10-command-reference/03-arista-eos.md
+    - content/10-command-reference/04-sr-linux.md
+    - content/10-command-reference/05-lab-tools.md
+format:
+  html:
+    theme: auto
+  epub: {}
+  pdf:
+    paper: A4

@@ -1,0 +1,117 @@
+---
+title: Introduction
+unnumbered: true
+---
+
+# Linux
+
+A practical library for **Linux on the command line**, organized as three parts under one book:
+
+```text
+Linux
+├── Commands          → topics (files, processes, networking, …) → individual commands
+├── Editors           → vi, Neovim, tmux, Herdr, … → chapter pages
+└── Scripting
+    └── Bash          → shells, scripting, variables, control, workbook
+```
+
+This landing page restores the **Commands** orientation (scope, page template, parts map) from the former standalone *Linux-Commands* book, and points you into Editors and Bash as well.
+
+## Commands — scope
+
+A practical, **Ubuntu-first** encyclopedia of **general Linux CLI** and **server-side** commands for administration, scripting, and troubleshooting on headless and SSH-managed systems.
+
+Commands stays on the terminal and the OS. It does **not** cover desktop/GUI applications, graphical package stores, or printer/desktop workflows.
+
+Each Commands chapter covers **one command** (or a tight family): syntax, important options, realistic examples, output notes, safety tips where it matters, and related tools.
+
+| In scope | Out of scope |
+|----------|----------------|
+| Core userland (`ls`, `find`, pipes, …) | Desktop apps and GUI installers |
+| Networking, SSH, firewalls, capture | Display servers (X11/Wayland), window managers |
+| systemd, journals, packages (`apt`/`dnf`) | Flatpak / GUI app stores |
+| Storage, LVM, LUKS, disk health | CUPS client printing queues |
+| Processes, monitoring, scheduling | Desktop session “app” management |
+| Terminal multiplexers (`tmux`, …) | Browser-based or GUI-only tools |
+| SELinux/capabilities as server concerns | End-user desktop customization |
+
+Editors and Bash live in the other parts of **this** book (previously separate volumes in this library).
+
+## Related books
+
+| Book | Overlap |
+|------|---------|
+| **Networking** | Deeper TCP/IP, routing, and lab topologies beyond host CLI |
+| **VCS** | Git workflows used on the servers you administer |
+| **NixOS** | Declarative hosts after you know classic Linux ops |
+| **Go** / **C** | Systems programming that assumes this CLI fluency |
+
+## How to use
+
+1. Expand **Commands** → open a topic → open a command page.
+2. Each Commands topic starts with an **Intro** page: overview, command table, and suggested starting points — then one page per command.
+3. Expand **Editors** → pick an editor or workspace tool (vi, Neovim, tmux, Herdr, …).
+4. Expand **Scripting → Bash** for shell programming and automation beyond one-liners.
+5. **Search** for a command or editor name when you already know what you need.
+6. Prefer **worked examples** over option dumps — copy, adapt, verify on a server or VM.
+
+## Commands page template
+
+Most command pages follow this shape:
+
+1. Overview
+2. Syntax
+3. Common options
+4. Safety (when destructive or privileged)
+5. Key use cases (Core pages)
+6. Examples with **named** explanations
+7. Understanding output (when useful)
+8. Notes & pitfalls
+9. Related commands
+10. Further reading (optional)
+
+Short utilities may use a lighter form. See `content/_planning/command-page-template.md` for author depth tiers (Core / Standard / Light).
+
+## Commands — parts at a glance
+
+| Section | Focus |
+|---------|--------|
+| **Help and docs** | `man`, `info`, `help`, `apropos`, `whatis` |
+| **Files and paths** | Navigation, copy/move, permissions, ACLs, attributes, search |
+| **Archives and compression** | `tar`, `gzip`, `xz`, `zstd`, zip, `zcat`/`zgrep` |
+| **System information** | Host identity, memory, sessions, hardware summaries |
+| **Processes and jobs** | `ps`, `top`, signals, job control, priority |
+| **System monitoring** | `iostat`, `vmstat`, `sar`, `strace`, `ltrace`, `perf` |
+| **Users and groups** | Accounts, passwords, aging, `su`/`sudo` |
+| **Networking** | `ip`, `ss`, DNS, SSH, transfer, firewalls, capture, `ethtool` |
+| **Scheduling** | `cron`, `crontab`, `at`, `anacron` |
+| **Logging** | `logger`, `logrotate` (see also `journalctl`) |
+| **Hardware** | `lshw`, `lspci`, `dmidecode`, `hdparm` |
+| **Storage and filesystems** | `lsblk`, LVM, LUKS, `parted`, SMART, grow/tune ext* |
+| **Terminals and multiplexers** | `tmux`, `screen`, and related terminal tools |
+| **Text and pipes** | `grep`, `sed`, `awk`, `jq`, `pv`, sort/uniq pipelines |
+| **Packages** | `apt`/`dpkg`, `dnf`/`rpm`, `yum`, server-oriented `snap` |
+| **Services and runtime** | `systemctl`, `journalctl`, timers, modules, `podman` |
+| **Shell commands** | `echo`/`printf`, history, `type`, `export`, `time`, directory stack |
+| **Security** | SELinux mode/labels, file capabilities (RHEL-family focused) |
+| **Appendices** | Cheatsheets and longer extras |
+
+## Editors (this book)
+
+Terminal-native editing — classic (`vi`/`vim`/`nano`), modern modal (Neovim, LazyVim, Helix, Kakoune), GUI-speed **Zed**, plus workspace tools (**tmux**, **Herdr**). Start under **Editors → Intro** for paths (sysadmin emergency, Vim family, AI agents).
+
+## Scripting → Bash (this book)
+
+Shell *programming* beyond one-liners: shells vs terminals, first scripts, variables, control flow, functions, and a workbook. Use **Commands** for individual utilities; use **Bash** when you are writing scripts.
+
+## Conventions
+
+- Examples assume a modern GNU/Linux **server** userland (Ubuntu 22.04/24.04 Server compatible unless noted).
+- Prefer **`ip`** / **`ss`** / **`systemctl`** over legacy `ifconfig` / `netstat` / SysV-only workflows.
+- Ubuntu-first package names where they matter; note Fedora/RHEL variants when tools differ.
+- Worked examples over option dumps.
+- Safety notes on destructive or privileged operations.
+
+## Formats
+
+HTML, PDF, and EPUB when built via the library portal.

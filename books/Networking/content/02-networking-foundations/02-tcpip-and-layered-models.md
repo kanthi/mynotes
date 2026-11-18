@@ -1,0 +1,114 @@
+---
+title: TCP/IP and the Layered Stack
+---
+
+# TCP/IP and the Layered Stack
+
+Networks are built as a **stack of layers**. Each layer solves one class of problem and offers a service to the layer above. This book uses the **TCP/IP** (Internet) model in day-to-day work; the **OSI** model remains a useful legend for vendor docs and troubleshooting language.
+
+## Learning goals
+
+- Map problems and tools to the correct TCP/IP layer
+- Translate common OSI layer numbers into TCP/IP practice
+- Explain demultiplexing (how a host hands data up the stack)
+- Avoid “wrong layer” diagnoses
+
+## TCP/IP model (working map)
+
+| Layer | Examples | Responsibility |
+|-------|----------|----------------|
+| **Application** | HTTP, DNS, SSH, DHCP, BGP (as app of TCP/UDP) | Meaning for programs; often client/server |
+| **Transport** | TCP, UDP | Process-to-process; ports; reliability options |
+| **Internet** | IPv4, IPv6, ICMP | Host-to-host logical addressing; routing; error signaling |
+| **Link / network access** | Ethernet, Wi‑Fi, PPP | Adjacent-node framing; media access |
+
+Some texts split “host-to-network” further; for labs, **Ethernet + ARP/ND** is the daily link reality.
+
+## OSI as a legend (not a religion)
+
+| OSI # | Name | Rough TCP/IP home |
+|-------|------|-------------------|
+| 7 | Application | Application |
+| 6 | Presentation | Often folded into app (TLS, encodings) |
+| 5 | Session | Often folded into app/TCP |
+| 4 | Transport | TCP/UDP |
+| 3 | Network | IP / ICMP |
+| 2 | Data link | Ethernet frames, switching |
+| 1 | Physical | Cables, optics, signaling (usually out of scope here) |
+
+**Practical rule:** know *where the address lives* and *which header you are looking at in a capture*, not seven acronyms for a quiz.
+
+## What each layer “owns”
+
+### Link
+
+- Local delivery between neighbors
+- MAC addresses, Ethertype, FCS
+- Switches forward here without caring about IP
+
+### Internet (IP)
+
+- Global-ish logical addressing
+- Best-effort packet forwarding
+- TTL/hop limit; fragmentation (IPv4) or reliance on PMTU (IPv6)
+
+### Transport
+
+- Which **process** on the host
+- Ports; TCP connection state vs UDP datagrams
+
+### Application
+
+- Protocol semantics (DNS query/response, HTTP methods)
+- Often implements its own retries on top of UDP
+
+## Demultiplexing (up the stack)
+
+On receive:
+
+1. NIC / driver accepts a frame (MAC filter)
+2. Ethertype → IP vs ARP vs other
+3. IP protocol field → TCP / UDP / ICMP / …
+4. Port numbers → socket / application
+
+```
+Frame [Eth | IP | TCP | HTTP ]
+         ^    ^    ^     ^
+         |    |    |     application
+         |    |    transport demux (ports)
+         |    internet demux (protocol #)
+         link demux (Ethertype)
+```
+
+## Layered troubleshooting
+
+| Symptom | Look first at |
+|---------|----------------|
+| No link light / veth missing | Link / lab cabling |
+| ARP incomplete | Link + IP on-link config |
+| Ping fails, ARP OK | Routing, firewall, ICMP policy |
+| TCP SYN no reply | ACL, listening socket, path, RST |
+| TLS fails after TCP | Application / certificates |
+
+## Encapsulation (preview)
+
+Each layer **adds a header** when sending and **strips it** when receiving. Details: [Packets, Frames, Encapsulation](03-packets-frames-encapsulation.md).
+
+## What a layer promises—and what it cannot promise
+
+A layer describes a service and the information needed to use it. Ethernet provides delivery across a local link; IP provides best-effort delivery between IP addresses across networks; TCP supplies an ordered byte stream between endpoints. None of these guarantees that the application is healthy. Ethernet delivery to a router is not end-to-end delivery to a server, and a TCP handshake is not proof that a database query succeeds.
+
+Headers are not a physical nesting of independent machines. They are bytes in one transmission, interpreted by successive components according to protocol identifiers: Ethernet EtherType selects an L3 protocol; the IPv4 Protocol or IPv6 Next Header identifies the next header; TCP/UDP ports help identify a socket. IPv6 may have extension headers between the base header and transport header. Layering explains common responsibilities, but real systems have interactions across boundaries: a tunnel consumes MTU, while a firewall may inspect transport headers.
+
+### The planes are different questions
+
+The **data plane** forwards an actual packet. The **control plane** builds or changes forwarding information, for example when OSPF exchanges routes. The **management plane** lets an operator observe and configure a device. A router can have an established routing adjacency while a data interface drops traffic; conversely it may continue forwarding with installed routes while a management session is unavailable. Test both the decision and the actual traffic.
+
+
+## Checkpoint
+
+Given a failure description, name the **layer** you will inspect first and **one command or table** that proves or disproves that theory.
+
+## Next
+
+- [Packets, Frames, Encapsulation](03-packets-frames-encapsulation.md)

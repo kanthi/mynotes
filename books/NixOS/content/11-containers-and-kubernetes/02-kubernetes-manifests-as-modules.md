@@ -1,0 +1,172 @@
+---
+title: Kubernetes Manifests as Nix Modules
+---
+
+# Kubernetes Manifests as Nix Modules
+
+Hand-written YAML that drifts from the image tag in CI is how Saturday pages start. The boring default is: **generate manifests from Nix (same pin as `.#image`), commit the generated YAML if the cluster cannot eval Nix, and skip Helm until a chart is forced on you**.
+
+## Mental model
+
+Nix can produce JSON/YAML for `kubectl apply`. Libraries (`nixidy`, `kubenix`, or a 40-line `writeText`) all do the same job: **one evaluation, one tag, one registry**.
+
+The cluster still runs kubelet. Nix does not replace Kubernetes. It replaces the YAML copypaste.
+
+```
+flake  →  image tag + digest
+       →  Deployment YAML with that digest
+       →  kubectl apply --server-side
+```
+
+If the platform already speaks Helm only, next chapter. If you own the app, raw manifests are enough. Secrets still do not belong in ConfigMaps (store-is-public).
+
+## Worked examples
+
+### Case 1: A Deployment as JSON
+
+Save as `k8s.nix`:
+
+```nix
+# k8s.nix
+{ pkgs ? import <nixpkgs> { } }:
+
+let
+  image = "registry.desk.internal/desk-api@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+  deploy = {
+    apiVersion = "apps/v1";
+    kind = "Deployment";
+    metadata = { name = "desk-api"; namespace = "desk"; };
+    spec = {
+      replicas = 2;
+      selector.matchLabels.app = "desk-api";
+      template = {
+        metadata.labels.app = "desk-api";
+        spec.containers = [
+          {
+            name = "desk-api";
+            inherit image;
+            ports = [ { containerPort = 8080; } ];
+            resources.requests = { cpu = "50m"; memory = "64Mi"; };
+            resources.limits = { memory = "128Mi"; };
+            securityContext = {
+              runAsNonRoot = true;
+              runAsUser = 65534;
+              allowPrivilegeEscalation = false;
+              readOnlyRootFilesystem = true;
+            };
+            livenessProbe.httpGet = { path = "/healthz"; port = 8080; };
+            readinessProbe.httpGet = { path = "/healthz"; port = 8080; };
+          }
+        ];
+      };
+    };
+  };
+  svc = {
+    apiVersion = "v1";
+    kind = "Service";
+    metadata = { name = "desk-api"; namespace = "desk"; };
+    spec = {
+      selector.app = "desk-api";
+      ports = [ { port = 8080; targetPort = 8080; } ];
+    };
+  };
+in
+pkgs.writers.writeJSON "desk-api.json" [ deploy svc ]
+```
+
+```bash
+nix-build k8s.nix
+python3 -m json.tool result | head
+```
+
+`writers.writeJSON` is the 26.05 helper (pretty JSON, one derivation). Pin **digest**, not `:latest`. `image: registry/desk-api:1.0.0@sha256:…` (tag + digest) is accepted by kubelet and still human-readable. Every node may otherwise run a different blob.
+
+`runAsUser = 65534` must match the image (`fakeNss` nobody). A probe on `/healthz` that the binary does not serve is a permanent `NotReady`.
+
+### Case 2: Same flake as the image
+
+Save as `flake.nix`:
+
+```nix
+# flake.nix
+{
+  description = "desk-api image + manifests";
+
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+
+  outputs = { self, nixpkgs }:
+    let
+      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+    in
+    {
+      packages.x86_64-linux.manifests = pkgs.callPackage ./k8s.nix { };
+    };
+}
+```
+
+```bash
+nix build .#manifests
+```
+
+Bump the digest in **one** place and rebuild image + manifests together.
+
+### Case 3: Apply
+
+```bash
+kubectl apply --server-side --dry-run=server -f result
+kubectl apply --server-side -f result
+kubectl -n desk rollout status deploy/desk-api
+```
+
+`--server-side` plays nicer with fields you do not own (HPA replicas, kubectl last-applied). Dry-run first on a shared cluster. `--force-conflicts` is for when you **mean** to take a field back from another manager — not a default.
+
+### Case 4: ConfigMap from Nix, not from kubectl create
+
+```nix
+# configmap.nix
+{ pkgs ? import <nixpkgs> { } }:
+
+pkgs.writeText "desk-cm.json" (builtins.toJSON {
+  apiVersion = "v1";
+  kind = "ConfigMap";
+  metadata = { name = "desk-api"; namespace = "desk"; };
+  data.WINDOW = "A";
+})
+```
+
+`WINDOW` is not a password. Use External Secrets / sealed-secrets / CSI for those — or do not put the password in git, same rule as the Nix store.
+
+### Case 5: When the cluster cannot run Nix
+
+```bash
+nix build .#manifests
+cp --no-preserve=mode "$(readlink -f result)" generated/desk-api.json
+git add generated/desk-api.json
+git diff --exit-code generated/
+```
+
+CI diffs `generated/` so humans cannot `kubectl edit` without updating the flake. GitOps (Argo/Flux) applies the committed JSON.
+
+## The trap
+
+The trap is **templating the image as `latest`**. Every node may run a different digest. Pin tag **and** digest (`image: repo:tag@sha256:…`) when the registry supports it.
+
+The other trap is a Secret manifest with `data: { password: hunter2 }` in the flake. That is Case 1 of the secrets chapter, in YAML.
+
+A third: `runAsNonRoot` on an image that still runs as uid 0 and has no `fakeNss` — the pod is `CreateContainerConfigError`. Build the image and the manifest from the **same** flake.
+
+## The boring rule
+
+- Manifests and image from one flake pin (nixpkgs 26.05). `writers.writeJSON`.
+- Digest (and a tag), not `latest`. Probes and `runAsNonRoot` match the image.
+- Apply `--server-side`. Dry-run first.
+- No passwords in ConfigMaps or Secret YAML in git.
+- Generate-and-commit if GitOps tools cannot eval Nix.
+- Helm next chapter, only when the vendor ships a chart.
+
+## Try this
+
+1. Case 1, `jq '.[0].spec.replicas' result`.
+2. Change replicas to 3, rebuild, `diff` the JSON.
+3. Put `image: …:latest` in a lab, list why you will not ship it.
+4. Add the Service (already in Case 1) and `kubectl apply --dry-run=server`.

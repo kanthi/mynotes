@@ -1,0 +1,190 @@
+---
+title: Secrets Management in CI
+---
+
+# Secrets Management in CI
+
+The store is world-readable. CI logs are copied. Fork pull requests are hostile. The boring default is: **no secret bytes in Nix; `access-tokens` for private inputs; Age/sops keys only on trusted jobs; never `pull_request_target` plus a write token**.
+
+## Mental model
+
+| Kind of secret | Where it lives | How Nix sees it |
+|---|---|---|
+| GitHub PAT for private flakes | Runner `nix.conf` `access-tokens` | Fetch, not a derivation input |
+| Age private key for sops | Runner env / `SOPS_AGE_KEY` | Decrypt at **eval/deploy** time |
+| DB password for the app | Encrypted in git; decrypted on the **host** | Path `/run/secrets/…` only |
+| Cachix write token | Actions secret | `cachix push`, not `flake.nix` |
+
+Builds should not need production passwords. If `nix flake check` requires Vault, the check is not hermetic.
+
+```
+trusted push to main
+    →  runner gets tokens
+    →  nix build   (no app secrets)
+    →  deploy      (decrypt on target, not in the NAR)
+```
+
+## Worked examples
+
+### Case 1: Private flake inputs without putting the PAT in Nix
+
+Save as `.github/workflows/deploy.yml`:
+
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v27
+        with:
+          extra_nix_config: |
+            access-tokens = github.com=${{ secrets.GH_PAT_FOR_PRIVATE_MODULES }}
+      - run: nix flake check
+      - run: nix build
+```
+
+`access-tokens` is daemon config. The token is not hashed into `desk-api`. Fork PRs must **not** receive this secret (GitHub's default for `pull_request` from forks).
+
+Do **not** put the PAT in `flake.nix`:
+
+```nix
+# flake.nix — do not
+{
+  nixConfig.access-tokens = { github.com = "ghp_…"; };
+}
+```
+
+That file is world-readable in git and in the eval. `nixConfig.extra-substituters` without matching `trusted-public-keys` is a different bug (unsigned cache, or compile-the-world).
+
+Prefer GitHub **OIDC** (`id-token: write`) to a Cachix/cloud role over a long-lived PAT in Actions secrets, when the other side supports it. The PAT in Case 1 is for private flake inputs that still require one.
+
+```yaml
+# .github/workflows/deploy.yml fragment
+permissions:
+  contents: read
+  id-token: write
+```
+
+Default `GITHUB_TOKEN` is enough to checkout **this** repo. A PAT is only for **other** private GitHub flake inputs. Scope it `repo:read` on those repos, not `admin:org`.
+
+### Case 2: Eval sops without decrypting values into the store
+
+```yaml
+# .github/workflows/sops-eval.yml
+name: Sops eval
+on:
+  push:
+    branches: [main]
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v27
+      - name: Eval secret *paths*
+        env:
+          SOPS_AGE_KEY: ${{ secrets.CI_AGE_PRIVATE_KEY }}
+        run: nix eval .#nixosConfigurations.desk-server.config.sops.secrets
+```
+
+The eval prints **paths** (`/run/secrets/db-password`), not password strings. If the log shows a password, the module leaked it into config (usually `hashedPassword = "plaintext"` or `environment.FOO = config.sops.secrets.x.path` is fine; interpolating `builtins.readFile` is not).
+
+### Case 3: The leak, on purpose, once
+
+Save as `leak.nix`:
+
+```nix
+# leak.nix
+{ pkgs ? import <nixpkgs> {} }:
+
+pkgs.writeText "database.conf" ''
+  password = SuperSecretPassword123
+''
+```
+
+```bash
+nix-build leak.nix
+cat result
+nix path-info result
+```
+
+Output:
+
+```
+password = SuperSecretPassword123
+/nix/store/…-database.conf
+```
+
+Anyone with `nix copy` of this closure has the password. Delete the file, GC, **rotate** the password. Then never do this.
+
+### Case 4: Cachix write only on main
+
+```yaml
+# .github/workflows/push-cache.yml
+name: Push cache
+on:
+  push:
+    branches: [main]
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v27
+      - uses: cachix/cachix-action@v15
+        with:
+          name: desk-cache
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+      - run: nix build
+```
+
+Do not use `pull_request_target` with this token. That event runs **your** workflow file from the base branch with **secrets**, but checks out (if you are not careful) or executes code from the fork. A fork PR can `cachix push` garbage — or steal the token from the log / a `curl | sh` step.
+
+| Event | Secrets | Runs whose YAML? |
+|---|---|---|
+| `pull_request` (fork) | No (GitHub default) | Merge of base + fork |
+| `push` to `main` | Yes | Trusted |
+| `pull_request_target` | **Yes** | Base workflow, attacker-controlled checkout if you `ref: ${{ github.event.pull_request.head.sha }}` |
+
+`pull_request_target` plus `actions/checkout` of the PR head plus a write token is a compromise of the cache and of any deploy key. Use `pull_request` for build checks; deploy only on `push` to `main`.
+
+### Case 5: `nix flake check` without credentials
+
+```bash
+unset SOPS_AGE_KEY CACHIX_AUTH_TOKEN GH_TOKEN
+nix flake check
+```
+
+If this fails because sops cannot decrypt, split checks: eval that only looks at **paths** and types, versus a deploy job that has keys. Checks that need production secrets will fail on contributor laptops too.
+
+## The trap
+
+The trap is **`builtins.readFile ./prod.key`** in a module. Eval copies the bytes into the store. `nix why-depends /run/current-system` will show a path whose `cat` is the key.
+
+The other trap is printing secrets in `set -x` bash. `echo "$SOPS_AGE_KEY"` in a workflow is a rotation event.
+
+A third is **`pull_request_target` + Cachix write / deploy key**. A fourth is `nixConfig.access-tokens` committed in the flake.
+
+## The boring rule
+
+- Store is public. GitHub logs are public-ish. Treat both as hostile.
+- `access-tokens` in **runner** `nix.conf` (Actions `extra_nix_config`), never in `flake.nix`.
+- Encrypted files in git for app secrets. Decrypt on the **host**.
+- Write tokens (Cachix, deploy keys) only on `push` to `main`. Never `pull_request_target`.
+- `nix flake check` without production credentials.
+- After any leak, rotate. GC does not un-copy a cache.
+
+## Try this
+
+1. Case 3 on a throwaway password. `cat $(nix-build leak.nix --no-out-link)`. Then GC and confirm you still understand copies in the cache if you had pushed.
+2. `nix-instantiate --eval -E 'builtins.readFile ./test.txt'` with a dummy file. Note that the string is in the eval result.
+3. Confirm `nix flake check` on a clone with no `SOPS_AGE_KEY`.
+4. Open the Actions secret list and tick "review logs for accidental echo" on the last deploy job.
+5. Search the repo for `pull_request_target` and for `nixConfig.access-tokens`. Both should be empty.

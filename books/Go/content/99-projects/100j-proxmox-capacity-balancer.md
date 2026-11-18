@@ -1,0 +1,191 @@
+---
+title: '036 Project 36: Proxmox Capacity Balancer'
+---
+
+# 036 Build a Proxmox Capacity Balancer (Dry-Run)
+
+Generate **migration suggestions** from overloaded nodes to healthier nodes. Start with an in-memory model you can unit-test; optionally wire Proxmox APIs later.
+
+```text
+node CPU map -> find hottest + coolest -> suggest migration path
+```
+
+## Problem statement
+
+Given per-node CPU utilization (and optionally a list of VMs per node):
+
+1. Identify source = highest CPU above threshold
+2. Identify destination = lowest CPU with headroom
+3. Print a dry-run migration suggestion
+4. Never call migrate unless `-apply` (stretch)
+
+## Acceptance criteria
+
+- [ ] Deterministic suggestion from fixed input
+- [ ] No suggestion when cluster is balanced
+- [ ] Threshold flags (`-hot`, `-cool`)
+- [ ] Table output suitable for operators
+- [ ] Stdlib only for base version
+
+## Setup
+
+```bash
+mkdir pvebalance && cd pvebalance
+go mod init example.com/pvebalance
+# go 1.27
+```
+
+## Full `main.go`
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"flag"
+	"fmt"
+	"os"
+	"sort"
+)
+
+type Node struct {
+	Name string  `json:"name"`
+	CPU  float64 `json:"cpu"` // 0..1
+}
+
+type Suggestion struct {
+	From   string  `json:"from"`
+	To     string  `json:"to"`
+	FromCPU float64 `json:"from_cpu"`
+	ToCPU   float64 `json:"to_cpu"`
+	Reason string  `json:"reason"`
+}
+
+func suggest(nodes []Node, hot, cool float64) *Suggestion {
+	if len(nodes) < 2 {
+		return nil
+	}
+	src := nodes[0]
+	dst := nodes[0]
+	for _, n := range nodes[1:] {
+		if n.CPU > src.CPU {
+			src = n
+		}
+		if n.CPU < dst.CPU {
+			dst = n
+		}
+	}
+	if src.Name == dst.Name {
+		return nil
+	}
+	if src.CPU < hot {
+		return nil // nothing hot enough
+	}
+	if dst.CPU > cool {
+		return nil // no cool target
+	}
+	return &Suggestion{
+		From: src.Name, To: dst.Name,
+		FromCPU: src.CPU, ToCPU: dst.CPU,
+		Reason: fmt.Sprintf("src cpu %.2f >= hot %.2f; dst cpu %.2f <= cool %.2f",
+			src.CPU, hot, dst.CPU, cool),
+	}
+}
+
+func main() {
+	hot := flag.Float64("hot", 0.85, "source CPU threshold")
+	cool := flag.Float64("cool", 0.50, "destination max CPU")
+	demo := flag.Bool("demo", true, "use built-in demo nodes")
+	flag.Parse()
+
+	var nodes []Node
+	if *demo {
+		nodes = []Node{
+			{"pve1", 0.92},
+			{"pve2", 0.35},
+			{"pve3", 0.41},
+		}
+	} else {
+		// optional: read JSON array from stdin
+		if err := json.NewDecoder(os.Stdin).Decode(&nodes); err != nil {
+			fmt.Fprintln(os.Stderr, "stdin json:", err)
+			os.Exit(2)
+		}
+	}
+
+	sort.Slice(nodes, func(i, j int) bool { return nodes[i].Name < nodes[j].Name })
+	fmt.Println("cluster:")
+	for _, n := range nodes {
+		fmt.Printf("  %-8s cpu=%.2f\n", n.Name, n.CPU)
+	}
+
+	s := suggest(nodes, *hot, *cool)
+	if s == nil {
+		fmt.Println("suggest: none (balanced or thresholds not met)")
+		return
+	}
+	fmt.Printf("suggest migration: %s -> %s (cpu %.2f -> %.2f)\n", s.From, s.To, s.FromCPU, s.ToCPU)
+	fmt.Println("reason:", s.Reason)
+	fmt.Println("mode: dry-run (no API calls)")
+}
+```
+
+## Run and verification
+
+```bash
+go run .
+# suggest migration: pve1 -> pve2 ...
+
+go run . -hot 0.99
+# none
+
+echo '[{"name":"a","cpu":0.9},{"name":"b","cpu":0.2}]' | go run . -demo=false
+```
+
+## Tests
+
+```go
+package main
+
+import "testing"
+
+func TestSuggest(t *testing.T) {
+	nodes := []Node{{"pve1", 0.92}, {"pve2", 0.35}, {"pve3", 0.41}}
+	s := suggest(nodes, 0.85, 0.5)
+	if s == nil || s.From != "pve1" || s.To != "pve2" {
+		t.Fatalf("%+v", s)
+	}
+}
+
+func TestNoSuggestWhenCool(t *testing.T) {
+	nodes := []Node{{"a", 0.9}, {"b", 0.8}}
+	if s := suggest(nodes, 0.85, 0.5); s != nil {
+		t.Fatal(s)
+	}
+}
+```
+
+```bash
+go test ./...
+```
+
+## Stretch goals
+
+1. Pick a specific VM on the hot node (largest CPU VM).
+2. Fetch live stats from Proxmox API (project 35 client).
+3. Simulate after-move CPU estimates.
+4. `-apply` with confirmation prompt.
+
+## Pitfalls
+
+| Pitfall | Fix |
+|---------|-----|
+| Migrating without headroom check | cool threshold |
+| Oscillation (ping-pong) | hysteresis / cooldown timer |
+| Ignoring maintenance nodes | status filter |
+
+## Learning goals
+
+- Capacity balancing as scored suggestions
+- Dry-run first automation
+- Testable pure functions for ops tools

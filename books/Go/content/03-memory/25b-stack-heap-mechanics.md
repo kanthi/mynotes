@@ -1,0 +1,207 @@
+---
+title: Stack Mechanics & Optimizations
+---
+
+# Understanding Memory: Stack vs. Heap in Go
+
+To write high-performance Go, you must understand where your variables live. Go abstracts memory management, but it doesn't eliminate the physics of hardware.
+
+## The Two Worlds
+
+### 1. The Stack
+*   **What it is:** A pre-allocated, contiguous block of memory for each goroutine (starts at 2KB).
+*   **Allocation:** Instant (move a pointer).
+*   **Deallocation:** Instant (move a pointer back).
+*   **GC Cost:** **Zero.** The Garbage Collector (GC) does not scan the stack.
+*   **Cache Locality:** Excellent.
+
+### 2. The Heap
+*   **What it is:** A global pool of memory for dynamic allocations.
+*   **Allocation:** Slow (search for free block, possibly lock).
+*   **Deallocation:** Garbage Collected (expensive scan).
+*   **GC Cost:** High. Pointers on the heap must be traced.
+*   **Cache Locality:** Poor (scattered).
+
+## Go's Optimization Goal
+
+**Keep everything on the stack.**
+
+If the compiler can prove a variable's life cycle is contained within a function (it doesn't "escape"), it allocates it on the stack.
+
+### Stack Growth (Contiguous Stacks)
+Goroutines start with 2KB stacks. If a function call needs more space, the runtime:
+1.  Allocates a larger stack (e.g., 4KB).
+2.  **Copies** everything from old stack to new stack.
+3.  Updates pointers to the new stack.
+4.  Frees the old stack.
+
+*Note: This "copying" is why pointers to stack variables are safe only if they don't escape. If they escaped to the heap, moving the stack would invalidate external pointers.*
+
+## 2026: The "Mid-Stack" Inlining
+Recent Go versions have become aggressive about inlining function calls mid-stack.
+*   If `UserFunc` calls `AllocFunc`, and `AllocFunc` is small, the compiler copies `AllocFunc`'s body into `UserFunc`.
+*   This removes the function call overhead *and* allows variables that might have escaped (due to being return values) to stay on the stack.
+
+## Visualization
+
+| Variable Scenario | Destination | Why? |
+| :--- | :--- | :--- |
+| `x := 42` | **Stack** | Never leaves function references. |
+| `y := &x` (used locally) | **Stack** | Address taken, but scope is local. |
+| `return &x` | **Heap** | Escapes to caller; stack frame dies on return. |
+| `fmt.Println(x)` | **Heap** (usually) | `fmt.Println` takes `interface{}`, which often causes escape. |
+| `make([]byte, 1024)` | **Stack** | Size known at compile time, fits in stack. |
+| `make([]byte, n)` | **Heap** | Size unknown at compile time. |
+
+## Practical Rule
+Don't fear the Heap, but respect the Stack. If you are writing a hot loop (a game loop, a high-frequency trading handler), ensure your temporary variables do not escape to the heap.
+
+Use detailed analysis tools to verify this (covered in next chapter).
+
+## More examples
+
+### Example: stack-friendly local work
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func fold(nums []int) int {
+	// Locals and the slice header stay short-lived; good stack candidates.
+	total := 0
+	for _, n := range nums {
+		total += n
+	}
+	return total
+}
+
+func main() {
+	data := [4]int{10, 20, 30, 40} // fixed array: stack-friendly storage
+	fmt.Println("fold:", fold(data[:]))
+	fmt.Println("fold empty:", fold(nil))
+}
+```
+
+Expected:
+
+```text
+fold: 100
+fold empty: 0
+```
+
+### Example: escape when a pointer outlives the frame
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+type Box struct{ Label string }
+
+func newBox(label string) *Box {
+	b := Box{Label: label} // typically moves to heap: returned address
+	return &b
+}
+
+func localBox() string {
+	b := Box{Label: "stack-ish"}
+	p := &b // address taken but still local
+	return p.Label
+}
+
+func main() {
+	fmt.Println("local:", localBox())
+	b := newBox("heap-ish")
+	fmt.Println("returned:", b.Label)
+}
+```
+
+Expected:
+
+```text
+local: stack-ish
+returned: heap-ish
+```
+
+## Runnable example
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+# Escape report (educational; messages depend on compiler version):
+# go build -gcflags="-m -m" .
+```
+
+```go
+package main
+
+import "fmt"
+
+type Point struct{ X, Y int }
+
+// Local use only — good stack candidate.
+func useLocally() int {
+	p := Point{X: 1, Y: 2}
+	q := &p // address taken, but still only used here
+	return q.X + q.Y
+}
+
+// Returned pointer must outlive this frame → heap.
+func returnPointer() *Point {
+	p := Point{X: 3, Y: 4}
+	return &p
+}
+
+// Fixed-size array often stays stack-friendly; dynamic make usually does not.
+func fixedBufSum() int {
+	var buf [16]byte
+	for i := range buf {
+		buf[i] = byte(i)
+	}
+	sum := 0
+	for _, b := range buf {
+		sum += int(b)
+	}
+	return sum
+}
+
+func dynamicBufSum(n int) int {
+	buf := make([]byte, n)
+	for i := range buf {
+		buf[i] = byte(i)
+	}
+	sum := 0
+	for _, b := range buf {
+		sum += int(b)
+	}
+	return sum
+}
+
+func main() {
+	fmt.Println("local pointer use:", useLocally())
+	hp := returnPointer()
+	fmt.Printf("heap point: {%d %d}\n", hp.X, hp.Y)
+	fmt.Println("fixedBufSum:", fixedBufSum())
+	fmt.Println("dynamicBufSum:", dynamicBufSum(16))
+}
+```
+
+**Expected output:**
+
+```text
+local pointer use: 3
+heap point: {3 4}
+fixedBufSum: 120
+dynamicBufSum: 120
+```
+
+**What to notice:** Taking an address does not automatically mean "heap" — escaping past the function does. Fixed-size `[16]byte` and `make([]byte, n)` can behave differently under escape analysis even when they compute the same sum.
+
+**Try next:** Re-run with `go build -gcflags="-m"` and find which locals "moved to heap"; inline a tiny helper into `main` and see if the compiler still reports an escape for a returned pointer.

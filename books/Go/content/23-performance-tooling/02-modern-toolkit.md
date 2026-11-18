@@ -1,0 +1,286 @@
+---
+title: The Modern Toolkit
+---
+
+# The Modern 2026 Toolkit
+
+Choose tools for a concrete job: formatting, finding defects, testing, or
+investigating a running program. Start with the Go toolchain and add checks
+when they answer a question your existing workflow does not.
+
+## Choosing an additional tool
+
+These are useful options for current Go projects, including established tools
+that remain relevant. The examples below and in the linked chapters pin
+versions checked in November 2026; they are examples to review and update.
+
+| Need | Tool | Where to start |
+|------|------|----------------|
+| Consistent formatting beyond `gofmt` | `gofumpt` | [Formatting below](#gofumpt-stricter-formatting) |
+| Clear test output and CI reports | `gotestsum` | [Test reports](../06-testing/37-test-organization.md#gotestsum-local-feedback-and-ci-reports) |
+| Find unreachable functions | `deadcode` | [Reachability analysis](03-static-analysis.md#deadcode-find-unreachable-functions) |
+| Follow possible nil values across packages | NilAway | [Nil-flow analysis](../21-security/80-security-tools.md#4-nilaway--static-nil-flows) |
+| Check cleanup and concurrency ownership | GoHawk | [Ownership analysis](03-static-analysis.md#gohawk-resource-and-concurrency-checks) |
+| Detect unexpected goroutines after tests | `goleak` | [Leak regression tests](../11-concurrency-parallelism/44d-goroutine-leak-profile.md#goleak-make-shutdown-a-test-assertion) |
+| Scan dependencies across a repository | OSV-Scanner | [Dependency scanning](../22-security-hardening/176-supply-chain-dependencies.md#osv-scanner-scan-a-repositorys-dependencies) |
+
+Use the linked limitations to decide what belongs on every change and what
+belongs in an occasional audit. A formatter, a source analyzer, and a runtime
+test detector produce different kinds of evidence.
+
+## General Tools (Rust-powered, Go-essential)
+These aren't written in Go, but every Go dev uses them.
+1.  **ripgrep (`rg`)**: The fastest text search.
+    *   `rg "func main" -t go`: Find main in Go files only.
+2.  **fd**: Faster `find`.
+    *   `fd -e go`: Find all Go files.
+3.  **fzf**: Fuzzy finder. Pipe `fd` into `fzf` to open files instantly.
+4.  **jq**: JSON processor. Crucial for debugging API responses or logs (`zap`/`slog` JSON output).
+
+## Go-Specific Tools
+
+### `gofumpt`: stricter formatting
+
+[gofumpt](https://github.com/mvdan/gofumpt) adds formatting rules while keeping
+its output compatible with `gofmt`. It can remove unnecessary blank lines and
+separate standard-library imports from other imports. Adopt it as a team
+convention so editors and CI agree.
+
+```bash
+go install mvdan.cc/gofumpt@v0.12.0
+gofumpt -d .    # Review the proposed diff.
+gofumpt -w .    # Apply formatting.
+```
+
+For a shell CI step after installation:
+
+```bash
+unformatted=$(gofumpt -l .) || exit 1
+if [ -n "$unformatted" ]; then
+    printf '%s\n' "$unformatted"
+    exit 1
+fi
+```
+
+`-l` lists files; the shell check makes that list fail CI. Version v0.12.0
+requires Go 1.26 or newer to build. Review formatting changes separately from
+behavior changes to make both easier to review.
+
+### `gopsutil`
+If you are building system tools (agents, monitors), `github.com/shirou/gopsutil` is the standard for reading CPU/Memory/Disk stats cross-platform.
+
+### `go fix` Modernizers (1.26–1.27)
+Go 1.26 rebuilt `go fix` around modernizers and `//go:fix inline`. Go 1.27 adds `atomictypes`, `embedlit`, `slicesbackward`, and `unsafefuncs`; the old `waitgroup` analyzer is now `waitgroupgo`; `fmtappendf` was removed.
+```bash
+go fix -modernize ./...
+```
+Examples of what it fixes:
+*   Replaces manual loops with `slices.Contains`.
+*   Updates older `interface{}` to `any`.
+*   `embedlit`: Flattens nested composite struct literals into promoted field keys where safe (`go fix -embedlit ./...`).
+*   Atomic type aliases, `slices.Backward`, unsafe helpers.
+
+Inline fix for one location:
+
+```go
+//go:fix inline
+func has(xs []string, x string) bool {
+    for _, v := range xs {
+        if v == x {
+            return true
+        }
+    }
+    return false
+}
+```
+
+### `govulncheck`
+The official vulnerability scanner.
+```bash
+go install golang.org/x/vuln/cmd/govulncheck@latest
+govulncheck ./...
+```
+It tells you if *your code actually calls* the vulnerable function in a dependency. This drastically reduces false positives compared to generic scanners (Dependabot).
+
+## Pin tools with `go tool` (Go 1.24+)
+
+For Go command packages that support this installation method, record a tool
+dependency in the module rather than relying on a developer's global binary:
+
+```bash
+go get -tool mvdan.cc/gofumpt@v0.12.0
+go tool gofumpt -d .
+```
+
+Commit the resulting `go.mod` and `go.sum` changes. This is an alternative to
+the standalone `go install` above and does not require that binary on `PATH`.
+Tool requirements participate in the module's dependency graph, so inspect
+the dependency diff. A separate tools module can isolate their requirements
+when necessary. The Go documentation explains
+[tool dependencies](https://go.dev/doc/modules/managing-dependencies#tools).
+Follow each tool's own installation guidance; golangci-lint, for example,
+recommends its release binaries.
+
+## Workflow Integration
+Don't run these manually. Put them in a **Makefile** or **Taskfile** (Task is a modern Make alternative written in Go).
+
+```yaml
+# Taskfile.yaml
+tasks:
+  audit:
+    cmds:
+      - go vet ./...
+      - staticcheck ./...
+      - govulncheck ./...
+```
+
+## Worked example
+
+`slices` / `maps` modern stdlib helpers vs hand-rolled loops.
+
+Save as `util.go` and `util_test.go`. Then:
+
+```bash
+go mod init example
+go test -v
+```
+
+```go
+// util.go
+package main
+
+import (
+	"maps"
+	"slices"
+)
+
+func has(xs []string, x string) bool {
+	return slices.Contains(xs, x)
+}
+
+func cloneMap(m map[string]int) map[string]int {
+	return maps.Clone(m)
+}
+```
+
+```go
+// util_test.go
+package main
+
+import "testing"
+
+func TestHas(t *testing.T) {
+	xs := []string{"a", "b", "c"}
+	if !has(xs, "b") || has(xs, "z") {
+		t.Fatal("contains mismatch")
+	}
+}
+
+func TestCloneMap(t *testing.T) {
+	m := map[string]int{"x": 1}
+	c := cloneMap(m)
+	c["x"] = 9
+	if m["x"] != 1 {
+		t.Fatal("clone should be independent")
+	}
+}
+```
+
+**Expected output:**
+
+```text
+=== RUN   TestHas
+--- PASS: TestHas (0.00s)
+=== RUN   TestCloneMap
+--- PASS: TestCloneMap (0.00s)
+PASS
+```
+
+## More examples
+
+Table of “grep-friendly” symbols your toolkit will find.
+
+```go
+package main
+
+import "fmt"
+
+// AuditTarget is intentionally distinctive for rg demos.
+func AuditTarget() string { return "ok" }
+
+func main() {
+	fmt.Println(AuditTarget())
+}
+```
+
+```bash
+# in a shell with ripgrep installed:
+# rg 'func AuditTarget' -t go
+go run .
+```
+
+## Runnable example
+
+> **Note:** Tools like `rg`, `staticcheck`, and `govulncheck` are external CLIs. This stdlib demo captures the *modernizer* idea: replace a hand-rolled loop with `slices.Contains`, and run `go vet`-friendly code under `go test`.
+
+Save as `modern.go` and `modern_test.go`. Then:
+
+```bash
+go mod init example
+go test -v
+go vet ./...
+```
+
+```go
+// modern.go
+package main
+
+import "slices"
+
+// legacyHas is the pre-slices style many codebases still have.
+func legacyHas(xs []string, x string) bool {
+	for _, v := range xs {
+		if v == x {
+			return true
+		}
+	}
+	return false
+}
+
+// modernHas is the 1.21+ equivalent (what go fix -modernize targets).
+func modernHas(xs []string, x string) bool {
+	return slices.Contains(xs, x)
+}
+```
+
+```go
+// modern_test.go
+package main
+
+import "testing"
+
+func TestHas(t *testing.T) {
+	xs := []string{"go", "rust", "zig"}
+	if !legacyHas(xs, "go") || !modernHas(xs, "go") {
+		t.Fatal("expected to find go")
+	}
+	if legacyHas(xs, "c") || modernHas(xs, "c") {
+		t.Fatal("did not expect c")
+	}
+	if legacyHas(xs, "rust") != modernHas(xs, "rust") {
+		t.Fatal("implementations diverged")
+	}
+}
+```
+
+**Expected output:**
+
+```text
+=== RUN   TestHas
+--- PASS: TestHas (0.00s)
+PASS
+```
+
+**What to notice:** Stdlib `slices` / `maps` replace a lot of utility code. Keep a small `go test` + `go vet` loop before pulling heavier linters. `govulncheck` still needs a separate install—run it in CI on real modules.
+
+**Try next:** Run `go fix -modernize ./...` on a module that still uses `interface{}` and manual contains loops. Pipe JSON logs through `jq` in your shell.

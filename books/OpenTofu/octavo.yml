@@ -1,0 +1,45 @@
+book:
+  title: OpenTofu
+  author: K19G
+  date: '2026-11-17'
+  description: Infrastructure as code with OpenTofu
+  chapters:
+  - index.md
+  - part: First Principles
+    contents:
+    - content/01-first-principles/01-the-opentofu-story.md
+    - content/01-first-principles/02-architecture-and-core-concepts.md
+    - content/01-first-principles/03-installation-and-project-structure.md
+  - part: Language
+    contents:
+    - content/02-language/04-hcl-syntax.md
+    - content/02-language/05-variables-locals-outputs.md
+    - content/02-language/05a-convert-and-assume-functions.md
+  - part: Providers and State
+    contents:
+    - content/03-providers-and-state/06-providers-resources-data-sources.md
+    - content/03-providers-and-state/07-state-and-backends.md
+  - part: Composition
+    contents:
+    - content/04-composition/08-modules.md
+    - content/04-composition/08a-refactoring-moved-removed.md
+    - content/04-composition/09-workspaces-lifecycle-dependencies.md
+    - content/04-composition/09a-provider-instances-and-enabled.md
+    - content/04-composition/10-provisioners-and-import.md
+  - part: Confidence
+    contents:
+    - content/05-confidence/11-testing-validation-policy.md
+    - content/05-confidence/11b-mocks-and-overrides-in-tofu-test.md
+    - content/05-confidence/12-security-and-secrets.md
+    - content/05-confidence/12a-ephemeral-values-and-write-only-attributes.md
+  - part: Enterprise
+    contents:
+    - content/06-enterprise/13-cicd-gitops.md
+    - content/06-enterprise/14-enterprise-patterns.md
+    - content/06-enterprise/15-conclusion.md
+format:
+  html:
+    theme: auto
+  epub: {}
+  pdf:
+    paper: A4

@@ -1,0 +1,203 @@
+---
+title: '009 Project 9: Build a grep Clone'
+---
+
+# 009 Build a `grep` Clone
+
+Search text with regex, case-insensitive mode, and line numbers. Stream each file line-by-line and print matches in a stable, script-friendly format.
+
+```text
+files -> scan line by line -> regex match -> print matches
+```
+
+## Problem statement
+
+Implement `ggrep`:
+
+```text
+ggrep [flags] <pattern> <file...>
+```
+
+Flags:
+
+- `-i` ignore case (prefix `(?i)` or compile with case-folding)
+- `-n` show line numbers as `file:line:text`
+
+Exit codes (grep-compatible style is nice-to-have):
+
+- `0` if any match
+- `1` if no match
+- `2` on usage/regex/IO hard failure (choose and document)
+
+## Acceptance criteria
+
+- [ ] Matches printed for each matching line
+- [ ] `-i` works for mixed-case patterns
+- [ ] `-n` includes line numbers
+- [ ] Invalid regex → clear error, exit 2
+- [ ] Multiple files supported
+- [ ] Streaming (no full-file regex required)
+
+## Setup
+
+```bash
+mkdir ggrep && cd ggrep
+go mod init example.com/ggrep
+# go 1.27
+```
+
+## Full `main.go`
+
+```go
+package main
+
+import (
+	"bufio"
+	"flag"
+	"fmt"
+	"os"
+	"regexp"
+)
+
+func grepFile(path string, re *regexp.Regexp, showLineNo bool) (matched bool, err error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return false, err
+	}
+	defer f.Close()
+
+	s := bufio.NewScanner(f)
+	buf := make([]byte, 0, 64*1024)
+	s.Buffer(buf, 1024*1024)
+
+	lineNo := 0
+	for s.Scan() {
+		lineNo++
+		line := s.Text()
+		if !re.MatchString(line) {
+			continue
+		}
+		matched = true
+		if showLineNo {
+			fmt.Printf("%s:%d:%s\n", path, lineNo, line)
+		} else {
+			fmt.Printf("%s:%s\n", path, line)
+		}
+	}
+	return matched, s.Err()
+}
+
+func main() {
+	ignoreCase := flag.Bool("i", false, "ignore case")
+	showLineNo := flag.Bool("n", false, "show line number")
+	flag.Parse()
+
+	if flag.NArg() < 2 {
+		fmt.Fprintln(os.Stderr, "usage: ggrep [flags] <pattern> <file...>")
+		os.Exit(2)
+	}
+
+	pattern := flag.Arg(0)
+	if *ignoreCase {
+		pattern = "(?i)" + pattern
+	}
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "invalid regex:", err)
+		os.Exit(2)
+	}
+
+	any := false
+	hadErr := false
+	for _, file := range flag.Args()[1:] {
+		matched, err := grepFile(file, re, *showLineNo)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s: %v\n", file, err)
+			hadErr = true
+			continue
+		}
+		if matched {
+			any = true
+		}
+	}
+
+	if hadErr {
+		os.Exit(2)
+	}
+	if !any {
+		os.Exit(1)
+	}
+}
+```
+
+## Step-by-step build path
+
+1. Parse flags; require pattern + ≥1 file.
+2. Compile regex once (with optional `(?i)`).
+3. Per file: open, scan, match, print.
+4. Track `any` match and IO errors for exit codes.
+5. Raise scanner buffer for long lines.
+
+## Run and verification
+
+```bash
+printf 'Error: boom\ninfo ok\nERROR again\n' > app.log
+go run . error app.log
+go run . -i -n "timeout|error" app.log
+
+# no match → exit 1
+go run . zzzzz app.log; echo exit:$?
+```
+
+## Tests
+
+```go
+package main
+
+import (
+	"os"
+	"path/filepath"
+	"regexp"
+	"testing"
+)
+
+func TestGrepFile(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "t.log")
+	if err := os.WriteFile(path, []byte("alpha\nBeta\nalpha2\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	re := regexp.MustCompile(`(?i)alpha`)
+	ok, err := grepFile(path, re, true)
+	if err != nil || !ok {
+		t.Fatalf("matched=%v err=%v", ok, err)
+	}
+}
+```
+
+```bash
+go test -race ./...
+```
+
+## Stretch goals
+
+1. Recursive directory walk (`-r`) using `filepath.WalkDir`.
+2. Invert match (`-v`).
+3. Count only (`-c`).
+4. Colorize matches on TTY.
+5. Read stdin when files omitted.
+
+## Pitfalls
+
+| Pitfall | Fix |
+|---------|-----|
+| Compiling regex per line | Compile once |
+| Shell globs not expanded by Go | Pass files or implement walk |
+| Catastrophic backtracking | Prefer simpler patterns; timeouts hard in stdlib |
+| Binary files spam | Detect NUL and skip (stretch) |
+
+## Learning goals
+
+- `regexp` package and RE2 flavor limits
+- Streaming text tools
+- Grep-compatible exit codes for scripts

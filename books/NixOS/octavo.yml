@@ -1,0 +1,255 @@
+book:
+  title: NixOS
+  author: K19G
+  date: '2026-11-17'
+  description: Nix and NixOS, from a Fedora bridge to a fleet
+  chapters:
+  - index.md
+  - part: Front Matter
+    contents:
+    - content/00-front-matter/00-syllabus.md
+    - content/00-front-matter/00b-reproducibility-crisis.md
+    - content/00-front-matter/01a-lab-overview-and-roles.md
+    - content/00-front-matter/01b-lab-journey-single-server.md
+    - content/00-front-matter/01c-lab-nixos-dev-machine.md
+    - content/00-front-matter/01d-lab-elitebook-2570p.md
+    - content/00-front-matter/01e-lab-ops-cheatsheet.md
+  - part: Concepts
+    contents:
+    - content/01-concepts/00-index.md
+    - content/01-concepts/01-why-nix-exists.md
+    - content/01-concepts/02-store-and-closures.md
+    - content/01-concepts/03-language-attrsets.md
+    - content/01-concepts/04-language-functions.md
+    - content/01-concepts/05-laziness-imports-lib.md
+    - content/01-concepts/06-derivations.md
+    - content/01-concepts/07-modern-cli.md
+    - content/01-concepts/08-flakes-devshell.md
+    - content/01-concepts/09-classic-cli-literacy.md
+  - part: Nix on Linux
+    contents:
+    - content/02-nix-on-linux/00-index.md
+    - content/02-nix-on-linux/01-why-nix-on-linux.md
+    - content/02-nix-on-linux/02-fedora-44-install.md
+    - content/02-nix-on-linux/03-store-profiles-and-gc.md
+    - content/02-nix-on-linux/03b-chroot-stores-without-root.md
+    - content/02-nix-on-linux/04-daily-cli-and-devshells.md
+    - content/02-nix-on-linux/04b-nix-shell-shebang-scripts.md
+    - content/02-nix-on-linux/05-home-manager-standalone.md
+    - content/02-nix-on-linux/06-dnf-and-nix-coexistence.md
+    - content/02-nix-on-linux/07-selinux-atomic-and-ops.md
+    - content/02-nix-on-linux/08-bridge-to-nixos.md
+  - part: NixOS Host
+    contents:
+    - content/03-nixos-host/00-index.md
+    - content/03-nixos-host/01-install.md
+    - content/03-nixos-host/02-flake-host.md
+    - content/03-nixos-host/03-rebuild-and-generations.md
+    - content/03-nixos-host/04-users-and-access.md
+    - content/03-nixos-host/05-networking-firewall.md
+    - content/03-nixos-host/06-packages-and-programs.md
+    - content/03-nixos-host/07-systemd-via-nix.md
+    - content/03-nixos-host/08-modules-as-consumer.md
+    - content/03-nixos-host/09-custom-modules.md
+    - content/03-nixos-host/10-boot-and-hardware.md
+    - content/03-nixos-host/11-filesystems.md
+    - content/03-nixos-host/12-activation-reload-restart-deprecation.md
+    - content/03-nixos-host/13-clevis-luks-askpass.md
+    - content/03-nixos-host/14-specialisations.md
+    - content/03-nixos-host/15-modular-services.md
+    - content/03-nixos-host/16-systemd-stage-1.md
+    - content/03-nixos-host/17-locales-and-locale-archive.md
+    - content/03-nixos-host/18-state-version.md
+    - content/03-nixos-host/19-boot-partition-full.md
+  - part: Home and Flake Layout
+    contents:
+    - content/04-home-and-flake-layout/00-index.md
+    - content/04-home-and-flake-layout/01-flake-layout.md
+    - content/04-home-and-flake-layout/02-lock-discipline.md
+    - content/04-home-and-flake-layout/03-home-manager.md
+    - content/04-home-and-flake-layout/04-hm-files-xdg.md
+    - content/04-home-and-flake-layout/04b-shell-and-editor-configuration.md
+    - content/04-home-and-flake-layout/05-hm-services.md
+    - content/04-home-and-flake-layout/06-direnv-devshell.md
+    - content/04-home-and-flake-layout/06b-multi-language-dev-environments.md
+    - content/04-home-and-flake-layout/06c-migrating-docker-desktop-to-devshells.md
+    - content/04-home-and-flake-layout/07-flake-parts.md
+    - content/04-home-and-flake-layout/08-flake-checks.md
+    - content/04-home-and-flake-layout/09-overlays-light.md
+    - content/04-home-and-flake-layout/10-determinate-wasm-and-flake-schemas.md
+    - content/04-home-and-flake-layout/11-multi-arch-flake-template.md
+  - part: Services and Security
+    contents:
+    - content/05-services-and-security/00-index.md
+    - content/05-services-and-security/01-secrets-problem.md
+    - content/05-services-and-security/02-sops-nix.md
+    - content/05-services-and-security/03-agenix.md
+    - content/05-services-and-security/03b-secrets-sops-vs-agenix.md
+    - content/05-services-and-security/03c-vault-integration.md
+    - content/05-services-and-security/04-hardening.md
+    - content/05-services-and-security/05-firewall-discipline.md
+    - content/05-services-and-security/06-tls-front-door.md
+    - content/05-services-and-security/07-data-service.md
+    - content/05-services-and-security/08-nixos-containers.md
+    - content/05-services-and-security/09-podman-docker.md
+    - content/05-services-and-security/10-observability.md
+    - content/05-services-and-security/11-k3s-optional.md
+    - content/05-services-and-security/12-nixos-vex.md
+    - content/05-services-and-security/12-vuln-inventory-across-profiles.md
+  - part: Packaging
+    contents:
+    - content/06-packaging/00-index.md
+    - content/06-packaging/01-stdenv-phases.md
+    - content/06-packaging/02-fetchers-fod.md
+    - content/06-packaging/03-language-ecosystems-a.md
+    - content/06-packaging/04-language-ecosystems-b.md
+    - content/06-packaging/05-patching-overrides.md
+    - content/06-packaging/06-multiple-outputs.md
+    - content/06-packaging/07-debug-builds.md
+    - content/06-packaging/08-nixpkgs-layout.md
+    - content/06-packaging/09-binary-caches.md
+    - content/06-packaging/10-remote-builders.md
+    - content/06-packaging/11-reproducibility.md
+    - content/06-packaging/12-ros2-nix-ros-overlay.md
+    - content/06-packaging/13-running-a-nixpkgs-team.md
+    - content/06-packaging/14-overlays-fix-everything.md
+    - content/06-packaging/15-cross-compilation-multiple-platforms.md
+  - part: Ops and Fleet
+    contents:
+    - content/07-ops-and-fleet/00-index.md
+    - content/07-ops-and-fleet/01-disko.md
+    - content/07-ops-and-fleet/02-impermanence.md
+    - content/07-ops-and-fleet/03-deploy-rs.md
+    - content/07-ops-and-fleet/04-colmena.md
+    - content/07-ops-and-fleet/05-shared-modules.md
+    - content/07-ops-and-fleet/06-images-generators.md
+    - content/07-ops-and-fleet/07-terraform-boundary.md
+    - content/07-ops-and-fleet/08-nixos-tests.md
+    - content/07-ops-and-fleet/09-more-tests.md
+    - content/07-ops-and-fleet/10-ci-pipeline.md
+    - content/07-ops-and-fleet/11-gc-hygiene.md
+    - content/07-ops-and-fleet/12-secure-boot-tpm.md
+    - content/07-ops-and-fleet/13-backups.md
+    - content/07-ops-and-fleet/14-auto-upgrade.md
+    - content/07-ops-and-fleet/15-read-an-update-before-switching.md
+    - content/07-ops-and-fleet/16-is-my-flake-lock-stale.md
+  - part: Internals
+    contents:
+    - content/08-internals/00-index.md
+    - content/08-internals/01-evaluator.md
+    - content/08-internals/01b-nix-implementations-conformance.md
+    - content/08-internals/02-module-system-deep.md
+    - content/08-internals/03-store-daemon.md
+    - content/08-internals/03b-eval-daemon-traffic.md
+    - content/08-internals/03c-builtins-readfile-eval-cost.md
+    - content/08-internals/03d-store-path-computation.md
+    - content/08-internals/04-nix-performance.md
+    - content/08-internals/05-ca-derivations.md
+    - content/08-internals/06-nixos-test-mastery.md
+    - content/08-internals/07-ecosystem-map.md
+    - content/08-internals/08-comparative-landscape.md
+    - content/08-internals/09-release-notes.md
+    - content/08-internals/10-upgrade-planning.md
+    - content/08-internals/11-troubleshooting.md
+    - content/08-internals/12-architecture-review.md
+    - content/08-internals/13-metadata-normalization.md
+  - part: Capstone
+    contents:
+    - content/09-capstone/00-index.md
+    - content/09-capstone/01-scope-and-plan.md
+    - content/09-capstone/02-implement.md
+    - content/09-capstone/03-harden-and-document.md
+    - content/09-capstone/04-prove-rebuild.md
+    - content/09-capstone/05-optional-multi-node.md
+    - content/09-capstone/06-disaster-recovery.md
+    - content/09-capstone/07-rollback-and-tests.md
+    - content/09-capstone/08-retrospective.md
+  - part: CI/CD
+    contents:
+    - content/10-cicd/01-binary-caches.md
+    - content/10-cicd/02-github-actions-with-nix.md
+    - content/10-cicd/03-gitlab-ci.md
+    - content/10-cicd/04-build-caching-strategies.md
+    - content/10-cicd/05-testing-in-ci-pipelines.md
+    - content/10-cicd/06-secrets-management-in-ci.md
+    - content/10-cicd/07-remote-builders.md
+    - content/10-cicd/08-systemd-nspawn-test-backend.md
+  - part: Containers and Kubernetes
+    contents:
+    - content/11-containers-and-kubernetes/01-container-images-with-nix.md
+    - content/11-containers-and-kubernetes/02-kubernetes-manifests-as-modules.md
+    - content/11-containers-and-kubernetes/03-helm-charts-from-nix.md
+    - content/11-containers-and-kubernetes/04-gitops-argo-flux.md
+    - content/11-containers-and-kubernetes/05-service-mesh-observability.md
+  - part: IaC and Cloud
+    contents:
+    - content/12-iac-and-cloud/01-terraform-providers-with-nix.md
+    - content/12-iac-and-cloud/02-opentofu-integration.md
+    - content/12-iac-and-cloud/03-ansible-provisioning.md
+    - content/12-iac-and-cloud/04-cloud-provider-config.md
+    - content/12-iac-and-cloud/05-multi-cloud-deployment.md
+  - part: Platform Engineering
+    contents:
+    - content/13-platform-engineering/01-internal-developer-platform.md
+    - content/13-platform-engineering/02-monorepo-strategies.md
+    - content/13-platform-engineering/03-multi-platform-distribution.md
+    - content/13-platform-engineering/04-build-optimization-tuning.md
+    - content/13-platform-engineering/05-debugging-troubleshooting.md
+    - content/13-platform-engineering/06-testing-strategies.md
+    - content/13-platform-engineering/07-maintenance-upgrades-migration.md
+    - content/13-platform-engineering/08-enterprise-operational-checklists.md
+    - content/13-platform-engineering/09-fleet-deployments-colmena.md
+    - content/13-platform-engineering/10-microvms-and-virtualisation.md
+    - content/13-platform-engineering/11-content-addressed-nix-internals.md
+    - content/13-platform-engineering/12-agent-sandboxes-loop-engineering-and-overlays.md
+  - part: Production Labs
+    contents:
+    - content/14-production-labs/01-reading-nixos-infra.md
+    - content/14-production-labs/02-operator-keys-and-groups.md
+    - content/14-production-labs/03-critical-vs-noncritical.md
+    - content/14-production-labs/04-builder-factory-and-restricted-ssh.md
+    - content/14-production-labs/05-channel-promotion-and-ci-hosts.md
+  - part: Production Capstones
+    contents:
+    - content/15-production-capstones/01-enterprise-architecture-and-threat-model.md
+    - content/15-production-capstones/02-disko-storage-and-ephemeral-base.md
+    - content/15-production-capstones/03-hardened-network-and-vpn-mesh.md
+    - content/15-production-capstones/04-distributed-application-stack.md
+    - content/15-production-capstones/05-automated-fleet-rollout-and-disaster-recovery.md
+    - content/15-production-capstones/06-conclusion-the-path-forward.md
+    - part: Enterprise Architecture and Threat Model_files
+      contents:
+      - part: Mediabag
+        contents: []
+  - part: Misc
+    contents:
+    - content/16-misc/00-index.md
+    - content/16-misc/01-current-nix-and-nixos.md
+    - content/16-misc/02-how-a-release-is-built.md
+    - content/16-misc/03-minimal-iso-to-desktop.md
+    - content/16-misc/04-sleeping-builder.md
+  - part: Projects
+    contents:
+    - content/99-projects/00-index.md
+    - content/99-projects/01-derivation-hello-cli.md
+    - content/99-projects/02-derivation-script-tool.md
+    - content/99-projects/03-derivation-language-package.md
+    - content/99-projects/04-overlay-pin-patch.md
+    - content/99-projects/05-distro-identity-branding.md
+    - content/99-projects/06-distro-iso-themes.md
+    - content/99-projects/07-distro-complete-product.md
+    - part: Branding
+      contents:
+      - content/99-projects/branding/README.md
+      - content/99-projects/branding/plymouth-theme-notes.md
+  - part: Appendices
+    contents:
+    - content/100-appendices/01-glossary.md
+    - content/100-appendices/02-command-cheat-sheet.md
+    - content/100-appendices/03-nix-version-reference.md
+format:
+  html:
+    theme: auto
+  epub: {}
+  pdf:
+    paper: A4

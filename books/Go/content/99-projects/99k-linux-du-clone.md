@@ -1,0 +1,193 @@
+---
+title: '011 Project 11: Build a du Clone'
+---
+
+# 011 Build a `du` Clone
+
+Calculate recursive directory size and print human-readable or raw byte output. Use `filepath.WalkDir` and tolerate permission errors without aborting the whole walk.
+
+```text
+dir walk -> sum file sizes -> print per path + total
+```
+
+## Problem statement
+
+```text
+gdu [-h] [path...]
+```
+
+- Default path `.`
+- Sum sizes of all files under each root
+- `-h` human-readable (default true in this lab; use `-h=false` for bytes)
+- Multiple roots → print total line
+
+## Acceptance criteria
+
+- [ ] Recursive size for directories
+- [ ] Human and raw modes
+- [ ] Skips unreadable entries without crash
+- [ ] Multi-path grand total
+- [ ] Stdlib only
+
+## Setup
+
+```bash
+mkdir gdu && cd gdu
+go mod init example.com/gdu
+# go 1.27
+```
+
+## Full `main.go`
+
+```go
+package main
+
+import (
+	"flag"
+	"fmt"
+	"io/fs"
+	"os"
+	"path/filepath"
+)
+
+func human(n int64) string {
+	units := []string{"B", "KB", "MB", "GB", "TB"}
+	v := float64(n)
+	i := 0
+	for v >= 1024 && i < len(units)-1 {
+		v /= 1024
+		i++
+	}
+	return fmt.Sprintf("%.1f%s", v, units[i])
+}
+
+func dirSize(root string) (int64, error) {
+	var total int64
+	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "skip %s: %v\n", path, err)
+			return nil
+		}
+		if d.IsDir() {
+			return nil
+		}
+		info, err := d.Info()
+		if err != nil {
+			return nil
+		}
+		total += info.Size()
+		return nil
+	})
+	return total, err
+}
+
+func format(sz int64, humanFmt bool) string {
+	if humanFmt {
+		return fmt.Sprintf("%8s", human(sz))
+	}
+	return fmt.Sprintf("%8d", sz)
+}
+
+func main() {
+	humanFmt := flag.Bool("h", true, "human readable")
+	flag.Parse()
+
+	args := flag.Args()
+	if len(args) == 0 {
+		args = []string{"."}
+	}
+
+	var grand int64
+	var hadErr bool
+	for _, p := range args {
+		sz, err := dirSize(p)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s: %v\n", p, err)
+			hadErr = true
+			continue
+		}
+		grand += sz
+		fmt.Printf("%s  %s\n", format(sz, *humanFmt), p)
+	}
+
+	if len(args) > 1 {
+		fmt.Printf("%s  total\n", format(grand, *humanFmt))
+	}
+	if hadErr {
+		os.Exit(1)
+	}
+}
+```
+
+## Step-by-step build path
+
+1. Implement `human` with unit table.
+2. `WalkDir` summing file sizes only.
+3. Multi-root CLI + total.
+4. Log skips to stderr; keep walking.
+5. Tests with temp dirs of known size.
+
+## Run and verification
+
+```bash
+go run . -h /var/log
+go run . -h=false .
+go run . -h /tmp /var/tmp
+```
+
+## Tests
+
+```go
+package main
+
+import (
+	"os"
+	"path/filepath"
+	"testing"
+)
+
+func TestDirSize(t *testing.T) {
+	dir := t.TempDir()
+	_ = os.WriteFile(filepath.Join(dir, "a"), []byte("12345"), 0o644)
+	_ = os.Mkdir(filepath.Join(dir, "sub"), 0o755)
+	_ = os.WriteFile(filepath.Join(dir, "sub", "b"), []byte("xy"), 0o644)
+	sz, err := dirSize(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if sz != 7 {
+		t.Fatalf("got %d", sz)
+	}
+}
+
+func TestHuman(t *testing.T) {
+	if human(1024) != "1.0KB" {
+		t.Fatal(human(1024))
+	}
+}
+```
+
+```bash
+go test ./...
+```
+
+## Stretch goals
+
+1. Apparent size vs allocated blocks (platform-specific).
+2. Depth summary (`-d 1` like `du --max-depth`).
+3. Exclude globs.
+4. Parallel walk with care for FS limits.
+
+## Pitfalls
+
+| Pitfall | Fix |
+|---------|-----|
+| Aborting walk on permission error | return nil after log |
+| Counting directory entries as files | skip `IsDir` |
+| Binary vs decimal units | document 1024 base |
+
+## Learning goals
+
+- Recursive FS walks
+- Human-readable formatting
+- Resilient error handling on real trees

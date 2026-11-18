@@ -1,0 +1,204 @@
+book:
+  title: Maths
+  author: K19G
+  date: '2026-11-17'
+  description: Mathematics for computer science and machine learning
+  chapters:
+  - index.md
+  - part: Intro
+    contents:
+    - content/00-intro/00-intro.md
+  - part: Arithmetic
+    contents:
+    - content/01-arithmetic/00-intro.md
+    - content/01-arithmetic/01-numbers-and-counting.md
+    - content/01-arithmetic/02-addition.md
+    - content/01-arithmetic/03-subtraction.md
+    - content/01-arithmetic/04-multiplication.md
+    - content/01-arithmetic/05-division.md
+    - content/01-arithmetic/06-fractions.md
+    - content/01-arithmetic/07-decimals.md
+    - content/01-arithmetic/08-percentages.md
+  - part: Geometry
+    contents:
+    - content/02-geometry/00-intro.md
+    - content/02-geometry/01-points-lines-planes.md
+    - content/02-geometry/02-angles.md
+    - content/02-geometry/03-triangles.md
+    - content/02-geometry/04-quadrilaterals.md
+    - content/02-geometry/05-circles.md
+    - content/02-geometry/06-area-perimeter.md
+    - content/02-geometry/07-pi-in-lp-norms.md
+    - content/02-geometry/08-squaring-the-triangle.md
+    - content/02-geometry/09-sphere-packing-e8-and-leech.md
+  - part: Pre-Algebra
+    contents:
+    - content/03-pre-algebra/00-intro.md
+    - content/03-pre-algebra/01-variables-expressions.md
+    - content/03-pre-algebra/02-solving-equations.md
+    - content/03-pre-algebra/03-inequalities.md
+    - content/03-pre-algebra/04-graphing-linear-equations.md
+  - part: Algebra
+    contents:
+    - content/04-algebra/00-intro.md
+    - content/04-algebra/01-linear-equations.md
+    - content/04-algebra/02-quadratic-equations.md
+    - content/04-algebra/03-polynomials.md
+    - content/04-algebra/04-rational-expressions.md
+  - part: Linear Algebra
+    contents:
+    - content/05-linear-algebra/00-intro.md
+    - content/05-linear-algebra/01-vectors.md
+    - content/05-linear-algebra/02-matrices.md
+    - content/05-linear-algebra/03-systems-of-equations.md
+    - content/05-linear-algebra/04-vector-spaces-bases.md
+    - content/05-linear-algebra/05-determinants-inverses.md
+    - content/05-linear-algebra/07-montgomery-modular-multiplication.md
+  - part: Discrete Mathematics
+    contents:
+    - content/06-discrete-mathematics/00-intro.md
+    - content/06-discrete-mathematics/01-logic-and-proofs.md
+    - content/06-discrete-mathematics/02-sets-and-relations.md
+    - content/06-discrete-mathematics/03-combinatorics.md
+    - content/06-discrete-mathematics/04-recurrence-relations.md
+    - content/06-discrete-mathematics/05-induction-and-invariants.md
+    - content/06-discrete-mathematics/06-category-theory-of-terms.md
+    - content/06-discrete-mathematics/07-lean-4-35-vcgen.md
+    - content/06-discrete-mathematics/08-penrose-tilings.md
+    - content/06-discrete-mathematics/09-banach-tarski-paradox.md
+    - content/06-discrete-mathematics/10-schreier-sims-permutation-groups.md
+    - content/06-discrete-mathematics/11-finite-field-kakeya.md
+  - part: Statistics
+    contents:
+    - content/07-statistics/00-intro.md
+    - content/07-statistics/01-descriptive-statistics.md
+    - content/07-statistics/02-probability.md
+    - content/07-statistics/03-random-variables.md
+    - content/07-statistics/04-statistical-inference.md
+    - content/07-statistics/05-regression-and-experiments.md
+    - content/07-statistics/06-bayes-odds-and-likelihood-ratios.md
+  - part: Calculus
+    contents:
+    - content/08-calculus/00-intro.md
+    - content/08-calculus/01-limits-continuity.md
+    - content/08-calculus/02-derivatives-applications.md
+    - content/08-calculus/03-integrals-and-accumulation.md
+    - content/08-calculus/04-multivariable-calculus.md
+    - content/08-calculus/05-series-and-approximations.md
+    - content/08-calculus/06-noether-theorem.md
+  - part: Number Theory
+    contents:
+    - content/09-number-theory/00-intro.md
+    - content/09-number-theory/01-divisibility-gcd.md
+    - content/09-number-theory/02-modular-arithmetic.md
+    - content/09-number-theory/03-primes-and-crypto.md
+    - content/09-number-theory/04-lattices-and-learning-with-errors.md
+    - content/09-number-theory/05-alphaproof-nexus-erdos.md
+    - content/09-number-theory/06-reed-solomon-erasure-coding.md
+    - content/09-number-theory/07-chinese-remainder-theorem.md
+    - content/09-number-theory/08-hasse-bound-and-weil-zeta.md
+    - content/09-number-theory/09-lonely-runner-conjecture.md
+    - content/09-number-theory/10-prime-number-theorem-by-the-numbers.md
+  - part: Information Theory
+    contents:
+    - content/10-information-theory/00-intro.md
+    - content/10-information-theory/01-entropy-information.md
+    - content/10-information-theory/02-mutual-information-and-capacity.md
+    - content/10-information-theory/03-kl-divergence-and-coding.md
+    - content/10-information-theory/04-information-applications.md
+    - content/10-information-theory/05-bloom-filters.md
+  - part: Optimization
+    contents:
+    - content/11-optimization/00-intro.md
+    - content/11-optimization/01-convexity.md
+    - content/11-optimization/02-constrained-optimization.md
+    - content/11-optimization/03-regularization-and-generalization.md
+    - content/11-optimization/04-first-order-methods-playbook.md
+    - content/11-optimization/05-gradient-methods.md
+  - part: Machine Learning Math
+    contents:
+    - content/12-machine-learning-math/00-intro.md
+    - content/12-machine-learning-math/01-linear-algebra-ml.md
+    - content/12-machine-learning-math/02-gradients-and-loss.md
+    - content/12-machine-learning-math/03-probability-for-ml.md
+    - content/12-machine-learning-math/04-neural-nets-math-sketch.md
+    - content/12-machine-learning-math/05-matrix-calculus-ml.md
+    - content/12-machine-learning-math/06-automatic-differentiation.md
+  - part: Algorithms and Complexity
+    contents:
+    - content/13-algorithms-complexity/00-intro.md
+    - content/13-algorithms-complexity/01-asymptotic-analysis.md
+    - content/13-algorithms-complexity/02-complexity-classes-and-reductions.md
+    - content/13-algorithms-complexity/03-randomized-and-approximation.md
+    - content/13-algorithms-complexity/04-fast-integer-multiplication.md
+    - content/13-algorithms-complexity/05-karatsuba-multiplication.md
+    - content/13-algorithms-complexity/06-strassen-matrix-multiplication.md
+  - part: Graph Theory
+    contents:
+    - content/14-graph-theory/00-intro.md
+    - content/14-graph-theory/01-graph-basics.md
+    - content/14-graph-theory/02-trees-and-spanning.md
+    - content/14-graph-theory/03-shortest-paths.md
+    - content/14-graph-theory/04-connectivity-and-flow.md
+    - content/14-graph-theory/05-graph-algorithms-in-cs.md
+    - content/14-graph-theory/06-graph-exercises-workshop.md
+    - content/14-graph-theory/07-ramsey-numbers.md
+    - content/14-graph-theory/08-moore-bound-and-high-girth-graphs.md
+  - part: Numerical Methods
+    contents:
+    - content/15-numerical-methods/00-intro.md
+    - content/15-numerical-methods/01-floating-point-and-error.md
+    - content/15-numerical-methods/02-root-finding.md
+    - content/15-numerical-methods/03-linear-systems.md
+    - content/15-numerical-methods/04-numerical-optimization.md
+    - content/15-numerical-methods/05-fft-and-dft.md
+    - content/15-numerical-methods/06-ode-solvers.md
+    - content/15-numerical-methods/07-numerical-integration.md
+    - content/15-numerical-methods/08-interval-arithmetic-and-certified-computation.md
+    - content/15-numerical-methods/09-ozaki-scheme.md
+    - content/15-numerical-methods/10-growth-factor-partial-pivoting.md
+    - content/15-numerical-methods/11-hilbert-condition-numbers.md
+    - content/15-numerical-methods/12-qr-decomposition.md
+  - part: Data Science Math
+    contents:
+    - content/16-data-science-math/00-intro.md
+    - content/16-data-science-math/01-statistical-foundations.md
+    - content/16-data-science-math/02-sampling-and-bias.md
+    - content/16-data-science-math/03-hypothesis-testing-for-data.md
+    - content/16-data-science-math/04-dimensionality-features.md
+    - content/16-data-science-math/05-hyperloglog-cardinality-estimation.md
+    - content/16-data-science-math/06-count-min-sketch.md
+    - content/16-data-science-math/07-minhash-jaccard-similarity.md
+  - part: Probability (Advanced)
+    contents:
+    - content/17-probability-advanced/00-intro.md
+    - content/17-probability-advanced/01-random-variables-distributions.md
+    - content/17-probability-advanced/02-expectation-variance.md
+    - content/17-probability-advanced/03-limit-theorems.md
+    - content/17-probability-advanced/04-bayesian-inference.md
+    - content/17-probability-advanced/05-markov-chains.md
+    - content/17-probability-advanced/05b-riffle-shuffles-and-mixing-time.md
+    - content/17-probability-advanced/06-thresholds-expectation-kahn-kalai.md
+  - part: Linear Algebra (Advanced)
+    contents:
+    - content/18-linear-algebra-advanced/00-intro.md
+    - content/18-linear-algebra-advanced/01-eigenvalues-eigenvectors.md
+    - content/18-linear-algebra-advanced/02-orthogonality-projections.md
+    - content/18-linear-algebra-advanced/03-svd-and-pca.md
+    - content/18-linear-algebra-advanced/04-least-squares-conditioning.md
+    - content/18-linear-algebra-advanced/05-spectral-thinking.md
+    - content/18-linear-algebra-advanced/06-random-rotations-jl-hadamard.md
+    - content/18-linear-algebra-advanced/07-linear-algebra-of-llms.md
+  - part: Complexity Theory
+    contents:
+    - content/19-complexity-theory/00-intro.md
+    - content/19-complexity-theory/01-reductions-and-np-complete.md
+    - content/19-complexity-theory/02-randomized-and-approximation.md
+    - content/19-complexity-theory/03-space-complexity.md
+    - content/19-complexity-theory/04-fine-grained-3sum-apsp.md
+format:
+  html:
+    theme: auto
+  epub: {}
+  pdf:
+    paper: A4

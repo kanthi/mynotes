@@ -1,0 +1,444 @@
+# Every page address this book's website has had, kept by Octavo so that
+# links to moved chapters keep working. Commit this file with the book.
+# Each line: the page, a tab, then its chapter title, or "-> " and the page
+# its old address now forwards to.
+content/01-git-foundations/01-mental-model/00-theory.html	Theory
+content/01-git-foundations/01-mental-model/01-version-control-landscape.html	The Version Control Landscape
+content/01-git-foundations/01-mental-model/02-directed-acyclic-graph.html	The Directed Acyclic Graph
+content/01-git-foundations/01-mental-model/03-three-tree-model.html	The Three-Tree Model
+content/01-git-foundations/01-mental-model/04-object-types.html	Object Types
+content/01-git-foundations/01-mental-model/05-references.html	References: Branches, Tags, and HEAD
+content/01-git-foundations/01-mental-model/06-distributed-model.html	The Distributed Model
+content/01-git-foundations/01-mental-model/07-detached-head.html	Detached HEAD: explore history without a branch tip
+content/01-git-foundations/01-mental-model/08-revisions-and-ranges.html	Revisions and Ranges
+content/01-git-foundations/01-mental-model/09-ref-name-rules.html	Ref Name Rules: What git check-ref-format Allows, and Why
+content/01-git-foundations/02-install-and-config/00-theory.html	Theory
+content/01-git-foundations/02-install-and-config/01-installing-git.html	Installing Git
+content/01-git-foundations/02-install-and-config/02-config-layers.html	Config Layers
+content/01-git-foundations/02-install-and-config/03-identity.html	Identity, Email, and Essential Settings
+content/01-git-foundations/02-install-and-config/04-ssh-vs-https.html	SSH vs HTTPS
+content/01-git-foundations/02-install-and-config/05-editor-pager-difftool.html	Editor, Pager, and Difftool
+content/01-git-foundations/02-install-and-config/06-aliases.html	Git aliases: short commands that stay in Git
+content/01-git-foundations/02-install-and-config/07-updating-git.html	Updating Git on Linux
+content/01-git-foundations/03-first-repository/00-theory.html	Theory
+content/01-git-foundations/03-first-repository/01-initializing.html	Initializing a Repository
+content/01-git-foundations/03-first-repository/02-add-commit-cycle.html	The Add/Commit Cycle
+content/01-git-foundations/03-first-repository/03-status-log-diff.html	status, log, and diff
+content/01-git-foundations/03-first-repository/04-undoing-mistakes.html	Undoing Mistakes
+content/01-git-foundations/03-first-repository/05-hands-on-tiny-project.html	Hands-On: Build a Tiny Project
+content/01-git-foundations/03-first-repository/06-gitignore.html	.gitignore in Depth
+content/01-git-foundations/03-first-repository/07-interactive-add.html	Interactive add: stage hunks with git add -p
+content/01-git-foundations/03-first-repository/08-rm-and-mv.html	git rm and git mv
+content/01-git-foundations/03-first-repository/09-what-not-to-commit.html	What Not to Commit
+content/01-git-foundations/04-inspecting-history/00-theory.html	Theory
+content/01-git-foundations/04-inspecting-history/01-log-advanced.html	Advanced git log: grep, path, and pretty formats
+content/01-git-foundations/04-inspecting-history/02-ranges-two-dot-three-dot.html	Two-dot and three-dot ranges
+content/01-git-foundations/04-inspecting-history/03-git-show-and-stat.html	git show and --stat
+content/01-git-foundations/04-inspecting-history/04-blame-and-annotate.html	git blame: who last touched this line
+content/01-git-foundations/04-inspecting-history/05-pickaxe-and-follow.html	Pickaxe and --follow
+content/01-git-foundations/04-inspecting-history/05b-log-L-function-history.html	git log -L: The History of One Function
+content/01-git-foundations/04-inspecting-history/06-shortlog.html	git shortlog
+content/01-git-foundations/04-inspecting-history/07-hands-on-archaeology.html	Hands-On: History Archaeology
+content/01-git-foundations/04-inspecting-history/08-blame-through-reformats.html	Blame through reformats: .git-blame-ignore-revs
+content/01-git-foundations/05-ignore-attributes-lfs/00-theory.html	Theory
+content/01-git-foundations/05-ignore-attributes-lfs/01-gitignore-patterns.html	gitignore Patterns
+content/01-git-foundations/05-ignore-attributes-lfs/02-gitattributes.html	gitattributes: text, binary, eol, and drivers
+content/01-git-foundations/05-ignore-attributes-lfs/03-export-ignore-and-archive.html	export-ignore and git archive
+content/01-git-foundations/05-ignore-attributes-lfs/04-git-lfs.html	Git LFS
+content/01-git-foundations/05-ignore-attributes-lfs/05-hands-on-ignore-and-lfs.html	Hands-On: Ignore and LFS
+content/02-everyday-workflows/01-commits-and-history/00-theory.html	Theory
+content/02-everyday-workflows/01-commits-and-history/01-commit-anatomy.html	Commit Anatomy
+content/02-everyday-workflows/01-commits-and-history/02-conventional-commits.html	Conventional Commits
+content/02-everyday-workflows/01-commits-and-history/03-amending-messages.html	Amending a Commit Message
+content/02-everyday-workflows/01-commits-and-history/04-unstaging.html	Unstaging a File
+content/02-everyday-workflows/01-commits-and-history/05-hands-on-amend.html	Hands-On: Amend and Rewrite
+content/02-everyday-workflows/01-commits-and-history/06-commit-templates.html	Commit templates: guide the message before you write it
+content/02-everyday-workflows/01-commits-and-history/07-empty-and-split-commits.html	Empty and Split Commits
+content/02-everyday-workflows/01-commits-and-history/08-trailers-and-mailmap.html	Trailers and mailmap: keeping agent commits honest
+content/02-everyday-workflows/01-commits-and-history/09-git-show.html	Reading a Commit with git show
+content/02-everyday-workflows/01-commits-and-history/10-diff-algorithms-myers-patience-histogram.html	Git Diff Algorithms — myers, patience, histogram
+content/02-everyday-workflows/01-commits-and-history/11-git-log-max-count-oldest.html	Git --max-count-oldest without the --reverse Trap
+content/02-everyday-workflows/01-commits-and-history/12-git-range-diff.html	git range-diff for Rewritten Series
+content/02-everyday-workflows/01-commits-and-history/13-git-notes.html	git notes — Annotations outside the Tree
+content/02-everyday-workflows/02-reset-restore-checkout/00-theory.html	Theory
+content/02-everyday-workflows/02-reset-restore-checkout/01-three-modes-of-reset.html	Soft, Mixed, and Hard Reset
+content/02-everyday-workflows/02-reset-restore-checkout/02-restore-vs-reset-vs-revert.html	restore vs reset vs revert
+content/02-everyday-workflows/02-reset-restore-checkout/03-reset-paths.html	Resetting Paths
+content/02-everyday-workflows/02-reset-restore-checkout/04-switch-restore-checkout.html	switch, restore, and checkout
+content/02-everyday-workflows/02-reset-restore-checkout/05-hands-on-reset.html	Hands-On: Reset Lab
+content/02-everyday-workflows/03-branching-and-merging/00-theory.html	Theory
+content/02-everyday-workflows/03-branching-and-merging/01-creating-switching-branches.html	Creating and Switching Branches
+content/02-everyday-workflows/03-branching-and-merging/02-merge-types.html	Merge Types
+content/02-everyday-workflows/03-branching-and-merging/03-three-way-merge.html	Three-Way Merge
+content/02-everyday-workflows/03-branching-and-merging/04-merge-conflicts.html	Merge Conflicts
+content/02-everyday-workflows/03-branching-and-merging/05-fast-forward-clean-history.html	Fast-Forward for Clean History
+content/02-everyday-workflows/03-branching-and-merging/06-hands-on-merge-conflict.html	Hands-On: A Real Merge Conflict
+content/02-everyday-workflows/03-branching-and-merging/07-mergetool.html	mergetool
+content/02-everyday-workflows/03-branching-and-merging/08-ours-theirs-and-renames.html	ours, theirs, and renames during a conflict
+content/02-everyday-workflows/03-branching-and-merging/09-orphan-branches.html	Orphan Branches
+content/02-everyday-workflows/03-branching-and-merging/10-comparing-branches.html	Comparing Branches
+content/02-everyday-workflows/03-branching-and-merging/11-rerere.html	rerere: reuse recorded conflict resolutions
+content/02-everyday-workflows/03-branching-and-merging/12-git-2-56-daily-work.html	Git 2.56 for Daily Work
+content/02-everyday-workflows/03-branching-and-merging/13-git-add-resolved.html	git add --resolved for Conflict Markers
+content/02-everyday-workflows/03-branching-and-merging/14-custom-merge-drivers.html	Custom Merge Drivers: union, a Structural JSON Driver, and mergiraf
+content/02-everyday-workflows/04-rebasing/00-theory.html	Theory
+content/02-everyday-workflows/04-rebasing/01-why-rebase.html	Why Rebase
+content/02-everyday-workflows/04-rebasing/02-interactive-rebase.html	Interactive Rebase
+content/02-everyday-workflows/04-rebasing/03-rebase-conflicts.html	Rebase Conflicts
+content/02-everyday-workflows/04-rebasing/04-pull-with-rebase.html	Pull with Rebase
+content/02-everyday-workflows/04-rebasing/05-rebase-vs-merge.html	Rebase vs Merge
+content/02-everyday-workflows/04-rebasing/06-hands-on-messy-history.html	Hands-On: Clean Up a Messy History
+content/02-everyday-workflows/04-rebasing/07-rebase-onto.html	rebase --onto: cut a commit chain off one base and replay on another
+content/02-everyday-workflows/04-rebasing/08-autosquash-and-fixup.html	autosquash and fixup: fold fix commits into their targets
+content/02-everyday-workflows/04-rebasing/09-rebase-exec.html	rebase --exec: run a command after every replayed commit
+content/02-everyday-workflows/04-rebasing/10-update-refs-and-keep-base.html	update-refs and keep-base
+content/02-everyday-workflows/04-rebasing/11-rebase-interactive-from-merge-base.html	Interactive Rebase from the Merge-Base
+content/02-everyday-workflows/05-cherry-pick-and-revert/00-theory.html	Theory
+content/02-everyday-workflows/05-cherry-pick-and-revert/01-cherry-pick.html	Cherry-Pick
+content/02-everyday-workflows/05-cherry-pick-and-revert/02-hotfixes-and-backports.html	Hotfixes and Backports
+content/02-everyday-workflows/05-cherry-pick-and-revert/03-revert-and-unmerge.html	Revert and Unmerge
+content/02-everyday-workflows/05-cherry-pick-and-revert/04-production-emergencies.html	Production Emergency Scenarios
+content/02-everyday-workflows/05-cherry-pick-and-revert/05-ranges-and-x.html	cherry-pick ranges and -x: record where a patch came from
+content/02-everyday-workflows/05-cherry-pick-and-revert/06-empty-picks.html	Empty Picks and --skip
+content/02-everyday-workflows/06-remotes/00-theory.html	Theory
+content/02-everyday-workflows/06-remotes/01-fetch-pull-push.html	Fetch, Pull, and Push
+content/02-everyday-workflows/06-remotes/02-multiple-remotes.html	Multiple Remotes
+content/02-everyday-workflows/06-remotes/03-force-push.html	Force Push
+content/02-everyday-workflows/06-remotes/04-pull-requests.html	Pull Requests and Code Review
+content/02-everyday-workflows/06-remotes/05-hands-on-two-clones.html	Hands-On: Two Clones
+content/02-everyday-workflows/06-remotes/06-tracking-and-upstream.html	Tracking branches and upstream: -u, @{u}, and status
+content/02-everyday-workflows/06-remotes/07-refspecs.html	Refspecs: how fetch and push map names
+content/02-everyday-workflows/06-remotes/08-git-bundle.html	git bundle: sneakernet a repository over a file
+content/02-everyday-workflows/06-remotes/09-prune-and-rename.html	Prune and Rename
+content/02-everyday-workflows/06-remotes/10-forks-vs-clones.html	Forks vs Clones
+content/02-everyday-workflows/06-remotes/11-email-patch-workflow.html	The Email Patch Workflow: format-patch, send-email, am, and Versioned Series
+content/02-everyday-workflows/07-stash-tags-cleanup/00-theory.html	Theory
+content/02-everyday-workflows/07-stash-tags-cleanup/01-stash.html	Stash
+content/02-everyday-workflows/07-stash-tags-cleanup/02-tags.html	Tags
+content/02-everyday-workflows/07-stash-tags-cleanup/03-cleanup.html	Cleanup Commands
+content/02-everyday-workflows/07-stash-tags-cleanup/04-hands-on-stash.html	Hands-On: Stash and Switch
+content/02-everyday-workflows/07-stash-tags-cleanup/05-stash-branch.html	stash branch: turn a stash into a real branch
+content/02-everyday-workflows/07-stash-tags-cleanup/06-git-describe.html	git describe: name a commit from nearby tags
+content/02-everyday-workflows/07-stash-tags-cleanup/07-git-archive.html	git archive
+content/02-everyday-workflows/08-hooks/00-theory.html	Theory
+content/02-everyday-workflows/08-hooks/01-hook-types.html	Hook Types
+content/02-everyday-workflows/08-hooks/02-writing-a-hook.html	Writing a Hook
+content/02-everyday-workflows/08-hooks/03-templates-and-ci.html	Hook Templates and CI
+content/02-everyday-workflows/08-hooks/04-hands-on-pre-commit.html	Hands-On: A Pre-Commit Hook
+content/02-everyday-workflows/08-hooks/05-prepare-commit-msg.html	prepare-commit-msg
+content/02-everyday-workflows/08-hooks/06-post-checkout-and-post-merge.html	post-checkout and post-merge
+content/02-everyday-workflows/08-hooks/07-no-verify.html	--no-verify
+content/02-everyday-workflows/08-hooks/08-config-based-hooks.html	Config-based hooks: sharing hooks without copying files into .git/hooks
+content/02-everyday-workflows/08-hooks/09-pre-push-large-file-guard.html	A pre-push guard against large files and runaway LFS uploads
+content/02-everyday-workflows/09-submodules-and-worktrees/00-theory.html	Theory
+content/02-everyday-workflows/09-submodules-and-worktrees/01-submodules.html	Submodules
+content/02-everyday-workflows/09-submodules-and-worktrees/02-worktrees.html	Worktrees
+content/02-everyday-workflows/09-submodules-and-worktrees/03-when-to-use-which.html	When to Use Which
+content/02-everyday-workflows/09-submodules-and-worktrees/04-hands-on-submodule-worktree.html	Hands-On: Submodule and Worktree
+content/02-everyday-workflows/09-submodules-and-worktrees/05-foreach-and-sync.html	foreach and sync
+content/02-everyday-workflows/09-submodules-and-worktrees/06-deinit-and-absorb.html	deinit and absorbgitdirs
+content/02-everyday-workflows/09-submodules-and-worktrees/07-worktree-locks.html	Worktree Locks and prune
+content/02-everyday-workflows/09-submodules-and-worktrees/08-worktree-lifecycle-parallel-work.html	Worktree Lifecycle for Parallel Work: add, prune, repair
+content/02-everyday-workflows/10-branching-workflows/00-theory.html	Theory
+content/02-everyday-workflows/10-branching-workflows/01-git-flow.html	Git Flow
+content/02-everyday-workflows/10-branching-workflows/02-github-flow-and-trunk.html	GitHub Flow and Trunk-Based
+content/02-everyday-workflows/10-branching-workflows/03-feature-flags.html	Feature Flags
+content/02-everyday-workflows/10-branching-workflows/04-monorepos-vs-polyrepos.html	Monorepos vs Polyrepos
+content/02-everyday-workflows/10-branching-workflows/05-choosing-a-strategy.html	Choosing a Strategy
+content/02-everyday-workflows/10-branching-workflows/06-forking-workflow.html	The Forking Workflow
+content/02-everyday-workflows/10-branching-workflows/07-stacked-changes.html	Stacked Changes: Stacked Pull Requests on GitHub
+content/02-everyday-workflows/10-branching-workflows/08-release-tags-and-changelogs.html	Release Tags and Changelogs
+content/03-power-skills/01-internals/00-theory.html	Theory
+content/03-power-skills/01-internals/01-object-store.html	The Object Store
+content/03-power-skills/01-internals/02-content-addressing.html	Content Addressing — SHA-1, SHA-256, and the Git 3.0 Switch
+content/03-power-skills/01-internals/03-packfiles-and-log.html	Packfiles and git log
+content/03-power-skills/01-internals/04-internals-for-servers.html	Internals That Affect Servers
+content/03-power-skills/01-internals/05-hands-on-cat-file.html	Hands-On: git cat-file
+content/03-power-skills/01-internals/06-reftable-ref-backend.html	The reftable ref backend: measuring it against files, and migrating before Git 3.0
+content/03-power-skills/01-internals/07-git-replace-and-grafts.html	git replace: Swapping Objects and Grafting History Without Rewriting
+content/03-power-skills/02-reflog/00-theory.html	Theory
+content/03-power-skills/02-reflog/01-how-reflog-works.html	How the reflog works: HEAD movement as a safety net
+content/03-power-skills/02-reflog/02-recover-deleted-branches.html	Recover Deleted Branches
+content/03-power-skills/02-reflog/03-thirty-day-window.html	The 30-Day Safety Window
+content/03-power-skills/02-reflog/04-recovery-scenarios.html	Recovery Scenarios
+content/03-power-skills/03-bisect/00-theory.html	Theory
+content/03-power-skills/03-bisect/01-binary-search-bugs.html	git bisect: binary search for the commit that broke you
+content/03-power-skills/03-bisect/02-automate-with-tests.html	Automate Bisect with Tests
+content/03-power-skills/03-bisect/03-production-debugging.html	2 AM Production Debugging
+content/03-power-skills/03-bisect/04-hands-on-bisect.html	Hands-On: git bisect
+content/03-power-skills/04-performance-and-scale/00-theory.html	Theory
+content/03-power-skills/04-performance-and-scale/01-large-repositories.html	Large Repositories
+content/03-power-skills/04-performance-and-scale/02-shallow-sparse-partial.html	Shallow, sparse, and partial clones
+content/03-power-skills/04-performance-and-scale/03-performance-tuning.html	Performance Tuning
+content/03-power-skills/04-performance-and-scale/04-git-maintenance.html	git maintenance
+content/03-power-skills/04-performance-and-scale/05-agent-scale-git-infrastructure.html	Git infrastructure for agent-scale development
+content/03-power-skills/04-performance-and-scale/05-git-under-agentic-load.html	Git under agentic load: packing, refs, and worktree isolation
+content/03-power-skills/05-git-security/00-theory.html	Theory
+content/03-power-skills/05-git-security/01-signed-commits-and-tags.html	Signed Commits and Tags
+content/03-power-skills/05-git-security/02-secrets-in-history.html	Secrets in History
+content/03-power-skills/05-git-security/03-audit-trails.html	Audit Trails
+content/03-power-skills/05-git-security/04-security-scanning.html	Security Scanning
+content/03-power-skills/05-git-security/05-hands-on-remove-secret.html	Hands-On: Remove a Secret
+content/03-power-skills/06-troubleshooting/00-theory.html	Theory
+content/03-power-skills/06-troubleshooting/01-fsck-and-repair.html	fsck and Repair
+content/03-power-skills/06-troubleshooting/02-common-error-patterns.html	Common Error Patterns
+content/03-power-skills/06-troubleshooting/03-recovery-procedures.html	Recovery Procedures
+content/03-power-skills/06-troubleshooting/04-hands-on-corrupted-repo.html	Hands-On: Corrupted Repo
+content/04-platforms/01-github-monoculture/00-theory.html	Theory
+content/04-platforms/01-github-monoculture/01-how-github-became-default.html	How GitHub Became Default
+content/04-platforms/01-github-monoculture/02-platform-lock-in.html	Risks of Platform Lock-in
+content/04-platforms/01-github-monoculture/03-regulatory-and-geopolitical.html	Regulatory and Geopolitical
+content/04-platforms/01-github-monoculture/04-beyond-github.html	What Beyond GitHub Means
+content/04-platforms/01-github-monoculture/05-framework-for-this-part.html	A Framework for This Part
+content/04-platforms/02-platform-architecture/00-theory.html	Theory
+content/04-platforms/02-platform-architecture/01-git-alone-vs-hosting.html	Git Alone vs Git Hosting
+content/04-platforms/02-platform-architecture/02-core-components.html	Core Platform Components
+content/04-platforms/02-platform-architecture/03-protocol-stack.html	The Protocol Stack
+content/04-platforms/02-platform-architecture/04-storage-architectures.html	Storage Architectures
+content/04-platforms/02-platform-architecture/05-authn-authz-identity.html	Authn, Authz, and Identity
+content/04-platforms/02-platform-architecture/06-extensibility.html	Extensibility
+content/04-platforms/02-platform-architecture/07-monolith-vs-microservices.html	Monolith vs Microservices
+content/04-platforms/02-platform-architecture/08-operational-complexity.html	Operational Complexity
+content/04-platforms/03-gitlab/00-theory.html	Theory
+content/04-platforms/03-gitlab/01-history-and-philosophy.html	History and Philosophy
+content/04-platforms/03-gitlab/02-architecture.html	GitLab Architecture
+content/04-platforms/03-gitlab/03-feature-set.html	GitLab Feature Set
+content/04-platforms/03-gitlab/04-operations-and-licensing.html	Operations and Licensing
+content/04-platforms/03-gitlab/05-hands-on-gitlab.html	Hands-On: GitLab
+content/04-platforms/03-gitlab/06-when-gitlab-fits.html	When GitLab Is the Right Choice
+content/04-platforms/04-gitea-and-forgejo/00-theory.html	Theory
+content/04-platforms/04-gitea-and-forgejo/01-origins-and-philosophy.html	Origins and Philosophy
+content/04-platforms/04-gitea-and-forgejo/02-forgejo-fork.html	The Forgejo Fork
+content/04-platforms/04-gitea-and-forgejo/03-comparison.html	Gitea vs Forgejo vs GitLab
+content/04-platforms/04-gitea-and-forgejo/04-deployment-and-scaling.html	Deployment and Scaling
+content/04-platforms/04-gitea-and-forgejo/05-hands-on-gitea-forgejo.html	Hands-On: Gitea and Forgejo
+content/04-platforms/04-gitea-and-forgejo/06-when-gitea-or-forgejo-fits.html	When Gitea or Forgejo Fits
+content/04-platforms/05-bitbucket/00-theory.html	Theory
+content/04-platforms/05-bitbucket/01-cloud-vs-data-center.html	Cloud vs Data Center
+content/04-platforms/05-bitbucket/02-architecture.html	Bitbucket Architecture
+content/04-platforms/05-bitbucket/03-atlassian-ecosystem.html	Jira and Atlassian
+content/04-platforms/05-bitbucket/04-enterprise-features.html	Enterprise Features
+content/04-platforms/05-bitbucket/05-comparison.html	Bitbucket Compared
+content/04-platforms/05-bitbucket/06-hands-on-bitbucket.html	Hands-On: Bitbucket Cloud
+content/04-platforms/05-bitbucket/07-when-bitbucket-fits.html	When Bitbucket Fits
+content/04-platforms/06-gerrit/00-theory.html	Theory
+content/04-platforms/06-gerrit/01-what-gerrit-is.html	What Gerrit Is
+content/04-platforms/06-gerrit/02-change-ids-and-reviews.html	Change-Ids, Drafts, Approvals
+content/04-platforms/06-gerrit/03-ci-integration.html	Gerrit and CI
+content/04-platforms/06-gerrit/04-operations.html	Gerrit Operations
+content/04-platforms/06-gerrit/05-in-practice.html	Gerrit in Practice
+content/04-platforms/06-gerrit/06-hands-on-gerrit.html	Hands-On: Gerrit
+content/04-platforms/06-gerrit/07-when-gerrit-fits.html	When Gerrit Is the Right Choice
+content/04-platforms/07-sourcehut/00-theory.html	Theory
+content/04-platforms/07-sourcehut/01-philosophy.html	SourceHut Philosophy
+content/04-platforms/07-sourcehut/02-srht-suite.html	The sr.ht Suite
+content/04-platforms/07-sourcehut/03-architecture.html	SourceHut Architecture
+content/04-platforms/07-sourcehut/04-comparison.html	SourceHut Compared
+content/04-platforms/07-sourcehut/05-hands-on-sourcehut.html	Hands-On: SourceHut
+content/04-platforms/07-sourcehut/06-when-sourcehut-fits.html	When SourceHut Makes Sense
+content/04-platforms/08-niche-platforms/00-theory.html	Theory
+content/04-platforms/08-niche-platforms/01-codeberg.html	Codeberg
+content/04-platforms/08-niche-platforms/02-gitbucket.html	GitBucket
+content/04-platforms/08-niche-platforms/03-gogs.html	Gogs
+content/04-platforms/08-niche-platforms/04-phorge-and-arcanist.html	Phorge and Arcanist
+content/04-platforms/08-niche-platforms/05-github-enterprise-server.html	GitHub Enterprise Server
+content/04-platforms/08-niche-platforms/06-summary.html	Summary of Niche Platforms
+content/05-operating/01-identity/00-theory.html	Theory
+content/05-operating/01-identity/01-password-ssh-oauth-saml.html	Password, SSH, OAuth, SAML
+content/05-operating/01-identity/02-ldap-and-directory.html	LDAP and Directory Services
+content/05-operating/01-identity/03-rbac.html	RBAC and Fine-Grained Permissions
+content/05-operating/01-identity/04-ssh-keys-at-scale.html	SSH Keys at Scale
+content/05-operating/01-identity/05-mfa-and-hardening.html	MFA and Hardening
+content/05-operating/02-governance/00-theory.html	Theory
+content/05-operating/02-governance/01-enforcement-implications.html	Enforcement Implications
+content/05-operating/02-governance/02-protecting-branches.html	Protecting Branches
+content/05-operating/02-governance/03-monorepo-vs-polyrepo.html	Monorepo vs Polyrepo (Operator)
+content/05-operating/02-governance/04-governance-automation.html	Governance Automation
+content/05-operating/03-cicd/00-theory.html	Theory
+content/05-operating/03-cicd/01-webhooks.html	Webhooks
+content/05-operating/03-cicd/02-native-ci.html	Native CI
+content/05-operating/03-cicd/03-external-ci.html	External CI
+content/05-operating/03-cicd/04-pipelines-and-runners.html	Pipelines and Runners
+content/05-operating/03-cicd/05-gitops-preview.html	GitOps Preview
+content/05-operating/04-packages/00-theory.html	Theory
+content/05-operating/04-packages/01-container-registries.html	Container Registries
+content/05-operating/04-packages/02-language-packages.html	Language Package Managers
+content/05-operating/04-packages/03-retention-and-ci.html	Retention and CI Integration
+content/05-operating/04-packages/04-self-hosted-registry.html	Self-Hosted Registry Architecture
+content/05-operating/05-security/00-theory.html	Theory
+content/05-operating/05-security/01-signed-commits-on-server.html	Signed Commits on the Server
+content/05-operating/05-security/02-dependency-scanning.html	Dependency Scanning
+content/05-operating/05-security/03-sbom.html	SBOM
+content/05-operating/05-security/04-secrets-detection.html	Secrets Detection
+content/05-operating/05-security/05-supply-chain-attacks.html	Supply Chain Attacks
+content/05-operating/05-security/06-platform-hardening.html	Platform-Level Hardening
+content/05-operating/05-security/07-git-argument-injection-end-of-options.html	Git argument injection and `--` / `--end-of-options`
+content/05-operating/05-security/08-missing-dotgit-forged-config-fsmonitor.html	When `.git` Is Missing: Forged Config, `fsmonitor`, and `safe.directory`
+content/05-operating/06-federation/00-theory.html	Theory
+content/05-operating/06-federation/01-git-as-decentralization.html	Git as a Decentralization Primitive
+content/05-operating/06-federation/02-federated-hosting.html	Federated Hosting
+content/05-operating/06-federation/03-are-we-ready.html	Are We Ready?
+content/05-operating/07-storage-and-scale/00-theory.html	Theory
+content/05-operating/07-storage-and-scale/01-repository-growth.html	Repository Growth
+content/05-operating/07-storage-and-scale/02-storage-options.html	Storage Options
+content/05-operating/07-storage-and-scale/03-clone-and-fetch-performance.html	Clone and Fetch Performance
+content/05-operating/07-storage-and-scale/04-database-scaling.html	Database Scaling
+content/05-operating/07-storage-and-scale/05-cdn-and-geo.html	CDN and Geo-Distributed Hosting
+content/05-operating/07-storage-and-scale/06-benchmarks.html	Benchmarks
+content/05-operating/08-ha-and-dr/00-theory.html	Theory
+content/05-operating/08-ha-and-dr/01-backup-strategies.html	Backup Strategies
+content/05-operating/08-ha-and-dr/02-point-in-time-recovery.html	Point-in-Time Recovery
+content/05-operating/08-ha-and-dr/03-geo-redundant.html	Geo-Redundant Deployments
+content/05-operating/08-ha-and-dr/04-dr-planning.html	Disaster Recovery Planning
+content/05-operating/08-ha-and-dr/05-monitoring-repo-health.html	Monitoring Repository Health
+content/05-operating/09-observability/00-theory.html	Theory
+content/05-operating/09-observability/01-operational-metrics.html	Operational Metrics
+content/05-operating/09-observability/02-log-aggregation.html	Log Aggregation
+content/05-operating/09-observability/03-audit-logging.html	Audit Logging
+content/05-operating/09-observability/04-tracing-user-actions.html	Tracing User Actions
+content/05-operating/09-observability/05-compliance-frameworks.html	Compliance Frameworks
+content/05-operating/09-observability/06-security-monitoring.html	Security Monitoring
+content/05-operating/10-enterprise-and-airgap/00-theory.html	Theory
+content/05-operating/10-enterprise-and-airgap/01-air-gapped.html	Air-Gapped Deployments
+content/05-operating/10-enterprise-and-airgap/02-multi-cloud-hybrid.html	Multi-Cloud and Hybrid
+content/05-operating/10-enterprise-and-airgap/03-data-residency.html	Data Residency
+content/05-operating/10-enterprise-and-airgap/04-support-and-slas.html	Support and SLAs
+content/05-operating/10-enterprise-and-airgap/05-capacity-and-tco.html	Capacity and TCO
+content/05-operating/11-migration-and-future/00-theory.html	Theory
+content/05-operating/11-migration-and-future/01-migration-strategies.html	Migration Strategies
+content/05-operating/11-migration-and-future/02-preserving-history.html	Preserving History
+content/05-operating/11-migration-and-future/03-interoperability.html	Interoperability
+content/05-operating/11-migration-and-future/04-emerging-trends.html	Emerging Trends
+content/05-operating/11-migration-and-future/05-decision-framework.html	A Decision Framework
+content/05-operating/11-migration-and-future/06-future-of-code-hosting.html	The Future of Code Hosting
+content/05-operating/11-migration-and-future/07-jj-working-copy-as-commit.html	jj (Jujutsu): Working Copy as a Commit
+content/05-operating/11-migration-and-future/08-majjit-jj-dag-tui.html	Majjit: a Magit-style TUI for the Jujutsu DAG
+content/06-github-actions/01-fundamentals/00-theory.html	Theory
+content/06-github-actions/01-fundamentals/01-automate-with-actions.html	Automate Tasks with Actions
+content/06-github-actions/01-fundamentals/02-workflow-anatomy.html	Workflow Anatomy
+content/06-github-actions/01-fundamentals/03-runtime-and-contexts.html	Runtime and Contexts
+content/06-github-actions/01-fundamentals/04-authoring-and-debugging.html	Authoring and Debugging
+content/06-github-actions/01-fundamentals/05-building-and-validating.html	Building and Validating Code
+content/06-github-actions/02-custom-actions-and-releases/00-theory.html	Theory
+content/06-github-actions/02-custom-actions-and-releases/01-building-custom-actions.html	Building Custom Actions
+content/06-github-actions/02-custom-actions-and-releases/02-reuse-matrix-cache.html	Reuse, Matrix, Cache, Secrets
+content/06-github-actions/02-custom-actions-and-releases/03-releasing-software.html	Releasing Software
+content/06-github-actions/02-custom-actions-and-releases/04-security-notes.html	Actions Security Notes
+content/06-github-actions/02-custom-actions-and-releases/04b-workflow-dependency-lockfiles.html	Workflow Dependency Lockfiles with gh actions-lock
+content/07-gitops/01-what-is-gitops/00-theory.html	Theory
+content/07-gitops/01-what-is-gitops/01-devops-pain-points.html	DevOps Pain Points
+content/07-gitops/01-what-is-gitops/02-four-pillars.html	The Four Pillars of GitOps
+content/07-gitops/01-what-is-gitops/03-benefits.html	Deploy Faster, Recover Faster
+content/07-gitops/01-what-is-gitops/04-push-vs-pull.html	Push vs Pull
+content/07-gitops/01-what-is-gitops/05-environment-repos.html	Environment Repositories
+content/07-gitops/01-what-is-gitops/06-trunk-vs-prs.html	Trunk vs Pull Requests
+content/07-gitops/01-what-is-gitops/07-gitops-vs-other-ops.html	GitOps vs Other Ops
+content/07-gitops/01-what-is-gitops/08-when-to-use-gitops.html	When to Use GitOps
+content/07-gitops/02-flux-quickstart/00-theory.html	Theory
+content/07-gitops/02-flux-quickstart/01-app-and-env-repos.html	Application and Environment Repos
+content/07-gitops/02-flux-quickstart/02-cd-with-actions.html	CD Pipeline with Actions
+content/07-gitops/02-flux-quickstart/03-flux-operator.html	Flux Operator on Kubernetes
+content/07-gitops/02-flux-quickstart/04-future-of-gitops.html	The Future of GitOps
+content/08-argo-cd/01-concepts-and-architecture/00-theory.html	Theory
+content/08-argo-cd/01-concepts-and-architecture/01-where-argo-came-from.html	Where Argo CD Came From
+content/08-argo-cd/01-concepts-and-architecture/02-reconciliation-and-immutable.html	Reconciliation and Immutable Infrastructure
+content/08-argo-cd/01-concepts-and-architecture/03-reconciliation-loop.html	The Reconciliation Loop
+content/08-argo-cd/01-concepts-and-architecture/04-components.html	Argo CD Components
+content/08-argo-cd/01-concepts-and-architecture/05-applications-and-projects.html	Applications and Projects
+content/08-argo-cd/01-concepts-and-architecture/06-git-to-cluster.html	From Git to the Cluster
+content/08-argo-cd/01-concepts-and-architecture/07-desired-vs-actual.html	Desired vs Actual State
+content/08-argo-cd/02-install-and-lab/00-theory.html	Theory
+content/08-argo-cd/02-install-and-lab/01-lab-shape.html	Lab Shape
+content/08-argo-cd/02-install-and-lab/02-k3s-and-kubectl.html	K3s and kubectl
+content/08-argo-cd/02-install-and-lab/03-install-methods.html	Install Methods
+content/08-argo-cd/02-install-and-lab/04-ui-cli-clusters.html	UI, CLI, and Clusters
+content/08-argo-cd/03-applications-and-sync/00-theory.html	Theory
+content/08-argo-cd/03-applications-and-sync/01-first-application.html	Your First Application
+content/08-argo-cd/03-applications-and-sync/02-sync-policy.html	Sync Policy
+content/08-argo-cd/03-applications-and-sync/03-pruning.html	Pruning
+content/08-argo-cd/03-applications-and-sync/04-retries-and-sync-options.html	Retries and Sync Options
+content/08-argo-cd/03-applications-and-sync/05-namespace-labels-history.html	Namespace, Labels, History
+content/08-argo-cd/03-applications-and-sync/06-recap-exercise.html	Recap Exercise
+content/08-argo-cd/04-clusters-and-diff/00-theory.html	Theory
+content/08-argo-cd/04-clusters-and-diff/01-cluster-registration.html	Cluster Registration
+content/08-argo-cd/04-clusters-and-diff/02-polling-vs-webhooks.html	Polling vs Webhooks
+content/08-argo-cd/04-clusters-and-diff/03-diff-algorithms.html	Diff Algorithms
+content/08-argo-cd/04-clusters-and-diff/04-application-health.html	Application Health
+content/08-argo-cd/05-hooks-and-waves/00-theory.html	Theory
+content/08-argo-cd/05-hooks-and-waves/01-sync-phases.html	Sync Phases
+content/08-argo-cd/05-hooks-and-waves/02-generate-name-and-waves.html	Names and Sync Waves
+content/08-argo-cd/05-hooks-and-waves/03-hook-failures.html	When a Hook Fails
+content/08-argo-cd/05-hooks-and-waves/04-hook-anti-patterns.html	Hook Anti-Patterns
+content/08-argo-cd/06-users-and-rbac/00-theory.html	Theory
+content/08-argo-cd/06-users-and-rbac/01-creating-a-user.html	Creating a User
+content/08-argo-cd/06-users-and-rbac/02-p-and-g-lines.html	The p Line and the g Line
+content/08-argo-cd/06-users-and-rbac/03-verifying-grants.html	Verifying Grants
+content/08-argo-cd/07-helm/00-theory.html	Theory
+content/08-argo-cd/07-helm/01-helm-vs-plain.html	Helm vs Plain Resources
+content/08-argo-cd/07-helm/02-charts-and-repos.html	Charts and Repositories
+content/08-argo-cd/07-helm/03-deploy-and-values.html	Deploying Charts and Values
+content/08-argo-cd/07-helm/04-helm-hooks-vs-argo-hooks.html	Helm Hooks vs Argo CD Hooks
+content/08-argo-cd/08-applicationsets-and-patterns/00-theory.html	Theory
+content/08-argo-cd/08-applicationsets-and-patterns/01-applicationsets.html	ApplicationSets
+content/08-argo-cd/08-applicationsets-and-patterns/02-app-of-apps.html	App of Apps
+content/08-argo-cd/08-applicationsets-and-patterns/03-multi-branch.html	Multi-Branch CI/CD
+content/08-argo-cd/08-applicationsets-and-patterns/04-build-to-update.html	Build to Application Update
+content/08-argo-cd/09-notifications-secrets-bluegreen/00-theory.html	Theory
+content/08-argo-cd/09-notifications-secrets-bluegreen/01-slack-notifications.html	Slack Notifications
+content/08-argo-cd/09-notifications-secrets-bluegreen/02-secret-management.html	Secret Management
+content/08-argo-cd/09-notifications-secrets-bluegreen/03-blue-green.html	Blue-Green with Argo CD
+content/08-argo-cd/10-argo-vs-alternatives/00-theory.html	Theory
+content/08-argo-cd/10-argo-vs-alternatives/01-argo-vs-flux-and-friends.html	Argo CD vs the Alternatives
+content/08-argo-cd/10-argo-vs-alternatives/02-choosing-an-engine.html	Choosing a GitOps Engine
+content/09-argo-rollouts/01-introducing-rollouts/00-theory.html	Theory
+content/09-argo-rollouts/01-introducing-rollouts/01-beyond-rollingupdate.html	Beyond RollingUpdate
+content/09-argo-rollouts/01-introducing-rollouts/02-canary-and-blue-green.html	Canary and Blue-Green Fundamentals
+content/09-argo-rollouts/01-introducing-rollouts/03-gradual-releases.html	Gradual Releases and Risk
+content/09-argo-rollouts/02-resources-and-lifecycle/00-theory.html	Theory
+content/09-argo-rollouts/02-resources-and-lifecycle/01-rollout-vs-deployment.html	Rollout vs Deployment
+content/09-argo-rollouts/02-resources-and-lifecycle/02-stable-and-canary.html	Stable and Canary Versions
+content/09-argo-rollouts/02-resources-and-lifecycle/03-analysis-and-experiments.html	AnalysisTemplates and Experiments
+content/09-argo-rollouts/03-rollouts-lab/00-theory.html	Theory
+content/09-argo-rollouts/03-rollouts-lab/01-lab-stack.html	Rollouts Lab Stack
+content/09-argo-rollouts/03-rollouts-lab/02-manifests-and-verify.html	Manifests and Verify
+content/09-argo-rollouts/04-first-canary/00-theory.html	Theory
+content/09-argo-rollouts/04-first-canary/01-canary-steps.html	Canary Strategy and Steps
+content/09-argo-rollouts/04-first-canary/02-promote-abort-inspect.html	Promote, Abort, Inspect
+content/09-argo-rollouts/05-istio-canaries/00-theory.html	Theory
+content/09-argo-rollouts/05-istio-canaries/01-istio-traffic.html	Istio Traffic Management
+content/09-argo-rollouts/05-istio-canaries/02-subsets-and-weights.html	Subsets and Weighted Traffic
+content/09-argo-rollouts/05-istio-canaries/03-replica-vs-traffic.html	Replica-Based vs Traffic-Based
+content/09-argo-rollouts/06-analysis-and-prometheus/00-theory.html	Theory
+content/09-argo-rollouts/06-analysis-and-prometheus/01-analysistemplate.html	AnalysisTemplate and AnalysisRun
+content/09-argo-rollouts/06-analysis-and-prometheus/02-success-failure-aborts.html	Success, Failure, Aborts
+content/09-argo-rollouts/06-analysis-and-prometheus/03-inline-vs-background.html	Inline vs Background Analysis
+content/09-argo-rollouts/07-experiments/00-theory.html	Theory
+content/09-argo-rollouts/07-experiments/01-side-by-side.html	Running Versions Side by Side
+content/09-argo-rollouts/07-experiments/02-analysis-during-experiments.html	Analysis During Experiments
+content/09-argo-rollouts/07-experiments/03-experiments-vs-analysis.html	Experiments vs AnalysisTemplates
+content/09-argo-rollouts/08-hpa-and-canary/00-theory.html	Theory
+content/09-argo-rollouts/08-hpa-and-canary/01-hpa-problem.html	HPA with Replica-Based Canaries
+content/09-argo-rollouts/08-hpa-and-canary/02-metrics-and-scaling.html	Metrics Server and Canary Scaling
+content/09-argo-rollouts/08-hpa-and-canary/03-setcanaryscale.html	setCanaryScale
+content/09-argo-rollouts/09-blue-green/00-theory.html	Theory
+content/09-argo-rollouts/09-blue-green/01-active-and-preview.html	Active and Preview Services
+content/09-argo-rollouts/09-blue-green/02-promotion-analysis.html	Promotion Analysis
+content/09-argo-rollouts/09-blue-green/03-promote-and-rollback.html	Promote and Rollback
+content/09-argo-rollouts/10-rollout-notifications/00-theory.html	Theory
+content/09-argo-rollouts/10-rollout-notifications/01-architecture-and-scope.html	Notification Architecture
+content/09-argo-rollouts/10-rollout-notifications/02-triggers-and-slack.html	Triggers, Templates, Slack
+content/09-argo-rollouts/10-rollout-notifications/03-troubleshooting.html	Troubleshooting Notifications
+content/09-argo-rollouts/11-migrating-to-rollouts/00-theory.html	Theory
+content/09-argo-rollouts/11-migrating-to-rollouts/01-workloadref.html	Migration and workloadRef
+content/09-argo-rollouts/11-migrating-to-rollouts/02-direct-conversion.html	Direct Conversion
+content/09-argo-rollouts/11-migrating-to-rollouts/03-canary-migration.html	Canary Migration
+content/09-argo-rollouts/11-migrating-to-rollouts/04-statefulset-limits.html	StatefulSet Limitations
+content/09-argo-rollouts/12-capstone/00-theory.html	Theory
+content/09-argo-rollouts/12-capstone/01-mental-model-end-to-end.html	A Working Mental Model
+content/09-argo-rollouts/12-capstone/02-larger-environments.html	Larger Environments
+content/99-appendices/01-questions-and-answers.html	Understanding Questions and Answers
+content/99-appendices/02-competency-checklists.html	Git Competency Checklists
+content/99-appendices/03-scenario-playbook.html	Real-World Scenario Playbook
+content/99-appendices/04-lab-environment.html	Lab Environment Reference
+content/99-appendices/05-glossary-and-quick-reference.html	Command Quick Reference and Glossary
+index.html	Introduction

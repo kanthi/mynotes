@@ -1,0 +1,155 @@
+---
+title: Monorepo Strategies with Nix
+---
+
+# Monorepo Strategies with Nix
+
+A monorepo with `src = ./.;` on every package rebuilds the world per commit. The boring default is: **one flake, many `packages.*`, `lib.fileset` (or `cleanSourceWith`) per leaf, and CI that builds `.#checks` — not `.#everything` — on a docs-only PR**.
+
+## Mental model
+
+| Layout | Nix |
+|---|---|
+| `apps/desk-api` | `packages.desk-api` with `src` filtered to that tree |
+| `apps/desk-web` | sibling package; a docs change does not rebuild api |
+| `modules/` | `nixosModules` |
+| `flake.nix` | one lock, nixpkgs 26.05 |
+
+`nix flake check` should be cheap enough to run on every PR. Heavy images are extra jobs or nightly. Recursive flakes (`inputs.foo.url = "path:./apps/foo"`) multiply locks — one lock at the root.
+
+Nix caching still helps if you rebuild the world, but eval time and `vendorHash` churn do not. Filter first.
+
+## Worked examples
+
+### Case 1: fileset `src` per leaf
+
+Save as `pkgs/desk-api.nix`:
+
+```nix
+# pkgs/desk-api.nix
+{ pkgs, lib }:
+
+pkgs.buildGoModule {
+  pname = "desk-api";
+  version = "1.0.0";
+  src = lib.fileset.toSource {
+    root = ../.;
+    fileset = lib.fileset.unions [
+      ../apps/desk-api
+      ../go.mod
+      ../go.sum
+    ];
+  };
+  vendorHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+}
+```
+
+A README typo under `apps/desk-web` is not in this fileset. `nix build .#desk-api` should be a cache hit.
+
+### Case 2: One flake, many packages
+
+Save as `flake.nix`:
+
+```nix
+# flake.nix
+{
+  description = "Desk monorepo";
+
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+
+  outputs = { self, nixpkgs }:
+    let
+      system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
+    in
+    {
+      packages.${system} = {
+        desk-api = pkgs.callPackage ./pkgs/desk-api.nix { };
+        desk-web = pkgs.callPackage ./pkgs/desk-web.nix { };
+        default = self.packages.${system}.desk-api;
+      };
+      checks.${system} = {
+        api = self.packages.${system}.desk-api;
+        web = self.packages.${system}.desk-web;
+      };
+    };
+}
+```
+
+```bash
+nix build .#desk-api
+nix flake check -L
+```
+
+### Case 3: PR path filter (CI)
+
+Save as `.github/workflows/leaf.yml`:
+
+```yaml
+# .github/workflows/leaf.yml
+name: leaf
+on:
+  pull_request:
+    paths:
+      - "apps/desk-api/**"
+      - "pkgs/desk-api.nix"
+      - "go.mod"
+      - "go.sum"
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: nix build .#desk-api
+```
+
+A second workflow watches `flake.lock` and runs `nix flake check`. Nix will still cache; the path filter saves eval time on huge repos.
+
+### Case 4: `linkFarm` for the nightly smoke set
+
+```nix
+# in flake outputs
+{
+  packages.x86_64-linux.desk-smoke = pkgs.linkFarm "desk-smoke" [
+    { name = "api"; path = self.packages.x86_64-linux.desk-api; }
+    { name = "web"; path = self.packages.x86_64-linux.desk-web; }
+  ];
+}
+```
+
+```bash
+nix build .#desk-smoke
+```
+
+Nightly builds the farm. PRs build the leaf. Do not make `default` the farm if humans run `nix build` on every save.
+
+### Case 5: Do not use recursive flakes
+
+```nix
+# do not
+{
+  inputs.desk-api.url = "path:./apps/desk-api";
+  inputs.desk-web.url = "path:./apps/desk-web";
+}
+```
+
+Each path flake wants its own `flake.lock`. You will update nixpkgs in one leaf and not the other. `callPackage` plus filesets is the boring layout.
+
+## The trap
+
+The trap is **`src = ./.;`** at repo root for every `callPackage`. A README typo rebuilds Go, invalidates `vendorHash` work, and CI is red for twenty minutes. Filter. The other trap is a recursive flake per app.
+
+## The boring rule
+
+- One flake, one 26.05 lock.
+- Per-package `lib.fileset` (or `cleanSourceWith`) `src`.
+- Leaf builds on leaf PRs; `flake.lock` PRs run full check.
+- No recursive flakes.
+- `vendorHash` / `cargoHash` per package, not one hash for the repo.
+
+## Try this
+
+1. `nix build .#desk-api`, then touch a web-only file; `nix build .#desk-api --dry-run` (should be empty if filtered).
+2. Pick `lib.fileset` or `cleanSource` — one style per repo.
+3. Add a `checks` attr that is `linkFarm` of two packages; run it only nightly.
+4. Time `nix flake show` on the monorepo; if it is minutes, you eval too much at the top.

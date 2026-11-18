@@ -1,0 +1,123 @@
+---
+title: Rate Limiting and Concurrency Caps
+---
+
+# Rate Limiting and Concurrency Caps
+
+## Overview
+
+Protect the process from overload: limit request **rate** (token bucket) and **in-flight concurrency** (semaphore). Start simple—stdlib + `golang.org/x/time/rate` or a tiny token bucket.
+
+## Concurrency semaphore
+
+```go
+func MaxInFlight(n int) func(http.Handler) http.Handler {
+	sem := make(chan struct{}, n)
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			select {
+			case sem <- struct{}{}:
+				defer func() { <-sem }()
+				next.ServeHTTP(w, r)
+			default:
+				http.Error(w, "busy", http.StatusServiceUnavailable)
+			}
+		})
+	}
+}
+```
+
+## Token bucket (x/time/rate)
+
+```bash
+go get golang.org/x/time/rate@latest
+```
+
+```go
+func RateLimit(r rate.Limit, burst int) func(http.Handler) http.Handler {
+	lim := rate.NewLimiter(r, burst)
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if !lim.Allow() {
+				w.Header().Set("Retry-After", "1")
+				http.Error(w, "rate limit", http.StatusTooManyRequests)
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+// e.g. RateLimit(10, 20) → 10 req/s, burst 20
+```
+
+## Per-IP limit (minimal)
+
+```go
+type ipLimiter struct {
+	mu sync.Mutex
+	m  map[string]*rate.Limiter
+	r  rate.Limit
+	b  int
+}
+
+func (l *ipLimiter) get(ip string) *rate.Limiter {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if lim, ok := l.m[ip]; ok {
+		return lim
+	}
+	lim := rate.NewLimiter(l.r, l.b)
+	l.m[ip] = lim
+	return lim
+}
+```
+
+Production: bound map size, use `X-Forwarded-For` only behind trusted proxies.
+
+## Client-side (outbound)
+
+```go
+lim := rate.NewLimiter(5, 5)
+if err := lim.Wait(ctx); err != nil {
+	return err // stop before the third-party API call
+}
+```
+
+## Rules of thumb
+
+| Do | Don't |
+|----|--------|
+| 503/429 with Retry-After | Hang requests forever in queue without bound |
+| Cap expensive routes tighter | One global limit for static + checkout |
+| Limit outbound fan-out | Unlimited parallel dependency calls |
+
+## Try next
+
+1. Burst 5 then 429.
+2. Combine MaxInFlight(50) + RateLimit.
+3. Load test with `hey` and tune.
+
+## Designing a distributed rate limiter
+
+One `rate.Limiter` shared by handlers limits one process. Ten replicas, each allowing 10 requests/s, can collectively allow about 100 requests/s with a combined burst of 200. A per-customer quota shared across replicas needs coordinated state or an explicitly approximate budget allocation.
+
+| Algorithm | State | Boundary behavior |
+|-----------|-------|-------------------|
+| Fixed window | count and expiry | Allows a double burst across a window boundary |
+| Sliding event log | recent accepted timestamps | Precise window, more memory and cleanup |
+| Sliding window counter | neighboring window counts | Approximate smoothing |
+| Token bucket | tokens and refill time | Sustained rate with an explicit burst allowance |
+| Leaky bucket scheduler | queue and drain schedule | Smooth output with bounded queued delay |
+
+For a shared token bucket, atomically read its state, refill, decide, and debit. A separate read followed by a write loses updates across instances. Use a database transaction or a shared-store script with one authoritative time policy; expire inactive keys only when recreating a full bucket would not violate the quota. Scope the key to authenticated tenant and route class, and bound the number of keys. Client-supplied IP headers alone are not a reliable identity.
+
+Given capacity `B`, rate `r`, previous refill time `t0`, and current time `t`, refill to `min(B, tokens + r × max(0, t−t0))`. Admit only if the resulting balance covers the request cost, then subtract that cost in the same atomic operation. Decide how wall-clock rollback is handled; process-local monotonic time is not shared across hosts.
+
+If the quota store is unavailable, choose a documented policy per route: reject, allow under a small local fallback budget, or allow unrestricted requests. Those choices affect availability and quota enforcement differently. Local token leases reduce coordination traffic but can strand capacity and must prevent old leases being reused after failover. Keep the separate concurrency cap: a rate quota alone does not bound slow in-flight work.
+
+The [x/time/rate API](https://pkg.go.dev/golang.org/x/time/rate) documents local token-bucket behavior and cancellation-aware waiting. For outbound calls, stop if `Wait(ctx)` fails; do not continue the request after an exhausted deadline.
+
+### Verification lab
+
+Use an injected clock to test burst depletion, refill, weighted request costs, exact window boundaries, and backward time. Run two Go server instances against one quota store and issue requests concurrently; accepted total must stay within the chosen algorithm's contract. Test store failure and a new-key flood, recording rejection rate, decision latency, active keys, and fallback use. Rejections should expose a useful retry policy without building an unbounded wait queue.

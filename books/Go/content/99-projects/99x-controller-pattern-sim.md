@@ -1,0 +1,221 @@
+---
+title: '024 Project 24: Controller Pattern Simulator'
+---
+
+# 024 Build a Controller/Reconciler Simulator
+
+Practice the Kubernetes-style reconciliation loop **without** Kubernetes dependencies: desired state vs actual state, idempotent steps, external drift, and convergence under a ticker.
+
+```text
+desired state + actual state -> reconcile loop -> actions -> converge
+```
+
+## Problem statement
+
+Simulate a Deployment-like controller:
+
+- `DesiredReplicas` is the spec
+- `ActualReplicas` is observed status
+- Each tick, apply **one** reconcile action: scale up, scale down, or noop
+- Occasionally inject **drift** (external delete/create)
+- Print a clear timeline so operators can see convergence
+
+## Acceptance criteria
+
+- [ ] Reconcile is idempotent: repeated noops when in sync
+- [ ] Actual moves toward desired by at most one step per tick (or document multi-step)
+- [ ] Drift can move actual away; controller recovers
+- [ ] Program ends after N ticks or when stable for M ticks
+- [ ] Stdlib only; deterministic mode via fixed RNG seed flag
+
+## Setup
+
+```bash
+mkdir reconsim && cd reconsim
+go mod init example.com/reconsim
+# go 1.27
+```
+
+## Full `main.go`
+
+```go
+package main
+
+import (
+	"flag"
+	"fmt"
+	"math/rand"
+	"os"
+	"time"
+)
+
+type State struct {
+	DesiredReplicas int
+	ActualReplicas  int
+}
+
+func reconcile(s *State) string {
+	if s.ActualReplicas < s.DesiredReplicas {
+		s.ActualReplicas++
+		return "scale_up"
+	}
+	if s.ActualReplicas > s.DesiredReplicas {
+		s.ActualReplicas--
+		return "scale_down"
+	}
+	return "noop"
+}
+
+func clampNonNeg(n int) int {
+	if n < 0 {
+		return 0
+	}
+	return n
+}
+
+func main() {
+	desired := flag.Int("desired", 3, "desired replicas")
+	actual := flag.Int("actual", 0, "initial actual replicas")
+	ticks := flag.Int("ticks", 20, "max ticks")
+	driftEvery := flag.Int("drift-every", 6, "inject drift every N ticks (0=off)")
+	seed := flag.Int64("seed", 1, "rng seed for drift")
+	delay := flag.Duration("delay", 200*time.Millisecond, "tick delay (0 for fast)")
+	flag.Parse()
+
+	if *desired < 0 || *actual < 0 {
+		fmt.Fprintln(os.Stderr, "desired/actual must be >= 0")
+		os.Exit(2)
+	}
+
+	rng := rand.New(rand.NewSource(*seed))
+	s := State{DesiredReplicas: *desired, ActualReplicas: *actual}
+
+	stable := 0
+	for i := 0; i < *ticks; i++ {
+		if *driftEvery > 0 && i > 0 && i%*driftEvery == 0 {
+			delta := rng.Intn(3) - 1 // -1,0,1
+			s.ActualReplicas = clampNonNeg(s.ActualReplicas + delta)
+			fmt.Printf("tick=%02d DRIFT delta=%+d actual=%d\n", i, delta, s.ActualReplicas)
+		}
+
+		action := reconcile(&s)
+		fmt.Printf("tick=%02d desired=%d actual=%d action=%s\n",
+			i, s.DesiredReplicas, s.ActualReplicas, action)
+
+		if action == "noop" {
+			stable++
+			if stable >= 3 {
+				fmt.Println("converged")
+				return
+			}
+		} else {
+			stable = 0
+		}
+
+		if *delay > 0 {
+			time.Sleep(*delay)
+		}
+
+		// mid-run desired change demo
+		if i == *ticks/2 && *ticks >= 4 {
+			s.DesiredReplicas = max(1, s.DesiredReplicas-1)
+			fmt.Printf("tick=%02d DESIRED_CHANGED desired=%d\n", i, s.DesiredReplicas)
+		}
+	}
+	fmt.Println("finished ticks")
+}
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+```
+
+## Step-by-step build path
+
+1. Model `State{Desired, Actual}`.
+2. Write pure `reconcile(*State) action` with unit tests.
+3. Drive a ticker/loop with logging.
+4. Add drift and desired changes.
+5. Add convergence detection (stable noops).
+
+## Architecture
+
+```text
+┌────────────┐     observe      ┌────────────┐
+│  Desired   │                  │   Actual   │
+└─────┬──────┘                  └──────▲─────┘
+      │         reconcile              │
+      └────────► diff ──apply one ─────┘
+                      │
+                      ▼
+                 action log
+```
+
+## Run and verification
+
+```bash
+go run . -desired 3 -actual 0 -ticks 25 -seed 42 -delay 0
+# expect scale_up until actual=3, noops, maybe drift recovery
+
+go run . -desired 5 -actual 8 -delay 0
+# expect scale_down
+```
+
+## Tests
+
+```go
+package main
+
+import "testing"
+
+func TestReconcileScaleUp(t *testing.T) {
+	s := State{DesiredReplicas: 2, ActualReplicas: 0}
+	if a := reconcile(&s); a != "scale_up" || s.ActualReplicas != 1 {
+		t.Fatalf("action=%s actual=%d", a, s.ActualReplicas)
+	}
+}
+
+func TestReconcileNoop(t *testing.T) {
+	s := State{DesiredReplicas: 2, ActualReplicas: 2}
+	if a := reconcile(&s); a != "noop" {
+		t.Fatal(a)
+	}
+}
+
+func TestReconcileScaleDown(t *testing.T) {
+	s := State{DesiredReplicas: 1, ActualReplicas: 3}
+	if a := reconcile(&s); a != "scale_down" || s.ActualReplicas != 2 {
+		t.Fatalf("action=%s actual=%d", a, s.ActualReplicas)
+	}
+}
+```
+
+```bash
+go test -race ./...
+```
+
+## Stretch goals
+
+1. Multiple resources (map of name → state).
+2. Exponential backoff after failed apply (simulate errors).
+3. Workqueue with rate limiting (client-go style mental model).
+4. Level-triggered vs edge-triggered event notes in README.
+5. JSON status dump each tick for later graphing.
+
+## Pitfalls
+
+| Pitfall | Fix |
+|---------|-----|
+| One-shot script instead of loop | Always re-observe actual |
+| Non-idempotent apply | Same desired → noop safely |
+| Unbounded scale steps | Cap max replicas; step by 1 |
+| Non-deterministic tests | Fixed seed; pure reconcile |
+
+## Learning goals
+
+- Controller pattern used in modern platforms
+- Convergence over one-shot automation
+- Drift handling and observability of actions

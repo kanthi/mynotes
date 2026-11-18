@@ -1,0 +1,207 @@
+---
+title: '007 Project 7: Build an ls Clone'
+---
+
+# 007 Build an `ls` Clone
+
+Build a practical `ls`-style CLI with flags for hidden files, long format, and sorting. Focus on clean formatting and deterministic ordering for scripts.
+
+```text
+path -> read entries -> filter -> sort -> format -> print
+```
+
+## Problem statement
+
+```text
+gls [-a] [-l] [-sort name|size|time] [path]
+```
+
+- Default path `.`
+- Hide dotfiles unless `-a`
+- `-l` shows mode, size, modtime, name
+- Directories get a trailing `/` in long mode
+
+## Acceptance criteria
+
+- [ ] Lists directory entries
+- [ ] `-a` shows hidden
+- [ ] `-l` long format columns
+- [ ] Sort by name/size/time
+- [ ] Non-zero exit on unreadable path
+- [ ] Stdlib only
+
+## Setup
+
+```bash
+mkdir gls && cd gls
+go mod init example.com/gls
+# go 1.27
+```
+
+## Full `main.go`
+
+```go
+package main
+
+import (
+	"flag"
+	"fmt"
+	"io/fs"
+	"os"
+	"path/filepath"
+	"sort"
+	"strings"
+	"time"
+)
+
+type item struct {
+	Name string
+	Info fs.FileInfo
+}
+
+func list(path string, showAll bool, sortBy string) ([]item, error) {
+	entries, err := os.ReadDir(path)
+	if err != nil {
+		return nil, err
+	}
+	var items []item
+	for _, e := range entries {
+		name := e.Name()
+		if !showAll && strings.HasPrefix(name, ".") {
+			continue
+		}
+		info, err := e.Info()
+		if err != nil {
+			continue
+		}
+		items = append(items, item{Name: name, Info: info})
+	}
+	sort.SliceStable(items, func(i, j int) bool {
+		switch sortBy {
+		case "size":
+			if items[i].Info.Size() == items[j].Info.Size() {
+				return strings.ToLower(items[i].Name) < strings.ToLower(items[j].Name)
+			}
+			return items[i].Info.Size() < items[j].Info.Size()
+		case "time":
+			ti, tj := items[i].Info.ModTime(), items[j].Info.ModTime()
+			if ti.Equal(tj) {
+				return strings.ToLower(items[i].Name) < strings.ToLower(items[j].Name)
+			}
+			return ti.Before(tj)
+		default: // name
+			return strings.ToLower(items[i].Name) < strings.ToLower(items[j].Name)
+		}
+	})
+	return items, nil
+}
+
+func main() {
+	showAll := flag.Bool("a", false, "show hidden files")
+	longFmt := flag.Bool("l", false, "long listing format")
+	sortBy := flag.String("sort", "name", "name|size|time")
+	flag.Parse()
+
+	path := "."
+	if flag.NArg() > 0 {
+		path = flag.Arg(0)
+	}
+	switch *sortBy {
+	case "name", "size", "time":
+	default:
+		fmt.Fprintln(os.Stderr, "invalid -sort; want name|size|time")
+		os.Exit(2)
+	}
+
+	items, err := list(path, *showAll, *sortBy)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "read dir failed: %v\n", err)
+		os.Exit(1)
+	}
+
+	for _, it := range items {
+		if *longFmt {
+			mode := it.Info.Mode().String()
+			sz := it.Info.Size()
+			mod := it.Info.ModTime().Format(time.DateTime)
+			name := it.Name
+			if it.Info.IsDir() {
+				name += string(filepath.Separator)
+			}
+			fmt.Printf("%s %10d %s %s\n", mode, sz, mod, name)
+		} else {
+			fmt.Println(it.Name)
+		}
+	}
+}
+```
+
+## Step-by-step build path
+
+1. `ReadDir` + filter dots.
+2. Collect `FileInfo` for size/time sorts.
+3. Stable sort with tie-break on name.
+4. Long vs short formatters.
+5. Validate `-sort` early.
+
+## Run and verification
+
+```bash
+go run .
+go run . -a -l -sort size /var/log
+go run . -sort time -l .
+```
+
+## Tests
+
+```go
+package main
+
+import (
+	"os"
+	"path/filepath"
+	"testing"
+)
+
+func TestListHidesDot(t *testing.T) {
+	dir := t.TempDir()
+	_ = os.WriteFile(filepath.Join(dir, "a.txt"), []byte("x"), 0o644)
+	_ = os.WriteFile(filepath.Join(dir, ".secret"), []byte("y"), 0o644)
+	items, err := list(dir, false, "name")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(items) != 1 || items[0].Name != "a.txt" {
+		t.Fatalf("%v", items)
+	}
+	items, _ = list(dir, true, "name")
+	if len(items) != 2 {
+		t.Fatalf("%d", len(items))
+	}
+}
+```
+
+```bash
+go test ./...
+```
+
+## Stretch goals
+
+1. Colorize dirs when stdout is a TTY.
+2. `-R` recursive.
+3. Human sizes (`-h`) in long mode.
+4. Multiple path arguments.
+
+## Pitfalls
+
+| Pitfall | Fix |
+|---------|-----|
+| Locale-dependent sort | document case-fold policy |
+| Following symlinks unexpectedly | `ReadDir` metadata; document |
+| Unstable sort ties | `sort.SliceStable` + name tie-break |
+
+## Learning goals
+
+- Directory listing APIs
+- Formatting operator-friendly tables
+- Flag-driven CLI design

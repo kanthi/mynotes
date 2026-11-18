@@ -1,0 +1,196 @@
+---
+title: '033 Project 33: eBPF Tracepoint Basics'
+---
+
+# 033 Build eBPF Tracepoint Basics
+
+Capture process exec events from `sys_enter_execve` using eBPF: a minimal kernel program, userspace loader with cilium/ebpf, and a perf/ring buffer reader. **Linux lab only**; requires privileges.
+
+```text
+kernel tracepoint -> eBPF program -> perf/ring buffer -> userspace Go reader
+```
+
+## Problem statement
+
+On a Linux VM/lab host:
+
+1. Load a BPF object that attaches to `syscalls/sys_enter_execve`
+2. Emit `{pid, comm}` events to userspace
+3. Print events until Ctrl+C
+4. Detach cleanly on shutdown
+
+## Acceptance criteria
+
+- [ ] Documented toolchain install (clang, llvm, bpf2go or prebuilt)
+- [ ] Userspace program loads, attaches, reads events
+- [ ] Running `ls` / `echo` produces lines
+- [ ] SIGINT stops without kernel leftover panic (best-effort detach)
+- [ ] Clear notes if hardware/CI cannot run BPF
+
+## Setup
+
+```bash
+# Debian/Ubuntu-ish lab
+sudo apt-get install -y clang llvm libbpf-dev linux-headers-$(uname -r)
+
+mkdir ebpf-trace && cd ebpf-trace
+go mod init example.com/ebpf-trace
+go get github.com/cilium/ebpf@latest
+go install github.com/cilium/ebpf/cmd/bpf2go@latest
+# go 1.27
+```
+
+## Kernel program `exec.bpf.c` (sketch)
+
+```c
+//go:build ignore
+
+#include "vmlinux.h"
+#include <bpf/bpf_helpers.h>
+
+char LICENSE[] SEC("license") = "Dual BSD/GPL";
+
+struct event {
+	__u32 pid;
+	char comm[16];
+};
+
+struct {
+	__uint(type, BPF_MAP_TYPE_PERF_EVENT_ARRAY);
+	__uint(key_size, sizeof(__u32));
+	__uint(value_size, sizeof(__u32));
+} events SEC(".maps");
+
+SEC("tracepoint/syscalls/sys_enter_execve")
+int handle_exec(struct trace_event_raw_sys_enter *ctx) {
+	struct event e = {};
+	e.pid = bpf_get_current_pid_tgid() >> 32;
+	bpf_get_current_comm(&e.comm, sizeof(e.comm));
+	bpf_perf_event_output(ctx, &events, BPF_F_CURRENT_CPU, &e, sizeof(e));
+	return 0;
+}
+```
+
+Generate bindings (names vary by bpf2go version):
+
+```bash
+go generate ./...
+# //go:generate bpf2go -cc clang -cflags "-O2 -g -Wall" bpf exec.bpf.c -- -I/usr/include
+```
+
+## Userspace `main.go`
+
+```go
+package main
+
+import (
+	"bytes"
+	"encoding/binary"
+	"fmt"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
+
+	"github.com/cilium/ebpf/link"
+	"github.com/cilium/ebpf/perf"
+	"github.com/cilium/ebpf/rlimit"
+)
+
+type event struct {
+	Pid  uint32
+	Comm [16]byte
+}
+
+func main() {
+	// Allow the current process to lock memory for eBPF maps.
+	if err := rlimit.RemoveMemlock(); err != nil {
+		log.Fatal(err)
+	}
+
+	objs := bpfObjects{}
+	if err := loadBpfObjects(&objs, nil); err != nil {
+		log.Fatalf("load: %v", err)
+	}
+	defer objs.Close()
+
+	tp, err := link.Tracepoint("syscalls", "sys_enter_execve", objs.HandleExec, nil)
+	if err != nil {
+		log.Fatalf("attach: %v", err)
+	}
+	defer tp.Close()
+
+	rd, err := perf.NewReader(objs.Events, os.Getpagesize())
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rd.Close()
+
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-sig
+		_ = rd.Close()
+	}()
+
+	fmt.Println("listening for execve; Ctrl+C to stop")
+	for {
+		rec, err := rd.Read()
+		if err != nil {
+			break
+		}
+		if rec.LostSamples != 0 {
+			fmt.Fprintf(os.Stderr, "lost %d samples\n", rec.LostSamples)
+		}
+		var e event
+		if err := binary.Read(bytes.NewBuffer(rec.RawSample), binary.LittleEndian, &e); err != nil {
+			continue
+		}
+		fmt.Printf("pid=%d comm=%s\n", e.Pid, bytes.TrimRight(e.Comm[:], "\x00"))
+	}
+}
+```
+
+> **Note:** `bpfObjects`, `loadBpfObjects`, and field names come from `bpf2go` output. Adjust to your generated API (`objs.HandleExec` vs `objs.bpfPrograms.HandleExec`).
+
+## Step-by-step build path
+
+1. Install kernel headers + clang.
+2. Write minimal `.bpf.c` with one tracepoint.
+3. `bpf2go` generate Go + embed.
+4. Load, attach, read perf events.
+5. Add filtering (UID, comm prefix) next.
+
+## Run and verification
+
+```bash
+go generate ./...
+go build -o ebpf-trace .
+sudo ./ebpf-trace
+# other terminal:
+ls /tmp; echo hi
+# expect comm lines for shell tools
+```
+
+## Pitfalls
+
+| Pitfall | Fix |
+|---------|-----|
+| macOS/Windows host | use Linux VM |
+| Missing CAP_BPF/root | sudo or capabilities |
+| Header/vmlinux mismatch | generate vmlinux.h via bpftool |
+| Lost samples | larger perf buffer; reduce event rate |
+| License section missing | BPF verifier rejects |
+
+## Stretch goals
+
+1. Include filename from execve args (careful helper limits).
+2. Switch to ringbuf map.
+3. Filter by cgroup.
+4. Export Prometheus counters of execs/sec.
+
+## Learning goals
+
+- Event-driven observability near the kernel
+- Userspace loader lifecycle
+- Safe iteration practices for low-level tooling

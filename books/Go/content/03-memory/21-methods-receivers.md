@@ -1,0 +1,317 @@
+---
+title: Methods and Receivers
+---
+
+# Methods and Receivers
+
+## Overview
+
+Methods are functions with a receiver argument, allowing you to define behavior on types.
+
+## Method Syntax
+
+```go
+type Rectangle struct {
+    Width, Height float64
+}
+
+func (r Rectangle) Area() float64 {
+    return r.Width * r.Height
+}
+
+rect := Rectangle{10, 5}
+area := rect.Area()  // 50
+```
+
+## Value vs Pointer Receivers
+
+### Value Receiver
+
+```go
+func (r Rectangle) Scale(factor float64) Rectangle {
+    return Rectangle{r.Width * factor, r.Height * factor}
+}
+
+// Original unchanged
+r := Rectangle{10, 5}
+scaled := r.Scale(2)  // New rectangle
+```
+
+### Pointer Receiver
+
+```go
+func (r *Rectangle) ScaleInPlace(factor float64) {
+    r.Width *= factor
+    r.Height *= factor
+}
+
+// Original modified
+r := Rectangle{10, 5}
+r.ScaleInPlace(2)  // r is now {20, 10}
+```
+
+## When to Use Pointer Receivers
+
+Use pointer receiver when:
+- Method needs to modify the receiver
+- Receiver is a large struct (avoid copying)
+- Consistency: if any method needs pointer, use pointer for all
+
+```go
+type Buffer struct {
+    data []byte
+}
+
+func (b *Buffer) Write(p []byte) {
+    b.data = append(b.data, p...)
+}
+
+func (b *Buffer) String() string {
+    return string(b.data)  // Even though it doesn't modify, use * for consistency
+}
+```
+
+## Methods on Any Type
+
+```go
+type MyInt int
+
+func (m MyInt) Double() MyInt {
+    return m * 2
+}
+
+n := MyInt(5)
+n.Double()  // 10
+```
+
+## Automatic Dereferencing
+
+Go automatically handles `*` and `&` for method calls:
+
+```go
+r := Rectangle{10, 5}
+(&r).ScaleInPlace(2)  // Explicit pointer
+r.ScaleInPlace(2)     // Go handles it automatically
+
+ptr := &Rectangle{10, 5}
+(*ptr).Area()         // Explicit dereference
+ptr.Area()            // Go handles it automatically
+```
+
+## Embedding and Method Promotion
+
+```go
+type Animal struct {
+    Name string
+}
+
+func (a Animal) Speak() string {
+    return "..."
+}
+
+type Dog struct {
+    Animal  // Embedded
+    Breed string
+}
+
+d := Dog{Animal: Animal{Name: "Rex"}, Breed: "Labrador"}
+d.Speak()  // Promoted method: "..."
+d.Name     // Promoted field: "Rex"
+```
+
+### Method Override
+
+```go
+func (d Dog) Speak() string {
+    return "Woof!"
+}
+
+d.Speak()         // "Woof!" (Dog's method)
+d.Animal.Speak()  // "..." (Animal's method)
+```
+
+## Generic Methods (Go 1.27+)
+
+A method may declare **its own** type parameters. That is different from a method on a generic type, which already existed (`func (s *Stack[T]) Push(T)`):
+
+```go
+type Store struct {
+    items []any
+}
+
+// Method-level type parameter: one Put works for any T.
+func (s *Store) Put[T any](v T) {
+    s.items = append(s.items, v)
+}
+
+func (s *Store) Get[T any](i int) (T, bool) {
+    var zero T
+    if i < 0 || i >= len(s.items) {
+        return zero, false
+    }
+    v, ok := s.items[i].(T)
+    return v, ok
+}
+```
+
+The standard library uses this in `math/rand/v2`: `(*Rand).N[Int intType](n Int) Int` replaces a family of `IntN` / `Int32N` / `Int64N` methods.
+
+**Limits:**
+- Interface methods **cannot** declare type parameters.
+- A generic method **cannot** implement an interface method (the method set is still non-generic).
+- Prefer a package-level generic function when the operation is not naturally namespaced on a type.
+
+## Summary
+
+| Receiver | Use Case |
+|----------|----------|
+| `(t T)` | Read-only, small types |
+| `(t *T)` | Modify state, large types |
+
+| Feature | Description |
+|---------|-------------|
+| Auto-deref | Go handles `*` and `&` |
+| Embedding | Methods are promoted |
+| Override | Inner type's method shadows embedded |
+| Generic methods (1.27+) | Method declares its own type parameters |
+
+## Related Topics
+- [Pointers Explained](23-pointers.md)
+- [Designing with Interfaces](../04-generics/26-interfaces.md)
+- [Why Generics Matter](../04-generics/29-generics-intro.md)
+
+## More examples
+
+### Example: value receiver cannot mutate
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+type Point struct{ X, Y int }
+
+func (p Point) Move(dx, dy int) {
+	p.X += dx
+	p.Y += dy
+}
+
+func main() {
+	p := Point{1, 2}
+	p.Move(10, 10)
+	fmt.Printf("after value Move: %+v\n", p)
+}
+```
+
+Expected:
+
+```text
+after value Move: {X:1 Y:2}
+```
+
+### Example: pointer receiver mutates
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+type Point struct{ X, Y int }
+
+func (p *Point) Move(dx, dy int) {
+	p.X += dx
+	p.Y += dy
+}
+
+func main() {
+	p := Point{1, 2}
+	p.Move(10, 10)
+	fmt.Printf("after pointer Move: %+v\n", p)
+}
+```
+
+Expected:
+
+```text
+after pointer Move: {X:11 Y:12}
+```
+
+## Runnable example
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import "fmt"
+
+type Rectangle struct {
+	Width, Height float64
+}
+
+func (r Rectangle) Area() float64 {
+	return r.Width * r.Height
+}
+
+// Value receiver: returns a new value; original unchanged.
+func (r Rectangle) Scale(factor float64) Rectangle {
+	return Rectangle{r.Width * factor, r.Height * factor}
+}
+
+// Pointer receiver: mutates in place.
+func (r *Rectangle) ScaleInPlace(factor float64) {
+	r.Width *= factor
+	r.Height *= factor
+}
+
+type Animal struct{ Name string }
+
+func (a Animal) Speak() string { return "..." }
+
+type Dog struct {
+	Animal
+	Breed string
+}
+
+func (d Dog) Speak() string { return "Woof!" }
+
+func main() {
+	r := Rectangle{Width: 10, Height: 5}
+	fmt.Println("area:", r.Area())
+
+	scaled := r.Scale(2)
+	fmt.Printf("after Scale: orig=%v scaled=%v\n", r, scaled)
+
+	r.ScaleInPlace(2) // Go passes &r automatically
+	fmt.Printf("after ScaleInPlace: %v\n", r)
+
+	d := Dog{Animal: Animal{Name: "Rex"}, Breed: "Labrador"}
+	fmt.Println("promoted Name:", d.Name)
+	fmt.Println("Dog.Speak:", d.Speak())
+	fmt.Println("Animal.Speak:", d.Animal.Speak())
+}
+```
+
+**Expected output:**
+
+```text
+area: 50
+after Scale: orig={10 5} scaled={20 10}
+after ScaleInPlace: {20 10}
+promoted Name: Rex
+Dog.Speak: Woof!
+Animal.Speak: ...
+```
+
+**What to notice:** Value receivers copy; pointer receivers share the same `Rectangle`. Embedding promotes `Name` and `Speak`, and `Dog.Speak` shadows the embedded method.
+
+**Try next:** Give `Rectangle` a `String() string` method and print with `%v` vs `%s`, or add a value-receiver `ScaleInPlace` (wrongly) and observe that the caller's fields no longer change.

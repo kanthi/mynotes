@@ -1,0 +1,579 @@
+---
+title: Structs and Data Modeling
+---
+
+# Structs and Data Modeling
+
+## Overview
+
+Structs are Go's primary mechanism for creating custom composite types. They group related fields together.
+
+## Defining Structs
+
+```go
+type Person struct {
+    Name    string
+    Age     int
+    Email   string
+    Active  bool
+}
+```
+
+## Creating Instances
+
+```go
+// Zero value
+var p Person  // All fields get zero values
+
+// Literal (named fields - preferred)
+p := Person{
+    Name:  "Alice",
+    Age:   30,
+    Email: "alice@example.com",
+}
+
+// Literal (positional - fragile)
+p := Person{"Alice", 30, "alice@example.com", true}
+
+// Using new
+p := new(Person)  // *Person with zero values
+
+// Expression-based new (Go 1.26+)
+p := new(Person{Name: "Alice"})  // *Person initialized with values
+```
+
+```text
+Embedded fields (composition)
+
+Employee
+|-- Person
+|    |-- Name
+|    |-- Age
+|-- Address
+|    |-- City
+|-- Title
+```
+
+## Accessing Fields
+
+```go
+p.Name = "Bob"
+fmt.Println(p.Age)
+
+// Pointer access (automatic dereference)
+ptr := &p
+ptr.Name = "Carol"  // Same as (*ptr).Name
+```
+
+## Anonymous Structs
+
+```go
+point := struct {
+    X, Y int
+}{10, 20}
+
+// Useful for one-off data
+data := struct {
+    ID    int
+    Value string
+}{1, "test"}
+```
+
+## Embedding (Composition)
+
+Go favors composition over inheritance. When a struct embeds another type anonymously (without an explicit field name), the embedded type's fields and methods are **promoted** to the outer struct:
+
+```go
+type Address struct {
+    City  string
+    State string
+}
+
+type Contact struct {
+    Email string
+    Phone string
+}
+
+type Employee struct {
+    Name string
+    Age  int
+
+    Address // anonymous embedding
+    Contact // anonymous embedding
+}
+```
+
+Because `Address` and `Contact` are embedded anonymously, their fields elevate to `Employee`:
+
+```go
+e := Employee{...}
+
+// Promoted field access (plain dot notation)
+fmt.Println(e.City)  // same as e.Address.City
+fmt.Println(e.Email) // same as e.Contact.Email
+```
+
+### Flattened Struct Literals (Go 1.27+)
+
+For sixteen years (since Go 1.0), field promotion had an annoying asymmetry: once an instance existed, you could read its promoted fields with clean dot notation (`e.City`), yet constructing that same struct required wrapping every embedded type in a "Russian nesting doll":
+
+```go
+// Prior to Go 1.27: the nesting-doll tax
+e := Employee{
+    Name: "Alice",
+    Age:  30,
+    Address: Address{
+        City:  "NYC",
+        State: "NY",
+    },
+    Contact: Contact{
+        Email: "alice@example.com",
+        Phone: "555-0100",
+    },
+}
+```
+
+This structural wrapping created visual friction and rightward drift, especially in deeply nested configurations, data transfer objects (DTOs), and test fixtures.
+
+Originating in proposal [#9859](https://github.com/golang/go/issues/9859) (first opened in 2015), **Go 1.27 flattens struct literal construction**. Any unambiguously promoted field can now serve directly as a key in composite literals:
+
+```go
+// Go 1.27+: flattened composite literal
+e := Employee{
+    Name:  "Bob",
+    Age:   25,
+    City:  "LA",              // promoted from Address
+    State: "CA",              // promoted from Address
+    Email: "bob@example.com", // promoted from Contact
+    Phone: "555-0200",        // promoted from Contact
+}
+```
+
+This reduces boilerplate by over 30%, eliminates redundant type wrappers, and brings symmetry to Go's mental model: if you read a field with `e.City`, you can initialize it with `City: "LA"`.
+
+### Multi-Level Flattening
+
+Flattening is not limited to a single level of embedding. Any field that elevates unambiguously under Go's promotion rules can serve as an initialization key across multiple layers:
+
+```go
+type Coordinates struct {
+    Latitude  float64
+    Longitude float64
+}
+
+type Location struct {
+    Coordinates // depth 1
+    Altitude    float64
+}
+
+type Site struct {
+    Name     string
+    Location // depth 2
+}
+```
+
+Prior to Go 1.27, initializing `Site` required three layers of braces:
+
+```go
+// Legacy: 3 layers of nested boilerplate (14 lines)
+s := Site{
+    Name: "Data Center Alpha",
+    Location: Location{
+        Coordinates: Coordinates{
+            Latitude:  40.7128,
+            Longitude: -74.0060,
+        },
+        Altitude: 10.5,
+    },
+}
+```
+
+In Go 1.27+, all intermediate wrappers vanish into flat key-value pairs:
+
+```go
+// Go 1.27+: multi-level flattened literal (6 lines, 57% reduction)
+s := Site{
+    Name:      "Data Center Alpha",
+    Latitude:  40.7128,
+    Longitude: -74.0060,
+    Altitude:  10.5,
+}
+```
+
+### Configuration Structs and Information Density
+
+The ergonomic benefit is most pronounced in nested configuration structs, where structural wrappers often obscure actual values:
+
+```go
+type DatabaseConfig struct {
+    Host     string
+    Port     int
+    Name     string
+    SSL      bool
+    MaxConns int
+}
+
+type CacheConfig struct {
+    TTL     int
+    MaxSize int
+}
+
+type AppConfig struct {
+    DatabaseConfig
+    CacheConfig
+}
+
+// Go 1.27: clear, high-density configuration
+cfg := AppConfig{
+    Host:     "localhost",
+    Port:     5432,
+    Name:     "app_db",
+    SSL:      true,
+    MaxConns: 100,
+    TTL:      300,
+    MaxSize:  256,
+}
+```
+
+Rather than reading structural plumbing (`DatabaseConfig: DatabaseConfig{...}`), readers immediately see the actionable values (`Host`, `Port`, `TTL`).
+
+### Ambiguity: When the Compiler Refuses to Guess
+
+Flattened initialization follows Go's existing field promotion collision rules. If two embedded structs define a field with the exact same name at the same embedding depth, the field is **not** promoted:
+
+```go
+type DatabaseConfig struct {
+    Host string
+    Port int
+}
+
+type CacheConfig struct {
+    Host string
+    TTL  int
+}
+
+type AppConfig struct {
+    DatabaseConfig
+    CacheConfig
+}
+```
+
+Attempting to initialize the ambiguous field using the flat syntax:
+
+```go
+cfg := AppConfig{
+    Host: "localhost", // compile error!
+}
+```
+
+Fails at compile time with a clear diagnostic:
+
+```text
+unknown field Host in struct literal of type AppConfig
+```
+
+Because `Host` exists in both `DatabaseConfig` and `CacheConfig` at depth 1, the compiler refuses to guess which embedded struct should receive the value. In ambiguous scenarios, you must explicitly disambiguate by using the nested literal:
+
+```go
+cfg := AppConfig{
+    DatabaseConfig: DatabaseConfig{
+        Host: "db.internal",
+        Port: 5432,
+    },
+    CacheConfig: CacheConfig{
+        Host: "cache.internal",
+        TTL:  300,
+    },
+}
+```
+
+### Strict Guardrail: No Split Initialization
+
+Go enforces a strict compiler guardrail: you **cannot mix** promoted fields with their enclosing embedded struct literal in the same composite literal.
+
+```go
+// ILLEGAL: mixing promoted field and enclosing embedded struct
+cfg := AppConfig{
+    DatabaseConfig: DatabaseConfig{Host: "localhost"},
+    Port:           5432, // compile error!
+}
+```
+
+The compiler halts compilation with an explicit error:
+
+```text
+cannot specify promoted field Port and enclosing embedded field DatabaseConfig
+```
+
+Even though `Host` and `Port` do not collide, Go forbids splitting initialization across structural boundaries. You must choose one convention per embedded type: either initialize the embedded struct explicitly, or initialize its promoted fields from the outer literal.
+
+### Automated Migration with `go fix -embedlit`
+
+You do not need to rewrite legacy nested composite literals by hand. Go 1.27 introduces the `embedlit` modernizer analyzer integrated into `go fix`:
+
+```bash
+# Preview proposed literal simplifications across your module
+go fix -embedlit -diff ./...
+
+# Apply automatic simplifications in place
+go fix -embedlit ./...
+```
+
+The `embedlit` analyzer safely identifies composite literals where nested embedded type wrappers are redundant, modernizing the code while verifying that no field name collisions occur.
+
+### When to Keep Nesting
+
+Flattened initialization is the sensible default for configs, DTOs, and test fixtures, but nested construction remains valuable in specific architectural scenarios:
+
+1. **Resolving Ambiguities**: When embedded types have colliding field names at the same depth.
+2. **Explicit Domain Boundaries**: In large structs with dozens of options (e.g., 30+ database parameters), grouping options inside `DatabaseConfig: DatabaseConfig{...}` signals to readers that those values belong to a distinct subsystem.
+3. **Partial Initialization of Embedded Subsystems**: When reusing or passing an existing pre-allocated instance of an embedded struct directly into the constructor.
+
+## Struct Tags
+
+Metadata for serialization and other tools:
+
+```go
+type User struct {
+    ID        int    `json:"id" db:"user_id"`
+    Name      string `json:"name,omitempty"`
+    Password  string `json:"-"`  // Omit from JSON
+    CreatedAt time.Time `json:"created_at"`
+}
+```
+
+### Reading Tags
+
+```go
+import "reflect"
+
+t := reflect.TypeOf(User{})
+field, _ := t.FieldByName("Name")
+tag := field.Tag.Get("json")  // "name,omitempty"
+```
+
+## Comparison
+
+Structs are comparable if all fields are comparable:
+
+```go
+p1 := Person{Name: "Alice"}
+p2 := Person{Name: "Alice"}
+p1 == p2  // true
+```
+
+## Constructors
+
+Go uses factory functions:
+
+```go
+func NewPerson(name string, age int) *Person {
+    return &Person{
+        Name:   name,
+        Age:    age,
+        Active: true,  // Default
+    }
+}
+
+func NewPersonWithDefaults() *Person {
+    return &Person{
+        Active: true,
+    }
+}
+```
+
+## Summary
+
+| Pattern | Usage |
+|---------|-------|
+| Define | `type Name struct { fields }` |
+| Create | `Name{Field: value}` |
+| Embed | Include type name without field name |
+| Tags | `Field Type \`key:"value"\`` |
+| Constructor | `func NewType() *Type` |
+
+## Related Topics
+- [Methods and Receivers](../03-memory/21-methods-receivers.md)
+- [Designing with Interfaces](../04-generics/26-interfaces.md)
+
+## More examples
+
+### Example: literal and field access
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+type User struct {
+	Name string
+	Age  int
+}
+
+func main() {
+	u := User{Name: "ada", Age: 36}
+	fmt.Printf("%+v\n", u)
+	u.Age++
+	fmt.Println("age:", u.Age)
+}
+```
+
+Expected:
+
+```text
+{Name:ada Age:36}
+age: 37
+```
+
+### Example: embedding promotes fields
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+type Address struct {
+	City string
+}
+
+type Person struct {
+	Name string
+	Address
+}
+
+func main() {
+	p := Person{Name: "lin", Address: Address{City: "Berlin"}}
+	fmt.Println(p.Name, "in", p.City) // promoted field
+}
+```
+
+Expected:
+
+```text
+lin in Berlin
+```
+
+## Runnable example
+
+Save as `main.go`. From an empty directory:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"reflect"
+)
+
+type Address struct {
+	Street string
+	City   string
+}
+
+type Person struct {
+	Name string
+	Age  int
+}
+
+type Employee struct {
+	Person  // embedded
+	Address // embedded
+	Title   string
+}
+
+type User struct {
+	ID       int    `json:"id"`
+	Name     string `json:"name,omitempty"`
+	Password string `json:"-"`
+}
+
+func NewEmployee(name, title, city string) *Employee {
+	return &Employee{
+		Person:  Person{Name: name, Age: 0},
+		Address: Address{City: city},
+		Title:   title,
+	}
+}
+
+func main() {
+	var zero Person
+	fmt.Printf("zero person: %+v\n", zero)
+
+	e := NewEmployee("Ada", "Engineer", "London")
+	e.Age = 36 // promoted field
+	fmt.Printf("employee: name=%s title=%s city=%s age=%d\n", e.Name, e.Title, e.City, e.Age)
+
+	// Go 1.27+: flattened struct literal initialization of promoted fields
+	e2 := Employee{
+		Name:  "Bob",
+		Age:   28,
+		City:  "Cambridge",
+		Title: "Staff Engineer",
+	}
+	fmt.Printf("flattened employee: name=%s title=%s city=%s age=%d\n", e2.Name, e2.Title, e2.City, e2.Age)
+
+	// Pointer field access auto-dereferences
+	p := &Person{Name: "Grace", Age: 85}
+	p.Age++
+	fmt.Printf("pointer person: %+v\n", p)
+
+	// Anonymous struct for one-off data
+	point := struct{ X, Y int }{10, 20}
+	fmt.Printf("point=(%d,%d)\n", point.X, point.Y)
+
+	// Comparable when all fields are comparable
+	a := Person{Name: "Ada", Age: 36}
+	b := Person{Name: "Ada", Age: 36}
+	fmt.Println("a==b?", a == b)
+
+	// Tags for JSON + reflection
+	u := User{ID: 7, Name: "Ada", Password: "secret"}
+	raw, err := json.Marshal(u)
+	if err != nil {
+		fmt.Println("json error:", err)
+		return
+	}
+	fmt.Println("json:", string(raw))
+
+	t := reflect.TypeOf(User{})
+	if f, ok := t.FieldByName("Name"); ok {
+		fmt.Println("Name tag:", f.Tag.Get("json"))
+	}
+	if f, ok := t.FieldByName("Password"); ok {
+		fmt.Println("Password tag:", f.Tag.Get("json"))
+	}
+}
+```
+
+**Expected output** (illustrative):
+
+```text
+zero person: {Name: Age:0}
+employee: name=Ada title=Engineer city=London age=36
+flattened employee: name=Bob title=Staff Engineer city=Cambridge age=28
+pointer person: &{Name:Grace Age:86}
+point=(10,20)
+a==b? true
+json: {"id":7,"name":"Ada"}
+Name tag: name,omitempty
+Password tag: -
+```
+
+**What to notice:**
+- Embedding promotes fields (`e.Name`, `e.City`) without classical inheritance.
+- Go 1.27+ flattened struct literals allow initializing promoted fields (`Name`, `Age`, `City`) directly on `Employee` without nesting `Person` or `Address`.
+- Factory `NewEmployee` sets defaults; zero `Person` is still valid.
+- JSON tags control names, omitempty, and secrets (`json:"-"`).
+- Struct equality works when every field is comparable.
+
+**Try next:** Set `Name` to `""` and remarshal—observe `omitempty` dropping the field.

@@ -1,0 +1,187 @@
+---
+title: '039 Project 39: Prometheus Alert Rule Tester'
+---
+
+# 039 Build a Prometheus Alert Rule Tester
+
+Evaluate synthetic metric streams against threshold rules with a **for**-style duration (consecutive steps). This teaches alert flapping, hysteresis, and unit-testing rules without a live Prometheus.
+
+```text
+values[] + threshold + forSteps -> streak -> alert bool per tick
+```
+
+## Problem statement
+
+Given:
+
+- A series of float samples (CPU%, error rate, …)
+- `threshold` and `forSteps` (like `for: 3m` if step=1m)
+- Emit per-tick: value, streak, alert firing?
+
+Also support loading samples from a CSV file.
+
+## Acceptance criteria
+
+- [ ] Alert fires only after `forSteps` consecutive breaches
+- [ ] Streak resets when value drops to/ below threshold
+- [ ] Pure function is unit-tested
+- [ ] CLI demo with built-in series
+- [ ] Stdlib only
+
+## Setup
+
+```bash
+mkdir alertrule && cd alertrule
+go mod init example.com/alertrule
+# go 1.27
+```
+
+## Full `main.go`
+
+```go
+package main
+
+import (
+	"encoding/csv"
+	"flag"
+	"fmt"
+	"io"
+	"os"
+	"strconv"
+)
+
+// shouldAlert updates streak based on value and returns whether alert is firing.
+// Pass streak by pointer so callers keep state across ticks.
+func shouldAlert(v, threshold float64, forSteps int, streak *int) bool {
+	if v > threshold {
+		*streak++
+	} else {
+		*streak = 0
+	}
+	return *streak >= forSteps
+}
+
+func evalSeries(vals []float64, threshold float64, forSteps int) []bool {
+	out := make([]bool, len(vals))
+	streak := 0
+	for i, v := range vals {
+		out[i] = shouldAlert(v, threshold, forSteps, &streak)
+	}
+	return out
+}
+
+func loadCSV(path string) ([]float64, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	r := csv.NewReader(f)
+	var vals []float64
+	for {
+		rec, err := r.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		if len(rec) == 0 {
+			continue
+		}
+		v, err := strconv.ParseFloat(rec[0], 64)
+		if err != nil {
+			continue // skip header/bad
+		}
+		vals = append(vals, v)
+	}
+	return vals, nil
+}
+
+func main() {
+	threshold := flag.Float64("threshold", 85, "alert if value > threshold")
+	forSteps := flag.Int("for", 3, "consecutive steps above threshold")
+	csvPath := flag.String("csv", "", "optional CSV of values (first column)")
+	flag.Parse()
+
+	vals := []float64{70, 82, 90, 88, 91, 72, 95, 96, 97}
+	if *csvPath != "" {
+		var err error
+		vals, err = loadCSV(*csvPath)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+	}
+
+	streak := 0
+	fmt.Printf("threshold=%.1f for=%d steps\n", *threshold, *forSteps)
+	for i, v := range vals {
+		alert := shouldAlert(v, *threshold, *forSteps, &streak)
+		fmt.Printf("t=%d val=%5.1f streak=%d alert=%v\n", i, v, streak, alert)
+	}
+}
+```
+
+## Run and verification
+
+```bash
+go run .
+# t=0..  alert becomes true once streak hits 3
+
+# CSV:
+printf '10\n90\n91\n92\n50\n' > s.csv
+go run . -csv s.csv -threshold 85 -for 3
+```
+
+## Tests
+
+```go
+package main
+
+import "testing"
+
+func TestForDuration(t *testing.T) {
+	vals := []float64{90, 90, 90, 10}
+	got := evalSeries(vals, 85, 3)
+	want := []bool{false, false, true, false}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("i=%d got %v want %v", i, got, want)
+		}
+	}
+}
+
+func TestReset(t *testing.T) {
+	vals := []float64{90, 10, 90, 90}
+	got := evalSeries(vals, 85, 2)
+	if got[1] || got[2] || !got[3] {
+		t.Fatalf("%v", got)
+	}
+}
+```
+
+```bash
+go test ./...
+```
+
+## Stretch goals
+
+1. Dual thresholds (warn vs critical).
+2. `avg_over_time` style window instead of consecutive.
+3. Parse a tiny subset of Prometheus rule YAML.
+4. Generate a markdown alert timeline for PR review.
+
+## Pitfalls
+
+| Pitfall | Fix |
+|---------|-----|
+| Firing on first sample | enforce forSteps |
+| Off-by-one streak | unit tests with tables |
+| Flapping | longer for + cool-down (stretch) |
+
+## Learning goals
+
+- Alert `for` duration semantics
+- Deterministic rule testing
+- Avoiding noisy pages with streaks

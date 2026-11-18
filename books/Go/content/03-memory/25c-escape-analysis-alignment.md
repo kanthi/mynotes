@@ -1,0 +1,263 @@
+---
+title: Escape Analysis & Alignment
+---
+
+# Escape Analysis & Memory Alignment
+
+Memory optimization usually comes down to two questions:
+1.  Did it hit the heap when it didn't need to? (Excessive allocation)
+2.  Is it wasting space? (Poor alignment)
+
+## Part 1: Escape Analysis
+
+"Escape Analysis" is the compiler phase that decides Stack vs. Heap.
+
+### Asking the Compiler
+You don't need to guess. Ask the compiler what it decided:
+
+```bash
+go build -gcflags="-m" main.go
+```
+
+**Output Interpretation:**
+*   `can inline main`: Good.
+*   `x does not escape`: Great (Stack).
+*   `moved to heap: x`: Bad (Heap).
+
+### Common Escape Triggers
+1.  **Returning Pointers:** `func New() *T { return &T{} }` -> Escapes.
+2.  **Interfaces:** `func Log(v interface{})`. The concrete type inside the interface box often escapes.
+3.  **Closures:** Variables captured by a closure *might* escape if the closure outlives the function.
+4.  **Unknown Size:** `make([]int, n)` always escapes if `n` is dynamic.
+
+### The "Mid-Stack" Trick
+If you need a large buffer inside a hot loop, allocate it *once* outside the loop or reuse a `sync.Pool`.
+*   **Bad:** `for { b := make([]byte, 1024); process(b) }` (Trash on heap every loop)
+*   **Better:** `b := make([]byte, 1024); for { process(b) }` (One alloc)
+*   **Best (Stack):** `b := [1024]byte{}; for { process(b[:]) }` (Stack alloc if small enough)
+
+---
+
+## Part 2: Memory Alignment (Padding)
+
+CPU reads memory in words (e.g., 64-bit / 8 bytes). If a field doesn't align with a word boundary, the compiler adds **Padding** (wasted bytes).
+
+### The Struct Layout Game
+
+Consider this struct:
+```go
+type BadStruct struct {
+    Flag    bool    // 1 byte
+    Counter int64   // 8 bytes
+    Active  bool    // 1 byte
+}
+```
+**Total Size:**
+*   `bool` (1) + `padding` (7) -> to align `int64`
+*   `int64` (8)
+*   `bool` (1) + `padding` (7) -> to align struct size to 8
+*   **Total:** 24 bytes
+
+**Reshuffled:**
+```go
+type GoodStruct struct {
+    Counter int64   // 8 bytes (0-7)
+    Flag    bool    // 1 byte  (8)
+    Active  bool    // 1 byte  (9)
+    // padding (6) -> to align struct size to multiple of 8 (16)
+}
+```
+**Total:** 16 bytes. **33% savings just by reordering fields.**
+
+### Tools used in 2026
+Do not optimize manually unless you are bored. Use tools.
+
+*   **`fieldalignment`**:
+    ```bash
+    go install golang.org/x/tools/go/analysis/passes/fieldalignment/cmd/fieldalignment@latest
+    fieldalignment ./...
+    ```
+    It will report structs that use too much memory and suggest a fix.
+
+*   **`betteralign`**: A more modern wrapper that can automatically apply changes (`-apply`).
+
+### When does this matter?
+*   **Single struct:** Who cares? 8 bytes is nothing.
+*   **Slice of 100 million structs:** 8 bytes * 100M = 800MB of RAM wasted. This triggers GC more often, costs money on cloud bills, and slows down cache.
+
+**Rule:** Optimize alignment for "Data Types" (things you store in DB/Arrays). Ignore it for "Service Types" (singletons, handlers).
+
+## More examples
+
+### Example: measure padding with `unsafe.Sizeof`
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import (
+	"fmt"
+	"unsafe"
+)
+
+type Wide struct {
+	A bool
+	B int64
+	C bool
+	D int32
+}
+
+type Tight struct {
+	B int64
+	D int32
+	A bool
+	C bool
+}
+
+func main() {
+	fmt.Println("Wide:", unsafe.Sizeof(Wide{}))
+	fmt.Println("Tight:", unsafe.Sizeof(Tight{}))
+	fmt.Println("saved bytes:", int(unsafe.Sizeof(Wide{})-unsafe.Sizeof(Tight{})))
+}
+```
+
+Expected (64-bit; illustrative):
+
+```text
+Wide: 24
+Tight: 16
+saved bytes: 8
+```
+
+### Example: reuse buffer vs allocate every loop
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func process(b []byte) int {
+	sum := 0
+	for _, x := range b {
+		sum += int(x)
+	}
+	return sum
+}
+
+func main() {
+	// Better: one allocation reused (or stack array as view).
+	var stack [8]byte
+	buf := stack[:]
+	total := 0
+	for i := 0; i < 3; i++ {
+		for j := range buf {
+			buf[j] = byte(i + j)
+		}
+		total += process(buf)
+	}
+	fmt.Println("reused total:", total)
+
+	// Contrasting pattern (educational): allocate each iteration.
+	total = 0
+	for i := 0; i < 3; i++ {
+		b := make([]byte, 8)
+		for j := range b {
+			b[j] = byte(i + j)
+		}
+		total += process(b)
+	}
+	fmt.Println("alloc-each total:", total)
+}
+```
+
+Expected:
+
+```text
+reused total: 108
+alloc-each total: 108
+```
+
+## Runnable example
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+# go build -gcflags="-m" .
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"unsafe"
+)
+
+// Bad order: bools separated by int64 force padding.
+type BadStruct struct {
+	Flag    bool
+	Counter int64
+	Active  bool
+}
+
+// Better order: large fields first, bools packed together.
+type GoodStruct struct {
+	Counter int64
+	Flag    bool
+	Active  bool
+}
+
+// Escape triggers: return pointer, interface boxing, open-ended make.
+func newCounter() *int {
+	n := 1
+	return &n // escapes
+}
+
+func boxAndPrint(v any) {
+	// Interface conversion often forces heap allocation of the concrete value.
+	_ = fmt.Sprintf("%v", v)
+}
+
+func main() {
+	fmt.Println("sizeof BadStruct:", unsafe.Sizeof(BadStruct{}))
+	fmt.Println("sizeof GoodStruct:", unsafe.Sizeof(GoodStruct{}))
+
+	// Live use of escaped values so the compiler cannot drop them entirely.
+	c := newCounter()
+	fmt.Println("escaped counter:", *c)
+
+	x := 42
+	boxAndPrint(x)
+
+	// Unknown size → typically heap.
+	n := 32
+	buf := make([]byte, n)
+	buf[0] = 7
+	fmt.Println("dynamic buffer first byte:", buf[0])
+
+	// Stack-friendly pattern: fixed array reused as a slice view.
+	var stackBuf [32]byte
+	view := stackBuf[:]
+	view[0] = 9
+	fmt.Println("stack-ish view first byte:", view[0])
+}
+```
+
+**Expected output:** (sizes are for 64-bit Go; 32-bit differs)
+
+```text
+sizeof BadStruct: 24
+sizeof GoodStruct: 16
+escaped counter: 1
+dynamic buffer first byte: 7
+stack-ish view first byte: 9
+```
+
+**What to notice:** Field order changes padding and total size without changing semantics. Returning `&n` and boxing into `any` are classic escape triggers; a fixed `[N]byte` reused as `[:]` is a common stack-friendly hot-path pattern.
+
+**Try next:** Reorder another struct (`byte`, `int64`, `byte`, `int32`) and recompute sizes; run `-gcflags="-m"` and match each "moved to heap" line to a trigger above.

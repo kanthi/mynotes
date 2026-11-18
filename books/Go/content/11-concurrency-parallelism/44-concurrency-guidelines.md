@@ -1,0 +1,315 @@
+---
+title: Concurrency Design Guidelines
+---
+
+# Concurrency Design Guidelines
+
+## Overview
+
+Concurrency can introduce subtle bugs. Follow these guidelines to write safe concurrent code.
+
+## Share by Communicating
+
+```go
+// Prefer: communicate over channels
+result := <-worker.Results()
+
+// Avoid: shared memory with locks
+mu.Lock()
+result := sharedData
+mu.Unlock()
+```
+
+## Avoid Goroutine Leaks
+
+```go
+// Bad: goroutine leaks if nobody receives
+go func() {
+    ch <- result  // Blocks forever
+}()
+
+// Good: use context cancellation
+go func() {
+    select {
+    case ch <- result:
+    case <-ctx.Done():
+    }
+}()
+```
+
+## Always Close Channels from Sender
+
+```go
+// Producer closes
+func producer(out chan<- int) {
+    for i := 0; i < 10; i++ {
+        out <- i
+    }
+    close(out)  // Only sender closes
+}
+
+// Consumer ranges
+for v := range in {
+    process(v)
+}
+```
+
+## Race Detection
+
+```bash
+go test -race ./...
+go run -race main.go
+```
+
+Pair race testing with source analysis. GoHawk checks resource cleanup,
+cancellation ownership, and recognizable goroutine completion obligations.
+Follow the [GoHawk setup and exercise](../23-performance-tooling/03-static-analysis.md#gohawk-resource-and-concurrency-checks)
+to add it to a module. Review who cancels and who waits on every return path;
+a clean analyzer run does not prove that all goroutines terminate.
+
+## Common Patterns
+
+### Worker Pool
+
+```go
+jobs := make(chan Job)
+for i := 0; i < workers; i++ {
+    go worker(jobs)
+}
+```
+
+### Bounded Concurrency
+
+```go
+sem := make(chan struct{}, maxConcurrent)
+
+for _, task := range tasks {
+    sem <- struct{}{}
+    go func(t Task) {
+        defer func() { <-sem }()
+        process(t)
+    }(task)
+}
+```
+
+## Deadlock Prevention
+
+```go
+// Deadlock: circular wait
+ch := make(chan int)
+ch <- 1    // Blocks: no receiver
+<-ch       // Never reached
+
+// Fix: buffer or separate goroutine
+ch := make(chan int, 1)
+ch <- 1
+<-ch
+```
+
+## Summary
+
+| Guideline | Reason |
+|-----------|--------|
+| Share by communicating | Clearer ownership |
+| Use context for cancellation | Prevent leaks |
+| Only sender closes | Avoid panic |
+| Run race detector | Catch data races |
+
+## Worked example
+
+Ownership: only the sender closes; consumers range safely.
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+go run -race .
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+func produce(n int) <-chan int {
+	out := make(chan int)
+	go func() {
+		defer close(out) // sender closes
+		for i := 1; i <= n; i++ {
+			out <- i
+		}
+	}()
+	return out
+}
+
+func main() {
+	in := produce(5)
+	var wg sync.WaitGroup
+	sum := 0
+	var mu sync.Mutex
+
+	// Fan-out consumers; channel close ends all ranges.
+	for c := 0; c < 2; c++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for v := range in {
+				mu.Lock()
+				sum += v
+				mu.Unlock()
+			}
+		}()
+	}
+	wg.Wait()
+	fmt.Println("sum 1..5:", sum)
+}
+```
+
+**Expected output:**
+
+```text
+sum 1..5: 15
+```
+
+## More examples
+
+Detect a deliberate data race (educational—expect FAIL under `-race`).
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+func main() {
+	// Correct version first.
+	var (
+		mu    sync.Mutex
+		count int
+		wg    sync.WaitGroup
+	)
+	for i := 0; i < 100; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			mu.Lock()
+			count++
+			mu.Unlock()
+		}()
+	}
+	wg.Wait()
+	fmt.Println("safe count:", count)
+}
+```
+
+**Expected output:**
+
+```text
+safe count: 100
+```
+
+## Runnable example
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"sync"
+	"time"
+)
+
+// safeSend never leaks a goroutine when the consumer walks away.
+func safeSend(ctx context.Context, ch chan<- int, v int) {
+	select {
+	case ch <- v:
+	case <-ctx.Done():
+		// drop result; exit without blocking forever
+	}
+}
+
+func main() {
+	// Bounded concurrency with a semaphore channel
+	const maxConcurrent = 2
+	sem := make(chan struct{}, maxConcurrent)
+	var wg sync.WaitGroup
+
+	tasks := []string{"a", "b", "c", "d", "e"}
+	var mu sync.Mutex
+	var order []string
+
+	for _, t := range tasks {
+		wg.Add(1)
+		go func(task string) {
+			defer wg.Done()
+			sem <- struct{}{}        // acquire
+			defer func() { <-sem }() // release
+
+			// critical/limited work
+			mu.Lock()
+			order = append(order, task)
+			mu.Unlock()
+		}(t)
+	}
+	wg.Wait()
+	fmt.Println("processed tasks:", len(order))
+
+	// Avoid goroutine leak: context cancels a blocked send
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Millisecond)
+	defer cancel()
+
+	ch := make(chan int) // unbuffered, no receiver → would block
+	var senderWG sync.WaitGroup
+	senderWG.Add(1)
+	go func() {
+		defer senderWG.Done()
+		safeSend(ctx, ch, 99)
+		fmt.Println("sender exited without leak")
+	}()
+	senderWG.Wait()
+
+	// Only the sender closes; consumer ranges until closed
+	out := make(chan int, 3)
+	go func() {
+		for i := 1; i <= 3; i++ {
+			out <- i
+		}
+		close(out) // sender closes
+	}()
+	sum := 0
+	for v := range out {
+		sum += v
+	}
+	fmt.Println("ranged sum:", sum)
+}
+```
+
+**Expected output:**
+
+```text
+processed tasks: 5
+sender exited without leak
+ranged sum: 6
+```
+
+**What to notice:** The semaphore bounds *execution*, not just intention. `select` on `ctx.Done()` is the standard way to stop a blocked send/receive. Closing from the receiver (or twice) panics—ownership stays with the sender.
+
+**Try next:** Run `go run -race .`. Temporarily remove the `ctx.Done()` case and see the program hang until you kill it.
+
+## Related Topics
+- [Synchronization](42-synchronization.md)
+- [Context and Cancellation](43-context.md)

@@ -1,0 +1,267 @@
+book:
+  title: C
+  author: K19G
+  date: '2026-11-17'
+  description: 'C17: a modular library and workbook'
+  chapters:
+  - index.md
+  - part: Intro
+    contents:
+    - content/00-intro/00-intro.md
+  - part: Foundations
+    contents:
+    - content/01-foundations/01-intro-to-c.md
+    - content/01-foundations/02-dev-environment.md
+    - content/01-foundations/03-first-program.md
+    - content/01-foundations/04-basic-io.md
+    - content/01-foundations/README.md
+  - part: Data Types
+    contents:
+    - content/02-data-types/01-fundamental-types.md
+    - content/02-data-types/02-variables-constants.md
+    - content/02-data-types/03-type-conversions.md
+    - content/02-data-types/03b-hexadecimal-floating-literals.md
+    - content/02-data-types/04-operators-expressions.md
+    - content/02-data-types/README.md
+  - part: Control Flow
+    contents:
+    - content/03-control-flow/01-conditionals.md
+    - content/03-control-flow/02-loops.md
+    - content/03-control-flow/03-flow-control.md
+    - content/03-control-flow/README.md
+  - part: Functions
+    contents:
+    - content/04-functions/01-function-basics.md
+    - content/04-functions/02-advanced-functions.md
+    - content/04-functions/03-modular-programming.md
+    - content/04-functions/04-standard-library.md
+    - content/04-functions/README.md
+  - part: Arrays and Strings
+    contents:
+    - content/05-arrays-strings/01-arrays.md
+    - content/05-arrays-strings/02-strings.md
+    - content/05-arrays-strings/02b-bounded-string-copies.md
+    - content/05-arrays-strings/03-advanced-arrays.md
+    - content/05-arrays-strings/04-length-prefixed-strings.md
+    - content/05-arrays-strings/README.md
+  - part: Pointers
+    contents:
+    - content/06-pointers/01-pointer-fundamentals.md
+    - content/06-pointers/02-pointers-arrays.md
+    - content/06-pointers/03-dynamic-memory.md
+    - content/06-pointers/04-advanced-pointers.md
+    - content/06-pointers/05-pointer-pitfalls.md
+    - content/06-pointers/06-null-check-elimination.md
+    - content/06-pointers/README.md
+  - part: Structures
+    contents:
+    - content/07-structures/01-structures.md
+    - content/07-structures/02-unions-enums.md
+    - content/07-structures/03-advanced-structures.md
+    - content/07-structures/04-abstract-data-types.md
+    - content/07-structures/05-bit-field-traps.md
+    - content/07-structures/06-opaque-handles-and-bindable-library-apis.md
+    - content/07-structures/README.md
+  - part: File I/O
+    contents:
+    - content/08-file-io/01-file-operations.md
+    - content/08-file-io/02-file-io-functions.md
+    - content/08-file-io/03-advanced-file-ops.md
+    - content/08-file-io/04-system-programming.md
+    - content/08-file-io/README.md
+  - part: Modern C
+    contents:
+    - content/09-modern-c/01-c99-features.md
+    - content/09-modern-c/02-c11-features.md
+    - content/09-modern-c/03-c17-c23-features.md
+    - content/09-modern-c/03b-what-c23-removed.md
+    - content/09-modern-c/04-modern-practices.md
+    - content/09-modern-c/05-advanced-preprocessor.md
+    - content/09-modern-c/06-c23-embed-nullptr-constexpr.md
+    - content/09-modern-c/07-checked-integer-arithmetic.md
+    - content/09-modern-c/08-stdbit-bit-and-byte-utilities.md
+    - content/09-modern-c/09-defer-scope-based-cleanup.md
+    - content/09-modern-c/10-trivial-auto-var-init.md
+    - content/09-modern-c/11-gcc-16-c-changes.md
+    - content/09-modern-c/12-xor-swap-trap-and-safe-swap.md
+    - content/09-modern-c/13-c23-typeof.md
+    - content/09-modern-c/14-c23-bitint.md
+    - content/09-modern-c/README.md
+  - part: Data Structures
+    contents:
+    - content/10-data-structures/01-linear-structures.md
+    - content/10-data-structures/02-tree-structures.md
+    - content/10-data-structures/03-hash-tables.md
+    - content/10-data-structures/03b-roaring-bitmaps.md
+    - content/10-data-structures/04-graph-algorithms.md
+    - content/10-data-structures/05-sorting-searching.md
+    - content/10-data-structures/README.md
+  - part: Network
+    contents:
+    - content/11-network/01-network-fundamentals.md
+    - content/11-network/02-socket-programming.md
+    - content/11-network/03-advanced-networking.md
+    - content/11-network/04-network-protocols.md
+    - content/11-network/05-network-security.md
+    - content/11-network/README.md
+  - part: Embedded
+    contents:
+    - content/12-embedded/01-embedded-basics.md
+    - content/12-embedded/02-low-level-programming.md
+    - content/12-embedded/03-embedded-c-techniques.md
+    - content/12-embedded/04-realtime-programming.md
+    - content/12-embedded/05-hardware-interfaces.md
+    - content/12-embedded/README.md
+  - part: Performance
+    contents:
+    - content/13-performance/01-performance-analysis.md
+    - content/13-performance/02-optimization-techniques.md
+    - content/13-performance/03-memory-optimization.md
+    - content/13-performance/04-advanced-optimization.md
+    - content/13-performance/05-ispc-1-32-avx10-apx.md
+    - content/13-performance/06-arena-allocators.md
+    - content/13-performance/06b-double-ended-stack-allocator.md
+    - content/13-performance/06c-zmalloc-accounting-and-fragmentation.md
+    - content/13-performance/07-restrict-and-aliasing.md
+    - content/13-performance/08-rdtsc-rdtscp-timing.md
+    - content/13-performance/README.md
+  - part: Testing
+    contents:
+    - content/14-testing/01-testing-methodologies.md
+    - content/14-testing/02-debugging-techniques.md
+    - content/14-testing/03-error-handling.md
+    - content/14-testing/04-code-quality.md
+    - content/14-testing/05-sanitizers.md
+    - content/14-testing/06-memory-safe-c.md
+    - content/14-testing/07-gcc-diagnostics-json-sarif.md
+    - content/14-testing/08-failure-injection-error-paths.md
+    - content/14-testing/09-setjmp-longjmp-error-unwinding.md
+    - content/14-testing/README.md
+  - part: Advanced
+    contents:
+    - content/15-advanced/01-multithreading.md
+    - content/15-advanced/02-system-programming.md
+    - content/15-advanced/03-domain-specific.md
+    - content/15-advanced/04-capstone-project.md
+    - content/15-advanced/05-static-linking-glibc-vs-musl.md
+    - content/15-advanced/06-fil-c-memory-safe-c.md
+    - content/15-advanced/07-fd-hygiene-cloexec.md
+    - content/15-advanced/07b-fork-vfork-posix-spawn.md
+    - content/15-advanced/08-chase-lev-work-stealing-deque.md
+    - content/15-advanced/09-open-addressing-hash-table.md
+    - content/15-advanced/09b-cuckoo-hashing.md
+    - content/15-advanced/10-asan-heap-buffer-overflow.md
+    - content/15-advanced/11-mark-sweep-toy-gc.md
+    - content/15-advanced/11b-nan-boxing.md
+    - content/15-advanced/12-c11-atomics-memory-order.md
+    - content/15-advanced/12b-spsc-ring-buffer.md
+    - content/15-advanced/13-flexible-array-members.md
+    - content/15-advanced/14-ld-preload-interposition.md
+    - content/15-advanced/15-gcc-attribute-cleanup.md
+    - content/15-advanced/15-memfd-create-and-seals.md
+  - part: Workbook
+    contents:
+    - part: Examples
+      contents:
+      - part: Foundations
+        contents: []
+      - part: Data Types
+        contents: []
+      - part: Control Flow
+        contents: []
+      - part: Functions
+        contents: []
+      - part: Arrays and Strings
+        contents: []
+      - part: Pointers
+        contents: []
+      - part: Structures
+        contents: []
+      - part: File I/O
+        contents: []
+      - part: Modern C
+        contents: []
+      - part: Data Structures
+        contents: []
+      - part: Network
+        contents: []
+      - part: Embedded
+        contents: []
+      - part: Performance
+        contents: []
+      - part: Testing
+        contents: []
+      - part: Advanced
+        contents: []
+    - part: Exercises
+      contents:
+      - part: Foundations
+        contents:
+        - content/99-workbook/exercises/01-foundations/module1-exercises.md
+      - part: Data Types
+        contents:
+        - content/99-workbook/exercises/02-data-types/module2-exercises.md
+      - part: Control Flow
+        contents:
+        - content/99-workbook/exercises/03-control-flow/module3-exercises.md
+      - part: Functions
+        contents:
+        - content/99-workbook/exercises/04-functions/module4-exercises.md
+      - part: Arrays and Strings
+        contents:
+        - content/99-workbook/exercises/05-arrays-strings/module5-exercises.md
+      - part: Pointers
+        contents:
+        - content/99-workbook/exercises/06-pointers/module6-exercises.md
+      - part: Structures
+        contents:
+        - content/99-workbook/exercises/07-structures/module7-exercises.md
+      - part: File I/O
+        contents:
+        - content/99-workbook/exercises/08-file-io/module8-exercises.md
+      - part: Modern C
+        contents:
+        - content/99-workbook/exercises/09-modern-c/module9-exercises.md
+      - part: Data Structures
+        contents:
+        - content/99-workbook/exercises/10-data-structures/module10-exercises.md
+      - part: Network
+        contents:
+        - content/99-workbook/exercises/11-network/module11-exercises.md
+      - part: Embedded
+        contents:
+        - content/99-workbook/exercises/12-embedded/module12-exercises.md
+      - part: Performance
+        contents:
+        - content/99-workbook/exercises/13-performance/module13-exercises.md
+      - part: Testing
+        contents:
+        - content/99-workbook/exercises/14-testing/module14-exercises.md
+      - part: Advanced
+        contents:
+        - content/99-workbook/exercises/15-advanced/module15-exercises.md
+    - part: Projects
+      contents:
+      - part: Advanced
+        contents:
+        - content/99-workbook/projects/advanced/advanced-projects.md
+      - part: Beginner
+        contents:
+        - content/99-workbook/projects/beginner/beginner-projects.md
+      - part: Capstone
+        contents:
+        - content/99-workbook/projects/capstone/capstone-projects.md
+      - part: Intermediate
+        contents:
+        - content/99-workbook/projects/intermediate/intermediate-projects.md
+  - part: Appendices
+    contents:
+    - content/100-appendices/a-resources.md
+    - content/100-appendices/b-reference.md
+    - content/100-appendices/c-solutions.md
+format:
+  html:
+    theme: auto
+  epub: {}
+  pdf:
+    paper: A4

@@ -1,0 +1,392 @@
+---
+title: Channel Patterns
+---
+
+# Channel Patterns
+
+## Overview
+
+Channels enable safe communication between goroutines. This chapter covers essential channel patterns.
+
+## Channel Directions
+
+```go
+chan T     // Bidirectional
+chan<- T   // Send-only
+<-chan T   // Receive-only
+
+func producer(out chan<- int) { }
+func consumer(in <-chan int) { }
+```
+
+## Buffered vs Unbuffered
+
+```go
+// Unbuffered: send blocks until receive
+ch := make(chan int)
+
+// Buffered: send blocks when full
+ch := make(chan int, 10)
+```
+
+## Closing Channels
+
+```go
+close(ch)
+
+// Check if closed
+v, ok := <-ch
+if !ok {
+    // Channel closed
+}
+
+// Range over channel
+for v := range ch {
+    // Receives until closed
+}
+```
+
+## Select
+
+```go
+select {
+case v := <-ch1:
+    fmt.Println("from ch1:", v)
+case v := <-ch2:
+    fmt.Println("from ch2:", v)
+case ch3 <- x:
+    fmt.Println("sent to ch3")
+default:
+    fmt.Println("no channel ready")
+}
+```
+
+## Timeout Pattern
+
+```go
+select {
+case result := <-ch:
+    fmt.Println(result)
+case <-time.After(1 * time.Second):
+    fmt.Println("timeout")
+}
+```
+
+## Done Channel
+
+```go
+done := make(chan struct{})
+
+go func() {
+    // Work...
+    close(done)  // Signal completion
+}()
+
+<-done  // Wait for signal
+```
+
+## Fan-Out / Fan-In Architecture
+
+The **Fan-Out** pattern distributes work across multiple worker goroutines reading from a single input channel. The **Fan-In** pattern consolidates the results from multiple worker channels back into a single output stream.
+
+```text
+flow:
+  ] -> JobsCh[
+  JobsCh -> Worker1[
+  JobsCh -> Worker2[
+  JobsCh -> Worker3[
+  Worker1 -> Out1[
+  Worker2 -> Out2[
+  Worker3 -> Out3[
+  Out1 -> Multiplexer[
+  Out2 -> Multiplexer
+  Out3 -> Multiplexer
+  Multiplexer -> FinalCh[
+```
+
+```go
+// Worker function processing jobs from input channel
+func worker(id int, jobs <-chan int) <-chan int {
+    out := make(chan int)
+    go func() {
+        defer close(out)
+        for j := range jobs {
+            // Process item (e.g. compute square)
+            out <- j * j
+        }
+    }()
+    return out
+}
+
+// Fan-in: merge multiple worker output channels into one aggregated channel
+func fanIn(channels ...<-chan int) <-chan int {
+    out := make(chan int)
+    var wg sync.WaitGroup
+
+    for _, ch := range channels {
+        wg.Add(1)
+        go func(c <-chan int) {
+            defer wg.Done()
+            for v := range c {
+                out <- v
+            }
+        }(ch)
+    }
+
+    go func() {
+        wg.Wait()
+        close(out)
+    }()
+    return out
+}
+```
+
+## Summary
+
+| Pattern | Use Case |
+|---------|----------|
+| Unbuffered | Synchronization |
+| Buffered | Decouple speed |
+| Select | Multiple channels |
+| Done channel | Cancellation signal |
+| Fan-out/in | Parallel processing |
+
+## Worked example
+
+`select` with default (non-blocking try) and a multi-channel race.
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	ch := make(chan int, 1)
+
+	// Non-blocking receive
+	select {
+	case v := <-ch:
+		fmt.Println("got", v)
+	default:
+		fmt.Println("empty: default branch")
+	}
+
+	ch <- 7
+	select {
+	case v := <-ch:
+		fmt.Println("got", v)
+	default:
+		fmt.Println("unexpected default")
+	}
+
+	// First ready wins
+	a := make(chan string, 1)
+	b := make(chan string, 1)
+	a <- "from-a"
+	select {
+	case msg := <-a:
+		fmt.Println("select:", msg)
+	case msg := <-b:
+		fmt.Println("select:", msg)
+	case <-time.After(50 * time.Millisecond):
+		fmt.Println("select: timeout")
+	}
+}
+```
+
+**Expected output:**
+
+```text
+empty: default branch
+got 7
+select: from-a
+```
+
+## More examples
+
+Or-done pattern: stop ranging when an external `done` closes. Producer also selects on `done` so nothing hangs.
+
+```go
+package main
+
+import "fmt"
+
+func orDone(done <-chan struct{}, in <-chan int) <-chan int {
+	out := make(chan int)
+	go func() {
+		defer close(out)
+		for {
+			select {
+			case <-done:
+				return
+			case v, ok := <-in:
+				if !ok {
+					return
+				}
+				select {
+				case out <- v:
+				case <-done:
+					return
+				}
+			}
+		}
+	}()
+	return out
+}
+
+func main() {
+	done := make(chan struct{})
+	in := make(chan int)
+
+	go func() {
+		defer close(in)
+		for i := 1; i <= 100; i++ {
+			select {
+			case <-done:
+				return
+			case in <- i:
+			}
+		}
+	}()
+
+	out := orDone(done, in)
+	count := 0
+	for v := range out {
+		fmt.Println("v:", v)
+		count++
+		if count == 3 {
+			close(done)
+		}
+	}
+	fmt.Println("stopped early at", count)
+}
+```
+
+**Expected output:**
+
+```text
+v: 1
+v: 2
+v: 3
+stopped early at 3
+```
+
+## Runnable example
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+	"time"
+)
+
+func worker(id int, jobs <-chan int) <-chan int {
+	out := make(chan int)
+	go func() {
+		defer close(out)
+		for j := range jobs {
+			// Simulate work; square the job id.
+			out <- j * j
+		}
+	}()
+	return out
+}
+
+func fanIn(channels ...<-chan int) <-chan int {
+	out := make(chan int)
+	var wg sync.WaitGroup
+	for _, ch := range channels {
+		wg.Add(1)
+		go func(c <-chan int) {
+			defer wg.Done()
+			for v := range c {
+				out <- v
+			}
+		}(ch)
+	}
+	go func() {
+		wg.Wait()
+		close(out)
+	}()
+	return out
+}
+
+func main() {
+	// Timeout via select
+	slow := make(chan string)
+	go func() {
+		time.Sleep(50 * time.Millisecond)
+		slow <- "late result"
+	}()
+	select {
+	case msg := <-slow:
+		fmt.Println("got:", msg)
+	case <-time.After(10 * time.Millisecond):
+		fmt.Println("timeout: waited 10ms")
+	}
+
+	// Done channel signal
+	done := make(chan struct{})
+	go func() {
+		// pretend work finished
+		close(done)
+	}()
+	<-done
+	fmt.Println("done channel closed")
+
+	// Fan-out / fan-in
+	jobs := make(chan int)
+	go func() {
+		for i := 1; i <= 4; i++ {
+			jobs <- i
+		}
+		close(jobs)
+	}()
+
+	out1 := worker(1, jobs)
+	out2 := worker(2, jobs)
+	merged := fanIn(out1, out2)
+
+	sum := 0
+	for v := range merged {
+		sum += v
+	}
+	// 1²+2²+3²+4² = 30
+	fmt.Println("fan-in sum of squares:", sum)
+}
+```
+
+**Expected output:**
+
+```text
+timeout: waited 10ms
+done channel closed
+fan-in sum of squares: 30
+```
+
+**What to notice:** `select` with `time.After` implements a one-shot timeout. Fan-out shares one `jobs` channel across workers; fan-in merges their outputs and closes only after every input channel is drained.
+
+**Try next:** Make the timeout larger than 50ms so the slow send wins the `select`. Add a third worker and re-run.
+
+## Related Topics
+- [Concurrency Basics](40-concurrency-basics.md)
+- [Context and Cancellation](43-context.md)

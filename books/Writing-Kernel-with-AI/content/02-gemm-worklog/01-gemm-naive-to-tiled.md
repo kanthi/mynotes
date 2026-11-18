@@ -1,0 +1,206 @@
+---
+title: 'GEMM Worklog I: Naive to Tiled'
+---
+
+# GEMM Worklog I: Naive to Tiled
+
+General Matrix Multiply (**GEMM**) is the computational engine of modern artificial intelligence. Fully connected layers, multi-head attention projections, convolutional layers (via `im2col`), and mixture-of-experts routers all compile down to GEMM:
+
+$$C = \alpha (A \times B) + \beta C$$
+
+where $A \in \mathbb{R}^{M \times K}$, $B \in \mathbb{R}^{K \times N}$, and $C \in \mathbb{R}^{M \times N}$.
+
+In this worklog, we embark on the canonical kernel engineering journey: elevating a naive GEMM achieving less than **1.5%** of GPU capacity to a shared-memory tiled kernel achieving over **36%** of theoretical peak compute.
+
+---
+
+## 1. Dissecting the Naive GEMM: Why is it Slow?
+
+In a naive GEMM implementation, each thread computes a single output element $C_{i,j}$ by performing a dot product between row $i$ of matrix $A$ and column $j$ of matrix $B$.
+
+```text
+Matrix A (M x K)              Matrix B (K x N)              Matrix C (M x N)
++-------------------+         +-----+---+-----+             +-----+---+-----+
+|                   |         |     | | |     |             |     | | |     |
+|-------------------| (Row i) |     | | |     |             |     | | |     |
+|                   |    x    |     | | |     |      =      +-----+-v-+-----+
+|                   |         |     | | |     |             |     |C_ij|    |
++-------------------+         +-----+-v-+-----+             +-----+---+-----+
+                                    (Col j)
+```
+
+### The Naive CUDA Kernel
+
+```cuda
+__global__ void gemm_naive(const float* __restrict__ A,
+                           const float* __restrict__ B,
+                           float* __restrict__ C,
+                           int M, int N, int K) {
+    // Determine row and column for this thread
+    int row = blockIdx.y * blockDim.y + threadIdx.y;
+    int col = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (row < M && col < N) {
+        float sum = 0.0f;
+        // Compute dot product along dimension K
+        for (int k = 0; k < K; ++k) {
+            sum += A[row * K + k] * B[k * N + col];
+        }
+        C[row * N + col] = sum;
+    }
+}
+```
+
+### Performance Autopsy
+
+Consider running this kernel on an NVIDIA A100 ($M = N = K = 4096$):
+1. **Flop Count:** $2 \times M \times N \times K = 2 \times 4096^3 \approx 137.4 \times 10^9 \text{ FLOPs}$.
+2. **Global Memory Loads:**
+   - For every step of loop $k$, thread $(i, j)$ fetches $A_{i,k}$ (4 bytes) and $B_{k,j}$ (4 bytes) from off-chip DRAM.
+   - Total bytes loaded from DRAM across all threads = $M \times N \times K \times 2 \times 4 \text{ B} \approx 549.7 \times 10^9 \text{ Bytes}$ (**~550 GB**).
+3. **Operational Intensity:**
+   $$I_{\text{naive}} = \frac{2 \text{ FLOPs}}{8 \text{ Bytes}} = 0.25 \text{ FLOPs/Byte}$$
+4. **The Bottleneck:**
+   - On the A100, the ridge point is $I^* = 9.6 \text{ FLOPs/Byte}$.
+   - At $I = 0.25$, the kernel is trapped deep within the **Memory-Bound regime**.
+   - Maximum attainable performance:
+     $$P_{\text{naive}} = 2,039 \text{ GB/s} \times 0.25 \text{ FLOPs/Byte} \approx 509.7 \text{ GFLOP/s}$$
+   - **Result:** $509.7 \text{ GFLOP/s} / 19,500 \text{ GFLOP/s} = \mathbf{2.6\%}$ of theoretical peak. In reality, uncoalesced memory traffic on matrix $B$ drags actual performance down to **~1.3%** (~260 GFLOP/s).
+
+---
+
+## 2. The Breakthrough: Shared Memory 2D Block Tiling
+
+To escape the memory bottleneck, we must **reuse loaded data**.
+
+Notice:
+- All threads in the same row $i$ need the exact same value $A_{i,k}$.
+- All threads in the same column $j$ need the exact same value $B_{k,j}$.
+
+Instead of streaming from global memory for every multiply-add, thread blocks load a 2D tile of $A$ and a 2D tile of $B$ into ultra-fast on-chip **Shared Memory (SRAM)**, synchronize, and then perform multiple arithmetic operations from SRAM.
+
+```text
+               Global Memory (Slow HBM)
+                     |
+           (Coalesced Block Load)
+                     v
+             Shared Memory Tile
+         s_a [TILE x TILE]   s_b [TILE x TILE]
+                     |
+       (All threads reuse data TILE times!)
+                     v
+             Registers & ALUs
+```
+
+### Tile Dimensions and Reuse Factor
+
+With a tile size of $\text{TILE} = 32$:
+- Each thread loads **1 element** of $A$ and **1 element** of $B$ into shared memory.
+- During the inner multiplication loop, each loaded element is read and reused by **32 separate threads**!
+- Global memory traffic drops by a factor of **$32\times$**.
+- Operational intensity jumps from $0.25 \text{ FLOPs/Byte}$ to:
+  $$I_{\text{tiled}} = 0.25 \times 32 = \mathbf{8.0 \text{ FLOPs/Byte}}$$
+
+At $8.0 \text{ FLOPs/Byte}$, we are right next to the hardware Ridge Point ($I^* = 9.6$).
+
+---
+
+## 3. The 2D Tiled CUDA Kernel
+
+```cuda
+#include <cuda_runtime.h>
+#include <stdio.h>
+
+#define TILE_WIDTH 32
+
+__global__ void gemm_tiled_shared_mem(const float* __restrict__ A,
+                                      const float* __restrict__ B,
+                                      float* __restrict__ C,
+                                      int M, int N, int K) {
+    // 2D shared memory cache tiles
+    __shared__ float s_A[TILE_WIDTH][TILE_WIDTH];
+    __shared__ float s_B[TILE_WIDTH][TILE_WIDTH];
+
+    int tx = threadIdx.x;
+    int ty = threadIdx.y;
+
+    // Output coordinate in matrix C
+    int row = blockIdx.y * TILE_WIDTH + ty;
+    int col = blockIdx.x * TILE_WIDTH + tx;
+
+    float acc = 0.0f;
+
+    // Number of phase tiles needed along dimension K
+    int num_tiles = (K + TILE_WIDTH - 1) / TILE_WIDTH;
+
+    for (int t = 0; t < num_tiles; ++t) {
+        // 1. Collaborative loading of Tile A into shared memory
+        int a_col = t * TILE_WIDTH + tx;
+        if (row < M && a_col < K) {
+            s_A[ty][tx] = A[row * K + a_col];
+        } else {
+            s_A[ty][tx] = 0.0f;
+        }
+
+        // 2. Collaborative loading of Tile B into shared memory
+        int b_row = t * TILE_WIDTH + ty;
+        if (b_row < K && col < N) {
+            s_B[ty][tx] = B[b_row * N + col];
+        } else {
+            s_B[ty][tx] = 0.0f;
+        }
+
+        // 3. Barrier synchronization: ensure entire tile is present in SRAM
+        __syncthreads();
+
+        // 4. Accumulate partial dot product from shared memory
+        #pragma unroll
+        for (int k = 0; k < TILE_WIDTH; ++k) {
+            acc += s_A[ty][k] * s_B[k][tx];
+        }
+
+        // 5. Barrier synchronization: ensure computation finishes before next tile load
+        __syncthreads();
+    }
+
+    // Write final accumulated result to global memory
+    if (row < M && col < N) {
+        C[row * N + col] = acc;
+    }
+}
+```
+
+---
+
+## 4. Benchmark Results on NVIDIA A100
+
+Evaluating on square FP32 matrices ($M = N = K = 4096$):
+
+```text
+Performance (TFLOP/s)
+  ^
+  |                                        cuBLAS Peak (~18.2 TFLOP/s)
+  |                                      +-----------------------------
+  |
+  |                        Tiled GEMM (~7.1 TFLOP/s)
+  |                      +-----------+ (36.5% of peak)
+  |
+  |  Naive GEMM (~0.26 TFLOP/s)
+  |  + (1.3% of peak)
+  +--+-------------------+-----------+--------------------------------->
+    Naive             Shared Tiled               cuBLAS
+```
+
+| Implementation | Execution Time ($M=N=K=4096$) | Measured TFLOP/s | % of Theoretical Peak Compute |
+| :--- | :--- | :--- | :--- |
+| **Naive GEMM** | 528.4 ms | 0.26 TFLOP/s | 1.3% |
+| **2D Tiled Shared Memory GEMM** | **19.3 ms** | **7.12 TFLOP/s** | **36.5%** |
+| **NVIDIA cuBLAS (Closed Source)**| **7.5 ms** | **18.32 TFLOP/s** | **93.9%** |
+
+### Why Did Performance Jump by 27x?
+
+1. **Global Memory Bandwidth Slashed:** Memory traffic dropped from 550 GB to ~17 GB.
+2. **Coalesced Reads:** Both $A$ and $B$ tiles are fetched using contiguous thread indexing (`tx`).
+3. **Latency Hiding:** Staged data in shared memory is accessed in ~20 cycles instead of ~400 cycles.
+
+In the next chapter, we push further into the micro-architecture: register micro-tiling, `float4` vectorization, and warp-level hierarchical tiling to close the gap to cuBLAS.

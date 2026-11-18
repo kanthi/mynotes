@@ -1,0 +1,164 @@
+---
+title: Fleet Deployments with Colmena
+---
+
+# Fleet Deployments with Colmena
+
+`for h in hosts; do nixos-rebuild --flake .#$h --target-host …; done` forgets a flag and leaves one box on last week's generation. The boring default is: **Colmena with one hive in the flake, SSH from `ops-01`, `--on` for canaries, and the same nixpkgs 26.05 lock the laptop uses**.
+
+## Mental model
+
+Colmena evals a hive (host → modules + `deployment.targetHost`), realises each closure (locally or on a builder), copies it over SSH, and activates. Rollback is the previous NixOS generation on that host — not a restore CD.
+
+```
+ops-01  colmena apply --on app-01
+             │  build + copy
+             ▼
+        app-01  switch-to-configuration
+```
+
+Tags (`@app`, `@db`) are how you canary a role without typing every hostname. Parallel apply is for **stateless** boxes. Serial the node that owns the database.
+
+`deployment.buildOnTarget = true` compiles on the host. The boring default is the opposite: build on `ops-01` (or the remote builder), copy the result. Laptops do not compile kernels.
+
+## Worked examples
+
+### Case 1: Hive in the flake
+
+Save as `flake.nix`:
+
+```nix
+# flake.nix
+{
+  description = "Desk fleet hive";
+
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+
+  outputs = { self, nixpkgs }: {
+    colmena = {
+      meta = {
+        nixpkgs = import nixpkgs { system = "x86_64-linux"; };
+      };
+
+      defaults = { pkgs, ... }: {
+        system.stateVersion = "26.05";
+        environment.systemPackages = [ pkgs.vim ];
+        services.openssh.enable = true;
+        services.openssh.settings.PasswordAuthentication = false;
+        networking.firewall.enable = true;
+      };
+
+      app-01 = { name, ... }: {
+        deployment.targetHost = "10.100.0.11";
+        deployment.targetUser = "root";
+        deployment.tags = [ "app" ];
+        networking.hostName = name;
+        imports = [ ./hosts/app-01.nix ];
+      };
+
+      app-02 = { name, ... }: {
+        deployment.targetHost = "10.100.0.12";
+        deployment.targetUser = "root";
+        deployment.tags = [ "app" ];
+        networking.hostName = name;
+        imports = [ ./hosts/app-02.nix ];
+      };
+
+      db-01 = { name, ... }: {
+        deployment.targetHost = "10.100.0.21";
+        deployment.targetUser = "root";
+        deployment.tags = [ "db" ];
+        networking.hostName = name;
+        imports = [ ./hosts/db-01.nix ];
+      };
+    };
+  };
+}
+```
+
+```bash
+nix shell nixpkgs#colmena --command colmena eval -E '{ nodes }: builtins.attrNames nodes'
+```
+
+You should see `app-01`, `app-02`, `db-01`. Exact attr names follow the Colmena pin on 26.05 (`colmena --help`). Newer Colmena also accepts `colmenaHive` + `colmena.lib.makeHive` — if `colmena eval` says the flake attr moved, use that shape. The idea is still host → SSH target.
+
+```nix
+# hive extras
+{
+  deployment.allowLocalDeployment = true; # ops-01 applying itself
+  deployment.keys."wg-priv" = {
+    keyFile = "/run/secrets/wireguard/private";
+    destDir = "/run/keys";
+  };
+}
+```
+
+Prefer sops-nix on the **target** over Colmena `deployment.keys` when you already have sops. Two secret planes is two rekeys.
+
+### Case 2: Canary, then the rest of the tag
+
+```bash
+colmena apply --on app-01
+# watch desk-api metrics / journalctl -u desk-api
+colmena apply --on @app
+```
+
+Do not `--on @all` for a kernel bump. `db-01` is a separate `--on db-01` after the apps are healthy.
+
+### Case 3: Dry-run before activate
+
+```bash
+colmena apply --dry-run --on app-01
+```
+
+Eval + build, no `switch`. If the dry-run fails, git is wrong — not the host.
+
+```
+[app-01] Built /nix/store/7q1a…-nixos-system-app-01-26.05
+[app-01] (dry run; not activating)
+```
+
+### Case 4: Build where the CPU is
+
+Keep `deployment.buildOnTarget = false` (the default). Point the hive machine at the same remote builder as `nix.buildMachines` on `ops-01`. Confirm:
+
+```bash
+nix show-config | grep -E 'builders|max-jobs'
+```
+
+`--max-jobs 0` on the laptop forces remote realisation. A canary that compiles LLVM on `app-01` is a production incident.
+
+### Case 5: Activation failure is a generation, not a brick
+
+```
+[app-01] Built /nix/store/7q1a…-nixos-system-app-01-26.05
+[app-01] Activation failed
+```
+
+The previous generation is still the boot default unless you passed a reboot-into-new-generation flag (`reboot` / `apply-local --reboot` on your pin). On the host:
+
+```bash
+ssh root@10.100.0.11 'systemctl is-system-running; nixos-rebuild list-generations | tail'
+```
+
+Roll back on the box (`nixos-rebuild switch --rollback` or Colmena's rollback flag on your pin), then revert the git commit so the hive and the metal agree.
+
+## The trap
+
+The trap is **applying every host in parallel while a shared Postgres migration runs**. Stateless `desk-api` boxes can fan out. The stateful node is serial, after the migration is in the module and the backup snapshot exists.
+
+## The boring rule
+
+- One hive, one 26.05 lock, SSH from `ops-01`.
+- Canary `--on app-01`, then `--on @app`. Never `@all` for kernels.
+- Dry-run first. Build off the target.
+- Stateful hosts serial. Stateless hosts tagged.
+- Rollback is the previous generation, then a git revert so the hive matches.
+- One secret system (sops on the host). Colmena `deployment.keys` only if you do not have sops yet.
+
+## Try this
+
+1. `nix shell nixpkgs#colmena --command colmena --help`.
+2. Apply to a single lab VM with `--dry-run`, then without.
+3. Break a unit on purpose, apply, roll back on the VM, revert git.
+4. Write `docs/fleet.md`: which tags may run in parallel, which host is serial.

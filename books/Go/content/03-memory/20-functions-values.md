@@ -1,0 +1,293 @@
+---
+title: Functions as Values
+---
+
+# Functions as Values
+
+## Overview
+
+In Go, functions are first-class citizens—they can be assigned to variables, passed as arguments, and returned from other functions.
+
+## Function Variables
+
+```go
+// Assign function to variable
+add := func(a, b int) int {
+    return a + b
+}
+
+result := add(2, 3)  // 5
+
+// Reassign
+add = func(a, b int) int {
+    return a + b + 1  // Different implementation
+}
+```
+
+## Function Types
+
+```go
+type BinaryOp func(int, int) int
+
+var op BinaryOp = func(a, b int) int {
+    return a + b
+}
+```
+
+## Higher-Order Functions
+
+### Functions as Parameters
+
+```go
+func apply(nums []int, fn func(int) int) []int {
+    result := make([]int, len(nums))
+    for i, n := range nums {
+        result[i] = fn(n)
+    }
+    return result
+}
+
+double := func(n int) int { return n * 2 }
+result := apply([]int{1, 2, 3}, double)  // [2, 4, 6]
+```
+
+### Functions as Return Values
+
+```go
+func multiplier(factor int) func(int) int {
+    return func(n int) int {
+        return n * factor
+    }
+}
+
+double := multiplier(2)
+triple := multiplier(3)
+
+double(5)  // 10
+triple(5)  // 15
+```
+
+## Common Patterns
+
+### Callback Pattern
+
+```go
+func fetchData(url string, callback func(data []byte, err error)) {
+    // Async operation
+    go func() {
+        data, err := http.Get(url)
+        callback(data, err)
+    }()
+}
+```
+
+### Option Pattern
+
+```go
+type Server struct {
+    port    int
+    timeout time.Duration
+}
+
+type Option func(*Server)
+
+func WithPort(p int) Option {
+    return func(s *Server) { s.port = p }
+}
+
+func WithTimeout(t time.Duration) Option {
+    return func(s *Server) { s.timeout = t }
+}
+
+func NewServer(opts ...Option) *Server {
+    s := &Server{port: 8080, timeout: 30 * time.Second}
+    for _, opt := range opts {
+        opt(s)
+    }
+    return s
+}
+
+srv := NewServer(WithPort(9000), WithTimeout(time.Minute))
+```
+
+### Middleware Pattern
+
+```go
+type Handler func(http.ResponseWriter, *http.Request)
+
+func WithLogging(h Handler) Handler {
+    return func(w http.ResponseWriter, r *http.Request) {
+        log.Printf("%s %s", r.Method, r.URL)
+        h(w, r)
+    }
+}
+```
+
+## Anonymous Functions
+
+```go
+// Immediate invocation (IIFE)
+result := func(x int) int {
+    return x * x
+}(5)  // 25
+
+// In goroutines
+go func() {
+    fmt.Println("async")
+}()
+```
+
+## Summary
+
+| Pattern | Use Case |
+|---------|----------|
+| Function variable | Store/swap implementations |
+| Higher-order | Transform, filter, reduce |
+| Closures | Capture state |
+| Options | Flexible configuration |
+
+## Related Topics
+- [Functions in Depth](19-functions-depth.md)
+- [Designing with Interfaces](../04-generics/26-interfaces.md)
+
+## More examples
+
+### Example: swap function variables
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func add(a, b int) int { return a + b }
+func mul(a, b int) int { return a * b }
+
+func main() {
+	op := add
+	fmt.Println("add:", op(3, 4))
+	op = mul
+	fmt.Println("mul:", op(3, 4))
+}
+```
+
+Expected:
+
+```text
+add: 7
+mul: 12
+```
+
+### Example: closure captures state
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func counter(start int) func() int {
+	n := start
+	return func() int {
+		n++
+		return n
+	}
+}
+
+func main() {
+	next := counter(10)
+	fmt.Println(next())
+	fmt.Println(next())
+	fmt.Println(next())
+}
+```
+
+Expected:
+
+```text
+11
+12
+13
+```
+
+## Runnable example
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import "fmt"
+
+type BinaryOp func(int, int) int
+
+func apply(nums []int, fn func(int) int) []int {
+	out := make([]int, len(nums))
+	for i, n := range nums {
+		out[i] = fn(n)
+	}
+	return out
+}
+
+func multiplier(factor int) func(int) int {
+	return func(n int) int { return n * factor }
+}
+
+type Server struct {
+	port    int
+	timeout int // seconds, kept simple
+}
+
+type Option func(*Server)
+
+func WithPort(p int) Option {
+	return func(s *Server) { s.port = p }
+}
+
+func WithTimeout(sec int) Option {
+	return func(s *Server) { s.timeout = sec }
+}
+
+func NewServer(opts ...Option) *Server {
+	s := &Server{port: 8080, timeout: 30}
+	for _, opt := range opts {
+		opt(s)
+	}
+	return s
+}
+
+func main() {
+	add := func(a, b int) int { return a + b }
+	var op BinaryOp = add
+	fmt.Println("BinaryOp:", op(2, 3))
+
+	doubled := apply([]int{1, 2, 3}, multiplier(2))
+	fmt.Println("map-like apply:", doubled)
+
+	srv := NewServer(WithPort(9000), WithTimeout(60))
+	fmt.Printf("server port=%d timeout=%ds\n", srv.port, srv.timeout)
+
+	square := func(x int) int { return x * x }(5)
+	fmt.Println("IIFE square:", square)
+}
+```
+
+**Expected output:**
+
+```text
+BinaryOp: 5
+map-like apply: [2 4 6]
+server port=9000 timeout=60s
+IIFE square: 25
+```
+
+**What to notice:** Functions are values you can store, pass, and return; the option pattern is just a slice of `func(*Server)` applied at construction.
+
+**Try next:** Add a `WithDefaults` option that resets port and timeout, or a `compose(f, g)` helper that returns `func(int) int` applying both.

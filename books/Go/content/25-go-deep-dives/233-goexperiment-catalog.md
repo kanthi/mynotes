@@ -1,0 +1,69 @@
+---
+title: GOEXPERIMENT Catalog
+---
+
+# GOEXPERIMENT Catalog
+
+## Overview
+
+`GOEXPERIMENT` enables incomplete or alternate runtime/compiler features. Experiments graduate, change, or vanish — always pair with release notes.
+
+```bash
+GOEXPERIMENT=name go test ./...
+go doc go/token  # not helpful; use:
+go tool dist list
+# list experiments for your version:
+go doc internal/goexperiment   # may be unavailable; see src/internal/goexperiment
+```
+
+From user-facing docs / release notes (illustrative — verify for your version):
+
+| Experiment | Theme |
+|------------|--------|
+| `greenteagc` / `nogreenteagc` | Green Tea GC default since 1.26; opt-out remains |
+| `simd` | Experimental portable `simd` + `simd/archsimd` (1.26–1.27) |
+| `nosizespecializedmalloc` | Opt out of 1.27 size-specialized small allocs (expected gone in 1.28) |
+| `nojsonv2` | Restore pre-1.27 `encoding/json` engine (temporary) |
+| `arenas` | Historical arena experiment (do not bet new code without checking status) |
+| `loopvar` | Historical loop var semantics (graduated) |
+| `rangefunc` | Historical range-over-func (graduated) |
+| `newinliner` | Inliner experiments |
+
+
+## Diagram: Experiment lifecycle
+
+```text
+flow:
+  [Test]
+       |
+       v
+  [Grad]
+
+  [Test]
+       |
+       v
+  [Drop]
+```
+
+## Rules
+
+1. **Never** enable random experiments in production without a rollback plan.
+2. Test performance and correctness under the experiment **and** default.
+3. Prefer graduated language features over experiments for library APIs.
+
+## JSON v2 and Friends
+
+`encoding/json/v2` graduated in Go 1.27. The v1 package uses the v2 engine; `GOEXPERIMENT=nojsonv2` is an emergency opt-out. `goroutineleakprofile` was deleted when the leak profile became generally available.
+
+## Experiment
+
+```bash
+go version
+GOEXPERIMENT=nogreenteagc go test ./...   # only if valid on your version
+# or simply read:
+go help build | less
+```
+
+Document in your runbook which experiments you intentionally ship (ideally none).
+
+**Try next:** Skim the Go 1.27 release notes "Runtime" + "Compiler" sections and map each experiment bullet to a chapter in this part.

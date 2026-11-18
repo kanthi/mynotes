@@ -1,0 +1,347 @@
+---
+title: Pipelines & Complex Patterns
+---
+
+# Pipelines and `sync.Cond`
+
+Beyond simple worker pools, Go concurrency shines in **Data Pipelines** (streaming data through stages) and **Signaling** (complex coordination).
+
+## 1. The Pipeline Pattern (Fan-Out / Fan-In)
+Pipelines allow you to process streams of data where each stage runs concurrently.
+
+**Stages:**
+1.  **Generator:** Converts data (file lines, DB rows) into a channel.
+2.  **Transformer:** Reads one channel, modifies/filters, writes to another.
+3.  **Sink:** Consumes final output.
+
+```go
+func Generator(nums ...int) <-chan int {
+    out := make(chan int)
+    go func() {
+        for _, n := range nums { out <- n }
+        close(out)
+    }()
+    return out
+}
+
+func Square(in <-chan int) <-chan int {
+    out := make(chan int)
+    go func() {
+        for n := range in { out <- n * n }
+        close(out)
+    }()
+    return out
+}
+
+func Merge(channels ...<-chan int) <-chan int {
+    // Advanced: Fan-In multiple channels to one
+    var wg sync.WaitGroup
+    out := make(chan int)
+
+    output := func(c <-chan int) {
+        defer wg.Done()
+        for n := range c { out <- n }
+    }
+
+    wg.Add(len(channels))
+    for _, c := range channels {
+        go output(c)
+    }
+
+    go func() {
+        wg.Wait()
+        close(out)
+    }()
+    return out
+}
+```
+**Cancellation:** Real pipelines must pass `context.Context` to every stage to support early cancellation (e.g., stop processing if the user disconnects).
+
+## 2. The Overlooked `sync.Cond`
+Channels are for passing data. Mutexes are for locking data. **`sync.Cond`** is for **broadcasting signals**.
+
+**Use Case:** You have 100 goroutines waiting for a specific event (e.g., "Configuration Loaded" or "Queue is not empty").
+*   **Channels:** Sending 100 messages is O(N).
+*   **Channels (Close):** Closing a channel broadcasts to all, but you can only do it *once*.
+*   **sync.Cond:** Can `Broadcast()` multiple times.
+
+### Example: The Race Start
+```go
+var mu sync.Mutex
+cond := sync.NewCond(&mu)
+ready := false
+
+// Workers
+for i := 0; i < 10; i++ {
+    go func(id int) {
+        mu.Lock()
+        for !ready {
+            cond.Wait() // Atomically unlocks mu and suspends execution
+        }
+        mu.Unlock()
+        fmt.Println("Worker", id, "started")
+    }(i)
+}
+
+// Coordinator
+time.Sleep(1 * time.Second)
+mu.Lock()
+ready = true
+mu.Unlock()
+cond.Broadcast() // Wakes all 10 workers simultaneously
+```
+
+**Warning:** `cond.Wait()` *must* be in a loop (spurious wakeups are possible, though rare in Go, logic dictates checking the condition again).
+
+## Summary
+*   **Pipelines:** Composable, streaming architecture. Great for ETL jobs.
+*   **Fan-In:** Merging multiple concurrent streams.
+*   **sync.Cond:** For "One-to-Many" signaling where the event can happen multiple times (unlike `close(ch)` which is one-off).
+
+## Worked example
+
+Cancellable pipeline stages with `context`.
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+)
+
+func gen(ctx context.Context, nums ...int) <-chan int {
+	out := make(chan int)
+	go func() {
+		defer close(out)
+		for _, n := range nums {
+			select {
+			case <-ctx.Done():
+				return
+			case out <- n:
+			}
+		}
+	}()
+	return out
+}
+
+func mul(ctx context.Context, in <-chan int, factor int) <-chan int {
+	out := make(chan int)
+	go func() {
+		defer close(out)
+		for n := range in {
+			select {
+			case <-ctx.Done():
+				return
+			case out <- n * factor:
+			}
+		}
+	}()
+	return out
+}
+
+func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// 1,2,3,4 → *10 → take first two then cancel
+	stream := mul(ctx, gen(ctx, 1, 2, 3, 4), 10)
+	var got []int
+	for v := range stream {
+		got = append(got, v)
+		if len(got) == 2 {
+			cancel()
+		}
+	}
+	fmt.Println("got:", got)
+}
+```
+
+**Expected output:** (length ≥ 2; may include a couple extra depending on timing)
+
+```text
+got: [10 20]
+```
+
+## More examples
+
+`sync.Cond` broadcast twice (reload signal).
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+func main() {
+	var mu sync.Mutex
+	cond := sync.NewCond(&mu)
+	generation := 0
+
+	const workers = 3
+	var wg sync.WaitGroup
+	seen := make(chan int, workers*2)
+
+	for i := 0; i < workers; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			local := 0
+			for local < 2 {
+				mu.Lock()
+				for local == generation {
+					cond.Wait()
+				}
+				local = generation
+				mu.Unlock()
+				seen <- local
+			}
+		}()
+	}
+
+	for g := 1; g <= 2; g++ {
+		mu.Lock()
+		generation = g
+		mu.Unlock()
+		cond.Broadcast()
+	}
+
+	wg.Wait()
+	close(seen)
+	count := 0
+	for range seen {
+		count++
+	}
+	fmt.Println("signals delivered:", count) // 3 workers * 2 gens
+}
+```
+
+**Expected output:**
+
+```text
+signals delivered: 6
+```
+
+## Runnable example
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+	"time"
+)
+
+func generator(nums ...int) <-chan int {
+	out := make(chan int)
+	go func() {
+		for _, n := range nums {
+			out <- n
+		}
+		close(out)
+	}()
+	return out
+}
+
+func square(in <-chan int) <-chan int {
+	out := make(chan int)
+	go func() {
+		defer close(out)
+		for n := range in {
+			out <- n * n
+		}
+	}()
+	return out
+}
+
+func filterEven(in <-chan int) <-chan int {
+	out := make(chan int)
+	go func() {
+		defer close(out)
+		for n := range in {
+			if n%2 == 0 {
+				out <- n
+			}
+		}
+	}()
+	return out
+}
+
+func main() {
+	// Pipeline: generate → square → keep even squares
+	// inputs 1..5 → squares 1,4,9,16,25 → even 4,16
+	stage1 := generator(1, 2, 3, 4, 5)
+	stage2 := square(stage1)
+	stage3 := filterEven(stage2)
+
+	var evenSquares []int
+	for v := range stage3 {
+		evenSquares = append(evenSquares, v)
+	}
+	fmt.Println("even squares:", evenSquares)
+
+	// sync.Cond: one-to-many start signal
+	var mu sync.Mutex
+	cond := sync.NewCond(&mu)
+	ready := false
+
+	const n = 4
+	var wg sync.WaitGroup
+	started := make(chan int, n)
+
+	for i := 1; i <= n; i++ {
+		wg.Add(1)
+		go func(id int) {
+			defer wg.Done()
+			mu.Lock()
+			for !ready {
+				cond.Wait() // unlocks mu while waiting
+			}
+			mu.Unlock()
+			started <- id
+		}(i)
+	}
+
+	time.Sleep(20 * time.Millisecond) // workers park on Wait
+	mu.Lock()
+	ready = true
+	mu.Unlock()
+	cond.Broadcast()
+
+	wg.Wait()
+	close(started)
+	count := 0
+	for range started {
+		count++
+	}
+	fmt.Println("workers started after broadcast:", count)
+}
+```
+
+**Expected output:**
+
+```text
+even squares: [4 16]
+workers started after broadcast: 4
+```
+
+**What to notice:** Each pipeline stage owns its output channel and closes it when done, so `range` terminates. `cond.Wait()` lives in a `for !ready` loop (predicate re-check). `Broadcast` wakes everyone; `Signal` would wake only one.
+
+**Try next:** Insert a third pipeline stage that sums values. Change `Broadcast` to `Signal` in a loop and observe staggered starts.

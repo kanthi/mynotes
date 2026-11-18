@@ -1,0 +1,557 @@
+book:
+  title: Linux
+  author: K19G
+  date: '2026-11-17'
+  description: Commands, editors and Bash
+  chapters:
+  - index.md
+  - part: Commands
+    contents:
+    - part: Help and Docs
+      contents:
+      - content/01-commands/00-help-and-docs/index.md
+      - content/01-commands/00-help-and-docs/01-man.md
+      - content/01-commands/00-help-and-docs/02-help.md
+      - content/01-commands/00-help-and-docs/03-info.md
+      - content/01-commands/00-help-and-docs/04-apropos.md
+      - content/01-commands/00-help-and-docs/05-whatis.md
+    - part: Files and Paths
+      contents:
+      - content/01-commands/01-files-and-paths/index.md
+      - content/01-commands/01-files-and-paths/01-pwd.md
+      - content/01-commands/01-files-and-paths/02-cd.md
+      - content/01-commands/01-files-and-paths/03-ls.md
+      - content/01-commands/01-files-and-paths/04-tree.md
+      - content/01-commands/01-files-and-paths/05-mkdir.md
+      - content/01-commands/01-files-and-paths/06-rmdir.md
+      - content/01-commands/01-files-and-paths/07-touch.md
+      - content/01-commands/01-files-and-paths/08-cp.md
+      - content/01-commands/01-files-and-paths/09-mv.md
+      - content/01-commands/01-files-and-paths/10-rm.md
+      - content/01-commands/01-files-and-paths/11-cat.md
+      - content/01-commands/01-files-and-paths/12-less.md
+      - content/01-commands/01-files-and-paths/13-more.md
+      - content/01-commands/01-files-and-paths/14-chmod.md
+      - content/01-commands/01-files-and-paths/15-chown.md
+      - content/01-commands/01-files-and-paths/16-stat.md
+      - content/01-commands/01-files-and-paths/17-file.md
+      - content/01-commands/01-files-and-paths/18-find.md
+      - content/01-commands/01-files-and-paths/19-fd.md
+      - content/01-commands/01-files-and-paths/20-locate.md
+      - content/01-commands/01-files-and-paths/21-rg.md
+      - content/01-commands/01-files-and-paths/22-ln.md
+      - content/01-commands/01-files-and-paths/23-readlink.md
+      - content/01-commands/01-files-and-paths/24-realpath.md
+      - content/01-commands/01-files-and-paths/25-basename.md
+      - content/01-commands/01-files-and-paths/26-dirname.md
+      - content/01-commands/01-files-and-paths/27-which.md
+      - content/01-commands/01-files-and-paths/28-alias.md
+      - content/01-commands/01-files-and-paths/29-install.md
+      - content/01-commands/01-files-and-paths/30-df.md
+      - content/01-commands/01-files-and-paths/31-du.md
+      - content/01-commands/01-files-and-paths/32-bat.md
+      - content/01-commands/01-files-and-paths/33-eza.md
+      - content/01-commands/01-files-and-paths/34-sha256sum.md
+      - content/01-commands/01-files-and-paths/35-base64.md
+      - content/01-commands/01-files-and-paths/36-cmp.md
+      - content/01-commands/01-files-and-paths/37-getfacl.md
+      - content/01-commands/01-files-and-paths/38-chattr.md
+      - content/01-commands/01-files-and-paths/39-xxd.md
+      - content/01-commands/01-files-and-paths/40-strings.md
+      - content/01-commands/01-files-and-paths/42-namei.md
+      - content/01-commands/01-files-and-paths/43-umask.md
+      - content/01-commands/01-files-and-paths/44-inotify-fanotify.md
+    - part: Archives and Compression
+      contents:
+      - content/01-commands/02-archives-and-compression/index.md
+      - content/01-commands/02-archives-and-compression/01-tar.md
+      - content/01-commands/02-archives-and-compression/02-gzip.md
+      - content/01-commands/02-archives-and-compression/03-xz.md
+      - content/01-commands/02-archives-and-compression/04-bzip2.md
+      - content/01-commands/02-archives-and-compression/05-zstd.md
+      - content/01-commands/02-archives-and-compression/06-zip.md
+      - content/01-commands/02-archives-and-compression/07-unzip.md
+      - content/01-commands/02-archives-and-compression/08-zcat.md
+      - content/01-commands/02-archives-and-compression/09-zgrep.md
+    - part: System Information
+      contents:
+      - content/01-commands/03-system-information/index.md
+      - content/01-commands/03-system-information/01-uname.md
+      - content/01-commands/03-system-information/02-hostname.md
+      - content/01-commands/03-system-information/03-hostnamectl.md
+      - content/01-commands/03-system-information/04-lsb_release.md
+      - content/01-commands/03-system-information/05-uptime.md
+      - content/01-commands/03-system-information/06-date.md
+      - content/01-commands/03-system-information/07-timedatectl.md
+      - content/01-commands/03-system-information/08-cal.md
+      - content/01-commands/03-system-information/09-whoami.md
+      - content/01-commands/03-system-information/10-id.md
+      - content/01-commands/03-system-information/11-who.md
+      - content/01-commands/03-system-information/12-w.md
+      - content/01-commands/03-system-information/13-last.md
+      - content/01-commands/03-system-information/14-env.md
+      - content/01-commands/03-system-information/15-free.md
+      - content/01-commands/03-system-information/16-lscpu.md
+      - content/01-commands/03-system-information/17-lsmem.md
+      - content/01-commands/03-system-information/18-lsusb.md
+      - content/01-commands/03-system-information/19-lsmod.md
+      - content/01-commands/03-system-information/20-hwinfo.md
+      - content/01-commands/03-system-information/21-four-ways-to-talk-to-the-kernel.md
+      - content/01-commands/03-system-information/22-cpu-masks-and-kernel-bitmaps.md
+    - part: Processes and Jobs
+      contents:
+      - content/01-commands/04-processes-and-jobs/index.md
+      - content/01-commands/04-processes-and-jobs/01-ps.md
+      - content/01-commands/04-processes-and-jobs/02-pstree.md
+      - content/01-commands/04-processes-and-jobs/03-top.md
+      - content/01-commands/04-processes-and-jobs/04-htop.md
+      - content/01-commands/04-processes-and-jobs/05-procs.md
+      - content/01-commands/04-processes-and-jobs/06-pgrep.md
+      - content/01-commands/04-processes-and-jobs/07-pidof.md
+      - content/01-commands/04-processes-and-jobs/08-kill.md
+      - content/01-commands/04-processes-and-jobs/09-killall.md
+      - content/01-commands/04-processes-and-jobs/10-jobs.md
+      - content/01-commands/04-processes-and-jobs/11-fg.md
+      - content/01-commands/04-processes-and-jobs/12-bg.md
+      - content/01-commands/04-processes-and-jobs/13-nohup.md
+      - content/01-commands/04-processes-and-jobs/14-timeout.md
+      - content/01-commands/04-processes-and-jobs/15-watch.md
+      - content/01-commands/04-processes-and-jobs/16-sleep.md
+      - content/01-commands/04-processes-and-jobs/17-nice.md
+      - content/01-commands/04-processes-and-jobs/18-renice.md
+      - content/01-commands/04-processes-and-jobs/19-ionice.md
+      - content/01-commands/04-processes-and-jobs/20-fuser.md
+      - content/01-commands/04-processes-and-jobs/21-ulimit.md
+      - content/01-commands/04-processes-and-jobs/22-ipcs.md
+      - content/01-commands/04-processes-and-jobs/23-ipcrm.md
+      - content/01-commands/04-processes-and-jobs/24-flock.md
+      - content/01-commands/04-processes-and-jobs/25-taskset.md
+      - content/01-commands/04-processes-and-jobs/26-sched-ext-sub-schedulers.md
+      - content/01-commands/04-processes-and-jobs/27-choom-oom-score.md
+      - content/01-commands/04-processes-and-jobs/28-pidfd.md
+      - content/01-commands/04-processes-and-jobs/29-strace-filtering.md
+      - content/01-commands/04-processes-and-jobs/30-fd-event-loop.md
+      - content/01-commands/04-processes-and-jobs/31-how-programs-get-run.md
+      - content/01-commands/04-processes-and-jobs/32-clone-flags-threads.md
+    - part: System Monitoring
+      contents:
+      - content/01-commands/05-system-monitoring/index.md
+      - content/01-commands/05-system-monitoring/01-vmstat.md
+      - content/01-commands/05-system-monitoring/02-iostat.md
+      - content/01-commands/05-system-monitoring/03-mpstat.md
+      - content/01-commands/05-system-monitoring/04-sar.md
+      - content/01-commands/05-system-monitoring/05-lsof.md
+      - content/01-commands/05-system-monitoring/06-strace.md
+      - content/01-commands/05-system-monitoring/07-perf.md
+      - content/01-commands/05-system-monitoring/08-btop.md
+      - content/01-commands/05-system-monitoring/09-ltrace.md
+      - content/01-commands/05-system-monitoring/10-pmap.md
+      - content/01-commands/05-system-monitoring/11-transparent-huge-pages.md
+      - content/01-commands/05-system-monitoring/12-pressure-stall-information.md
+      - content/01-commands/05-system-monitoring/13-vdso.md
+      - content/01-commands/05-system-monitoring/14-proc-is-the-api.md
+      - content/01-commands/05-system-monitoring/15-proc-pagemap.md
+    - part: Users and Groups
+      contents:
+      - content/01-commands/06-users-and-groups/index.md
+      - content/01-commands/06-users-and-groups/01-sudo.md
+      - content/01-commands/06-users-and-groups/02-visudo.md
+      - content/01-commands/06-users-and-groups/03-useradd.md
+      - content/01-commands/06-users-and-groups/04-usermod.md
+      - content/01-commands/06-users-and-groups/05-userdel.md
+      - content/01-commands/06-users-and-groups/06-passwd.md
+      - content/01-commands/06-users-and-groups/07-chage.md
+      - content/01-commands/06-users-and-groups/08-groupadd.md
+      - content/01-commands/06-users-and-groups/09-groupmod.md
+      - content/01-commands/06-users-and-groups/10-groupdel.md
+      - content/01-commands/06-users-and-groups/11-getent.md
+      - content/01-commands/06-users-and-groups/12-su.md
+      - content/01-commands/06-users-and-groups/13-sudo-rs.md
+    - part: Networking
+      contents:
+      - content/01-commands/07-networking/index.md
+      - content/01-commands/07-networking/01-ip.md
+      - content/01-commands/07-networking/02-ss.md
+      - content/01-commands/07-networking/03-ping.md
+      - content/01-commands/07-networking/04-traceroute.md
+      - content/01-commands/07-networking/05-mtr.md
+      - content/01-commands/07-networking/06-dig.md
+      - content/01-commands/07-networking/07-host.md
+      - content/01-commands/07-networking/08-nslookup.md
+      - content/01-commands/07-networking/09-doggo.md
+      - content/01-commands/07-networking/10-resolvectl.md
+      - content/01-commands/07-networking/11-curl.md
+      - content/01-commands/07-networking/12-wget.md
+      - content/01-commands/07-networking/13-ssh.md
+      - content/01-commands/07-networking/14-scp.md
+      - content/01-commands/07-networking/15-rsync.md
+      - content/01-commands/07-networking/16-nc.md
+      - content/01-commands/07-networking/17-tcpdump.md
+      - content/01-commands/07-networking/18-nmap.md
+      - content/01-commands/07-networking/19-openssl.md
+      - content/01-commands/07-networking/20-nmcli.md
+      - content/01-commands/07-networking/21-ufw.md
+      - content/01-commands/07-networking/22-nft.md
+      - content/01-commands/07-networking/23-iptables.md
+      - content/01-commands/07-networking/24-ifconfig.md
+      - content/01-commands/07-networking/25-netstat.md
+      - content/01-commands/07-networking/26-ftp.md
+      - content/01-commands/07-networking/27-telnet.md
+      - content/01-commands/07-networking/28-ssh-keygen.md
+      - content/01-commands/07-networking/29-ssh-copy-id.md
+      - content/01-commands/07-networking/30-sftp.md
+      - content/01-commands/07-networking/31-ethtool.md
+      - content/01-commands/07-networking/32-firewall-cmd.md
+      - content/01-commands/07-networking/33-ssh-agent.md
+      - content/01-commands/07-networking/34-cert-renewal-audit.md
+      - content/01-commands/07-networking/35-poll-epoll-io-uring.md
+    - part: Scheduling
+      contents:
+      - content/01-commands/08-scheduling/index.md
+      - content/01-commands/08-scheduling/01-cron.md
+      - content/01-commands/08-scheduling/02-crontab.md
+      - content/01-commands/08-scheduling/03-anacron.md
+      - content/01-commands/08-scheduling/04-at.md
+      - content/01-commands/08-scheduling/05-systemd-timers.md
+    - part: Logging
+      contents:
+      - content/01-commands/09-logging/index.md
+      - content/01-commands/09-logging/01-dmesg.md
+      - content/01-commands/09-logging/02-logger.md
+      - content/01-commands/09-logging/03-logrotate.md
+      - content/01-commands/09-logging/04-lnav.md
+      - content/01-commands/09-logging/05-auditctl-ausearch.md
+    - part: Hardware
+      contents:
+      - content/01-commands/10-hardware/index.md
+      - content/01-commands/10-hardware/01-lshw.md
+      - content/01-commands/10-hardware/02-lspci.md
+      - content/01-commands/10-hardware/03-dmidecode.md
+      - content/01-commands/10-hardware/04-hdparm.md
+      - content/01-commands/10-hardware/05-reading-numa-topology.md
+    - part: Storage and Filesystems
+      contents:
+      - content/01-commands/11-storage-and-filesystems/index.md
+      - content/01-commands/11-storage-and-filesystems/01-lsblk.md
+      - content/01-commands/11-storage-and-filesystems/02-blkid.md
+      - content/01-commands/11-storage-and-filesystems/03-findmnt.md
+      - content/01-commands/11-storage-and-filesystems/04-fdisk.md
+      - content/01-commands/11-storage-and-filesystems/05-mkfs.md
+      - content/01-commands/11-storage-and-filesystems/06-fsck.md
+      - content/01-commands/11-storage-and-filesystems/07-mount.md
+      - content/01-commands/11-storage-and-filesystems/08-umount.md
+      - content/01-commands/11-storage-and-filesystems/09-dd.md
+      - content/01-commands/11-storage-and-filesystems/10-sync.md
+      - content/01-commands/11-storage-and-filesystems/11-losetup.md
+      - content/01-commands/11-storage-and-filesystems/12-duf.md
+      - content/01-commands/11-storage-and-filesystems/13-dust.md
+      - content/01-commands/11-storage-and-filesystems/14-parted.md
+      - content/01-commands/11-storage-and-filesystems/15-wipefs.md
+      - content/01-commands/11-storage-and-filesystems/16-smartctl.md
+      - content/01-commands/11-storage-and-filesystems/17-pvs.md
+      - content/01-commands/11-storage-and-filesystems/18-vgs.md
+      - content/01-commands/11-storage-and-filesystems/19-lvs.md
+      - content/01-commands/11-storage-and-filesystems/20-cryptsetup.md
+      - content/01-commands/11-storage-and-filesystems/21-resize2fs.md
+      - content/01-commands/11-storage-and-filesystems/22-tune2fs.md
+      - content/01-commands/11-storage-and-filesystems/23-ncdu.md
+      - content/01-commands/11-storage-and-filesystems/24-rwf-dontcache.md
+      - content/01-commands/11-storage-and-filesystems/25-io-uring.md
+      - content/01-commands/11-storage-and-filesystems/26-io-schedulers-mq-deadline-kyber-bfq.md
+      - content/01-commands/11-storage-and-filesystems/27-tmpfs-scratch-space.md
+      - content/01-commands/11-storage-and-filesystems/28-io-uring-basics.md
+      - content/01-commands/11-storage-and-filesystems/29-bind-mounts-and-propagation.md
+    - part: Terminals and Multiplexers
+      contents:
+      - content/01-commands/12-terminals-and-mux/index.md
+      - content/01-commands/12-terminals-and-mux/01-tmux.md
+      - content/01-commands/12-terminals-and-mux/02-screen.md
+      - content/01-commands/12-terminals-and-mux/03-byobu.md
+      - content/01-commands/12-terminals-and-mux/04-tmate.md
+      - content/01-commands/12-terminals-and-mux/05-abduco.md
+    - part: Text and Pipes
+      contents:
+      - content/01-commands/13-text-and-pipes/index.md
+      - content/01-commands/13-text-and-pipes/01-grep.md
+      - content/01-commands/13-text-and-pipes/02-sed.md
+      - content/01-commands/13-text-and-pipes/03-awk.md
+      - content/01-commands/13-text-and-pipes/04-cut.md
+      - content/01-commands/13-text-and-pipes/05-sort.md
+      - content/01-commands/13-text-and-pipes/06-uniq.md
+      - content/01-commands/13-text-and-pipes/07-tr.md
+      - content/01-commands/13-text-and-pipes/08-head.md
+      - content/01-commands/13-text-and-pipes/09-tail.md
+      - content/01-commands/13-text-and-pipes/10-wc.md
+      - content/01-commands/13-text-and-pipes/11-tee.md
+      - content/01-commands/13-text-and-pipes/12-xargs.md
+      - content/01-commands/13-text-and-pipes/13-diff.md
+      - content/01-commands/13-text-and-pipes/14-comm.md
+      - content/01-commands/13-text-and-pipes/15-paste.md
+      - content/01-commands/13-text-and-pipes/16-column.md
+      - content/01-commands/13-text-and-pipes/17-jq.md
+      - content/01-commands/13-text-and-pipes/18-pv.md
+    - part: Packages
+      contents:
+      - content/01-commands/14-packages/index.md
+      - content/01-commands/14-packages/01-apt.md
+      - content/01-commands/14-packages/02-dpkg.md
+      - content/01-commands/14-packages/03-dnf.md
+      - content/01-commands/14-packages/04-rpm.md
+      - content/01-commands/14-packages/05-yum.md
+      - content/01-commands/14-packages/06-snap.md
+      - content/01-commands/14-packages/07-pacman.md
+      - content/01-commands/14-packages/08-apk.md
+      - content/01-commands/14-packages/09-zypper.md
+      - content/01-commands/14-packages/10-flatpak.md
+    - part: Services and Runtime
+      contents:
+      - content/01-commands/15-services-and-runtime/index.md
+      - content/01-commands/15-services-and-runtime/01-systemctl.md
+      - content/01-commands/15-services-and-runtime/02-journalctl.md
+      - content/01-commands/15-services-and-runtime/03-sysctl.md
+      - content/01-commands/15-services-and-runtime/04-shutdown.md
+      - content/01-commands/15-services-and-runtime/05-reboot.md
+      - content/01-commands/15-services-and-runtime/06-podman.md
+      - content/01-commands/15-services-and-runtime/07-systemd-run.md
+      - content/01-commands/15-services-and-runtime/08-systemd-analyze.md
+      - content/01-commands/15-services-and-runtime/09-loginctl.md
+      - content/01-commands/15-services-and-runtime/10-modprobe.md
+      - content/01-commands/15-services-and-runtime/11-systemd-creds.md
+      - content/01-commands/15-services-and-runtime/12-unshare.md
+      - content/01-commands/15-services-and-runtime/13-systemd-sysext.md
+      - content/01-commands/15-services-and-runtime/14-systemd-early-boot-units.md
+      - content/01-commands/15-services-and-runtime/15-cgroup-v2-cpu-memory-limits.md
+      - content/01-commands/15-services-and-runtime/16-containers-from-scratch.md
+    - part: Shell Commands
+      contents:
+      - content/01-commands/16-shell-commands/index.md
+      - content/01-commands/16-shell-commands/01-echo.md
+      - content/01-commands/16-shell-commands/02-printf.md
+      - content/01-commands/16-shell-commands/03-history.md
+      - content/01-commands/16-shell-commands/04-type.md
+      - content/01-commands/16-shell-commands/05-export.md
+      - content/01-commands/16-shell-commands/06-time.md
+      - content/01-commands/16-shell-commands/07-pushd.md
+    - part: Security in Shell Scripts
+      contents:
+      - content/01-commands/17-security/index.md
+      - content/01-commands/17-security/01-getenforce.md
+      - content/01-commands/17-security/02-setenforce.md
+      - content/01-commands/17-security/03-restorecon.md
+      - content/01-commands/17-security/04-getcap.md
+      - content/01-commands/17-security/05-gpg.md
+      - content/01-commands/17-security/06-age.md
+      - content/01-commands/17-security/07-io-uring-seccomp.md
+      - content/01-commands/17-security/08-landlock-setpriv.md
+      - content/01-commands/17-security/09-unprivileged-user-namespaces.md
+      - content/01-commands/17-security/10-openssh-musl-sshole.md
+    - part: Appendices
+      contents:
+      - content/01-commands/99-appendices/index.md
+      - content/01-commands/99-appendices/01-ubuntucheatsheat.md
+  - part: Editors
+    contents:
+    - part: Intro
+      contents:
+      - content/02-editors/00-intro/00-intro.md
+      - content/02-editors/00-intro/01-choosing-an-editor.md
+      - content/02-editors/00-intro/02-terminal-workspaces.md
+    - part: Vi
+      contents:
+      - content/02-editors/01-vi/index.md
+    - part: Vim
+      contents:
+      - content/02-editors/02-vim/index.md
+    - part: Neovim
+      contents:
+      - content/02-editors/03-neovim/index.md
+    - part: Nano
+      contents:
+      - content/02-editors/04-nano/index.md
+    - part: Emacs
+      contents:
+      - content/02-editors/05-emacs/index.md
+    - part: LazyVim
+      contents:
+      - content/02-editors/06-lazyvim/index.md
+    - part: Helix
+      contents:
+      - content/02-editors/07-helix/index.md
+    - part: Micro
+      contents:
+      - content/02-editors/08-micro/index.md
+    - part: Kakoune
+      contents:
+      - content/02-editors/09-kakoune/index.md
+    - part: Modern Tools
+      contents:
+      - content/02-editors/10-modern-tools/index.md
+    - part: Tmux
+      contents:
+      - content/02-editors/11-tmux/index.md
+    - part: Herdr
+      contents:
+      - content/02-editors/12-herdr/index.md
+    - part: Zed
+      contents:
+      - content/02-editors/13-zed/index.md
+    - part: Workflows
+      contents:
+      - content/02-editors/14-workflows/index.md
+  - part: Scripting
+    contents:
+    - part: Bash
+      contents:
+      - part: Intro to Shells
+        contents:
+        - content/03-scripting/01-bash/01-intro-to-shells/shell-vs-terminal.md
+        - content/03-scripting/01-bash/01-intro-to-shells/types-of-shells.md
+        - content/03-scripting/01-bash/01-intro-to-shells/what-is-shell.md
+      - part: Scripting Fundamentals
+        contents:
+        - content/03-scripting/01-bash/02-scripting-fundamentals/first-script.md
+        - content/03-scripting/01-bash/02-scripting-fundamentals/script-execution.md
+        - content/03-scripting/01-bash/02-scripting-fundamentals/what-is-shell-scripting.md
+      - part: Bash Features
+        contents:
+        - content/03-scripting/01-bash/03-bash-features/bash-environment.md
+        - content/03-scripting/01-bash/03-bash-features/bash-features.md
+        - content/03-scripting/01-bash/03-bash-features/what-is-bash.md
+      - part: The Bash Execution Model
+        contents:
+        - content/03-scripting/01-bash/03-execution-model/01-parsing-and-input.md
+        - content/03-scripting/01-bash/03-execution-model/02-expansion-order.md
+        - content/03-scripting/01-bash/03-execution-model/03-word-splitting-globbing.md
+        - content/03-scripting/01-bash/03-execution-model/04-subshells-and-forking.md
+        - content/03-scripting/01-bash/03-execution-model/05-interactive-vs-non-interactive.md
+      - part: Variables, Quoting, and Safe Syntax
+        contents:
+        - content/03-scripting/01-bash/04-variables/02-quoting-rules.md
+        - content/03-scripting/01-bash/04-variables/03-parameter-expansion.md
+        - content/03-scripting/01-bash/04-variables/04-special-parameters.md
+        - content/03-scripting/01-bash/04-variables/05-quoting-pitfalls.md
+        - content/03-scripting/01-bash/04-variables/variable-basics.md
+      - part: Control Flow and Logic
+        contents:
+        - content/03-scripting/01-bash/05-control/01-test-commands.md
+        - content/03-scripting/01-bash/05-control/03-case-pattern-matching.md
+        - content/03-scripting/01-bash/05-control/05-loop-control-and-exits.md
+        - content/03-scripting/01-bash/05-control/06-loops-in-depth.md
+        - content/03-scripting/01-bash/05-control/conditional-statements.md
+        - content/03-scripting/01-bash/05-control/loops.md
+      - part: Functions and Modular Design
+        contents:
+        - content/03-scripting/01-bash/06-functions/02-local-vars-and-scope.md
+        - content/03-scripting/01-bash/06-functions/03-function-arguments.md
+        - content/03-scripting/01-bash/06-functions/04-return-values.md
+        - content/03-scripting/01-bash/06-functions/05-libraries-and-sourcing.md
+        - content/03-scripting/01-bash/06-functions/function-basics.md
+      - part: Arrays and Associative Arrays
+        contents:
+        - content/03-scripting/01-bash/07-arrays/01-indexed-arrays.md
+        - content/03-scripting/01-bash/07-arrays/02-safe-array-iteration.md
+        - content/03-scripting/01-bash/07-arrays/03-array-operations.md
+        - content/03-scripting/01-bash/07-arrays/04-associative-arrays.md
+        - content/03-scripting/01-bash/07-arrays/05-array-portability.md
+      - part: Input/Output, Redirection, and File Descriptors
+        contents:
+        - content/03-scripting/01-bash/08-io-and-redirection/01-streams-and-fds.md
+        - content/03-scripting/01-bash/08-io-and-redirection/02-redirection-operators.md
+        - content/03-scripting/01-bash/08-io-and-redirection/03-pipelines-and-chaining.md
+        - content/03-scripting/01-bash/08-io-and-redirection/04-heredocs-and-herestrings.md
+        - content/03-scripting/01-bash/08-io-and-redirection/05-process-substitution-pipes.md
+      - part: Process and Job Management
+        contents:
+        - content/03-scripting/01-bash/09-process-and-jobs/01-background-jobs.md
+        - content/03-scripting/01-bash/09-process-and-jobs/02-waiting-for-processes.md
+        - content/03-scripting/01-bash/09-process-and-jobs/03-killing-child-processes.md
+        - content/03-scripting/01-bash/09-process-and-jobs/04-process-groups.md
+        - content/03-scripting/01-bash/09-process-and-jobs/05-monitoring-operations.md
+      - part: Signals, Traps, and Cleanup
+        contents:
+        - content/03-scripting/01-bash/10-signals-and-traps/01-unix-signals.md
+        - content/03-scripting/01-bash/10-signals-and-traps/02-trap-command.md
+        - content/03-scripting/01-bash/10-signals-and-traps/03-handling-signals.md
+        - content/03-scripting/01-bash/10-signals-and-traps/04-exit-cleanup.md
+        - content/03-scripting/01-bash/10-signals-and-traps/05-pipeline-subshell-signals.md
+      - part: Error Handling and Defensive Scripting
+        contents:
+        - content/03-scripting/01-bash/11-error-handling/01-exit-codes.md
+        - content/03-scripting/01-bash/11-error-handling/02-strict-mode-set.md
+        - content/03-scripting/01-bash/11-error-handling/03-input-validation.md
+        - content/03-scripting/01-bash/11-error-handling/04-graceful-failure.md
+        - content/03-scripting/01-bash/11-error-handling/05-error-logging.md
+      - part: Debugging and Testing Scripts
+        contents:
+        - content/03-scripting/01-bash/12-debugging-and-testing/01-builtin-debugging.md
+        - content/03-scripting/01-bash/12-debugging-and-testing/02-set-x-tracing.md
+        - content/03-scripting/01-bash/12-debugging-and-testing/03-shellcheck.md
+        - content/03-scripting/01-bash/12-debugging-and-testing/04-writing-tests.md
+        - content/03-scripting/01-bash/12-debugging-and-testing/05-ci-pipelines.md
+      - part: Text Processing Essentials in Scripts
+        contents:
+        - content/03-scripting/01-bash/13-text-processing/01-grep-in-scripts.md
+        - content/03-scripting/01-bash/13-text-processing/02-sed-in-scripts.md
+        - content/03-scripting/01-bash/13-text-processing/03-awk-in-scripts.md
+        - content/03-scripting/01-bash/13-text-processing/04-find-and-xargs.md
+        - content/03-scripting/01-bash/13-text-processing/05-pipelines-and-tool-choice.md
+      - part: POSIX Compatibility and Portability
+        contents:
+        - content/03-scripting/01-bash/14-posix-and-portability/01-posix-standard.md
+        - content/03-scripting/01-bash/14-posix-and-portability/02-bashisms-vs-posix.md
+        - content/03-scripting/01-bash/14-posix-and-portability/03-detecting-shell.md
+        - content/03-scripting/01-bash/14-posix-and-portability/04-writing-portable-scripts.md
+        - content/03-scripting/01-bash/14-posix-and-portability/05-shebang-selection.md
+      - part: Linux Distribution Differences
+        contents:
+        - content/03-scripting/01-bash/15-distribution-differences/01-shell-versions.md
+        - content/03-scripting/01-bash/15-distribution-differences/02-path-and-tools.md
+        - content/03-scripting/01-bash/15-distribution-differences/03-init-system-scripting.md
+        - content/03-scripting/01-bash/15-distribution-differences/04-package-manager-scripting.md
+        - content/03-scripting/01-bash/15-distribution-differences/05-alpine-busybox.md
+      - part: Security in Shell Scripts
+        contents:
+        - content/03-scripting/01-bash/16-security/01-command-injection.md
+        - content/03-scripting/01-bash/16-security/02-path-and-env-attacks.md
+        - content/03-scripting/01-bash/16-security/03-safe-input-handling.md
+        - content/03-scripting/01-bash/16-security/04-secrets-and-credentials.md
+        - content/03-scripting/01-bash/16-security/05-permissions-and-temp-files.md
+      - part: Performance Optimization and Concurrency
+        contents:
+        - content/03-scripting/01-bash/17-performance-and-concurrency/01-fork-costs.md
+        - content/03-scripting/01-bash/17-performance-and-concurrency/02-builtins-vs-externals.md
+        - content/03-scripting/01-bash/17-performance-and-concurrency/03-subshell-minimization.md
+        - content/03-scripting/01-bash/17-performance-and-concurrency/04-parallel-jobs-limits.md
+        - content/03-scripting/01-bash/17-performance-and-concurrency/05-locking-and-flock.md
+      - part: Automation, DevOps, and CI/CD
+        contents:
+        - content/03-scripting/01-bash/18-automation-and-devops/01-cicd-scripts.md
+        - content/03-scripting/01-bash/18-automation-and-devops/02-iac-and-shell.md
+        - content/03-scripting/01-bash/18-automation-and-devops/03-container-entrypoints.md
+        - content/03-scripting/01-bash/18-automation-and-devops/04-config-management.md
+        - content/03-scripting/01-bash/18-automation-and-devops/05-monitoring-scripts.md
+      - part: System Administration Patterns
+        contents:
+        - content/03-scripting/01-bash/19-sysadmin-patterns/01-user-group-management.md
+        - content/03-scripting/01-bash/19-sysadmin-patterns/02-log-processing-rotation.md
+        - content/03-scripting/01-bash/19-sysadmin-patterns/03-backup-and-restore.md
+        - content/03-scripting/01-bash/19-sysadmin-patterns/04-service-health-checks.md
+        - content/03-scripting/01-bash/19-sysadmin-patterns/05-disk-space-and-resources.md
+      - part: Workbook
+        contents:
+        - content/03-scripting/01-bash/20-workbook/01-basic-examples.md
+        - content/03-scripting/01-bash/20-workbook/02-intermediate-examples.md
+        - content/03-scripting/01-bash/20-workbook/03-advanced-examples.md
+        - content/03-scripting/01-bash/20-workbook/04-automation-examples.md
+        - content/03-scripting/01-bash/20-workbook/05-utility-scripts.md
+      - part: Appendices
+        contents:
+        - content/03-scripting/01-bash/21-appendices/appendix-a-syntax-cheat-sheet.md
+        - content/03-scripting/01-bash/21-appendices/appendix-b-production-patterns.md
+        - content/03-scripting/01-bash/21-appendices/appendix-c-posix-vs-bash.md
+format:
+  html:
+    theme: auto
+  epub: {}
+  pdf:
+    paper: A4

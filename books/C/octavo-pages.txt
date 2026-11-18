@@ -1,0 +1,149 @@
+# Every page address this book's website has had, kept by Octavo so that
+# links to moved chapters keep working. Commit this file with the book.
+# Each line: the page, a tab, then its chapter title, or "-> " and the page
+# its old address now forwards to.
+content/00-intro/00-intro.html	Comprehensive C Programming Syllabus
+content/01-foundations/01-intro-to-c.html	Introduction to C Programming
+content/01-foundations/02-dev-environment.html	Development Environment Setup
+content/01-foundations/03-first-program.html	Your First C Program
+content/01-foundations/04-basic-io.html	Basic Input and Output
+content/01-foundations/README.html	Module 1: Foundations and Environment Setup
+content/02-data-types/01-fundamental-types.html	Fundamental Data Types
+content/02-data-types/02-variables-constants.html	Variables and Constants
+content/02-data-types/03-type-conversions.html	Type Conversions
+content/02-data-types/03b-hexadecimal-floating-literals.html	Hexadecimal Floating Literals and %a: Exact Floats in C
+content/02-data-types/04-operators-expressions.html	Operators and Expressions
+content/02-data-types/README.html	Module 2: Data Types and Variables
+content/03-control-flow/01-conditionals.html	Conditional Statements
+content/03-control-flow/02-loops.html	Loops
+content/03-control-flow/03-flow-control.html	Advanced Control Flow
+content/03-control-flow/README.html	Module 3: Control Flow
+content/04-functions/01-function-basics.html	Function Fundamentals
+content/04-functions/02-advanced-functions.html	Advanced Functions
+content/04-functions/03-modular-programming.html	Modular Programming
+content/04-functions/04-standard-library.html	Standard Library Functions
+content/04-functions/README.html	Module 4: Functions and Modular Programming
+content/05-arrays-strings/01-arrays.html	Arrays
+content/05-arrays-strings/02-strings.html	Strings
+content/05-arrays-strings/02b-bounded-string-copies.html	Bounded String Copies: strncpy, strlcpy, memccpy and strscpy Compared
+content/05-arrays-strings/03-advanced-arrays.html	Advanced Arrays
+content/05-arrays-strings/04-length-prefixed-strings.html	Length-Prefixed Strings: an sds-Style String Library in Under 60 Lines
+content/05-arrays-strings/README.html	Module 5: Arrays and Strings
+content/06-pointers/01-pointer-fundamentals.html	Pointer Fundamentals
+content/06-pointers/02-pointers-arrays.html	Pointers and Arrays
+content/06-pointers/03-dynamic-memory.html	Dynamic Memory Management
+content/06-pointers/04-advanced-pointers.html	Advanced Pointer Concepts
+content/06-pointers/05-pointer-pitfalls.html	Common Pointer Pitfalls
+content/06-pointers/06-null-check-elimination.html	When the Optimizer Deletes Your NULL Check
+content/06-pointers/README.html	Module 6: Pointers and Memory Management
+content/07-structures/01-structures.html	Structures
+content/07-structures/02-unions-enums.html	Unions and Enumerations
+content/07-structures/03-advanced-structures.html	Advanced Structure Concepts
+content/07-structures/04-abstract-data-types.html	Abstract Data Types
+content/07-structures/05-bit-field-traps.html	Bit-Field Traps: Signedness, Promotion, Layout and Shared Words
+content/07-structures/06-opaque-handles-and-bindable-library-apis.html	Opaque Handles and Library APIs Other Languages Can Bind
+content/07-structures/README.html	Module 7: Structures and User-Defined Types
+content/08-file-io/01-file-operations.html	File Operations
+content/08-file-io/02-file-io-functions.html	File I/O Functions
+content/08-file-io/03-advanced-file-ops.html	Advanced File Operations
+content/08-file-io/04-system-programming.html	System-Level Programming
+content/08-file-io/README.html	Module 8: File I/O and System Programming
+content/09-modern-c/01-c99-features.html	C99 Features
+content/09-modern-c/02-c11-features.html	C11 Features
+content/09-modern-c/03-c17-c23-features.html	C17 and C23 Features
+content/09-modern-c/03b-what-c23-removed.html	What C23 Removed: Trigraphs, K&R Definitions and `()` Meaning "Anything"
+content/09-modern-c/04-modern-practices.html	Modern C Development Practices
+content/09-modern-c/05-advanced-preprocessor.html	Advanced Preprocessor
+content/09-modern-c/06-c23-embed-nullptr-constexpr.html	C23 #embed, nullptr, and constexpr
+content/09-modern-c/07-checked-integer-arithmetic.html	Checked Integer Arithmetic with C23 <stdckdint.h>
+content/09-modern-c/08-stdbit-bit-and-byte-utilities.html	C23 <stdbit.h>: Bit and Byte Utilities
+content/09-modern-c/09-defer-scope-based-cleanup.html	defer: Scope-Based Cleanup (TS 25755)
+content/09-modern-c/10-trivial-auto-var-init.html	GCC -ftrivial-auto-var-init: Zero and Pattern Init
+content/09-modern-c/11-gcc-16-c-changes.html	GCC 16: What Changed for C
+content/09-modern-c/12-xor-swap-trap-and-safe-swap.html	The XOR-Swap Trap and a Type-Safe C23 SWAP Macro
+content/09-modern-c/13-c23-typeof.html	C23 typeof and typeof_unqual: type of an expression
+content/09-modern-c/14-c23-bitint.html	C23 _BitInt: bit-precise integers beyond fixed widths
+content/09-modern-c/README.html	Module 9: Advanced C Features and Modern Standards
+content/10-data-structures/01-linear-structures.html	Linear Data Structures
+content/10-data-structures/02-tree-structures.html	Tree Structures
+content/10-data-structures/03-hash-tables.html	Hash Tables
+content/10-data-structures/03b-roaring-bitmaps.html	Roaring Bitmaps from Scratch: Array, Bitmap and Run Containers
+content/10-data-structures/04-graph-algorithms.html	Graph Algorithms
+content/10-data-structures/05-sorting-searching.html	Sorting and Searching
+content/10-data-structures/README.html	Module 10: Data Structures and Algorithms
+content/100-appendices/a-resources.html	Appendix A: Additional Resources
+content/100-appendices/b-reference.html	Appendix B: C Language Reference
+content/100-appendices/c-solutions.html	Appendix C: Exercise Solutions
+content/11-network/01-network-fundamentals.html	Network Fundamentals
+content/11-network/02-socket-programming.html	Socket Programming
+content/11-network/03-advanced-networking.html	Advanced Networking
+content/11-network/04-network-protocols.html	Network Protocols
+content/11-network/05-network-security.html	Network Security
+content/11-network/README.html	Module 11: Network Programming
+content/12-embedded/01-embedded-basics.html	Embedded Basics
+content/12-embedded/02-low-level-programming.html	Low-Level Programming
+content/12-embedded/03-embedded-c-techniques.html	Embedded C Techniques
+content/12-embedded/04-realtime-programming.html	Real-time Programming
+content/12-embedded/05-hardware-interfaces.html	Hardware Interfaces
+content/12-embedded/README.html	Module 12: Embedded Systems Programming
+content/13-performance/01-performance-analysis.html	Performance Analysis
+content/13-performance/02-optimization-techniques.html	Optimization Techniques
+content/13-performance/03-memory-optimization.html	Memory Optimization
+content/13-performance/04-advanced-optimization.html	Advanced Optimization
+content/13-performance/05-ispc-1-32-avx10-apx.html	ISPC 1.32: AVX10.2, APX, and Zen 6 Targets
+content/13-performance/06-arena-allocators.html	Arena Allocators: Bump Pointers, Alignment, and Lifetimes Instead of free()
+content/13-performance/06b-double-ended-stack-allocator.html	Double-Ended Stack Allocators: Two Lifetimes, One Buffer, No Fragmentation
+content/13-performance/06c-zmalloc-accounting-and-fragmentation.html	How Redis wraps malloc: zmalloc accounting, used_memory vs RSS, and fragmentation
+content/13-performance/07-restrict-and-aliasing.html	restrict and Pointer Aliasing
+content/13-performance/08-rdtsc-rdtscp-timing.html	Timing Code with RDTSC and RDTSCP: Fences, Overhead, and Converting Ticks
+content/13-performance/README.html	Module 13: Performance Optimization
+content/14-testing/01-testing-methodologies.html	Testing Methodologies
+content/14-testing/02-debugging-techniques.html	Debugging Techniques
+content/14-testing/03-error-handling.html	Error Handling
+content/14-testing/04-code-quality.html	Code Quality
+content/14-testing/05-sanitizers.html	Compiler Sanitizers (ASan, UBSan, TSan, MSan)
+content/14-testing/06-memory-safe-c.html	Memory-Safe C in Practice: Fil-C, counted_by, and -fbounds-safety
+content/14-testing/07-gcc-diagnostics-json-sarif.html	GCC Diagnostics: JSON and SARIF for CI
+content/14-testing/08-failure-injection-error-paths.html	Testing the Error Paths: Deterministic Failure Injection
+content/14-testing/09-setjmp-longjmp-error-unwinding.html	setjmp/longjmp for Error Unwinding: The Rules That Bite
+content/14-testing/README.html	Module 14: Testing
+content/15-advanced/01-multithreading.html	Module 15.1: Multithreading in C
+content/15-advanced/02-system-programming.html	Module 15.2: System Programming in C
+content/15-advanced/03-domain-specific.html	Module 15.3: Domain-Specific Applications in C
+content/15-advanced/04-capstone-project.html	Module 15.4: Capstone Project
+content/15-advanced/05-static-linking-glibc-vs-musl.html	Static Linking: Why glibc Binaries Are Big, and When musl Is the Answer
+content/15-advanced/06-fil-c-memory-safe-c.html	Fil-C: Memory-Safe C with Invisible Capabilities
+content/15-advanced/07-fd-hygiene-cloexec.html	File-Descriptor Hygiene: CLOEXEC, close_range, and O_CLOFORK
+content/15-advanced/07b-fork-vfork-posix-spawn.html	fork(), vfork() or posix_spawn(): Starting Programs in Modern C
+content/15-advanced/08-chase-lev-work-stealing-deque.html	Work Stealing in C: a Chase–Lev Deque with C11 Atomics
+content/15-advanced/09-open-addressing-hash-table.html	Open-Addressing Hash Table from Scratch
+content/15-advanced/09b-cuckoo-hashing.html	Cuckoo Hashing: Two Tables, Two Probes, and the 50% Wall
+content/15-advanced/10-asan-heap-buffer-overflow.html	Catching Heap Buffer Overflows with AddressSanitizer
+content/15-advanced/11-mark-sweep-toy-gc.html	A Toy Mark-and-Sweep Garbage Collector
+content/15-advanced/11b-nan-boxing.html	NaN Boxing: A Dynamic Value in One 64-bit Word
+content/15-advanced/12-c11-atomics-memory-order.html	C11 Atomics and Memory Order
+content/15-advanced/12b-spsc-ring-buffer.html	A Lock-Free SPSC Ring Buffer in C11
+content/15-advanced/13-flexible-array-members.html	Flexible Array Members Done Right
+content/15-advanced/14-ld-preload-interposition.html	Function Interposition with LD_PRELOAD
+content/15-advanced/15-gcc-attribute-cleanup.html	GCC __attribute__((cleanup)): scope-based free without C23 defer
+content/15-advanced/15-memfd-create-and-seals.html	memfd_create and file seals: anonymous files peers cannot rewrite
+content/99-workbook/exercises/01-foundations/module1-exercises.html	Module 1: Foundations Exercises
+content/99-workbook/exercises/02-data-types/module2-exercises.html	Module 2: Data Types and Variables Exercises
+content/99-workbook/exercises/03-control-flow/module3-exercises.html	Module 3: Control Flow Exercises
+content/99-workbook/exercises/04-functions/module4-exercises.html	Module 4: Functions and Modular Programming Exercises
+content/99-workbook/exercises/05-arrays-strings/module5-exercises.html	Module 5: Arrays and Strings Exercises
+content/99-workbook/exercises/06-pointers/module6-exercises.html	Module 6: Pointers Exercises
+content/99-workbook/exercises/07-structures/module7-exercises.html	Module 7: Structures, Unions, and Enums Exercises
+content/99-workbook/exercises/08-file-io/module8-exercises.html	Module 8: File I/O Exercises
+content/99-workbook/exercises/09-modern-c/module9-exercises.html	Module 9: Modern C Features Exercises
+content/99-workbook/exercises/10-data-structures/module10-exercises.html	Module 10: Data Structures Exercises
+content/99-workbook/exercises/11-network/module11-exercises.html	Module 11: Network Programming Exercises
+content/99-workbook/exercises/12-embedded/module12-exercises.html	Module 12: Embedded Systems Programming Exercises
+content/99-workbook/exercises/13-performance/module13-exercises.html	Module 13: Performance Optimization Exercises
+content/99-workbook/exercises/14-testing/module14-exercises.html	Module 14: Testing and Quality Assurance Exercises
+content/99-workbook/exercises/15-advanced/module15-exercises.html	Module 15: Advanced Topics Exercises
+content/99-workbook/projects/advanced/advanced-projects.html	Advanced Projects
+content/99-workbook/projects/beginner/beginner-projects.html	Beginner Projects
+content/99-workbook/projects/capstone/capstone-projects.html	Capstone Projects
+content/99-workbook/projects/intermediate/intermediate-projects.html	Intermediate Projects
+index.html	C Programming

@@ -1,0 +1,298 @@
+# Every page address this book's website has had, kept by Octavo so that
+# links to moved chapters keep working. Commit this file with the book.
+# Each line: the page, a tab, then its chapter title, or "-> " and the page
+# its old address now forwards to.
+content/01-lab-platform/01-lab-host-macos.html	Lab Host — macOS
+content/01-lab-platform/02-lab-host-linux.html	Lab Host — Linux
+content/01-lab-platform/02b-netplan-yaml-renderers.html	Netplan: YAML, Renderers, Bonds, VLANs, Bridges and try
+content/01-lab-platform/03-containerlab-fundamentals.html	Containerlab Fundamentals
+content/01-lab-platform/03b-netlab-fundamentals.html	Netlab Fundamentals
+content/01-lab-platform/03c-containerlab-persistent-state.html	Persistent State in Containerlab Labs
+content/01-lab-platform/03e-containerlab-inspect-graph-ssh.html	Containerlab Inspect, Graph, SSH and Inventory
+content/01-lab-platform/03f-netlab-modules-provision-validate.html	netlab Modules, Provisioning and Validation
+content/01-lab-platform/03g-clabernetes-c9s-runtime.html	Clabernetes (c9s): Running Containerlab Topologies on Kubernetes
+content/01-lab-platform/04-free-image-matrix.html	Free Image Matrix & Resources
+content/01-lab-platform/05-linux-networking-for-labs.html	Linux Networking for Lab Hosts
+content/01-lab-platform/06-lab-hygiene.html	Lab Hygiene
+content/02-networking-foundations/01-what-is-networking.html	What Is Networking?
+content/02-networking-foundations/02-tcpip-and-layered-models.html	TCP/IP and the Layered Stack
+content/02-networking-foundations/03-packets-frames-encapsulation.html	Packets, Frames, Encapsulation
+content/02-networking-foundations/04-link-layer-and-ethernet.html	Link Layer and Ethernet
+content/02-networking-foundations/04b-physical-ethernet-diagnostics.html	Physical Ethernet: Media, Optics, PoE and Fault Isolation
+content/02-networking-foundations/05-ipv4-addressing-and-subnetting.html	IPv4 Addressing and Subnetting
+content/02-networking-foundations/06-ipv6-essentials.html	IPv6 Essentials
+content/02-networking-foundations/06b-slaac-ra-flags-and-dhcpv6.html	SLAAC, the RA M/O Flags and DHCPv6: What a Linux Host Actually Does
+content/02-networking-foundations/06c-ipv6-extension-headers-and-fragmentation.html	IPv6 Extension Headers and Fragmentation: What a Linux Host Accepts, Drops and Reports
+content/02-networking-foundations/07-arp-nd-and-local-resolution.html	ARP, ND, and Local Resolution
+content/02-networking-foundations/07b-neighbour-tables-timers-limits-arp-flux.html	Linux Neighbour Tables in Production: Timers, Table Limits and ARP Flux
+content/02-networking-foundations/07c-ipv4-address-conflict-detection.html	Duplicate IPv4 Addresses: Address Conflict Detection and IPv4 Link-Local
+content/02-networking-foundations/08-icmp-and-path-diagnostics.html	ICMP and Path Diagnostics
+content/02-networking-foundations/09-transport-tcp-udp.html	Transport: TCP and UDP
+content/02-networking-foundations/10-common-application-protocols.html	Common Application Protocols
+content/02-networking-foundations/11-host-forwarding-and-routing-intro.html	Host Forwarding and Routing Intro
+content/02-networking-foundations/12-control-data-management-planes.html	Control, Data, and Management Planes
+content/02-networking-foundations/13-encrypted-dns-doh-dot.html	Encrypted DNS: DoT, DoH and Discovering Them
+content/03-layer-2/01-ethernet-mac.html	Ethernet & MAC Learning
+content/03-layer-2/02-vlans-trunks.html	VLANs & Trunks
+content/03-layer-2/02b-private-vlans-port-isolation-qinq.html	Private VLANs, Port Isolation and Q-in-Q: Separating Tenants at Layer 2
+content/03-layer-2/03-loop-prevention.html	Loop Prevention
+content/03-layer-2/03b-spanning-tree-election.html	Spanning Tree: Elections, Roles and Failure Analysis
+content/03-layer-2/04-link-aggregation.html	Link Aggregation
+content/03-layer-2/05-l2-failure-drills.html	L2 Failure Drills
+content/03-layer-2/06-wireless-lan-fundamentals.html	Wireless LANs: Radio, Access, and Troubleshooting
+content/04-ip-routing-services/01-ip-addressing.html	IP Addressing
+content/04-ip-routing-services/02-routing-fundamentals.html	Routing Fundamentals
+content/04-ip-routing-services/03-static-routing-labs.html	Static Routing Labs
+content/04-ip-routing-services/04-icmp-path-mtu.html	ICMP & Path MTU
+content/04-ip-routing-services/04b-pmtu-black-holes-and-plpmtud.html	When PMTUD Fails: the PMTU Cache, TCP MTU Probing and Packetization-Layer PMTUD
+content/04-ip-routing-services/07-vrf-and-policy-routing.html	Policy Routing and VRF
+content/04-ip-routing-services/08-linux-ecmp-nexthop-groups.html	Linux ECMP: Nexthop Objects, Hash Policies and Resilient Groups
+content/04-ip-routing-services/09-multicast-distribution.html	Multicast Membership and Distribution Trees
+content/04-network-services/01-first-hop-redundancy.html	First-Hop Redundancy
+content/04-network-services/02-dhcp-relay-and-nat.html	DHCP Relay and NAT
+content/04-network-services/02b-network-boot-pxe-ipxe-tftp.html	Network Boot: PXE, iPXE, UEFI HTTP Boot and TFTP
+content/04-network-services/02c-dhcp-option-82-relay-agent-information.html	DHCP Option 82: Relay Agent Information, Circuit IDs and the Renewal Gap
+content/04-network-services/02d-dhcp-lease-relay-diagnostics.html	DHCPv4 Lease and Relay Troubleshooting
+content/04-network-services/03-name-time-log-hygiene.html	Name, Time, and Log Hygiene
+content/04-network-services/03b-ptp-precision-time.html	Precision Time Protocol (PTP): Beyond NTP
+content/04-network-services/03c-nts-for-ntp.html	Network Time Security: NTS-KE, Cookies and Authenticated NTP (RFC 8915)
+content/04-network-services/05-dns-authoritative-and-recursive.html	DNS Authoritative and Recursive
+content/04-network-services/05b-linux-stub-resolver.html	The Linux Stub Resolver Measured: resolv.conf, Search Lists, ndots, Timeouts and nsswitch
+content/04-network-services/05c-zone-transfers-notify-tsig.html	Zone Transfers: AXFR, IXFR, NOTIFY and TSIG
+content/04-network-services/05d-dns-rebinding-defenses.html	DNS Rebinding: How a Web Page Reaches Your LAN, and the Three Places to Stop It
+content/04-network-services/05e-dns-negative-answers-and-caching.html	Negative Answers in DNS: NXDOMAIN, NODATA, Negative Caching and Compact Denial
+content/04-network-services/05f-edns-client-subnet-and-split-horizon.html	EDNS Client Subnet: Geo-Answers, Cache Scope, Privacy and Split-Horizon Pitfalls
+content/04-network-services/05g-dns-cache-poisoning-0x20-cookies.html	DNS Cache Poisoning After Kaminsky: TXID, 0x20-Bit and Cookies
+content/04-network-services/05h-svcb-https-records.html	SVCB and HTTPS Records: Service Binding in the DNS (RFC 9460 and 9461)
+content/04-network-services/17-dns-message-size-edns-tcp-fallback.html	DNS Message Size: EDNS(0), the TC Bit and TCP Fallback
+content/04-network-services/18-cname-chains-and-answer-order.html	CNAME Chains and Answer Order: What the RFCs Say and What glibc Does
+content/04-network-services/19-anycast-services-and-dns.html	Anycast Services: One Address, Many Servers, and Withdrawing When Sick
+content/04-network-services/21-nat64-dns64-464xlat.html	NAT64, DNS64 and 464XLAT: Running IPv6-Only Without Losing the IPv4 Internet
+content/04-network-services/21b-ds-lite-map-e-map-t-6rd.html	IPv4 as a Service over IPv6: DS-Lite, MAP-E, MAP-T and 6rd
+content/04-network-services/22-dhcpv6-prefix-delegation.html	DHCPv6 Prefix Delegation: How a CPE Router Gets Its /56 and What It Must Do With It
+content/04-network-services/24-mdns-dns-sd-service-discovery.html	Link-Local Service Discovery: mDNS, DNS-SD and Why the Printer Vanishes Across VLANs
+content/05-dynamic-routing/00-dynamic-routing-ideas.html	Dynamic Routing Ideas: Distance-Vector vs Link-State
+content/05-dynamic-routing/01-ospf-basics.html	OSPF Basics
+content/05-dynamic-routing/01b-ospf-adjacency-diagnostics.html	OSPF Adjacencies and Database Troubleshooting
+content/05-dynamic-routing/02-bgp-basics.html	BGP Basics
+content/05-dynamic-routing/03-policy-and-filters.html	Policy & Filters
+content/05-dynamic-routing/03b-redistribution-design.html	Redistribution Design and Route Provenance
+content/05-dynamic-routing/04-bfd-fast-failure-detection.html	BFD — Fast Failure Detection
+content/05-dynamic-routing/05-rpki-route-origin-validation.html	RPKI — Route Origin Validation
+content/05-dynamic-routing/06-segment-routing-srv6-ti-lfa.html	Segment Routing, SRv6, and TI-LFA
+content/05-dynamic-routing/06b-ti-lfa-repair-lists-sr-mpls.html	TI-LFA over SR-MPLS: Computing Repair Lists and Label Stacks
+content/05-dynamic-routing/06c-igp-flexible-algorithm.html	IGP Flexible Algorithm (RFC 9350): Constraint Planes Without RSVP-TE
+content/05-dynamic-routing/07-bgp-route-reflectors.html	BGP Route Reflectors: Escaping the iBGP Full Mesh
+content/05-dynamic-routing/08-bgp-ipv4-routes-ipv6-next-hops-rfc8950.html	IPv4 Routes over IPv6 Next Hops: BGP Extended Next Hop (RFC 8950)
+content/05-dynamic-routing/09-isis-basics.html	IS-IS Basics
+content/05-dynamic-routing/09-netlab-bgp-lab.html	A First BGP Lab with netlab
+content/05-dynamic-routing/11-ipv6-igp-notes.html	IPv6 Interior Gateway Protocols: OSPFv3 and IS-IS
+content/05-dynamic-routing/12-bgp-path-exploration-and-mrai.html	BGP Path Exploration and MRAI: Why Withdrawals Converge Slowly
+content/05-dynamic-routing/13-bgp-graceful-restart-llgr-gshut.html	BGP Graceful Restart, Long-Lived Graceful Restart and Graceful Shutdown
+content/05-dynamic-routing/14-bgp-error-handling-rfc7606.html	BGP Error Handling: RFC 7606, Treat-as-Withdraw and Session-Killing UPDATEs
+content/06-policy-qos-hardening/01-acl-thinking.html	ACL Thinking
+content/06-policy-qos-hardening/02-control-plane-protection.html	Control-Plane Protection
+content/06-policy-qos-hardening/02b-bgp-session-protection-md5-ao-gtsm.html	Protecting the BGP Session: TCP-MD5, TCP-AO and GTSM on Linux
+content/06-policy-qos-hardening/02c-device-aaa-radius-tacacs-blastradius.html	Device AAA with RADIUS and TACACS+: Shared Secrets, MD5 and BlastRADIUS
+content/06-policy-qos-hardening/02d-network-access-8021x.html	Network Access Control: 802.1X, EAP and Authorization
+content/06-policy-qos-hardening/03-qos-vocabulary.html	QoS Vocabulary
+content/06-policy-qos-hardening/03b-qos-queues-and-token-buckets.html	QoS: Queues, Token Buckets and Congestion Evidence
+content/06-policy-qos-hardening/04-hardening-checklists.html	Hardening Checklists
+content/06-policy-qos-hardening/05-syn-floods-and-listen-queues.html	SYN Floods and Listen Queues: SYN_RECV, SYN Cookies, and Accept Overflow
+content/06-policy-qos-hardening/06-fq-codel-and-cake.html	FQ-CoDel and CAKE: How Linux Fights Bufferbloat, and How to Check It Is Actually On
+content/06-policy-qos-hardening/06b-ecn-and-l4s.html	ECN and L4S: Marking Instead of Dropping
+content/06-policy-qos-hardening/07-nftables-fundamentals.html	nftables Fundamentals: Tables, Chains, Sets and NAT
+content/06-policy-qos-hardening/08-conntrack-exhaustion.html	Conntrack Exhaustion: Limits, Timeouts and the Table-Full Drop
+content/06-policy-qos-hardening/09-macsec-and-mka.html	MACsec (IEEE 802.1AE) and MKA: Hop-by-Hop Ethernet Encryption
+content/06-policy-qos-hardening/10-rtbh-and-flowspec.html	Dropping Attack Traffic with Routing: RTBH, Source-Based RTBH and BGP FlowSpec
+content/06-policy-qos-hardening/11-ipv6-first-hop-security.html	IPv6 First-Hop Security and Binding Validation
+content/06-security-operations/01-observability-for-networks.html	Observability for Networks
+content/06-security-operations/01b-flow-export-ipfix.html	Flow Export with IPFIX: Templates, Timeouts and Sampling (a Working Exporter and Collector)
+content/06-security-operations/01c-bmp-bgp-monitoring.html	BMP: Streaming What Your BGP Routers Actually Received
+content/06-security-operations/01d-stamp-active-measurement.html	Active Measurement with STAMP: One-Way Delay, Loss Direction and Clock Error
+content/06-security-operations/01e-snmpv3-usm-and-vacm.html	SNMPv3 Done Properly: USM Keys, Engine IDs, Time Windows and VACM Views
+content/06-security-operations/02-automation-lab-as-code.html	Automation & Lab-as-Code
+content/06-security-operations/04-network-xray-live-bgp-decisions.html	network-xray: see why BGP picked that path in containerlab
+content/06-security-operations/05-ss-tcpdump-mtr.html	Seeing Packets and Sockets: ss, tcpdump and mtr
+content/06-security-operations/05b-linux-drop-counters.html	Where Did the Packet Die? Linux Drop Counters from nstat to Drop Reasons
+content/06-security-operations/05c-paris-traceroute-ecmp.html	ECMP-Aware Tracing: Why traceroute Lies Through Load Balancers, and Paris Traceroute
+content/06-security-operations/06-yang-netconf-gnmi.html	Model-Driven Management: YANG, NETCONF and gNMI
+content/06-security-operations/06b-api-conditional-updates.html	API Automation: Conditional Updates and Concurrent Changes
+content/06-security-operations/07-containerlab-in-ci.html	Containerlab in CI: Smoke-Testing a Topology on Every Change
+content/06-security-operations/09-runbooks-and-incident-notes.html	Runbooks and Incident Notes
+content/07-a-overlays-tunnels/01-why-encapsulate.html	Why Encapsulate
+content/07-a-overlays-tunnels/02-site-tunnels.html	Site Tunnels
+content/07-a-overlays-tunnels/02b-wireguard-cryptokey-routing-and-psk.html	WireGuard: Cryptokey Routing and the Pre-Shared Key
+content/07-a-overlays-tunnels/02c-openvpn-data-channel-offload.html	OpenVPN Data Channel Offload (DCO)
+content/07-a-overlays-tunnels/02d-wireguard-multi-tunnel.html	WireGuard Multi-Tunnel: AllowedIPs, Policy Routing, Kill Switch
+content/07-a-overlays-tunnels/02e-wireguard-mtu-and-fragmentation.html	WireGuard and MTU: Where the 1420 Comes From, Padding, and Silent Fragmentation
+content/07-a-overlays-tunnels/02f-ipsec-esp-xfrm-and-ikev2.html	IPsec by Hand: ESP with ip xfrm, and What IKEv2 Automates
+content/07-a-overlays-tunnels/02g-dhcp-option-121-vpn-route-leaks.html	DHCP Option 121 and VPN Route Leaks (TunnelVision)
+content/07-a-overlays-tunnels/03-vxlan-data-plane.html	VXLAN Data Plane
+content/07-a-overlays-tunnels/04-evpn-control-plane-intro.html	EVPN Control-Plane Intro
+content/07-a-overlays-tunnels/04b-evpn-multihoming-esi-df-election.html	EVPN Multihoming: Ethernet Segments, DF Election, Split Horizon and Aliasing
+content/07-a-overlays-tunnels/05-overlay-lab.html	Overlay Lab
+content/07-a-overlays-tunnels/06-tailscale-vxlan-sites.html	Head Office and Branch Office
+content/07-a-overlays-tunnels/06b-shared-address-space-overlay-collisions.html	Shared Address Space (100.64.0.0/10), CGNAT and Overlay Address Collisions
+content/07-a-overlays-tunnels/07-multicast-essentials.html	Multicast Essentials: IGMP, MLD, PIM and Snooping
+content/07-a-overlays-tunnels/08-nat-traversal-stun-hole-punching.html	NAT Traversal: STUN, Hole Punching and When You Need a Relay
+content/07-a-overlays-tunnels/08b-turn-relays-and-peer-policy.html	TURN Relays: Credentials, Permissions and Peer Policy
+content/07-a-overlays-tunnels/09-masque-connect-udp-ip.html	MASQUE: Tunnelling UDP and IP over HTTP (CONNECT-UDP and CONNECT-IP)
+content/07-a-overlays-tunnels/10-mpls-label-switching.html	MPLS Label Switching: Label Stacks, LDP, PHP and SR-MPLS on Linux
+content/07-a-overlays-tunnels/10b-bgp-mpls-l3vpn.html	BGP/MPLS IP VPNs: VRFs, Route Distinguishers and Route Targets
+content/07-b-fabrics-multi-area/01-clos-leaf-spine.html	Clos Leaf-Spine
+content/07-b-fabrics-multi-area/02-multi-area-ospf.html	Multi-Area OSPF
+content/07-b-fabrics-multi-area/03-fabric-with-frr.html	Fabric with FRR
+content/07-b-fabrics-multi-area/04-multi-implementation-lab.html	Multi-Implementation Lab
+content/07-b-fabrics-multi-area/05-underlay-design-choices.html	Underlay Design Choices: eBGP, OSPF or IS-IS Under a Clos Fabric
+content/08-bgp-security/00-why-routing-security-is-harder-than-it-looks.html	Why Routing Security Is Harder Than It Looks
+content/08-bgp-security/01-architecture-of-global-connectivity.html	The Architecture of Global Connectivity
+content/08-bgp-security/02-interdomain-routing-fundamentals.html	Interdomain Routing Fundamentals
+content/08-bgp-security/03-bgp-protocol-architecture.html	BGP Protocol Architecture
+content/08-bgp-security/04-bgp-path-attributes-and-policy-expression.html	BGP Path Attributes and Policy Expression
+content/08-bgp-security/05-bgp-decision-process-and-route-selection.html	The BGP Decision Process and Route Selection
+content/08-bgp-security/06-convergence-stability-and-propagation-dynamics.html	Convergence, Stability and Propagation Dynamics
+content/08-bgp-security/07-historical-design-decisions-and-security-consequences.html	Historical Design Decisions and Their Security Consequences
+content/08-bgp-security/08-threat-landscape-accidents-and-attacks.html	The Threat Landscape: Accidents and Intentional Attacks
+content/08-bgp-security/09-origin-hijacking-attacks-mechanics-impact-detection.html	Origin Hijacking Attacks: Mechanics, Impact and Detection
+content/08-bgp-security/10-route-leaks-and-policy-abuse.html	Route Leaks and Policy Abuse
+content/08-bgp-security/11-advanced-and-emerging-routing-threats.html	Advanced and Emerging Routing Threats
+content/08-bgp-security/12-routing-registries-irrs-and-limitations.html	The Routing Registries: IRRs and Their Limitations
+content/08-bgp-security/13-rpki-architecture-resource-certificates-and-trust-anchors.html	The RPKI Architecture: Resource Certificates and Trust Anchors
+content/08-bgp-security/14-route-origin-authorizations-core-object.html	Route Origin Authorizations: The Core Authorization Object
+content/08-bgp-security/15-rpki-validation-validators-vrps-relying-parties.html	RPKI Validation: Validators, VRPs and Relying Parties
+content/08-bgp-security/16-rpki-to-router-rtr-and-route-origin-validation-rov.html	RPKI-to-Router (RTR) and Route Origin Validation (ROV)
+content/08-bgp-security/17-operational-consequences-of-rov.html	Operational Consequences of ROV: Invalid, Valid, NotFound and Real-World Effects
+content/08-bgp-security/18-scope-and-limits-of-rpki-and-rov.html	The Scope and Limits of RPKI and ROV
+content/08-bgp-security/19-complementary-mechanisms-irr-prefix-aspath-filters.html	Complementary Mechanisms: IRR Filtering, Prefix Filters and AS_PATH Filters
+content/08-bgp-security/20-route-leak-detection-and-prevention-mechanisms.html	Route Leak Detection and Prevention Mechanisms
+content/08-bgp-security/21-bgpsec-architecture-guarantees-deployment-reality.html	BGPsec: Architecture, Security Guarantees and Deployment Reality
+content/08-bgp-security/22-aspa-autonomous-system-provider-authorizations.html	ASPA: Autonomous System Provider Authorizations
+content/08-bgp-security/23-designing-and-implementing-routing-security.html	Designing and Implementing Routing Security in Your Network
+content/08-bgp-security/24-configuration-examples-vendor-specific-considerations.html	Configuration Examples and Vendor-Specific Considerations
+content/08-bgp-security/25-troubleshooting-routing-security-controls.html	Troubleshooting Routing Security Controls
+content/08-bgp-security/26-monitoring-measurement-and-testing.html	Monitoring, Measurement and Testing
+content/08-bgp-security/27-case-studies-documented-routing-incidents.html	Case Studies: Documented Routing Incidents
+content/08-bgp-security/28-economics-governance-human-dimension.html	Economics, Governance and the Human Dimension
+content/08-bgp-security/29-current-state-and-future-of-internet-routing-security.html	The Current State and Future of Internet Routing Security
+content/08-bgp-security/30-05-bgp-no-export-community.html	BGP no_export and Well-Known Communities
+content/08-bgp-security/30-06-rpki-roa-maxlength.html	RPKI ROAs and the maxLength Trap
+content/08-network-forensics/00-advanced-behavior-based-network-forensics.html	Advanced Behavior-Based Network Forensics: Descriptive Outline
+content/08-network-forensics/01-introduction-to-advanced-network-forensics.html	Introduction to Advanced Network Forensics
+content/08-network-forensics/02-fundamentals-of-network-forensics-and-log-analysis.html	Fundamentals of Network Forensics and Log Analysis
+content/08-network-forensics/03-building-a-network-forensics-lab-environment.html	Building a Network Forensics Lab Environment
+content/08-network-forensics/04-behavioral-analysis-in-cybersecurity.html	Behavioral Analysis in Cybersecurity
+content/08-network-forensics/05-cyber-forensics-behavioral-analysis-cfba.html	Cyber Forensics Behavioral Analysis (CFBA)
+content/08-network-forensics/06-advanced-techniques-and-tools.html	Advanced Techniques and Tools
+content/08-network-forensics/07-machine-learning-and-artificial-intelligence-in-forensics.html	Machine Learning and Artificial Intelligence in Forensics
+content/08-network-forensics/08-siem-configuration-for-behavioral-log-collection.html	SIEM Configuration for Behavioral Log Collection
+content/08-network-forensics/09-collecting-log-streams-enterprise-edge-honeypots-auth.html	Collecting Log Streams: Enterprise, Edge, Honeypots, and Auth
+content/08-network-forensics/10-correlation-and-investigation-within-siem.html	Correlation and Investigation within SIEM
+content/08-network-forensics/11-specialized-forensics-by-domain.html	Specialized Forensics by Domain
+content/08-network-forensics/12-case-studies-in-advanced-behavior-based-network-forensics.html	Case Studies in Advanced Behavior-Based Network Forensics
+content/08-network-forensics/13-the-future-of-network-forensics-and-cyberpsychology.html	The Future of Network Forensics and Cyberpsychology
+content/08-transport-and-applications/06-quic-v2-and-version-negotiation.html	QUIC Version 2 and Compatible Version Negotiation
+content/08-transport-and-applications/06b-quic-loss-recovery.html	QUIC Loss Recovery: Packet Threshold, Time Threshold and PTO (RFC 9002)
+content/08-transport-and-applications/07-happy-eyeballs-v2-v3.html	Happy Eyeballs: Racing IPv6 and IPv4 (RFC 8305 and the v3 Draft)
+content/08-transport-and-applications/08-quic-load-balancing-with-nftables.html	QUIC Load Balancing with nftables: Routing on Connection IDs
+content/08-transport-and-applications/09-http3-stream-cancellation.html	HTTP/3 Stream Cancellation: STOP_SENDING, RESET_STREAM, and 499
+content/08-transport-and-applications/09a-tcp-states-lab.html	TCP States, Reproduced: A Two-Namespace Lab
+content/08-transport-and-applications/09b-hpack-qpack-header-compression.html	Header Compression in HTTP/2 and HTTP/3: HPACK and QPACK from the Wire Up
+content/08-transport-and-applications/09b-tcp-nagle-and-delayed-ack.html	Small Writes in TCP: Nagle's Algorithm, Delayed ACKs, and the 40 ms Stall
+content/08-transport-and-applications/09c-http-request-smuggling.html	HTTP Request Smuggling: CL.TE, TE.CL and Obfuscated Transfer-Encoding
+content/08-transport-and-applications/09c-tcp-fast-open.html	TCP Fast Open
+content/08-transport-and-applications/09d-tcp-time-wait.html	TIME-WAIT on Linux: What the Timers Really Do
+content/08-transport-and-applications/09e-msg-zerocopy-sends.html	Zero-Copy Sends with MSG_ZEROCOPY: Completions, Deferred Copies, and When It Loses
+content/08-transport-and-applications/09f-so-reuseport-listener-groups.html	SO_REUSEPORT: Many Listeners on One Port
+content/08-transport-and-applications/09g-multipath-tcp-subflows-lab.html	Multipath TCP: Subflows, Path Managers and a Rootless Lab
+content/08-transport-and-applications/09h-tcp-congestion-cubic-bbr.html	TCP Congestion Control: CUBIC, Reno and BBR
+content/08-transport-and-applications/09i-udp-latency-budget-timestamping.html	Where the Microseconds Go: Timestamping One UDP Datagram Through the Linux Stack
+content/08-transport-and-applications/09j-tcp-dead-peer-detection.html	Dead Peers and Silent Paths: TCP Keepalive, TCP_USER_TIMEOUT and tcp_retries2
+content/08-transport-and-applications/09k-tcp-loss-recovery-sack-rack-tlp.html	TCP Loss Recovery on Linux: RTO, Fast Retransmit, SACK, RACK and Tail Loss Probes
+content/08-transport-and-applications/09l-tcp-windows-buffers-bdp.html	TCP Windows, Buffers and the Bandwidth-Delay Product: Autotuning, Buffer Caps and Unsent-Data Latency
+content/08-transport-and-applications/09m-udp-batching-mmsg-gso-gro.html	Batching UDP on Linux: sendmmsg, recvmmsg, UDP GSO and GRO
+content/08-transport-and-applications/09n-source-port-selection-ephemeral-range.html	Choosing a Source Port: connect(), bind() and the Ephemeral Range
+content/08-transport-and-applications/09o-tcp-rfc5961-challenge-acks.html	Blind Resets and Challenge ACKs: RFC 5961 on Linux
+content/08-transport-and-applications/10-caddy-slowloris-idle-timeouts.html	Caddy 2.11.6: Slowloris idle timeouts and url_pattern matchers
+content/08-transport-and-applications/10-tls13-key-schedule.html	Inside the TLS 1.3 Key Schedule: HKDF, Three Secrets, and Every Key in a Handshake
+content/08-transport-and-applications/11-root-ksk-rollover-rfc5011.html	The 2026 Root KSK Rollover: Trust Anchors, RFC 5011, and What Breaks When Keys Are Hard-Coded
+content/08-transport-and-applications/12-tls13-0rtt-replay.html	TLS 1.3 0-RTT: Replaying Early Data, and What Actually Stops It
+content/08-transport-and-applications/12b-tls-session-resumption-and-ticket-keys.html	TLS Session Resumption in Practice: Tickets, Ticket Keys and Fleets
+content/08-transport-and-applications/13-ipcrypt-log-privacy.html	Encrypting IP Addresses in Logs with IPCrypt
+content/08-transport-and-applications/14-encrypted-client-hello.html	Encrypted Client Hello: Hiding the Server Name
+content/08-transport-and-applications/15-dnssec-failure-modes.html	DNSSEC Failure Modes: SERVFAIL, Extended DNS Errors, Serve-Stale and NTAs
+content/08-transport-and-applications/15b-dane-tlsa-smtp.html	DANE and TLSA: Pinning TLS Keys in DNSSEC
+content/08-transport-and-applications/15c-mta-sts-and-tlsrpt.html	MTA-STS and TLSRPT: Enforcing TLS for Mail Without DNSSEC
+content/08-transport-and-applications/16-load-balancer-hashing-maglev.html	Load Balancer Hashing: Modulo, Rings, Rendezvous and Maglev
+content/08-transport-and-applications/20-merkle-tree-certificates.html	Merkle Tree Certificates: Keeping Post-Quantum TLS Handshakes Small
+content/08-transport-and-applications/20b-caa-acme-and-revocation.html	Who May Issue Your Certificate: CAA, ACME Challenges and Revocation After OCSP
+content/08-transport-and-applications/20c-x509-path-building-name-constraints.html	X.509 Path Building Traps: Intermediates, nameConstraints and pathlen
+content/08-transport-and-applications/23-dns-nist-sp-800-81r3-audit.html	Auditing DNS Against NIST SP 800-81r3
+content/08-transport-and-applications/25-proxy-protocol.html	The PROXY Protocol: Keeping the Client Address Through an L4 Proxy
+content/08-transport-and-applications/26-forward-proxies-connect-socks.html	Forward Proxies: HTTP CONNECT, SOCKS5 and the Proxy Environment Variables
+content/09-lab-workbook/00-workbook-guide.html	Workbook Guide and Learning Paths
+content/09-lab-workbook/01-lab-host-and-images.html	Lab Host and the Image Set
+content/09-lab-workbook/02-three-router-forwarding.html	Three-Router Forwarding
+content/09-lab-workbook/03-ceos-interfaces-and-lldp.html	cEOS Interfaces and LLDP
+content/09-lab-workbook/04-vlans-and-trunks.html	VLANs and Trunks on cEOS
+content/09-lab-workbook/05-spanning-tree.html	Spanning Tree on cEOS
+content/09-lab-workbook/06-link-aggregation.html	Link Aggregation on cEOS
+content/09-lab-workbook/07-inter-vlan-and-dhcp.html	Inter-VLAN Routing and DHCP
+content/09-lab-workbook/08-vrrp-and-varp.html	First Hop: VRRP and VARP
+content/09-lab-workbook/09-static-routes.html	Static Routes across Three NOSes
+content/09-lab-workbook/10-ospf-one-area.html	OSPF in One Area
+content/09-lab-workbook/11-ospf-areas-cost-bfd.html	OSPF Areas, Cost, and BFD
+content/09-lab-workbook/12-isis.html	IS-IS across FRR and cEOS
+content/09-lab-workbook/13-ebgp.html	eBGP between Three Autonomous Systems
+content/09-lab-workbook/14-ibgp-route-reflector.html	iBGP and a Route Reflector
+content/09-lab-workbook/15-bgp-policy.html	BGP Policy
+content/09-lab-workbook/16-acls-and-nat.html	ACLs and Edge NAT
+content/09-lab-workbook/17-ipv6.html	IPv6 on the Same Triangle
+content/09-lab-workbook/18-vxlan-bridge.html	VXLAN Bridging
+content/09-lab-workbook/19-evpn-vxlan.html	EVPN Control Plane for VXLAN
+content/09-lab-workbook/20-gnmi-srlinux.html	Reading SR Linux with gNMI
+content/09-lab-workbook/21-production-failure-drills.html	Production Failure Drills
+content/09-lab-workbook/22-mtu-and-mss.html	Path MTU and TCP MSS
+content/09-lab-workbook/23-stp-edge-guards.html	STP Edge Guards
+content/09-lab-workbook/24-dhcp-snooping-and-dai.html	DHCP Snooping and ARP Inspection
+content/09-lab-workbook/25-mlag.html	MLAG on cEOS
+content/09-lab-workbook/26-vrf-lite.html	VRF-Lite
+content/09-lab-workbook/27-ospf-stub-and-summary.html	OSPF Stub, NSSA, and Summary
+content/09-lab-workbook/28-redistribute-and-tag.html	Redistribution and Route Tags
+content/09-lab-workbook/29-bgp-med-prepend-ecmp.html	BGP MED, Prepend, and ECMP
+content/09-lab-workbook/30-policy-routing.html	Policy-Based Routing
+content/09-lab-workbook/31-urpf.html	Unicast RPF
+content/09-lab-workbook/32-span.html	SPAN
+content/09-lab-workbook/33-gre.html	GRE over the Underlay
+content/09-lab-workbook/34-control-plane-acl.html	Control-Plane ACL
+content/09-lab-workbook/35-ipv6-slaac.html	IPv6 SLAAC
+content/09-lab-workbook/36-ntp-and-syslog.html	NTP and Syslog
+content/09-lab-workbook/37-dscp-and-delay.html	DSCP Trust and Measured Delay
+content/09-lab-workbook/38-ospf-authentication.html	OSPF Authentication
+content/09-lab-workbook/39-multicast-failure-exercises.html	Multicast Distribution Failure Exercises
+content/09-lab-workbook/40-policy-lookup-and-throw.html	Policy Routing: Table Order, Throw and Blackhole
+content/09-lab-workbook/41-address-planning-and-summary.html	Address Planning, VLSM and Summary Failure
+content/09-lab-workbook/42-isolated-forwarding-return-path.html	Build a Router and Break the Return Path
+content/09-lab-workbook/43-ipv6-neighbor-discovery-filter.html	IPv6 Neighbor Discovery and an ICMPv6 Filter Failure
+content/09-lab-workbook/44-vlan-access-membership.html	VLAN Access Membership: Build, Break and Repair
+content/09-lab-workbook/45-tagged-trunk-failure.html	Tagged Trunk: A Missing VLAN and an Unaffected Control
+content/09-lab-workbook/46-stateful-acl-direction.html	Stateful Filtering: Direction, Counters and Return Traffic
+content/09-lab-workbook/47-source-nat-observe.html	Source NAT: Observe the Translation and Return Path
+content/09-lab-workbook/48-destination-nat-observe.html	Destination NAT: Map a Service and Verify the Backend
+content/09-lab-workbook/49-dhcpv4-wire-exchange.html	DHCPv4 on the Wire: A Minimal Isolated Exchange
+content/09-lab-workbook/50-vrf-overlap-and-fallback.html	Linux VRFs: Overlapping Addresses and Lookup Fallback
+content/09-lab-workbook/51-ecmp-real-flows.html	ECMP: Observe Real Flows and Remove a Path
+content/09-lab-workbook/52-classic-stp-triangle.html	Classic STP: Observe a Triangle Reconfigure
+content/09-lab-workbook/53-lacp-member-failure.html	LACP Bond: Member Failure and Recovery
+content/09-lab-workbook/54-ebgp-gobgp-namespaces.html	eBGP Without Containers: Advertise and Withdraw a Route
+content/09-lab-workbook/55-ebgp-import-policy.html	eBGP Import Policy: Exact Prefixes and More-Specifics
+content/09-projects/03-capstone-outline.html	Capstone Outline
+content/09-projects/03b-campus-vlan-vrrp-ospf.html	Campus Lab: VLANs, VRRP, and OSPF
+content/09-projects/03c-campus-failure-domain-design.html	Campus Design: Failure Domains and Verification
+content/09-projects/04-edge-dual-home-lab.html	Edge Dual-Home Lab
+content/10-command-reference/01-commands.html	Lab and Network OS Command Reference
+content/10-command-reference/02-frr.html	FRRouting Cheat Sheet
+content/10-command-reference/03-arista-eos.html	Arista EOS, cEOS, and vEOS Cheat Sheet
+content/10-command-reference/04-sr-linux.html	Nokia SR Linux Cheat Sheet
+content/10-command-reference/05-lab-tools.html	Containerlab, netlab, and Linux Cheat Sheet
+index.html	Networking

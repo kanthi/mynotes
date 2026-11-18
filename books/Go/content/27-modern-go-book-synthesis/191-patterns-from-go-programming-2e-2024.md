@@ -1,0 +1,289 @@
+---
+title: 191 Patterns from Go Programming (2nd ed., 2024)
+---
+
+# 191 Patterns from Go Programming (2nd ed., 2024)
+
+This chapter extracts topics from the 2024 second edition arc: debugging, time handling, CLI work, files/systems, SQL, HTTP server/client, concurrency, testing, tooling, and cloud.
+
+## What This Adds to Our Book
+
+- Stronger bridge from core syntax to practical operations.
+- Dedicated narrative on "time as a correctness boundary".
+- Better pairing of HTTP server and HTTP client behavior in one lifecycle.
+- Cloud-readiness framing: configuration, graceful shutdown, observability, packaging.
+
+## Learning Architecture
+
+```text
+core language -> application boundary (CLI/API) -> state boundary (DB/files) -> operational boundary (timeouts, cloud, tools)
+```
+
+## Deep Integration Example: API + CLI + DB Boundary
+
+```go
+package app
+
+import (
+	"context"
+	"database/sql"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"net/http"
+	"os"
+	"time"
+)
+
+var ErrNotFound = errors.New("not found")
+
+type User struct {
+	ID    int64  `json:"id"`
+	Email string `json:"email"`
+}
+
+type Store struct{ DB *sql.DB }
+
+func (s Store) GetUser(ctx context.Context, id int64) (User, error) {
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+
+	var u User
+	err := s.DB.QueryRowContext(ctx, `SELECT id, email FROM users WHERE id=$1`, id).Scan(&u.ID, &u.Email)
+	if errors.Is(err, sql.ErrNoRows) {
+		return User{}, ErrNotFound
+	}
+	if err != nil {
+		return User{}, fmt.Errorf("query user %d: %w", id, err)
+	}
+	return u, nil
+}
+
+type API struct{ Store Store }
+
+func (a API) GetUserHandler(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
+	defer cancel()
+
+	user, err := a.Store.GetUser(ctx, 42)
+	if errors.Is(err, ErrNotFound) {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(user)
+}
+
+func ReadEnvDuration(key string, fallback time.Duration) time.Duration {
+	v := os.Getenv(key)
+	if v == "" {
+		return fallback
+	}
+	d, err := time.ParseDuration(v)
+	if err != nil {
+		return fallback
+	}
+	return d
+}
+```
+
+## Why This Matters
+
+The example demonstrates a full chain from request boundary to storage boundary with explicit timeouts and typed errors. That is the practical center of modern Go backend development.
+
+## Curriculum Upgrades Recommended
+
+1. Add a dedicated chapter linking debugging, benchmarking, and production incident triage.
+2. Expand `time` chapter with deadline budgeting patterns for server+client+DB together.
+3. Add side-by-side chapter pair: `net/http` server correctness and `http.Client` resilience.
+4. Add cloud deployment chapter emphasizing runtime config contracts and shutdown policy.
+
+## More examples
+
+### Nested context budgets at the boundary
+
+```bash
+mkdir -p /tmp/go-gp2e-budget && cd /tmp/go-gp2e-budget
+go mod init example.com/gp2e-budget
+```
+
+Save as `main.go`:
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"time"
+)
+
+func db(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, 20*time.Millisecond)
+	defer cancel()
+	select {
+	case <-time.After(50 * time.Millisecond):
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
+
+func main() {
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+	err := db(ctx)
+	fmt.Println("db budget exceeded:", err != nil)
+}
+```
+
+```bash
+go run .
+```
+
+**Expected output:**
+
+```
+db budget exceeded: true
+```
+
+### Typed sentinel + wrap for handlers
+
+```bash
+mkdir -p /tmp/go-gp2e-err && cd /tmp/go-gp2e-err
+go mod init example.com/gp2e-err
+```
+
+Save as `main.go`:
+
+```go
+package main
+
+import (
+	"errors"
+	"fmt"
+)
+
+var ErrDenied = errors.New("denied")
+
+func authorize(user string) error {
+	if user != "admin" {
+		return fmt.Errorf("user %s: %w", user, ErrDenied)
+	}
+	return nil
+}
+
+func main() {
+	err := authorize("bob")
+	fmt.Println("is denied:", errors.Is(err, ErrDenied))
+	fmt.Println("text:", err)
+}
+```
+
+```bash
+go run .
+```
+
+**Expected output:**
+
+```
+is denied: true
+text: user bob: denied
+```
+
+## Runnable example
+
+Boundary chain without a real DB: typed errors, nested timeouts, and JSON HTTP handler test via `httptest`.
+
+```bash
+mkdir -p /tmp/go-gp2e && cd /tmp/go-gp2e
+go mod init example.com/gp2e
+```
+
+Save as `main.go`:
+
+```go
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"time"
+)
+
+var ErrNotFound = errors.New("not found")
+
+type User struct {
+	ID    int64  `json:"id"`
+	Email string `json:"email"`
+}
+
+type Store struct {
+	users map[int64]User
+}
+
+func (s Store) GetUser(ctx context.Context, id int64) (User, error) {
+	ctx, cancel := context.WithTimeout(ctx, 50*time.Millisecond)
+	defer cancel()
+	select {
+	case <-ctx.Done():
+		return User{}, ctx.Err()
+	default:
+	}
+	u, ok := s.users[id]
+	if !ok {
+		return User{}, ErrNotFound
+	}
+	return u, nil
+}
+
+func main() {
+	store := Store{users: map[int64]User{42: {ID: 42, Email: "a@b.co"}}}
+	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithTimeout(r.Context(), 100*time.Millisecond)
+		defer cancel()
+		u, err := store.GetUser(ctx, 42)
+		if errors.Is(err, ErrNotFound) {
+			http.Error(w, "not found", http.StatusNotFound)
+			return
+		}
+		if err != nil {
+			http.Error(w, "internal", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(u)
+	})
+	rr := httptest.NewRecorder()
+	h.ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/user", nil))
+	fmt.Println("status:", rr.Code, "body:", rr.Body.String())
+}
+```
+
+```bash
+go run .
+```
+
+**Expected output:**
+
+```
+status: 200 body: {"id":42,"email":"a@b.co"}
+```
+
+**What to notice**
+
+- Timeouts nest: handler budget > store budget.
+- `errors.Is` maps domain errors to HTTP status without string matching.
+
+**Try next**
+
+- Return `ErrNotFound` for id 7 and assert 404.
+- Parse `REQ_TIMEOUT` from env for the outer budget.

@@ -1,0 +1,252 @@
+---
+title: 195 Patterns from Let Us Go! (2025)
+---
+
+# 195 Patterns from Let Us Go! (2025)
+
+This 2025 beginner-focused arc stresses playground-first onboarding, workspace/tooling setup, version control flow, and then deep dive application development.
+
+## What This Adds to Our Book
+
+- Better early-stage onboarding narrative for self-learners.
+- A clearer toolchain chapter that explains _why_ each tool exists.
+- Practical Git workflow integration earlier in the learning path.
+
+## Onboarding Progression
+
+```text
+Playground exploration -> local toolchain setup -> Git discipline -> deeper project work
+```
+
+## Deep Integration Example: Minimal Project Lifecycle from Day 1
+
+```go
+package main
+
+import (
+	"flag"
+	"fmt"
+	"os"
+)
+
+type Config struct {
+	Name string
+	Env  string
+}
+
+func parseConfig() Config {
+	cfg := Config{}
+	flag.StringVar(&cfg.Name, "name", "gopher", "name to greet")
+	flag.StringVar(&cfg.Env, "env", "dev", "runtime environment")
+	flag.Parse()
+	return cfg
+}
+
+func run(cfg Config) error {
+	if cfg.Env == "prod" && os.Getenv("APP_ALLOW_PROD") != "1" {
+		return fmt.Errorf("prod run blocked without APP_ALLOW_PROD=1")
+	}
+	fmt.Printf("hello %s (%s)\n", cfg.Name, cfg.Env)
+	return nil
+}
+
+func main() {
+	if err := run(parseConfig()); err != nil {
+		fmt.Fprintln(os.Stderr, "error:", err)
+		os.Exit(1)
+	}
+}
+```
+
+## Why This Matters
+
+Beginner success is mostly about reducing setup friction and establishing stable habits early. Good onboarding chapters improve completion rates and reduce learner drop-off.
+
+## Curriculum Upgrades Recommended
+
+1. Strengthen foundational chapters with explicit environment setup validation steps.
+2. Add version-control workflow examples tied to chapter exercises/projects.
+3. Add "first-week debugging habits" chapter before advanced language features.
+
+## More examples
+
+### Small CLI with flags and usage exit
+
+```bash
+mkdir -p /tmp/go-lug-cli && cd /tmp/go-lug-cli
+go mod init example.com/lug-cli
+```
+
+Save as `main.go`:
+
+```go
+package main
+
+import (
+	"flag"
+	"fmt"
+	"os"
+)
+
+func run(args []string) (string, error) {
+	fs := flag.NewFlagSet("greet", flag.ContinueOnError)
+	name := fs.String("name", "world", "who to greet")
+	if err := fs.Parse(args); err != nil {
+		return "", err
+	}
+	return "hello " + *name, nil
+}
+
+func main() {
+	// Simulate argv without exiting the process.
+	out, err := run([]string{"-name", "Ada"})
+	fmt.Println(out, err)
+	_, err = run([]string{"-bad"})
+	fmt.Println("bad flag err:", err != nil)
+
+	// Show default path
+	out, _ = run(nil)
+	fmt.Println(out)
+	_ = os.Stderr // keep habit of writing usage to stderr in real CLIs
+}
+```
+
+```bash
+go run .
+```
+
+**Expected output:**
+
+```
+hello Ada <nil>
+bad flag err: true
+hello world
+```
+
+### Debugging habit: log inputs and duration
+
+```bash
+mkdir -p /tmp/go-lug-debug && cd /tmp/go-lug-debug
+go mod init example.com/lug-debug
+```
+
+Save as `main.go`:
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func work(n int) int {
+	sum := 0
+	for i := 0; i < n; i++ {
+		sum += i
+	}
+	return sum
+}
+
+func main() {
+	start := time.Now()
+	in := 1000
+	out := work(in)
+	fmt.Printf("work in=%d out=%d dur=%s\n", in, out, time.Since(start))
+}
+```
+
+```bash
+go run .
+```
+
+**Expected output:**
+
+```
+work in=1000 out=499500 dur=...
+```
+
+## Runnable example
+
+Beginner-friendly CLI habits: flags, env guardrails, stderr errors, and non-zero exit codes.
+
+```bash
+mkdir -p /tmp/go-letus && cd /tmp/go-letus
+go mod init example.com/letus
+```
+
+Save as `main.go`:
+
+```go
+package main
+
+import (
+	"flag"
+	"fmt"
+	"os"
+)
+
+type Config struct {
+	Name string
+	Env  string
+}
+
+func parseConfig(args []string) (Config, error) {
+	fs := flag.NewFlagSet("letus", flag.ContinueOnError)
+	fs.SetOutput(os.Stderr)
+	name := fs.String("name", "world", "who to greet")
+	env := fs.String("env", "dev", "dev|prod")
+	if err := fs.Parse(args); err != nil {
+		return Config{}, err
+	}
+	return Config{Name: *name, Env: *env}, nil
+}
+
+func run(cfg Config) error {
+	if cfg.Env == "prod" && os.Getenv("APP_ALLOW_PROD") != "1" {
+		return fmt.Errorf("prod run blocked without APP_ALLOW_PROD=1")
+	}
+	if cfg.Name == "" {
+		return fmt.Errorf("name must not be empty")
+	}
+	fmt.Printf("hello %s (%s)\n", cfg.Name, cfg.Env)
+	return nil
+}
+
+func main() {
+	cfg, err := parseConfig(os.Args[1:])
+	if err != nil {
+		os.Exit(2) // usage
+	}
+	if err := run(cfg); err != nil {
+		fmt.Fprintln(os.Stderr, "error:", err)
+		os.Exit(1)
+	}
+}
+```
+
+```bash
+go run . -name Ada
+go run . -env prod; echo exit:$?
+APP_ALLOW_PROD=1 go run . -env prod -name Ada
+```
+
+**Expected output:**
+
+```
+hello Ada (dev)
+error: prod run blocked without APP_ALLOW_PROD=1
+exit:1
+hello Ada (prod)
+```
+
+**What to notice**
+
+- Exit `2` for usage/flags, `1` for runtime errors, `0` success—script friendly.
+- Guardrails (prod allow) prevent accidents during early learning and ops.
+- Diagnostics on stderr; greeting on stdout.
+
+**Try next**
+
+- Add `-v` verbose logging to stderr with `log/slog`.
+- Write a table test for `run` covering prod blocked/allowed.

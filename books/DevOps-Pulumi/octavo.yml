@@ -1,0 +1,28 @@
+book:
+  title: DevOps with Pulumi
+  author: K19G
+  date: '2026-11-17'
+  description: Infrastructure as code with Pulumi
+  chapters:
+  - index.md
+  - part: Intro
+    contents:
+    - content/00-intro/01-overview.md
+  - part: Foundations
+    contents:
+    - content/01-foundations/01-getting-started.md
+    - content/01-foundations/02-projects-and-stacks.md
+    - content/01-foundations/03-configuration-and-secrets.md
+    - content/01-foundations/04-inputs-and-outputs.md
+    - content/01-foundations/05-unit-testing-with-mocks.md
+    - content/01-foundations/06-component-resources.md
+  - part: Workflows
+    contents:
+    - content/02-workflows/01-automation-api.md
+    - content/02-workflows/02-pulumi-esc.md
+format:
+  html:
+    theme: auto
+  epub: {}
+  pdf:
+    paper: A4

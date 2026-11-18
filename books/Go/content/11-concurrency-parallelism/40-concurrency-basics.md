@@ -1,0 +1,286 @@
+---
+title: Concurrency Basics
+---
+
+# Concurrency Basics
+
+## Overview
+
+Go's concurrency model uses goroutines (lightweight threads) and channels for communication.
+
+## Goroutines
+
+```go
+go func() {
+    // Runs concurrently
+    fmt.Println("Hello from goroutine")
+}()
+
+go processData()  // Named function
+```
+
+Goroutines are cheap (~2KB stack, can have millions).
+
+## Creating Goroutines
+
+```go
+func main() {
+    go sayHello()
+    go sayWorld()
+    time.Sleep(100 * time.Millisecond)  // Wait (not ideal)
+}
+
+func sayHello() { fmt.Println("Hello") }
+func sayWorld() { fmt.Println("World") }
+```
+
+## Waiting with WaitGroup
+
+```go
+var wg sync.WaitGroup
+
+for i := 0; i < 5; i++ {
+    wg.Add(1)
+    go func(n int) {
+        defer wg.Done()
+        fmt.Println(n)
+    }(i)
+}
+
+wg.Wait()  // Block until all done
+```
+
+## Channels
+
+```go
+ch := make(chan int)      // Unbuffered
+ch := make(chan int, 10)  // Buffered
+
+ch <- 42      // Send
+value := <-ch // Receive
+```
+
+## Basic Channel Pattern
+
+```go
+func main() {
+    ch := make(chan string)
+
+    go func() {
+        ch <- "Hello"
+    }()
+
+    msg := <-ch
+    fmt.Println(msg)
+}
+```
+
+## Worker Pool
+
+```go
+func worker(id int, jobs <-chan int, results chan<- int) {
+    for job := range jobs {
+        results <- job * 2
+    }
+}
+
+func main() {
+    jobs := make(chan int, 100)
+    results := make(chan int, 100)
+
+    // Start workers
+    for w := 0; w < 3; w++ {
+        go worker(w, jobs, results)
+    }
+
+    // Send jobs
+    for j := 0; j < 10; j++ {
+        jobs <- j
+    }
+    close(jobs)
+
+    // Collect results
+    for r := 0; r < 10; r++ {
+        fmt.Println(<-results)
+    }
+}
+```
+
+## Summary
+
+| Concept | Purpose |
+|---------|---------|
+| `go func()` | Start goroutine |
+| `sync.WaitGroup` | Wait for completion |
+| `make(chan T)` | Create channel |
+| `ch <-` / `<-ch` | Send/receive |
+
+## Worked example
+
+Fan of goroutines joined with `WaitGroup` and a results channel (no `Sleep`).
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+func main() {
+	const n = 5
+	results := make(chan int, n)
+	var wg sync.WaitGroup
+
+	for i := 1; i <= n; i++ {
+		wg.Add(1)
+		go func(x int) {
+			defer wg.Done()
+			results <- x * x
+		}(i)
+	}
+
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	sum := 0
+	for v := range results {
+		sum += v
+	}
+	fmt.Println("sum of squares 1..5:", sum)
+}
+```
+
+**Expected output:**
+
+```text
+sum of squares 1..5: 55
+```
+
+## More examples
+
+Buffered vs unbuffered: buffer decouples a single send from receive.
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	// Unbuffered needs a receiver ready (other goroutine).
+	u := make(chan string)
+	go func() { u <- "unbuffered" }()
+	fmt.Println(<-u)
+
+	// Buffered send can complete without a concurrent receiver.
+	b := make(chan string, 1)
+	b <- "buffered"
+	fmt.Println(<-b)
+}
+```
+
+**Expected output:**
+
+```text
+unbuffered
+buffered
+```
+
+## Runnable example
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+func main() {
+	// 1) Goroutines + WaitGroup (no Sleep)
+	var wg sync.WaitGroup
+	for i := 1; i <= 3; i++ {
+		wg.Add(1)
+		go func(n int) {
+			defer wg.Done()
+			fmt.Printf("goroutine %d done\n", n)
+		}(i)
+	}
+	wg.Wait()
+	fmt.Println("all goroutines finished")
+
+	// 2) Unbuffered channel: send happens in another goroutine
+	ch := make(chan string)
+	go func() {
+		ch <- "hello from channel"
+	}()
+	fmt.Println(<-ch)
+
+	// 3) Tiny worker pool: jobs → workers → results
+	jobs := make(chan int, 5)
+	results := make(chan int, 5)
+
+	const workers = 2
+	var pool sync.WaitGroup
+	for w := 1; w <= workers; w++ {
+		pool.Add(1)
+		go func(id int) {
+			defer pool.Done()
+			for job := range jobs {
+				results <- job * 2
+			}
+		}(w)
+	}
+
+	for j := 1; j <= 5; j++ {
+		jobs <- j
+	}
+	close(jobs)
+
+	go func() {
+		pool.Wait()
+		close(results)
+	}()
+
+	sum := 0
+	for r := range results {
+		sum += r
+	}
+	fmt.Println("worker pool sum:", sum)
+}
+```
+
+**Expected output:** (goroutine lines may appear in any order)
+
+```text
+goroutine 1 done
+goroutine 2 done
+goroutine 3 done
+all goroutines finished
+hello from channel
+worker pool sum: 30
+```
+
+**What to notice:** `WaitGroup` replaces `time.Sleep` for joining. Closing `jobs` lets workers exit `range`; closing `results` after `pool.Wait()` ends the collector cleanly.
+
+**Try next:** Change the channel buffer sizes and watch when sends block; run with `go run -race .` to confirm the example is race-free.
+
+## Related Topics
+- [Channel Patterns](41-channel-patterns.md)
+- [Synchronization](42-synchronization.md)

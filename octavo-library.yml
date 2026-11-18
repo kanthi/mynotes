@@ -1,0 +1,12 @@
+library:
+  title: "My Notes"
+  description: Notes and training material, written as books.
+  books-dir: books       # every subfolder with an octavo.yml is a book; "octavo add <Name>" adds one
+  output-dir: public     # the site to host: the portal plus every book
+  theme: auto            # light | dark | auto
+  # site-url: https://example.com/   # the site's address, for the sitemap and link previews
+  # css: portal.css      # your own styles for the portal page
+
+# Where "octavo publish" sends the public folder. Same targets as a book.
+# publish:
+#   gh-pages: {}

@@ -1,0 +1,121 @@
+---
+title: Host Forwarding and Routing Intro
+---
+
+# Host Forwarding and Routing Intro
+
+Every host is a mini-router for its **own** traffic: connected routes, default gateway, and policy policy later. This chapter is host-centric; multi-router IGP/BGP comes in later parts.
+
+## Learning goals
+
+- Read a Linux routing table
+- Explain longest-prefix match (LPM)
+- Configure a default route and a static host route
+- Distinguish RIB vs what `ip route get` uses
+- Enable IP forwarding on a Linux router node (preview)
+
+## Connected vs remote
+
+| Destination | Host behavior |
+|-------------|----------------|
+| In a connected prefix | ARP/ND on that interface; no gateway |
+| Not connected | Lookup route → next hop → ARP/ND for next hop |
+
+## Linux route table essentials
+
+```bash
+ip route
+ip -6 route
+ip route get 1.1.1.1
+ip route get 192.168.10.50
+```
+
+Common entry types:
+
+| Entry | Meaning |
+|-------|---------|
+| `default via G dev IF` | Default gateway |
+| `P.P.P.P/nn dev IF` | Connected or direct |
+| `H via G` | Host route (/32) |
+| metric / proto | Preference and source (dhcp, static, …) |
+
+## Longest prefix match
+
+More specific prefixes win:
+
+```text
+0.0.0.0/0        via 10.0.0.1
+10.0.0.0/8       via 10.0.0.2
+10.1.1.0/24      dev eth2
+```
+
+Destination `10.1.1.5` → `eth2` connected.
+Destination `10.2.0.1` → via `10.0.0.2`.
+Destination `8.8.8.8` → default via `10.0.0.1`.
+
+## Default gateway
+
+Most endpoints need one:
+
+```bash
+ip route add default via 10.20.1.1 dev eth1
+```
+
+Without it, on-link works and off-link fails—classic “I can ping the gateway but not the internet.”
+
+## Static routes (host or simple router)
+
+```bash
+ip route add 10.30.0.0/16 via 10.20.1.2
+ip route add 192.0.2.10/32 via 10.20.1.3
+```
+
+Multi-router static designs and floating statics: Layer 3 static routing labs.
+
+## IP forwarding (Linux as router)
+
+```bash
+sysctl net.ipv4.ip_forward
+sysctl -w net.ipv4.ip_forward=1
+sysctl -w net.ipv6.conf.all.forwarding=1
+```
+
+With forwarding on, Linux can move packets between interfaces per the FIB—foundation of FRR data plane coexistence in labs.
+
+## Policy routing (awareness)
+
+Multiple tables and `ip rule` exist for VRFs and advanced designs. Foundations: know they exist; do not start there.
+
+## Firewall vs routing
+
+A **correct route** with a **drop rule** still fails. Always separate:
+
+1. Is there a route? (`ip route get`)
+2. Does L2 resolve? (`ip neigh`)
+3. Does policy allow? (nft/iptables, security groups)
+
+## Lab sketch
+
+1. Two subnets, one Linux router
+2. Hosts with defaults pointing at the router
+3. `ip route get` on host and router for east-west traffic
+4. Break default on host; compare symptoms
+
+## How a host chooses the outgoing path
+
+For a typical locally generated packet, the operating system selects a route using the destination and any applicable policy. The selected route identifies an interface and may specify a gateway and preferred source address. It then resolves the next hop on that interface and transmits. Policy routing, multiple routing tables, multiple addresses, and application binding can make the result differ from an intuition based on the main table alone. On Linux, `ip route get 198.51.100.20` shows the kernel's decision for a representative lookup; supply a source address or other selectors when the real flow uses them.
+
+A connected route says a prefix is reachable on a link; it does not prove that every address in the prefix exists. A default route says where to send otherwise unmatched destinations; it does not prove that the gateway can forward them. At each router the same distinction applies between a route being installed, a neighbor being reachable, and a packet actually being forwarded.
+
+### Exercise: predict before looking
+
+A host has `10.0.0.10/24`, a connected `10.0.0.0/24` route, and default gateway `10.0.0.1`. For `10.0.0.20`, it resolves `.20`. For `203.0.113.10`, it resolves `.1` but retains `203.0.113.10` as the IP destination. If the return path lacks a route to `10.0.0.0/24`, the first packet can arrive while the exchange still fails. Check routes and captures in both directions.
+
+
+## Checkpoint
+
+Host `10.1.1.10/24`, gateway `10.1.1.1`. Route table has only the connected /24. What works? What fails? What single command fixes off-subnet reachability?
+
+## Next
+
+- [Control, Data, and Management Planes](12-control-data-management-planes.md)

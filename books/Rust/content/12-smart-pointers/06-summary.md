@@ -1,0 +1,14 @@
+---
+title: Summary
+---
+
+# Summary
+### Chapter Key Takeaways
+
+- `Box<T>` allocates on the heap with single ownership.
+- `Rc<T>` and `Arc<T>` provide shared read ownership via reference counting.
+- `RefCell<T>` provides interior mutability with runtime borrow checks.
+- `Mutex<T>` and `RwLock<T>` provide thread-safe interior mutability.
+- `Weak<T>` prevents reference count cycles.
+- `OnceLock` / `LazyLock` (and `OnceCell` / `LazyCell`) cover one-time initialization without third-party crates.
+- `MaybeUninit<T>` allows working with uninitialized memory safely before type invariants are established.

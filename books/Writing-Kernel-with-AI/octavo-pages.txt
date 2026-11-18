@@ -1,0 +1,52 @@
+# Every page address this book's website has had, kept by Octavo so that
+# links to moved chapters keep working. Commit this file with the book.
+# Each line: the page, a tab, then its chapter title, or "-> " and the page
+# its old address now forwards to.
+content/01-parallelism-cpu-to-gpu/01-cpu-parallelism-simd-threads.html	Parallelism on the CPU
+content/01-parallelism-cpu-to-gpu/02-roofline-model-and-limits.html	Roofline Lab: Predict Then Measure
+content/01-parallelism-cpu-to-gpu/03-cuda-programming-model.html	The CUDA Programming Model & GPU Puzzles
+content/01-parallelism-cpu-to-gpu/04-memory-hierarchy-and-coalescing.html	The Memory Hierarchy in Anger: Matrix Transpose
+content/01-parallelism-cpu-to-gpu/05-occupancy-mental-model.html	Occupancy as a Mental Model
+content/02-gemm-worklog/01-gemm-naive-to-tiled.html	GEMM Worklog I: Naive to Tiled
+content/02-gemm-worklog/02-gemm-registers-and-warptiling.html	GEMM Worklog II: Registers & Warp Tiling
+content/02-gemm-worklog/03-tensor-cores-and-wmma.html	Tensor Cores & WMMA: The Second Worklog
+content/02-gemm-worklog/04-split-k-and-stream-k.html	Split-K and Stream-K: The Last Wave of a GEMM
+content/03-attention-and-profiling/01-profiling-and-debugging.html	Profiling & Debugging Like a Pro
+content/03-attention-and-profiling/01b-launch-bounds-and-register-pressure.html	__launch_bounds__ and Register Pressure: What the Compiler Picks When You Say Nothing
+content/03-attention-and-profiling/01c-cuda-graphs-capture-replay.html	CUDA Graphs — Capture and Replay
+content/03-attention-and-profiling/01d-nsight-compute-basics.html	Nsight Compute Basics for Kernel Authors
+content/03-attention-and-profiling/02-attention-and-flashattention-v1.html	Attention: The Kernel That Ate the World & FlashAttention v1
+content/03-attention-and-profiling/03-shared-memory-bank-conflicts.html	Shared Memory Bank Conflicts
+content/04-modern-frontier/01-flashattention-from-scratch-fa1-to-fa3.html	FlashAttention from Scratch (FA1 → FA2 → FA3)
+content/04-modern-frontier/02-beating-cublas-on-h100.html	Beating cuBLAS on an H100
+content/04-modern-frontier/03-triton-cutlass-cute-dsl.html	Triton → CUTLASS → CuTe-DSL
+content/04-modern-frontier/03b-pytorch-custom-ops-for-kernels.html	From Kernel to Operator: Making a Hand-Written Kernel a Real PyTorch Op
+content/04-modern-frontier/04-inference-serving-kernels.html	Inference-Serving Kernels
+content/04-modern-frontier/04b-decode-batch-size-roofline.html	Decode Is Memory-Bound: Measuring the Batch-Size Knee
+content/04-modern-frontier/04c-top-p-sampling-sort-free.html	Top-k and Top-p Sampling Without a Sort
+content/04-modern-frontier/05-blackwell-and-nvfp4.html	Blackwell & NVFP4
+content/04-modern-frontier/05b-blackwell-gemm-in-cute-dsl.html	A Blackwell GEMM by Hand in CuTe DSL: TMA, mbarriers, TMEM, and tcgen05
+content/04-modern-frontier/05c-fused-hadamard-nvfp4-in-triton.html	A Fused Hadamard + NVFP4 Quantization Kernel in Triton
+content/04-modern-frontier/06-flashattention-4.html	Flash Attention 4
+content/04-modern-frontier/06b-jagged-flash-attention-with-tlx.html	Jagged Flash Attention on Blackwell with TLX
+content/04-modern-frontier/06c-causal-tile-scheduling-lpt.html	Scheduling Causal Attention Tiles: Longest-Processing-Time First and the L2 Swizzle
+content/04-modern-frontier/07-pagedattention-kv-cache.html	PagedAttention and the KV Cache
+content/04-modern-frontier/07b-hybrid-sliding-window-global-attention.html	Hybrid Sliding-Window + Global Attention: Kernels and KV Cache Layout
+content/04-modern-frontier/07c-kv-cache-eviction-policies.html	KV-Cache Eviction: Sinks, Windows and Heavy Hitters on a Real Model
+content/04-modern-frontier/08-flash-decoding-split-kv.html	Flash-Decoding: Split-KV Attention for Long-Context Decode
+content/04-modern-frontier/08b-turboquant-kv-cache-quantization.html	TurboQuant: Rotate-then-Quantize KV Caches at 3 Bits
+content/04-modern-frontier/09-moe-routing-and-grouped-gemm.html	Mixture-of-Experts Kernels: Routing, Permutation, and Grouped GEMM
+content/04-modern-frontier/10-table-batched-embeddings-in-triton.html	Table-Batched Embeddings in Triton: Gather, Pool, and Run-Length Backward
+content/04-modern-frontier/11-tilelang-pythonic-gpu-kernels.html	TileLang: Pythonic DSL for GPU kernels on TVM
+content/04-modern-frontier/12-batch-invariant-kernels.html	Batch-invariant kernels: why temperature-0 decoding is still nondeterministic
+content/04-modern-frontier/13-tokenspeed-portable-triton.html	TokenSpeed — Portable Triton for Multi-Silicon
+content/04-modern-frontier/14-fused-linear-cross-entropy.html	Fused linear cross-entropy: training without the logits tensor
+content/05-ai-written-kernels/01-deepseek-flashmla-and-deepgemm.html	DeepSeek: FlashMLA & DeepGEMM
+content/05-ai-written-kernels/02-llm-generated-kernels-agent-profiler-loop.html	LLM-Generated Kernels: The Agent + Profiler Loop
+content/05-ai-written-kernels/03-helion-gemm-vllm-backend.html	Helion GEMM as a portable vLLM linear backend
+content/05-ai-written-kernels/04-reward-hacking-false-speedups.html	Reward hacking and false speedup gates
+content/05-ai-written-kernels/05-kernelagent-hardware-guided.html	Hardware-Guided Kernel Agents
+content/06-capstone-projects/01-crusoe-capstone-specifications.html	Crusoe Capstone Specifications & Problem Tracks
+content/06-capstone-projects/02-verification-and-benchmarking.html	Verification, Profiling, and Benchmarking Harness
+content/06-capstone-projects/03-demo-day-and-portfolio.html	Demo Day Presentation & Portfolio
+index.html	Writing Kernel with AI

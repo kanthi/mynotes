@@ -1,0 +1,66 @@
+---
+title: The BGP Decision Process and Route Selection
+---
+
+# The BGP Decision Process and Route Selection
+
+BGP receives advertisements for prefixes, applies policy, checks feasibility and selects paths. A best BGP path is not automatically the route used to forward a packet: it must be eligible for the main routing table, installed in the forwarding table, and match the destination more specifically than other installed prefixes. Route selection is a major security boundary because policy and validation determine which information can influence forwarding.
+
+## Follow a route through the router
+
+1. **Session and address family:** an Established session only proves the BGP session is up. Check that the desired address family is negotiated and enabled, and that the peer actually advertises the prefix.
+2. **Import and eligibility:** evaluate inbound policy, origin validation where configured, AS-loop rules, attribute handling, and next-hop resolution. An unresolved or rejected path may appear in some diagnostic views but cannot be assumed eligible. Implementations differ in whether they retain pre-policy paths and how they label them.
+3. **BGP selection:** compare eligible paths for the **same prefix** using local policy and the implementation's decision process. Document software version, options, defaults and any route-reflector behavior; there is no single vendor-independent list of every tie-breaker.
+4. **RIB and FIB:** the selected BGP path competes with candidates from other sources according to the platform's route preference and installation rules. The forwarding table must contain a usable next hop. A route can be BGP-best yet absent from the FIB because a static or IGP route wins or hardware installation fails.
+5. **Packet lookup and export:** forwarding selects the longest matching installed prefix within the relevant forwarding table. Export policy independently decides what can be advertised to each peer. A path used locally is not necessarily exported, and an advertised path does not prove remote acceptance.
+
+The RFC's Adj-RIB-In, Loc-RIB and Adj-RIB-Out describe logical stages; they need not be implemented as three literal copies of every route. Commands named “received,” “accepted,” “best,” or “advertised” can expose different stages. Check the documentation for the exact command and policy visibility.
+
+## Common decision inputs
+
+| Input | Typical treatment | Scope and caveats |
+|---|---|---|
+| Local proprietary preference, often called weight | Higher may win before standard attributes | Local to one router; not a BGP path attribute; range and order vary |
+| LOCAL_PREF | Higher preferred | Internal AS policy; propagated to internal peers; normally not sent to external peers |
+| Locally originated status | May be preferred | Placement and interpretation vary |
+| AS_PATH length | Shorter commonly preferred when earlier criteria tie | AS sequence, AS sets and confederation segments have specific counting rules; configuration can change comparison |
+| ORIGIN | IGP preferred to EGP, then incomplete | Attribute ordering, not proof the route is authentic or physically shorter |
+| MED | Lower commonly preferred | Usually compared for routes from the same neighboring AS; missing values, grouping and always-compare options vary |
+| eBGP versus iBGP | eBGP commonly preferred if earlier criteria tie | Confed and platform rules may differ |
+| IGP cost to next hop | Lower often preferred | Hot-potato behavior depends on a reachable next hop and earlier tie-breaks |
+| Later tie-breaks | Router ID, cluster information, peer address or path age may matter | Ordering, eligibility and oldest-path behavior are implementation-specific |
+
+Multipath is an implementation capability with its own eligibility rules. Multiple paths in the BGP table do not prove multiple next hops are installed or that traffic is distributed evenly. Inspect FIB next hops and test several flows; a single flow often follows one hash bucket.
+
+## Worked comparisons
+
+Assume the following **explicit lab policy**: both candidates are eligible for `203.0.113.0/24`; higher LOCAL_PREF is considered before shorter AS_PATH; remaining attributes are equal. A has LOCAL_PREF 200 and path `64510 64496`; B has LOCAL_PREF 100 and path `64520`. A wins despite its longer AS_PATH. If A's next hop becomes unresolvable, A is ineligible and B can win. Restoring reachability can restore A's eligibility; observe both BGP and FIB changes rather than assuming an immediate switch.
+
+For two paths received from the same neighboring AS, with all earlier criteria equal, MED 50 is typically preferred to MED 200. If the lower-MED path has a longer AS_PATH and that implementation compares AS_PATH before MED, the shorter path can win instead. MED comparison across different neighboring ASes depends on policy and implementation; compare-med and deterministic-MED settings affect outcomes and stability. Do not infer the winner from MED alone.
+
+Now add an installed `203.0.113.128/25` via another path. A packet to `203.0.113.150` uses the `/25`, even if the `/24` has higher BGP LOCAL_PREF, provided both are installed in the same forwarding table. LOCAL_PREF compares candidate paths for the same NLRI; it does not make an aggregate override a more-specific forwarding entry. Policy routing and VRFs can select a different table first.
+
+## Security implications
+
+An unauthorized shorter path or more-specific announcement can attract traffic where it is accepted and selected. It is not guaranteed to win globally: different networks apply different import policies, validation, prefix-length filters and preferences, and some may not receive the advertisement. Origin validation checks an origin against validated authorizations; it does not authenticate the complete AS path or prove that a route is leak-free. Prefer explicit import/export filters, maximum-prefix safeguards, validation policy, and monitoring of both accepted and rejected routes.
+
+AS-path prepending is an external signal, not a command to remote networks. A remote AS can prefer a longer path because of its own policy, ignore some prepends, or see a different set of routes. Similarly, changing LOCAL_PREF generally controls **your AS's exit**, not how another AS sends traffic toward you.
+
+## Troubleshoot a missing or unexpected route
+
+For a specific prefix and neighbor, collect evidence in order:
+
+1. Confirm the session, negotiated address family and counters; ask what the neighbor actually advertises. An Established session can carry zero accepted prefixes.
+2. Inspect inbound policy, prefix length, AS-loop detection and validation state. Distinguish no advertisement from an advertisement rejected at import. A platform may not retain rejected pre-policy routes unless configured to do so.
+3. Inspect all candidate paths, their next-hop resolution, eligibility flags and best-path reason. Confirm the routing table used for recursion and check that resolution does not depend recursively on the route itself.
+4. Compare the BGP best path to the main RIB and FIB. Check VRF, address family, competing routes, hardware installation and longest matching prefixes.
+5. Inspect export policy and the actual advertised route at the sending peer, then confirm reception at the remote peer. A route-refresh capability can request re-advertisement after an inbound policy change if supported; it does not force the peer to export a route its own policy denies. Resetting a session can disrupt unrelated prefixes.
+6. Verify data traffic and the reverse path separately. Record timestamps so that transient convergence is not mistaken for a stable policy result.
+
+## Practice
+
+Use [BGP MED, Prepend, and ECMP](../09-lab-workbook/29-bgp-med-prepend-ecmp.md) for the two-link topology, and [BGP Policy](../09-lab-workbook/15-bgp-policy.md) for import/export controls. Before each change, record the peer's advertised path, local pre- and post-policy view if available, best-path explanation, next-hop reachability and FIB. Change one attribute at a time, predict the winner, apply the policy using the platform's documented refresh mechanism, and compare evidence. Withdraw next-hop reachability without dropping the BGP session, observe eligibility and forwarding, then restore it. Exact commands and observed behavior depend on the chosen NOS; these are exercises to validate in that environment.
+
+**Review:** Why can an Established session have no usable routes? How can a `/25` win over a `/24` with higher LOCAL_PREF? What does a route refresh ask the peer to do, and what can export policy still prevent? Why is a shorter AS_PATH not a guarantee of global hijack success?
+
+**References:** [BGP-4, RFC 4271](https://www.rfc-editor.org/rfc/rfc4271.html), [Route Refresh, RFC 2918](https://www.rfc-editor.org/rfc/rfc2918.html), and [FRRouting BGP documentation](https://docs.frrouting.org/en/latest/bgp.html). Consult the exact version of your implementation for its decision order and multipath rules.

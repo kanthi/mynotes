@@ -1,0 +1,171 @@
+---
+title: Managing Terraform Providers with Nix
+---
+
+# Managing Terraform Providers with Nix
+
+`terraform init` downloading whatever the registry serves this morning is a supply chain. The boring default is: **`pkgs.opentofu` or `pkgs.terraform.withPlugins` from nixpkgs 26.05 so providers are store paths**.
+
+OpenTofu is the next chapter; the wrapper pattern is the same. Prefer OpenTofu on a new desk. This chapter names Terraform because that is the API people google.
+
+## Mental model
+
+`withPlugins` builds a Terraform/OpenTofu **wrapper** whose plugin directory is in `/nix/store`. `init` does not need the network for providers. State still lives where you put it (S3, local) — Nix does not replace the backend.
+
+```
+nix develop  →  tofu/terraform in PATH
+                 plugins = /nix/store/…-terraform-providers
+terraform init -plugin-dir=…  →  offline providers
+```
+
+`which terraform` must be a store path. Distro `terraform` on PATH is how CI still hits the registry.
+
+## Worked examples
+
+### Case 1: Shell with pinned providers
+
+Save as `terraform-env.nix`:
+
+```nix
+# terraform-env.nix
+{ pkgs ? import <nixpkgs> { } }:
+
+let
+  tf = pkgs.terraform.withPlugins (p: [
+    p.aws
+    p.random
+    p.local
+  ]);
+in
+pkgs.mkShell {
+  packages = [ tf ];
+}
+```
+
+```bash
+nix-shell terraform-env.nix --run "terraform version"
+which terraform
+```
+
+Output (shape):
+
+```
+Terraform v1.x.x
+on linux_amd64
++ provider registry.terraform.io/hashicorp/aws v…
++ provider registry.terraform.io/hashicorp/random v…
+```
+
+Versions are whatever 26.05 pinned. To freeze harder, overlay a specific provider derivation.
+
+### Case 2: Flake devShell
+
+Save as `flake.nix`:
+
+```nix
+# flake.nix
+{
+  description = "Desk Terraform (prefer OpenTofu for new work)";
+
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+
+  outputs = { self, nixpkgs }:
+    let
+      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      tf = pkgs.terraform.withPlugins (p: [ p.random p.local ]);
+    in
+    {
+      devShells.x86_64-linux.default = pkgs.mkShell { packages = [ tf ]; };
+    };
+}
+```
+
+```bash
+nix develop --command terraform version
+```
+
+### Case 3: Offline init
+
+```bash
+nix develop --command terraform init -get=false
+# PR job: no backend credentials required
+nix develop --command terraform init -input=false -backend=false
+nix develop --command terraform validate
+```
+
+If providers are already in the wrapper, init should not download. If it tries the registry, the wrapper is not on `PATH` (you ran distro terraform). Commit `.terraform.lock.hcl`. `-plugin-dir` is already baked into the wrapper; do not also set `TF_PLUGIN_CACHE_DIR` in `$HOME`.
+
+```bash
+readlink -f "$(which terraform)"
+```
+
+Must start with `/nix/store`.
+
+### Case 4: Tiny plan
+
+Save as `main.tf`:
+
+```hcl
+# main.tf
+resource "random_id" "desk" {
+  byte_length = 4
+}
+
+output "hex" {
+  value = random_id.desk.hex
+}
+```
+
+```bash
+nix develop --command terraform init
+nix develop --command terraform plan
+nix develop --command terraform apply -auto-approve
+```
+
+No AWS credentials required. Proves plugins execute. Add `*.tfstate*` to `.gitignore`.
+
+### Case 5: CI without `setup-terraform`
+
+Save as `.github/workflows/tf.yml`:
+
+```yaml
+# .github/workflows/tf.yml
+name: tf
+on: [pull_request]
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v27
+      - run: nix develop --command terraform fmt -check
+      - run: nix develop --command terraform init -input=false -backend=false
+      - run: nix develop --command terraform validate
+      - run: nix develop --command terraform plan -input=false
+        env:
+          TF_IN_AUTOMATION: "1"
+```
+
+Same flake as laptops. No `hashicorp/setup-terraform`. Apply is a protected job on `main`, not this PR workflow.
+
+## The trap
+
+The trap is **`terraform init` in CI with a clean `$HOME` and no `withPlugins`**. Registry outage or a yanked version becomes your outage.
+
+The other trap is wrapping Terraform **and** OpenTofu on the same PATH. State gets written by the wrong binary. One CLI.
+
+## The boring rule
+
+- Providers from nixpkgs (26.05 pin), not the registry at apply time. `withPlugins` + lockfile.
+- `which terraform` is a store path.
+- PR: `init -backend=false` + `validate`. Plan/apply need the backend.
+- State backend is still your problem (lock table, encryption). Credentials are sops / env, not Nix strings.
+- Prefer OpenTofu for new work (next chapter). One CLI on PATH.
+- Overlay only when you must pin a provider the channel does not have.
+
+## Try this
+
+1. Case 1, `which terraform`, confirm `/nix/store`.
+2. `terraform init` with network blocked (`unshare -n` if you can) to confirm no download.
+3. Add `p.null` to the plugin list, enter a new shell, `terraform version`.
+4. `git grep setup-terraform` and delete it from CI.

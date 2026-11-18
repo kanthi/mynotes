@@ -1,0 +1,260 @@
+---
+title: Time and Scheduling
+---
+
+# Time and Scheduling
+
+## Overview
+
+The `time` package provides functionality for measuring and displaying time.
+
+## Current Time
+
+```go
+now := time.Now()
+fmt.Println(now)  // 2024-01-15 10:30:00 -0500 EST
+```
+
+## Duration
+
+```go
+d := 5 * time.Second
+d := time.Minute + 30*time.Second
+d := time.ParseDuration("1h30m")
+```
+
+## Sleeping
+
+```go
+time.Sleep(2 * time.Second)
+```
+
+## Timers
+
+Go 1.27 removed the `asynctimerchan` `GODEBUG` setting. Channels created by package `time` (`Timer.C`, `Ticker.C`, `time.After`, …) are **always unbuffered**. Code that relied on a buffered timer channel under the old GODEBUG will deadlock or drop sends; treat receive as a rendezvous.
+
+```go
+// One-shot timer
+timer := time.NewTimer(5 * time.Second)
+<-timer.C  // Blocks until timer fires
+
+// Cancel timer
+if !timer.Stop() {
+    <-timer.C
+}
+```
+
+## Tickers
+
+```go
+ticker := time.NewTicker(1 * time.Second)
+defer ticker.Stop()
+
+for t := range ticker.C {
+    fmt.Println("Tick at", t)
+}
+```
+
+## Formatting
+
+```go
+// Format uses reference time: Mon Jan 2 15:04:05 MST 2006
+now := time.Now()
+fmt.Println(now.Format("2006-01-02"))           // 2024-01-15
+fmt.Println(now.Format("15:04:05"))             // 10:30:00
+fmt.Println(now.Format(time.RFC3339))           // 2024-01-15T10:30:00-05:00
+```
+
+## Parsing
+
+```go
+t, err := time.Parse("2006-01-02", "2024-01-15")
+t, err := time.Parse(time.RFC3339, "2024-01-15T10:30:00Z")
+```
+
+## Time Zones
+
+```go
+loc, _ := time.LoadLocation("America/New_York")
+t := time.Now().In(loc)
+
+utc := time.Now().UTC()
+```
+
+## Comparisons
+
+```go
+t1.Before(t2)
+t1.After(t2)
+t1.Equal(t2)
+t1.Sub(t2)    // Duration between
+t1.Add(d)     // Add duration
+```
+
+## Summary
+
+| Type/Function | Purpose |
+|---------------|---------|
+| `time.Now()` | Current time |
+| `time.Duration` | Time interval |
+| `time.Timer` | One-shot delay |
+| `time.Ticker` | Repeated intervals |
+| `time.Format()` | Time to string |
+| `time.Parse()` | String to time |
+
+## Related Topics
+- [Context and Cancellation](../11-concurrency-parallelism/43-context.md)
+- [I/O and Streaming](../28-specialized/93-io-streaming.md)
+
+## More examples
+
+### Example: duration arithmetic
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	d := 90 * time.Second
+	fmt.Println("seconds:", d.Seconds())
+	fmt.Println("plus minute:", d+time.Minute)
+	fmt.Println("truncated:", d.Truncate(30*time.Second))
+}
+```
+
+Expected:
+
+```text
+seconds: 90
+plus minute: 2m30s
+truncated: 1m30s
+```
+
+### Example: parse and format
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	const layout = "2006-01-02"
+	t, err := time.Parse(layout, "2026-07-28")
+	if err != nil {
+		fmt.Println("err:", err)
+		return
+	}
+	fmt.Println("parsed:", t.Format(layout))
+	fmt.Println("weekday:", t.Weekday())
+}
+```
+
+Expected:
+
+```text
+parsed: 2026-07-28
+weekday: Tuesday
+```
+
+## Runnable example
+
+Save as `main.go`. From an empty directory:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	now := time.Now()
+	fmt.Println("now:", now.Format(time.RFC3339))
+	fmt.Println("date:", now.Format("2006-01-02"))
+	fmt.Println("clock:", now.Format("15:04:05"))
+
+	d := 90*time.Second + 500*time.Millisecond
+	parsed, err := time.ParseDuration("1h30m")
+	if err != nil {
+		fmt.Println("ParseDuration:", err)
+		return
+	}
+	fmt.Println("90.5s:", d, "parsed 1h30m:", parsed)
+
+	start := time.Now()
+	time.Sleep(50 * time.Millisecond)
+	elapsed := time.Since(start)
+	fmt.Printf("slept about %v (elapsed=%v)\n", 50*time.Millisecond, elapsed)
+
+	// Parse / compare / arithmetic
+	t1, err := time.Parse("2006-01-02", "2024-01-15")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	t2 := t1.Add(48 * time.Hour)
+	fmt.Println("t1:", t1.Format("2006-01-02"))
+	fmt.Println("t2:", t2.Format("2006-01-02"))
+	fmt.Println("t1 before t2?", t1.Before(t2))
+	fmt.Println("sub:", t2.Sub(t1))
+
+	utc := now.UTC()
+	fmt.Println("utc:", utc.Format(time.RFC3339))
+
+	// One-shot timer (short so the example finishes quickly)
+	timer := time.NewTimer(30 * time.Millisecond)
+	fire := <-timer.C
+	fmt.Println("timer fired at:", fire.Format("15:04:05.000"))
+
+	// Ticker: two ticks then stop
+	ticker := time.NewTicker(20 * time.Millisecond)
+	defer ticker.Stop()
+	for i := 0; i < 2; i++ {
+		t := <-ticker.C
+		fmt.Printf("tick %d at %s\n", i+1, t.Format("15:04:05.000"))
+	}
+}
+```
+
+**Expected output** (illustrative; timestamps vary):
+
+```text
+now: 2026-07-28T12:00:00-07:00
+date: 2026-07-28
+clock: 12:00:00
+90.5s: 1m30.5s parsed 1h30m: 1h30m0s
+slept about 50ms (elapsed=51.2ms)
+t1: 2024-01-15
+t2: 2024-01-17
+t1 before t2? true
+sub: 48h0m0s
+utc: 2026-07-28T19:00:00Z
+timer fired at: 12:00:00.031
+tick 1 at 12:00:00.051
+tick 2 at 12:00:00.071
+```
+
+**What to notice:**
+- Format layouts use the reference time `Mon Jan 2 15:04:05 MST 2006`.
+- `Duration` values multiply cleanly (`90 * time.Second`).
+- `Before` / `Add` / `Sub` are the comparison and arithmetic API.
+- Always `Stop` tickers (and unused timers) to avoid leaks.
+
+**Try next:** Load `time.LoadLocation("America/New_York")` and print `now.In(loc)`.

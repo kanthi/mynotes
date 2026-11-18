@@ -1,0 +1,155 @@
+---
+title: Debugging and Troubleshooting Production Issues
+---
+
+# Debugging and Troubleshooting Production Issues
+
+“Works on my laptop” is a missing `nix log`. The boring default is: **`nix log` → `journalctl` → `why-depends` → `--show-trace` → rollback — before editing a live unit**.
+
+## Mental model
+
+| Symptom | First tool |
+|---|---|
+| Build failed | `nix log /nix/store/…drv` |
+| Eval failed | `--show-trace`, `nix repl .#` |
+| Unit dead after switch | `systemctl status`, `journalctl -u` |
+| Closure huge | `nix path-info -Shr`, `why-depends` |
+| Will not boot | Previous generation in systemd-boot |
+
+`vim /etc/systemd/system/foo.service` is undone by the next switch (or by impermanence). Put the flag in Nix. Live drop-ins from `systemctl edit` are unmanaged state.
+
+The log of a failed build lives in the store. CI can `nix log` the same drv hash the laptop saw. That is the whole point of a content-addressed failed build: the bytes of the log are the same everywhere.
+
+## Worked examples
+
+### Case 1: Build log
+
+Save as `fail.nix`:
+
+```nix
+# fail.nix
+{ pkgs ? import <nixpkgs> { } }:
+
+pkgs.runCommand "desk-fail" { } ''
+  echo boom >&2
+  false
+''
+```
+
+```bash
+nix-build fail.nix
+nix log $(nix-instantiate fail.nix)
+nix build .#desk-api --print-build-logs
+```
+
+You should see `boom` in the log even after the build is gone from the terminal scrollback. On CI:
+
+```bash
+nix log /nix/store/…-desk-fail.drv
+```
+
+### Case 2: Eval trace
+
+```bash
+nix eval .#nixosConfigurations.app-01.config.networking.hostName --show-trace
+```
+
+Read the **last** frame first. Infinite recursion is usually `rec` + `//` or `final.pkg.overrideAttrs` calling `prev` the wrong way.
+
+```
+error: infinite recursion encountered
+       at /nix/store/…/overlays.nix:4:5
+```
+
+`nix repl .#` then `:lf .` and tab-complete the attr you meant. Do not add `builtins.trace` to production modules and leave it there.
+
+### Case 3: Unit after switch
+
+```bash
+systemctl status desk-api --no-pager
+journalctl -u desk-api -n 80 --no-pager
+systemctl cat desk-api
+```
+
+`systemctl cat` shows a store path:
+
+```
+# /nix/store/…-unit-desk-api.service/desk-api.service
+[Service]
+ExecStart=/nix/store/…-desk-api/bin/desk-api
+```
+
+A drop-in from `systemctl edit` appears as `/etc/systemd/system/desk-api.service.d/override.conf`. Delete it and encode the change in the flake. On an ephemeral root it is already gone after reboot — which is why “it worked until reboot” is this bug.
+
+### Case 4: Unexpected python in the OS closure
+
+```bash
+nix path-info -Shr /run/current-system | tail
+nix why-depends /run/current-system nixpkgs#python3
+```
+
+Output (shape):
+
+```
+/nix/store/…-nixos-system-app-01-26.05
+└───/nix/store/…-desk-wrapper
+    └───/nix/store/…-python3-3.12.x
+```
+
+Cut the edge (a wrapper, `propagatedBuildInputs`, a shebang). Re-switch. Measure `path-info -Shr` before and after. gcc in the **runtime** closure of `desk-api` is the same class of bug.
+
+### Case 5: Rollback then revert git
+
+```bash
+sudo nixos-rebuild list-generations | tail
+sudo nixos-rebuild switch --rollback
+git log -1 --oneline
+git revert HEAD
+colmena apply --dry-run --on app-01
+```
+
+Rollback without a git revert means the next Colmena apply re-breaks the box. The generation on metal and the flake in git must agree.
+
+If the box will not boot, pick the previous generation in systemd-boot. Then SSH in and revert.
+
+Diff two system closures when “what changed?” is the ticket:
+
+```bash
+nix-diff /run/current-system /nix/var/nix/profiles/system-43-link
+```
+
+Or, without `nix-diff`:
+
+```bash
+nix store diff-closures /run/booted-system /run/current-system
+```
+
+You should see unit files and store paths, not a wall of llvm.
+
+If `switch` failed halfway:
+
+```bash
+systemctl --failed --no-pager
+journalctl -b -p err --no-pager | tail
+```
+
+A failed unit after a successful eval is not a Nix bug — it is the unit. Fix the module, `switch` again. Do not `systemctl reset-failed` and walk away.
+
+## The trap
+
+The trap is **`systemctl edit` + reboot “to see.”** Unmanaged state. Impermanence eats it; a persistent root lies to the next apply. The other trap is screenshotting a red CI log instead of `nix log` on the drv.
+
+## The boring rule
+
+- Store logs + journald. Not screenshots.
+- `--show-trace` for eval. `why-depends` for size.
+- Rollback first; bisect the flake second.
+- No live drop-ins. `systemctl cat` must be a store path only.
+- 26.05 `nix log` / `path-info` are enough to start.
+
+## Try this
+
+1. Case 1: `runCommand` with `false`; `nix log` the failed drv.
+2. `systemctl cat sshd` — find `/nix/store`.
+3. `--rollback` after a hostname change on a lab VM, then revert git.
+4. `why-depends` `hello` vs gcc — gcc must not be in the **runtime** closure.

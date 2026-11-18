@@ -1,0 +1,70 @@
+---
+title: JSON Performance Patterns
+---
+
+# JSON Performance Patterns
+
+## Overview
+
+`encoding/json` is correct and convenient; hot paths often spend CPU in **reflection** and allocations. Patterns: reuse encoders, pre-size, avoid `map[string]any`. In Go 1.27, v1 is backed by the v2 engine (faster unmarshal) and `encoding/json/v2` is the supported new API.
+
+## Diagram: cost centers
+
+```text
+flow:
+  [Marshal]
+       |
+       v
+  [Alloc]
+```
+
+## Patterns
+
+| Pattern | Why |
+|---------|-----|
+| `json.NewEncoder(w).Encode` | stream to writer |
+| `Decoder.DisallowUnknownFields` | strict APIs |
+| Pool `bytes.Buffer` | cut allocs |
+| Typed structs | field cache |
+| `json.RawMessage` | delay parse |
+| Codegen (easyjson etc.) | last resort |
+
+## Encoder reuse caveats
+
+Stateful encoders/decoders need care if concurrent—prefer per-goroutine or mutex; pooling buffers is safer than sharing one Encoder across Gs.
+
+## json/v2 (GA in Go 1.27)
+
+`encoding/json/v2` is no longer an experiment. Marshal is roughly at parity with the old v1 engine; unmarshal is significantly faster. Stricter defaults (UTF-8, duplicate names, case-sensitive fields) are the usual migration cost.
+
+```go
+import jsonv2 "encoding/json/v2"
+
+b, err := jsonv2.Marshal(e)
+err = jsonv2.Unmarshal(b, &e, jsonv2.RejectUnknownMembers(true))
+```
+
+Keep v1 imports for existing handlers; migrate hot paths and new APIs to v2 after golden-file tests pass. Emergency rollback: `GOEXPERIMENT=nojsonv2` ([233](233-goexperiment-catalog.md)).
+
+## Experiment
+
+```bash
+go test -bench=. -benchmem
+```
+
+```go
+type E struct {
+	A int    `json:"a"`
+	B string `json:"b"`
+}
+func BenchmarkMarshal(b *testing.B) {
+	e := E{1, "x"}
+	for i := 0; i < b.N; i++ {
+		_, _ = json.Marshal(e)
+	}
+}
+```
+
+**What to notice:** alloc/op and ns/op; compare with streaming encode to `io.Discard`.
+
+**Try next:** Profile a handler that `Marshal`s large slices every request.

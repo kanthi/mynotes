@@ -1,0 +1,155 @@
+---
+title: Content-Addressed Nix Internals
+---
+
+# Content-Addressed Nix Internals
+
+Everyday Nix is **input-addressed**: the `.drv` hash names the output. **Content-addressed** (CA) derivations hash the **bytes**. The boring default on 26.05 is: **input-addressed builds, FODs (`fetchurl`, `vendorHash`) for the CA you already use, `nix-store --optimise` for disk — not experimental CA on the laptop**.
+
+## Mental model
+
+| Kind | Output path depends on | Daily |
+|---|---|---|
+| Input-addressed | The `.drv` (builder, env, input paths) | Packages, NixOS |
+| FOD | Declared `outputHash` | Fetchers, cargo/go vendor |
+| Experimental CA | Hash of the built bytes | Hydra labs |
+
+A comment in a `runCommand` changes the `.drv` even if `cat $out` is identical. That wastes cache. It also makes “why did this rebuild?” answerable. Live with it.
+
+Nix 2.35 lazy flake copy is **eval** performance. It is not CA builds. Do not mix them in an incident doc. The 26.05 channel's Nix 2.34 vs this book's CLI 2.35+ does not change the addressing model you ship.
+
+## Worked examples
+
+### Case 1: FOD — identity is the hash
+
+Save as `fod.nix`:
+
+```nix
+# fod.nix
+{ pkgs ? import <nixpkgs> { } }:
+
+pkgs.fetchurl {
+  url = "https://ftp.gnu.org/gnu/hello/hello-2.12.1.tar.gz";
+  hash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+}
+```
+
+```bash
+nix-build fod.nix
+```
+
+Mismatch prints `got:`. Paste that into `hash`. Same `hash`, different URL (mirror) → same store path. That is the CA you already depend on: `vendorHash`, `cargoHash`, `fetchurl`.
+
+`outputHashMode` is `"flat"` (one file, `fetchurl`) or `"recursive"` (a directory NAR, `fetchFromGitHub`, `vendorHash`). Mixing them is a hash mismatch that looks like a wrong URL. If `got:` is `sha256-` of a NAR and you expected a single-file hash, you used the wrong mode — not a bad mirror.
+
+### Case 2: Comment rebuilds an input-addressed path
+
+Save as `banner.nix`:
+
+```nix
+# banner.nix
+{ pkgs ? import <nixpkgs> { } }:
+
+pkgs.runCommand "desk-banner" { } ''
+  echo desk > $out
+  # lab note
+''
+```
+
+```bash
+nix-instantiate banner.nix
+# change the comment, instantiate again
+nix-instantiate banner.nix
+```
+
+Two `.drv` hashes. `diff` the two `$out` files after `nix-build` — same bytes, different names. Normal for input-addressed builds. Do not “fix” this with `__contentAddressed`.
+
+### Case 3: `nix show-derivation`
+
+```bash
+nix show-derivation $(nix-instantiate -E '(import <nixpkgs> {}).hello') | head
+nix show-derivation $(nix-build fod.nix --no-out-link) | jq '.[].outputs'
+```
+
+FODs have `outputHash` / `outputHashAlgo`. `hello` does not. If you are staring at a path and do not know which family it is, this is the check.
+
+```
+"outputs": {
+  "out": {
+    "hash": "…",
+    "hashAlgo": "r:sha256"
+  }
+}
+```
+
+### Case 4: Disk without CA — optimise
+
+```bash
+sudo nix-store --optimise
+df -h /nix
+```
+
+Hard-link identical **files** inside distinct input-addressed paths. No experimental flags.
+
+Save as `nix-optimise.nix`:
+
+```nix
+# nix-optimise.nix
+{
+  nix.settings.auto-optimise-store = true;
+  nix.optimise.automatic = true;
+}
+```
+
+14-day GC plus this is the disk plan. Experimental CA is not.
+
+### Case 5: Do not enable CA on the desk
+
+```nix
+# do not
+{
+  nix.settings.experimental-features = [ "ca-derivations" ];
+}
+```
+
+unless the whole team **and** the cache agree. nixpkgs 26.05 still assumes input-addressed for almost everything you ship. Substituters miss, support assumes input-addressed, and a one-line stdenv change becomes a debugging career.
+
+A recursive FOD (directory) looks like this — still not experimental CA:
+
+```nix
+# fod-git.nix
+{ pkgs ? import <nixpkgs> { } }:
+
+pkgs.fetchFromGitHub {
+  owner = "NixOS";
+  repo = "nixpkgs";
+  rev = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+  hash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+}
+```
+
+```bash
+nix-build fod-git.nix
+nix show-derivation $(nix-build fod-git.nix --no-out-link) | jq '.[].outputs.out.hashAlgo'
+```
+
+You want `r:sha256` (recursive). `fetchurl` of a `.tar.gz` is usually flat. Same `got:` paste workflow.
+
+## The trap
+
+The trap is **`__contentAddressed = true` on a production module** “to save disk.” Use GC + `--optimise`. The other trap is calling Nix 2.35 lazy trees “content-addressed Nix” in a postmortem — different layer.
+
+## The boring rule
+
+- FODs for fetches. Input-addressed for builds.
+- `--optimise` + 14-day GC for disk.
+- `show-derivation` when a path’s kind is unclear.
+- 2.35 lazy copy ≠ CA.
+- No `ca-derivations` on workstation flakes.
+
+## Try this
+
+1. Case 3: compare `hello` vs a `fetchurl` for `outputHash`.
+2. Case 2: two instantiations; `diff` the `.drv` files.
+3. `git grep contentAddressed` / `ca-derivations` — empty on the desk.
+4. `nix-store --optimise` on a lab; note `df` delta.

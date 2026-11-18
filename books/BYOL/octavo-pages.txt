@@ -1,0 +1,89 @@
+# Every page address this book's website has had, kept by Octavo so that
+# links to moved chapters keep working. Commit this file with the book.
+# Each line: the page, a tab, then its chapter title, or "-> " and the page
+# its old address now forwards to.
+content/00-introduction/01-what-from-scratch-really-means.html	What “From Scratch” Really Means
+content/00-introduction/02-who-should-build-a-distribution.html	Who Should Build a Distribution?
+content/00-introduction/03-how-to-read-this-book.html	How to Read This Book
+content/01-anatomy-of-a-linux-system/01-what-makes-a-distribution.html	What Makes a Distribution a Distribution
+content/01-anatomy-of-a-linux-system/02-filesystem-hierarchy-standard.html	The Filesystem Hierarchy Standard and Its Variants
+content/01-anatomy-of-a-linux-system/03-essential-components.html	Essential Components Every Distro Needs
+content/01-anatomy-of-a-linux-system/04-case-study-comparing-layouts.html	Case Study: Comparing Debian, Arch, Alpine, and Fedora Layouts
+content/02-understanding-the-linux-kernel/01-monolithic-architecture.html	Monolithic Architecture with Modular Extensions
+content/02-understanding-the-linux-kernel/02-key-subsystems.html	Key Subsystems: Process Management, Memory, VFS, Networking
+content/02-understanding-the-linux-kernel/03-kernel-configuration-and-dotconfig.html	Kernel Configuration and the .config Workflow
+content/02-understanding-the-linux-kernel/04-troubleshooting-kernel-panics.html	Troubleshooting: Diagnosing Kernel Panics
+content/03-the-toolchain/01-what-a-toolchain-is.html	What a Toolchain Is and Why It Matters
+content/03-the-toolchain/02-the-bootstrap-process.html	The Bootstrap Process: Pass One and Pass Two
+content/03-the-toolchain/03-glibc-vs-musl.html	glibc vs. musl: Choosing Your C Standard Library
+content/03-the-toolchain/04-case-study-alpine-musl-toolchain.html	Case Study: Alpine’s musl-Based Hardened Toolchain
+content/03-the-toolchain/05-troubleshooting-toolchain-builds.html	Troubleshooting: Toolchain Build Failures
+content/04-boot-process-and-bootloaders/01-power-on-to-shell.html	From Power-On to Shell: The Full Boot Chain
+content/04-boot-process-and-bootloaders/02-bios-uefi-and-esp.html	BIOS, UEFI, and the EFI System Partition
+content/04-boot-process-and-bootloaders/03-grub-systemd-boot-and-bootloaders.html	GRUB, systemd-boot, and Other Bootloaders
+content/04-boot-process-and-bootloaders/04-creating-custom-initramfs.html	Creating a Custom Initramfs
+content/04-boot-process-and-bootloaders/05-troubleshooting-boot-chain-failures.html	Troubleshooting: Boot Chain Failures
+content/05-system-initialization/01-history-of-init-systems.html	A Brief History of Init Systems
+content/05-system-initialization/02-deep-dive-systemd.html	Deep Dive: systemd Targets, Units, and Dependencies
+content/05-system-initialization/03-openrc-dependency-management.html	OpenRC: Dependency-Based Service Management
+content/05-system-initialization/04-s6-and-runit-minimalist-init.html	s6 and runit: The Minimalist Approach
+content/05-system-initialization/05-busybox-init-for-bare-minimum.html	BusyBox Init for Bare-Minimum Systems
+content/05-system-initialization/06-case-study-openrc-vs-systemd.html	Case Study: Alpine’s OpenRC vs. Debian’s systemd
+content/05-system-initialization/07-troubleshooting-init-failures.html	Troubleshooting: Init System Failures
+content/06-package-management/01-packaging-formats-compared.html	Packaging Formats Compared: .deb, .rpm, .pkg.tar.zst, .apk
+content/06-package-management/02-repository-structure-and-metadata.html	Repository Structure and Metadata
+content/06-package-management/03-dependency-resolution-algorithms.html	Dependency Resolution Algorithms
+content/06-package-management/04-creating-a-custom-repository.html	Creating a Custom Repository
+content/06-package-management/05-case-study-debian-solver.html	Case Study: How Debian’s Solver Works
+content/06-package-management/06-troubleshooting-repository-package-managers.html	Troubleshooting: Repository and Package Manager Issues
+content/07-package-build-pipeline/01-specifying-sources-and-patches.html	Specifying Sources, Dependencies, and Patches
+content/07-package-build-pipeline/02-build-systems-autotools-meson-cmake.html	Build Systems: autotools, meson, cmake, meson+ninja
+content/07-package-build-pipeline/03-cross-compilation-of-packages.html	Cross-Compilation of Packages
+content/07-package-build-pipeline/04-reproducible-builds-and-determinism.html	Reproducible Builds and Determinism
+content/07-package-build-pipeline/05-qa-testing-and-linting.html	Quality Assurance: Testing and Linting
+content/07-package-build-pipeline/06-troubleshooting-build-pipeline-issues.html	Troubleshooting: Build Pipeline Issues
+content/08-desktop-environments/01-x11-vs-wayland.html	X11 vs. Wayland: Architecture and Trade-offs
+content/08-desktop-environments/02-display-managers-and-session-management.html	Display Managers and Session Management
+content/08-desktop-environments/03-popular-des-and-wms.html	Popular DEs and WMs: GNOME, KDE Plasma, i3, sway
+content/08-desktop-environments/04-building-minimal-desktop-from-source.html	Building a Minimal Desktop from Source Components
+content/08-desktop-environments/05-theming-fonts-and-localization.html	Theming, Fonts, and Localization
+content/08-desktop-environments/06-troubleshooting-desktop-environment-issues.html	Troubleshooting: Desktop Environment Issues
+content/09-security-foundations/01-permissions-capabilities-namespaces-cgroups.html	User Permissions, Capabilities, Namespaces, cgroups
+content/09-security-foundations/02-mac-selinux-vs-apparmor.html	Mandatory Access Control: SELinux vs. AppArmor
+content/09-security-foundations/03-secure-boot-and-chain-of-trust.html	Secure Boot and the Chain of Trust
+content/09-security-foundations/04-full-disk-encryption-luks.html	Full Disk Encryption with LUKS
+content/09-security-foundations/05-network-security-nftables-ebpf.html	Network Security: nftables and eBPF
+content/09-security-foundations/06-hardening-the-build-process.html	Hardening the Build Process
+content/09-security-foundations/07-troubleshooting-security-issues.html	Troubleshooting: Security Issues
+content/10-iso-creation-and-installation/01-bootable-isos-with-xorriso.html	Creating Bootable ISOs with xorriso
+content/10-iso-creation-and-installation/02-embedding-bootloader-kernel-squashfs.html	Embedding the Bootloader, Kernel, and SquashFS Filesystem
+content/10-iso-creation-and-installation/03-anaconda-installer-architecture.html	Anaconda: The Fedora/RHEL Installer Architecture
+content/10-iso-creation-and-installation/04-calamares-independent-installer.html	Calamares: A Distribution-Independent Installer
+content/10-iso-creation-and-installation/05-network-installation-and-netbooting.html	Network Installation and Netbooting
+content/10-iso-creation-and-installation/06-live-vs-minimal-iso-strategies.html	Live vs. Minimal ISO Strategies
+content/10-iso-creation-and-installation/07-troubleshooting-iso-installation-issues.html	Troubleshooting: ISO and Installation Issues
+content/11-automation-cicd-build-infrastructure/01-containers-and-nspawn-build-environments.html	Docker, LXC, and systemd-nspawn for Build Environments
+content/11-automation-cicd-build-infrastructure/02-ci-pipelines-for-distro-building.html	CI Pipelines for Distro Building
+content/11-automation-cicd-build-infrastructure/03-debian-buildd-network.html	Debian’s buildd Network
+content/11-automation-cicd-build-infrastructure/04-fedora-koji-build-system.html	Fedora’s Koji Build System
+content/11-automation-cicd-build-infrastructure/05-reproducible-builds-at-scale.html	Reproducible Builds Infrastructure at Scale
+content/11-automation-cicd-build-infrastructure/06-troubleshooting-build-infrastructure-issues.html	Troubleshooting: Build Infrastructure Issues
+content/12-maintenance-and-release-engineering/01-versioning-strategies.html	Versioning Strategies: Rolling, Point Releases, LTS
+content/12-maintenance-and-release-engineering/02-debian-release-process.html	Debian’s Release Process
+content/12-maintenance-and-release-engineering/03-arch-linux-rolling-model.html	Arch Linux and the Rolling Model
+content/12-maintenance-and-release-engineering/04-fedora-six-month-cycle.html	Fedora’s Six-Month Cycle
+content/12-maintenance-and-release-engineering/05-community-management-and-contributions.html	Community Management and Contribution Workflows
+content/12-maintenance-and-release-engineering/06-backporting-security-patches.html	Backporting Security Patches
+content/12-maintenance-and-release-engineering/07-troubleshooting-release-engineering-issues.html	Troubleshooting: Release Engineering Issues
+content/13-capstone-project/01-defining-goals-and-components.html	Defining Goals and Choosing Components
+content/13-capstone-project/02-setting-up-build-environment.html	Setting Up the Build Environment
+content/13-capstone-project/03-cross-compilation-toolchain-setup.html	Cross-Compilation Toolchain Setup
+content/13-capstone-project/04-kernel-and-initramfs-construction.html	Kernel and Initramfs Construction
+content/13-capstone-project/05-core-packages-into-target-rootfs.html	Core Package Installation into Target RootFS
+content/13-capstone-project/06-bootloader-configuration.html	Bootloader Configuration
+content/13-capstone-project/07-iso-creation-and-testing.html	ISO Creation and Testing
+content/13-capstone-project/08-documentation-branding-publishing.html	Documentation, Branding, and Publishing
+content/13-capstone-project/09-troubleshooting-capstone-project-issues.html	Troubleshooting: Capstone Project Issues
+content/99-afterword/01-conclusion-the-road-ahead.html	Conclusion: The Road Ahead
+content/99-afterword/02-references.html	References
+index.html	BYOL

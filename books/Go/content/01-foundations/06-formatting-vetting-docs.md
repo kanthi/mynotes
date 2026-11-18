@@ -1,0 +1,557 @@
+---
+title: Formatting, Vetting, and Documentation
+---
+
+# Formatting, Vetting, and Documentation
+
+## Overview
+
+Go has a unique culture: there's one blessed way to format code, a built-in static analyzer for common mistakes, and a documentation system that extracts docs from comments. This chapter covers `gofmt`, `go vet`, and `godoc` standards.
+
+## Code Formatting with `gofmt`
+
+### Why Gofmt Exists
+
+Unlike other languages where style guides vary (tabs vs. spaces, brace placement), Go has a single canonical format enforced by `gofmt`. This eliminates style debates and ensures all Go code looks the same.
+
+> "Gofmt's style is no one's favorite, yet gofmt is everyone's favorite." — Rob Pike
+
+### Basic Usage
+
+```bash
+# Format a file (print to stdout)
+$ gofmt main.go
+
+# Format and overwrite file
+$ gofmt -w main.go
+
+# Format all files recursively
+$ gofmt -w .
+
+# Using go fmt (recommended)
+$ go fmt ./...
+```
+
+### Formatting Rules
+
+`gofmt` enforces:
+
+```go
+// BEFORE (your style)
+func foo(x int,y string){
+if x>0{
+return
+}
+}
+
+// AFTER (gofmt style)
+func foo(x int, y string) {
+    if x > 0 {
+        return
+    }
+}
+```
+
+| Rule | Gofmt Standard |
+|------|----------------|
+| Indentation | Tabs |
+| Spacing | Spaces around operators |
+| Braces | Opening brace on same line |
+| Line length | No limit (but keep reasonable) |
+| Blank lines | Strategic for readability |
+
+### Code Simplification
+
+Use `-s` to simplify code:
+
+```bash
+$ gofmt -s -w main.go
+```
+
+```go
+// Before
+s[a:len(s)]
+for x, _ := range v {}
+[]int{1, 2, 3}[0:2]
+
+// After -s
+s[a:]
+for x := range v {}
+[]int{1, 2, 3}[:2]
+```
+
+### Import Formatting with `goimports`
+
+`goimports` does everything `gofmt` does, plus it manages imports:
+
+```bash
+# Install
+$ go install golang.org/x/tools/cmd/goimports@latest
+
+# Format and fix imports
+$ goimports -w main.go
+```
+
+```go
+// Before (missing import, unused import)
+package main
+import (
+    "unused"
+)
+func main() {
+    fmt.Println("Hello")
+}
+
+// After goimports
+package main
+
+import "fmt"
+
+func main() {
+    fmt.Println("Hello")
+}
+```
+
+## Static Analysis with `go vet`
+
+### What Vet Catches
+
+`go vet` detects code that compiles but is probably wrong:
+
+```bash
+$ go vet ./...
+```
+
+### Common Issues Detected
+
+#### Printf Format Errors
+
+```go
+// go vet catches this
+fmt.Printf("%d", "string")  // wrong type
+fmt.Printf("%s %s", name)   // wrong number of args
+```
+
+#### Unreachable Code
+
+```go
+func example() int {
+    return 42
+    fmt.Println("never runs")  // go vet: unreachable code
+}
+```
+
+#### Suspicious Loop Variables
+
+```go
+// go vet warns about this common bug
+for i, v := range values {
+    go func() {
+        fmt.Println(i, v)  // captures loop variable
+    }()
+}
+```
+
+#### Useless Assignments
+
+```go
+x := 5
+x = x  // go vet: self-assignment
+```
+
+#### Invalid Struct Tags
+
+```go
+type User struct {
+    Name string `json:name`  // Missing quotes around "name"
+}
+```
+
+### Running Specific Checks
+
+```bash
+# List available analyzers
+$ go tool vet help
+
+# Run specific analyzer
+$ go vet -composites=false ./...
+$ go vet -printf=true ./...
+```
+
+## Enhanced Linting with `staticcheck`
+
+`staticcheck` provides additional checks beyond `go vet`:
+
+```bash
+# Install
+$ go install honnef.co/go/tools/cmd/staticcheck@latest
+
+# Run
+$ staticcheck ./...
+```
+
+Checks include:
+- Unused code
+- Deprecated function usage
+- Simplification suggestions
+- Performance improvements
+- Common bugs
+
+## Documentation with `godoc`
+
+### Writing Documentation
+
+Go extracts documentation from comments directly before declarations:
+
+```go
+// Package math provides basic mathematical operations.
+// It includes functions for arithmetic, trigonometry, and more.
+package math
+
+// Pi represents the mathematical constant π.
+const Pi = 3.14159
+
+// Add returns the sum of two integers.
+// It handles overflow by wrapping around.
+func Add(a, b int) int {
+    return a + b
+}
+
+// Calculator provides stateful mathematical operations.
+type Calculator struct {
+    // Result holds the current calculation result.
+    Result float64
+}
+
+// Add adds n to the current result.
+func (c *Calculator) Add(n float64) {
+    c.Result += n
+}
+```
+
+### Documentation Conventions
+
+| Rule | Example |
+|------|---------|
+| Start with name | `// Add returns the sum...` |
+| Complete sentences | End with period |
+| First sentence is summary | Shown in package lists |
+| Blank line for paragraphs | Separate blocks |
+
+### Code Examples in Docs
+
+Create examples in `*_test.go` files:
+
+```go
+// example_test.go
+package math_test
+
+import (
+    "fmt"
+    "myproject/math"
+)
+
+func ExampleAdd() {
+    result := math.Add(2, 3)
+    fmt.Println(result)
+    // Output: 5
+}
+
+func ExampleCalculator_Add() {
+    c := &math.Calculator{}
+    c.Add(10)
+    c.Add(5)
+    fmt.Println(c.Result)
+    // Output: 15
+}
+```
+
+These examples:
+- Appear in documentation
+- Are tested by `go test`
+- Show real usage
+
+### Viewing Documentation
+
+```bash
+# Command line
+$ go doc fmt
+$ go doc fmt.Println
+$ go doc -all fmt
+$ go doc -ex bytes.Buffer          # executable examples (Go 1.27+)
+$ go doc example.com/pkg@v1.2.3    # docs for a module version (Go 1.27+)
+
+# Local web server
+$ go install golang.org/x/tools/cmd/godoc@latest
+$ godoc -http=:6060
+# Visit http://localhost:6060
+```
+
+### Package Comments
+
+For larger packages, use a `doc.go` file:
+
+```go
+// doc.go
+
+/*
+Package server implements an HTTP server with middleware support.
+
+# Getting Started
+
+Create a new server and add routes:
+
+    srv := server.New()
+    srv.Get("/", handleHome)
+    srv.Listen(":8080")
+
+# Middleware
+
+Add middleware to process all requests:
+
+    srv.Use(server.Logger())
+    srv.Use(server.Recovery())
+
+# Configuration
+
+Configure the server using options:
+
+    srv := server.New(
+        server.WithTimeout(30 * time.Second),
+        server.WithMaxBodySize(1 << 20),
+    )
+*/
+package server
+```
+
+## Combining Tools in Workflow
+
+### Pre-commit Hook
+
+```bash
+#!/bin/bash
+# .git/hooks/pre-commit
+
+# Format
+gofmt -l -w .
+
+# Vet
+go vet ./...
+if [ $? -ne 0 ]; then
+    echo "go vet failed"
+    exit 1
+fi
+
+# Staticcheck
+staticcheck ./...
+if [ $? -ne 0 ]; then
+    echo "staticcheck failed"
+    exit 1
+fi
+```
+
+### Makefile Integration
+
+```makefile
+.PHONY: check fmt vet lint
+
+fmt:
+	gofmt -w .
+
+vet:
+	go vet ./...
+
+lint:
+	staticcheck ./...
+
+check: fmt vet lint
+	@echo "All checks passed"
+```
+
+### CI Pipeline (GitHub Actions)
+
+```yaml
+- name: Check formatting
+  run: |
+    if [ "$(gofmt -l . | wc -l)" -gt 0 ]; then
+      echo "Code is not formatted"
+      gofmt -d .
+      exit 1
+    fi
+
+- name: Vet
+  run: go vet ./...
+
+- name: Staticcheck
+  run: |
+    go install honnef.co/go/tools/cmd/staticcheck@latest
+    staticcheck ./...
+```
+
+## Summary
+
+| Tool | Purpose | Usage |
+|------|---------|-------|
+| `gofmt` | Format code | `gofmt -w .` |
+| `goimports` | Format + manage imports | `goimports -w .` |
+| `go vet` | Catch common mistakes | `go vet ./...` |
+| `staticcheck` | Enhanced linting | `staticcheck ./...` |
+| `godoc` | Generate documentation | `godoc -http=:6060` |
+
+## Related Topics
+- [Core Go Commands](05-core-go-commands.md)
+- [Testing Fundamentals](../06-testing/36-testing-fundamentals.md)
+
+## More examples
+
+### Example: godoc-style exported comments
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import (
+	"fmt"
+	"strings"
+)
+
+// Title returns s with the first letter of each space-separated word uppercased.
+// Empty input yields an empty string.
+func Title(s string) string {
+	parts := strings.Fields(strings.ToLower(s))
+	for i, p := range parts {
+		if p == "" {
+			continue
+		}
+		parts[i] = strings.ToUpper(p[:1]) + p[1:]
+	}
+	return strings.Join(parts, " ")
+}
+
+// JoinNonEmpty joins non-empty parts with sep.
+func JoinNonEmpty(sep string, parts ...string) string {
+	var keep []string
+	for _, p := range parts {
+		if p != "" {
+			keep = append(keep, p)
+		}
+	}
+	return strings.Join(keep, sep)
+}
+
+func main() {
+	fmt.Println(Title("hello go"))
+	fmt.Println(JoinNonEmpty("/", "a", "", "b"))
+}
+```
+
+Expected:
+
+```text
+Hello Go
+a/b
+```
+
+### Example: a construct `go vet` cares about
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	// Lock-free counter demo is fine; the classic vet catch is printf args.
+	name := "gopher"
+	// Correct: verbs match arguments.
+	fmt.Printf("hello %s count=%d\n", name, 3)
+
+	// Intentionally correct form of a common mistake:
+	// fmt.Printf("hello %s\n", name, 3)  // vet: Printf format %s reads arg but has 2 extra
+	fmt.Println("vet clean: format verbs match args")
+}
+```
+
+Expected:
+
+```text
+hello gopher count=3
+vet clean: format verbs match args
+```
+
+## Runnable example
+
+Documented helpers in gofmt style—run the program, then try `go doc` / `go vet` on the same files.
+
+Save as `main.go`. From an empty directory:
+
+```bash
+go mod init example
+go fmt .
+go vet .
+go run .
+go doc -all .
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"strings"
+)
+
+// TitleCase returns s with the first letter of each word uppercased.
+// Words are split on Unicode whitespace.
+func TitleCase(s string) string {
+	fields := strings.Fields(s)
+	for i, w := range fields {
+		if w == "" {
+			continue
+		}
+		// Manual title for a tiny demo; prefer cases.Title in real code.
+		r := []rune(w)
+		r[0] = []rune(strings.ToUpper(string(r[0])))[0]
+		if len(r) > 1 {
+			fields[i] = string(r[0]) + strings.ToLower(string(r[1:]))
+		} else {
+			fields[i] = string(r[0])
+		}
+	}
+	return strings.Join(fields, " ")
+}
+
+// Sum returns the sum of nums. An empty slice sums to 0.
+func Sum(nums []int) int {
+	total := 0
+	for _, n := range nums {
+		total += n
+	}
+	return total
+}
+
+func main() {
+	fmt.Println(TitleCase("hello gofmt and godoc"))
+	fmt.Printf("sum=%d\n", Sum([]int{1, 2, 3, 4}))
+	// Intentional-looking pattern that go vet is happy with:
+	fmt.Printf("count=%d name=%s\n", 2, "tools")
+}
+```
+
+**Expected output** (illustrative):
+
+```text
+Hello Gofmt And Godoc
+sum=10
+count=2 name=tools
+```
+
+**What to notice:**
+- Comments sit directly above `TitleCase` and `Sum`—`go doc` surfaces them.
+- `go fmt` will rewrite spacing/imports if you mess them up on purpose.
+- `go vet` checks printf verbs match argument types (try changing `%d` to `%s`).
+- Zero-value-friendly API: empty slice → sum `0`, no panic.
+
+**Try next:** Break the `Printf` format string (`fmt.Printf("%d", "x")`) and run `go vet` to see the diagnostic.

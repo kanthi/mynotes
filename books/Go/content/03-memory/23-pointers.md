@@ -1,0 +1,311 @@
+---
+title: Pointers Explained
+---
+
+# Pointers Explained
+
+## Overview
+
+Pointers hold memory addresses. In Go, they're simple and safe—no pointer arithmetic allowed.
+
+## Pointer Basics
+
+```go
+x := 42
+p := &x      // p is *int, holds address of x
+fmt.Println(*p)  // 42 (dereference)
+*p = 100     // Modify x through pointer
+fmt.Println(x)   // 100
+```
+
+## Declaration
+
+```go
+var p *int       // nil pointer
+p = &x           // Point to x
+
+// Classic new (zero value)
+p := new(int)    // *int to 0
+
+// Expression-based new (Go 1.26+)
+p := new(42)     // *int to 42
+```
+
+```text
+Stack/heap view (simplified)
+
+x: 42          p: 0xABC
+ |               |
+ +------ addr ---+
+         |
+       [42]
+```
+
+## Why Use Pointers
+
+### 1. Modify Variables in Functions
+
+```go
+func increment(n *int) {
+    *n++
+}
+
+x := 1
+increment(&x)
+fmt.Println(x)  // 2
+```
+
+### 2. Avoid Copying Large Structs
+
+```go
+type BigStruct struct {
+    Data [1000]int
+}
+
+// Bad: copies entire struct
+func process(b BigStruct) { }
+
+// Good: passes pointer (8 bytes)
+func process(b *BigStruct) { }
+```
+
+### 3. Share Data
+
+```go
+type Config struct {
+    Debug bool
+}
+
+func loadConfig() *Config {
+    return &Config{Debug: true}
+}
+
+cfg := loadConfig()  // All code shares same Config
+```
+
+## nil Pointers
+
+```go
+var p *int  // nil
+
+if p != nil {
+    fmt.Println(*p)  // Safe
+}
+
+// Dereferencing nil panics!
+// *p = 1  // panic: runtime error
+```
+
+Safe pattern for optional fields in APIs:
+
+```go
+type UpdateUserRequest struct {
+    Name  *string `json:"name,omitempty"`
+    Email *string `json:"email,omitempty"`
+}
+```
+
+## Pointer to Pointer
+
+```go
+x := 42
+p := &x
+pp := &p  // **int
+
+**pp = 100
+fmt.Println(x)  // 100
+```
+
+## Pointers and Slices/Maps
+
+Slices and maps are already reference types:
+
+```go
+func modify(s []int) {
+    s[0] = 100  // Modifies original
+}
+
+nums := []int{1, 2, 3}
+modify(nums)
+fmt.Println(nums[0])  // 100
+
+// But reassigning needs pointer
+func replace(s *[]int) {
+    *s = []int{4, 5, 6}
+}
+```
+
+## Common Patterns
+
+### Return Pointer for "No Result"
+
+```go
+func find(id int) *User {
+    if found {
+        return &user
+    }
+    return nil  // Not found
+}
+
+if user := find(1); user != nil {
+    // Use user
+}
+```
+
+### Constructor Pattern
+
+```go
+func NewUser(name string) *User {
+    return &User{
+        Name:      name,
+        CreatedAt: time.Now(),
+    }
+}
+```
+
+## Summary
+
+| Operation | Syntax |
+|-----------|--------|
+| Get address | `&x` |
+| Dereference | `*p` |
+| Allocate | `new(T)` |
+| Check nil | `p != nil` |
+
+## Related Topics
+- [Methods and Receivers](21-methods-receivers.md)
+- [Mutability and Data Sharing](24-mutability.md)
+
+## More examples
+
+### Example: address and dereference
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	x := 10
+	p := &x
+	fmt.Println("x:", x)
+	fmt.Println("*p:", *p)
+	*p = 20
+	fmt.Println("x after *p=20:", x)
+}
+```
+
+Expected:
+
+```text
+x: 10
+*p: 10
+x after *p=20: 20
+```
+
+### Example: nil pointer check
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func safeLen(p *string) int {
+	if p == nil {
+		return 0
+	}
+	return len(*p)
+}
+
+func main() {
+	var missing *string
+	s := "gopher"
+	fmt.Println("nil:", safeLen(missing))
+	fmt.Println("set:", safeLen(&s))
+}
+```
+
+Expected:
+
+```text
+nil: 0
+set: 6
+```
+
+## Runnable example
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import "fmt"
+
+func increment(n *int) {
+	*n++
+}
+
+func modifySlice(s []int) {
+	if len(s) > 0 {
+		s[0] = 100 // mutates shared backing array
+	}
+}
+
+func replaceSlice(s *[]int) {
+	*s = []int{4, 5, 6} // replaces the caller's slice header
+}
+
+func main() {
+	x := 42
+	p := &x
+	fmt.Println("via pointer:", *p)
+	*p = 100
+	fmt.Println("after *p=100, x:", x)
+
+	increment(&x)
+	fmt.Println("after increment:", x)
+
+	var nilP *int
+	fmt.Println("nil pointer is nil:", nilP == nil)
+	// *nilP would panic — always check first.
+
+	// new allocates a zero value and returns a pointer.
+	z := new(int)
+	fmt.Println("new(int) value:", *z)
+	*z = 7
+	fmt.Println("new(int) after set:", *z)
+
+	nums := []int{1, 2, 3}
+	modifySlice(nums)
+	fmt.Println("after modifySlice:", nums)
+
+	replaceSlice(&nums)
+	fmt.Println("after replaceSlice:", nums)
+}
+```
+
+**Expected output:**
+
+```text
+via pointer: 42
+after *p=100, x: 100
+after increment: 101
+nil pointer is nil: true
+new(int) value: 0
+new(int) after set: 7
+after modifySlice: [100 2 3]
+after replaceSlice: [4 5 6]
+```
+
+**What to notice:** `*p` reads/writes the same storage as `x`. Slice element writes share the backing array without a pointer; replacing the slice header itself needs `*[]int`.
+
+**Try next:** Pass a large struct by value vs pointer and compare with `unsafe.Sizeof` (or just reason about copy cost); write a safe helper that returns zero when given a nil `*int`.

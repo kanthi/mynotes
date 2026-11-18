@@ -1,0 +1,441 @@
+---
+title: Zero Values and Initialization
+---
+
+# Zero Values and Initialization
+
+## Overview
+
+Every variable in Go has a value from the moment it's declared. If you don't explicitly initialize a variable, it gets a **zero value**—a sensible default that prevents undefined behavior.
+
+## Zero Values by Type
+
+| Type | Zero Value |
+|------|------------|
+| `bool` | `false` |
+| `int`, `int8`, ... | `0` |
+| `uint`, `uint8`, ... | `0` |
+| `float32`, `float64` | `0.0` |
+| `complex64`, `complex128` | `(0+0i)` |
+| `string` | `""` (empty string) |
+| `pointer` | `nil` |
+| `slice` | `nil` |
+| `map` | `nil` |
+| `channel` | `nil` |
+| `function` | `nil` |
+| `interface` | `nil` |
+
+## Demonstrating Zero Values
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+    var b bool
+    var i int
+    var f float64
+    var s string
+    var p *int
+    var sl []int
+    var m map[string]int
+    var ch chan int
+    var fn func()
+    var iface interface{}
+
+    fmt.Printf("bool: %v\n", b)      // false
+    fmt.Printf("int: %v\n", i)       // 0
+    fmt.Printf("float64: %v\n", f)   // 0
+    fmt.Printf("string: %q\n", s)    // ""
+    fmt.Printf("pointer: %v\n", p)   // <nil>
+    fmt.Printf("slice: %v\n", sl)    // []
+    fmt.Printf("map: %v\n", m)       // map[]
+    fmt.Printf("channel: %v\n", ch)  // <nil>
+    fmt.Printf("func: %v\n", fn)     // <nil>
+    fmt.Printf("interface: %v\n", iface) // <nil>
+}
+```
+
+## Struct Zero Values
+
+Struct fields get their respective zero values:
+
+```go
+type User struct {
+    Name    string
+    Age     int
+    Active  bool
+    Balance float64
+}
+
+var user User
+// user.Name = ""
+// user.Age = 0
+// user.Active = false
+// user.Balance = 0.0
+```
+
+### Nested Structs
+
+```go
+type Address struct {
+    Street string
+    City   string
+}
+
+type Person struct {
+    Name    string
+    Address Address  // Embedded struct gets zero values too
+}
+
+var p Person
+// p.Name = ""
+// p.Address.Street = ""
+// p.Address.City = ""
+```
+
+## Array Zero Values
+
+Arrays are initialized with zero values for each element:
+
+```go
+var arr [5]int        // [0, 0, 0, 0, 0]
+var strs [3]string    // ["", "", ""]
+var bools [2]bool     // [false, false]
+```
+
+## Why Zero Values Matter
+
+### 1. Eliminates Undefined Behavior
+
+```go
+// In Go, this is safe and predictable
+var count int
+count++  // count is now 1
+
+// In C, this would be undefined behavior
+// int count;
+// count++;  // Undefined! Could be anything
+```
+
+### 2. Reduces Boilerplate
+
+```go
+// No need for explicit initialization
+type Config struct {
+    Debug   bool
+    Timeout int
+    Host    string
+}
+
+cfg := Config{}  // All zeros, ready to use selectively
+cfg.Host = "localhost"  // Only set what differs from zero
+```
+
+### 3. Enables "Usable Zero Value" Pattern
+
+Well-designed types work correctly with zero values:
+
+```go
+import "bytes"
+
+// bytes.Buffer works without initialization
+var buf bytes.Buffer
+buf.WriteString("Hello, ")
+buf.WriteString("World!")
+fmt.Println(buf.String())  // "Hello, World!"
+
+// sync.Mutex works without initialization
+var mu sync.Mutex
+mu.Lock()
+mu.Unlock()
+```
+
+## Initialization Methods
+
+### Short Variable Declaration
+
+```go
+name := "Alice"      // Inferred type: string
+count := 42          // Inferred type: int
+price := 19.99       // Inferred type: float64
+```
+
+### Explicit Type Declaration
+
+```go
+var name string = "Alice"
+var count int = 42
+var active bool = true
+```
+
+### Type Inference (var)
+
+```go
+var name = "Alice"   // Type inferred from value
+var count = 42       // int
+```
+
+### Multiple Variable Declaration
+
+```go
+var (
+    name   = "Alice"
+    age    = 30
+    active = true
+)
+
+// Or inline
+x, y, z := 1, 2, 3
+```
+
+### Composite Literal Initialization
+
+```go
+// Struct
+user := User{
+    Name:   "Alice",
+    Age:    30,
+    Active: true,
+}
+
+// Partially initialized (rest are zero values)
+user := User{Name: "Bob"}  // Age: 0, Active: false
+
+// Array
+arr := [3]int{1, 2, 3}
+
+// Slice
+sl := []string{"a", "b", "c"}
+
+// Map
+m := map[string]int{"one": 1, "two": 2}
+```
+
+## nil vs Zero Value
+
+`nil` is the zero value for pointers, slices, maps, channels, functions, and interfaces.
+
+### nil Slice vs Empty Slice
+
+```go
+var nilSlice []int        // nil slice
+emptySlice := []int{}     // empty slice (not nil)
+
+nilSlice == nil           // true
+emptySlice == nil         // false
+
+len(nilSlice)             // 0
+len(emptySlice)           // 0
+
+// Both work with append
+nilSlice = append(nilSlice, 1)      // [1]
+emptySlice = append(emptySlice, 1)  // [1]
+```
+
+### nil Map Danger
+
+```go
+var m map[string]int  // nil map
+
+// Reading is safe
+val := m["key"]       // Returns 0 (zero value)
+
+// Writing panics!
+m["key"] = 42         // panic: assignment to nil map
+
+// Always initialize before writing
+m = make(map[string]int)
+m["key"] = 42         // Now safe
+```
+
+## The `new` vs `make` Functions
+
+### `new(T)`
+
+Allocates zeroed memory and returns a pointer:
+
+```go
+ptr := new(int)      // *int pointing to 0
+*ptr = 42
+
+user := new(User)    // *User with zero-valued fields
+user.Name = "Alice"
+```
+
+### `make(T, args)`
+
+Creates and initializes slices, maps, and channels:
+
+```go
+// Slice with length and capacity
+sl := make([]int, 5)        // [0, 0, 0, 0, 0]
+sl := make([]int, 0, 10)    // [] with capacity 10
+
+// Map
+m := make(map[string]int)   // Empty, ready to use
+
+// Channel
+ch := make(chan int)        // Unbuffered channel
+ch := make(chan int, 10)    // Buffered channel
+```
+
+## Summary
+
+| Concept | Description |
+|---------|-------------|
+| Zero Value | Default value assigned to uninitialized variables |
+| Purpose | Eliminates undefined behavior, reduces boilerplate |
+| `new(T)` | Allocates zeroed memory, returns `*T` |
+| `make(T)` | Creates initialized slice, map, or channel |
+| `nil` | Zero value for pointers, slices, maps, channels, funcs, interfaces |
+
+## Related Topics
+- [Predeclared Types](09-predeclared-types.md)
+- [Variables and Scope](12-variables-scope.md)
+
+## More examples
+
+### Example: zero values of common types
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	var n int
+	var s string
+	var b bool
+	var p *int
+	fmt.Printf("int=%d string=%q bool=%v ptr=%v\n", n, s, b, p)
+}
+```
+
+Expected:
+
+```text
+int=0 string="" bool=false ptr=<nil>
+```
+
+### Example: nil map vs empty map
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	var nilMap map[string]int
+	empty := map[string]int{}
+	fmt.Println("nil len:", len(nilMap), "read:", nilMap["x"])
+	fmt.Println("empty len:", len(empty), "read:", empty["x"])
+	empty["x"] = 1
+	fmt.Println("after write empty:", empty)
+	// nilMap["x"] = 1 // would panic
+	fmt.Println("nil map needs make before write")
+}
+```
+
+Expected:
+
+```text
+nil len: 0 read: 0
+empty len: 0 read: 0
+after write empty: map[x:1]
+nil map needs make before write
+```
+
+## Runnable example
+
+Complete program that prints zero values, shows a usable zero `bytes.Buffer`, and panics safely-avoided on a nil map.
+
+Save as `main.go`. From an empty directory:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"bytes"
+	"fmt"
+)
+
+type User struct {
+	Name   string
+	Age    int
+	Active bool
+}
+
+func main() {
+	var b bool
+	var i int
+	var f float64
+	var s string
+	var p *int
+	var sl []int
+	var m map[string]int
+	var ch chan int
+	var fn func()
+	var iface any
+
+	fmt.Printf("bool=%v int=%v float64=%v string=%q\n", b, i, f, s)
+	fmt.Printf("pointer=%v slice=%v map=%v chan=%v func=%v iface=%v\n", p, sl, m, ch, fn, iface)
+
+	var user User
+	fmt.Printf("user zero: %+v\n", user)
+
+	var arr [3]int
+	fmt.Printf("array zero: %v\n", arr)
+
+	// Usable zero value: no constructor required.
+	var buf bytes.Buffer
+	buf.WriteString("Hello, ")
+	buf.WriteString("zero values!")
+	fmt.Println(buf.String())
+
+	// nil map: read OK, write needs make
+	fmt.Println("nil map read:", m["missing"])
+	m = make(map[string]int)
+	m["ok"] = 1
+	fmt.Println("after make:", m)
+
+	// nil vs empty slice
+	var nilSlice []int
+	empty := []int{}
+	fmt.Printf("nilSlice==nil? %v empty==nil? %v\n", nilSlice == nil, empty == nil)
+	nilSlice = append(nilSlice, 7)
+	fmt.Println("append on nil slice:", nilSlice)
+}
+```
+
+**Expected output** (illustrative):
+
+```text
+bool=false int=0 float64=0 string=""
+pointer=<nil> slice=[] map=map[] chan=<nil> func=<nil> iface=<nil>
+user zero: {Name: Age:0 Active:false}
+array zero: [0 0 0]
+Hello, zero values!
+nil map read: 0
+after make: map[ok:1]
+nilSlice==nil? true empty==nil? false
+append on nil slice: [7]
+```
+
+**What to notice:**
+- Every type has a defined zero—no “undefined” locals.
+- Struct fields zero independently; arrays zero every element.
+- `bytes.Buffer` works from a zero value (idiomatic design).
+- Writing a nil map would panic; `make` first is required.
+
+**Try next:** Comment out `m = make(...)` and assign `m["ok"] = 1` to observe the panic, then restore it.

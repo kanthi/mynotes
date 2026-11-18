@@ -1,0 +1,222 @@
+---
+title: Disko Storage and Ephemeral Base System
+---
+
+# Disko Storage and Ephemeral Base System
+
+Every node in our production fleet must deploy onto clean physical or cloud storage without manual partitioning tools. In this chapter, we create the unified **Disko** storage specification and configure the **ephemeral root filesystem with Impermanence**.
+
+## Mental model
+
+1. **Unified disk module (`disk-layout.nix`):** Disko formats the physical NVMe or virtual disk into an EFI system partition (`/boot`) and a LUKS2 encrypted partition. Metal uses `/dev/disk/by-id/…`; `lib.mkDefault "/dev/nvme0n1"` is a lab fallback, not a fleet device.
+2. **Btrfs subvolumes on LUKS:** Inside the decrypted container (`/dev/mapper/<luks.name>`), Btrfs subvolumes are created for `/nix` (the store), `/persist` (stateful data), and `/swap`. The LUKS **name** is the Stage-1 mapper name. Disko `name = "crypted"` must match `boot.initrd.luks.devices.crypted` (Disko usually emits this). A mismatch and systemd Stage 1 waits on `/sysroot` forever.
+3. **RAM root (`tmpfs`):** The root filesystem (`/`) is mounted in RAM (`mode=755`, size you can afford). Unmounted state is discarded on power-down.
+4. **Impermanence persistence:** System state required across reboots (SSH host keys, machine-id, WireGuard identity, sops keys) is bound into `/persist`. `/persist` is `neededForBoot = true` so Stage 1 mounts it before activation tries to link `machine-id`.
+
+## Worked examples
+
+### Case 1: The Production Disko Module
+
+Save as `modules/disk-layout.nix`:
+
+```nix
+# modules/disk-layout.nix
+{ lib, ... }:
+
+{
+  disko.devices = {
+    disk.main = {
+      type = "disk";
+      # Lab fallback. Per-host modules override with /dev/disk/by-id/nvme-….
+      device = lib.mkDefault "/dev/nvme0n1";
+      content = {
+        type = "gpt";
+        partitions = {
+          ESP = {
+            priority = 1;
+            name = "ESP";
+            start = "1M";
+            end = "1024M";
+            type = "EF00";
+            content = {
+              type = "filesystem";
+              format = "vfat";
+              mountpoint = "/boot";
+              mountOptions = [ "umask=0077" ];
+            };
+          };
+          luks = {
+            size = "100%";
+            content = {
+              type = "luks";
+              name = "crypted";
+              settings.allowDiscards = true;
+              content = {
+                type = "btrfs";
+                extraArgs = [ "-f" ];
+                subvolumes = {
+                  "/nix" = {
+                    mountpoint = "/nix";
+                    mountOptions = [ "compress=zstd" "noatime" ];
+                  };
+                  "/persist" = {
+                    mountpoint = "/persist";
+                    mountOptions = [ "compress=zstd" "noatime" ];
+                  };
+                  "/swap" = {
+                    mountpoint = "/swap";
+                    swap.swapfile.size = "8G";
+                  };
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+
+    nodev = {
+      "/" = {
+        fsType = "tmpfs";
+        mountOptions = [ "defaults" "size=4G" "mode=755" ];
+      };
+    };
+  };
+
+  # Disko emits fileSystems."/persist" from the subvolume mountpoint.
+  # Stage 1 must mount it before activation links machine-id / SSH keys.
+  fileSystems."/persist".neededForBoot = true;
+}
+```
+
+`ls -l /dev/disk/by-id/` on the box (or rescue). Paste `nvme-eui.*` or `ata-*`, not a `-partN` suffix and not a `wwn-` alias you did not verify. Override per host:
+
+```nix
+# hosts/app-01/disk.nix
+{
+  imports = [ ../../modules/disk-layout.nix ];
+  disko.devices.disk.main.device =
+    "/dev/disk/by-id/nvme-VENDOR_MODEL_SERIAL";
+}
+```
+
+LUKS `name = "crypted"` is `/dev/mapper/crypted` in Stage 1. Do not rename it in one file and leave `boot.initrd.luks.devices` on the old name.
+
+### Case 2: The Impermanence Persistent State Contract
+
+Save as `modules/base-system.nix`:
+
+```nix
+# modules/base-system.nix
+{ inputs, pkgs, ... }:
+
+{
+  imports = [
+    inputs.impermanence.nixosModules.impermanence
+    ./disk-layout.nix
+  ];
+
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.systemd-boot.configurationLimit = 8;
+
+  fileSystems."/persist".neededForBoot = true;
+
+  # Persistent state mapping — if it is not listed, it dies at reboot.
+  environment.persistence."/persist" = {
+    hideMounts = true;
+    directories = [
+      "/var/log"
+      "/var/lib/nixos"
+      "/var/lib/systemd/coredump"
+      "/var/lib/systemd/timers"
+      "/var/lib/sops-nix"
+    ];
+    files = [
+      "/etc/machine-id"
+      "/etc/ssh/ssh_host_ed25519_key"
+      "/etc/ssh/ssh_host_ed25519_key.pub"
+    ];
+  };
+
+  # SSH configuration
+  services.openssh = {
+    enable = true;
+    settings = {
+      PasswordAuthentication = false;
+      KbdInteractiveAuthentication = false;
+      PermitRootLogin = "prohibit-password";
+    };
+  };
+
+  system.stateVersion = "26.05";
+}
+```
+
+Validating the base configuration:
+
+```bash
+nix eval .#nixosConfigurations.app-01.config.disko.devices.nodev."/".fsType
+```
+
+```
+"tmpfs"
+```
+
+A new SSH host key every boot means sops cannot decrypt. Persist the ed25519 host key **and** `/var/lib/sops-nix`. WireGuard private keys belong in sops at `/run/secrets`, not as leftover files on tmpfs.
+
+### Case 3: `neededForBoot` is a Stage-1 mount, not a comment
+
+```bash
+nix eval .#nixosConfigurations.app-01.config.fileSystems.\"/persist\".neededForBoot
+nix eval .#nixosConfigurations.app-01.config.boot.initrd.luks.devices.crypted.device
+```
+
+```
+true
+"/dev/disk/by-partlabel/disk-main-luks"
+```
+
+(Exact LUKS device path depends on Disko's GPT labels.) If `neededForBoot` is `false` or missing, activation looks for `/persist/etc/machine-id` before the subvolume is mounted. Emergency shell. Set it in the **same** module that owns Disko so a host cannot import the layout and forget the flag.
+
+### Case 4: Wrong disk, wrong mapper
+
+```bash
+ls -l /dev/disk/by-id/ | rg 'nvme|ata' | rg -v part
+lsblk -o NAME,SIZE,MODEL,SERIAL,MOUNTPOINT
+```
+
+`/dev/nvme0n1` on rescue is often the installer USB. `by-id` includes the serial. Two hosts sharing `disk-layout.nix` without a per-host `device` override will format whichever disk is `nvme0n1` on that firmware.
+
+Rename LUKS in Disko (`name = "cryptroot"`) only if **every** reference follows: `fileSystems."/nix".device`, Stage-1 `systemd-cryptsetup@cryptroot`, and any `crypttab` extra. The Stage-1 chapter uses `/sysroot` inside the initrd — a oneshot that writes `/persist` in Stage 1 is writing the initrd overlay unless `/persist` is already mounted under `/sysroot/persist`.
+
+### Case 5: Format is once; mounts are every boot
+
+```bash
+# lab VM only — destroys the disk
+nix run github:nix-community/disko -- --mode destroy,format,mount ./modules/disk-layout.nix
+mount | rg 'tmpfs on / | /nix | /persist | /boot'
+```
+
+`--mode mount` is the non-destructive path (installer / recovery). `--mode destroy,format,mount` is `nixos-anywhere`'s Disko phase. The running system never re-runs format: NixOS just mounts what Disko already described in `fileSystems.*`.
+
+## The trap
+
+The trap is **failing to mark `/persist` as `neededForBoot = true`**. During early boot, the initramfs must mount `/persist` before systemd starts generating symlinks for machine-id and SSH keys. Always ensure `/persist` is mounted before root pivot.
+
+The other trap is **one `device = "/dev/nvme0n1"` for the fleet**. Disk names move. Per-host `by-id`. The third is a LUKS mapper rename that Stage 1 still calls `crypted`.
+
+## The boring rule
+
+- Model all partition tables and filesystems in Disko. Same file for `nixos-anywhere` and for `fileSystems`.
+- `by-id` on metal. `mkDefault` + per-host override. Never a shared `nvme0n1`.
+- LUKS `name` is the Stage-1 mapper. Do not drift.
+- Keep `/` on tmpfs. `neededForBoot = true` on `/persist`.
+- Explicitly list persistent files and directories (host keys, sops, logs, nixos uid map).
+
+## Try this
+
+1. `nix eval` `fileSystems."/persist".neededForBoot` on `app-01`. Must be `true`.
+2. `nix eval` the LUKS mapper name and confirm it is `crypted` (or the name you chose everywhere).
+3. `ls -l /dev/disk/by-id` on a lab box; write the id you would put in `hosts/app-01/disk.nix`. Do not format that disk.
+4. Run `nix run github:nix-community/disko -- --mode mount ./modules/disk-layout.nix` only in a test VM. `mount | grep tmpfs`.

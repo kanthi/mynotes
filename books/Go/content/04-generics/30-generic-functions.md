@@ -1,0 +1,296 @@
+---
+title: Generic Functions
+---
+
+# Generic Functions
+
+## Overview
+
+Generic functions use type parameters to work with multiple types while maintaining type safety.
+
+## Basic Syntax
+
+```go
+func FunctionName[T constraint](params) returnType {
+    // body
+}
+```
+
+## Examples
+
+### Map
+
+```go
+func Map[T, U any](slice []T, fn func(T) U) []U {
+    result := make([]U, len(slice))
+    for i, v := range slice {
+        result[i] = fn(v)
+    }
+    return result
+}
+
+doubled := Map([]int{1, 2, 3}, func(n int) int { return n * 2 })
+// [2, 4, 6]
+```
+
+### Filter
+
+```go
+func Filter[T any](slice []T, fn func(T) bool) []T {
+    var result []T
+    for _, v := range slice {
+        if fn(v) {
+            result = append(result, v)
+        }
+    }
+    return result
+}
+
+evens := Filter([]int{1, 2, 3, 4}, func(n int) bool { return n%2 == 0 })
+// [2, 4]
+```
+
+### Find
+
+```go
+func Find[T any](slice []T, fn func(T) bool) (T, bool) {
+    for _, v := range slice {
+        if fn(v) {
+            return v, true
+        }
+    }
+    var zero T
+    return zero, false
+}
+```
+
+### Contains
+
+```go
+func Contains[T comparable](slice []T, target T) bool {
+    for _, v := range slice {
+        if v == target {
+            return true
+        }
+    }
+    return false
+}
+```
+
+### Keys/Values
+
+```go
+func Keys[K comparable, V any](m map[K]V) []K {
+    keys := make([]K, 0, len(m))
+    for k := range m {
+        keys = append(keys, k)
+    }
+    return keys
+}
+
+func Values[K comparable, V any](m map[K]V) []V {
+    vals := make([]V, 0, len(m))
+    for _, v := range m {
+        vals = append(vals, v)
+    }
+    return vals
+}
+```
+
+## Type Inference
+
+Go infers type arguments when possible:
+
+```go
+// Explicit
+result := Map[int, int](nums, double)
+
+// Inferred (preferred)
+result := Map(nums, double)
+```
+
+### Assignment contexts (Go 1.27+)
+
+Inference now applies in every assignment-shaped context: composite literals, conversions, and channel sends, not only direct calls:
+
+```go
+func GenericFormatter[T any](v T) string {
+    return fmt.Sprintf("value: %v", v)
+}
+
+type IntFormatter func(int) string
+
+formatters := []IntFormatter{GenericFormatter} // T = int
+fn := IntFormatter(GenericFormatter)
+ch := make(chan IntFormatter, 1)
+ch <- GenericFormatter
+```
+
+## Summary
+
+| Pattern | Signature |
+|---------|-----------|
+| Transform | `func Map[T, U any]([]T, func(T) U) []U` |
+| Filter | `func Filter[T any]([]T, func(T) bool) []T` |
+| Find | `func Find[T any]([]T, func(T) bool) (T, bool)` |
+| Contains | `func Contains[T comparable]([]T, T) bool` |
+
+## Related Topics
+- [Generic Types](31-generic-types.md)
+- [Idiomatic Generics](32-idiomatic-generics.md)
+
+## More examples
+
+### Example: Map slice transform
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func Map[T, U any](in []T, f func(T) U) []U {
+	out := make([]U, len(in))
+	for i, v := range in {
+		out[i] = f(v)
+	}
+	return out
+}
+
+func main() {
+	nums := []int{1, 2, 3}
+	strs := Map(nums, func(n int) string {
+		return fmt.Sprintf("#%d", n)
+	})
+	fmt.Println(strs)
+}
+```
+
+Expected:
+
+```text
+[#1 #2 #3]
+```
+
+### Example: Filter with predicate
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func Filter[T any](in []T, keep func(T) bool) []T {
+	var out []T
+	for _, v := range in {
+		if keep(v) {
+			out = append(out, v)
+		}
+	}
+	return out
+}
+
+func main() {
+	nums := []int{1, 2, 3, 4, 5}
+	evens := Filter(nums, func(n int) bool { return n%2 == 0 })
+	fmt.Println(evens)
+}
+```
+
+Expected:
+
+```text
+[2 4]
+```
+
+## Runnable example
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"slices"
+)
+
+func Map[T, U any](in []T, fn func(T) U) []U {
+	out := make([]U, len(in))
+	for i, v := range in {
+		out[i] = fn(v)
+	}
+	return out
+}
+
+func Filter[T any](in []T, keep func(T) bool) []T {
+	var out []T
+	for _, v := range in {
+		if keep(v) {
+			out = append(out, v)
+		}
+	}
+	return out
+}
+
+func Contains[T comparable](in []T, target T) bool {
+	for _, v := range in {
+		if v == target {
+			return true
+		}
+	}
+	return false
+}
+
+func Keys[K comparable, V any](m map[K]V) []K {
+	keys := make([]K, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
+func main() {
+	nums := []int{1, 2, 3, 4}
+	doubled := Map(nums, func(n int) int { return n * 2 })
+	fmt.Println("Map:", doubled)
+
+	evens := Filter(nums, func(n int) bool { return n%2 == 0 })
+	fmt.Println("Filter:", evens)
+
+	fmt.Println("Contains 3:", Contains(nums, 3))
+	fmt.Println("Contains 9:", Contains(nums, 9))
+
+	// Prefer stdlib helpers when they already exist.
+	fmt.Println("slices.Contains 3:", slices.Contains(nums, 3))
+	fmt.Println("slices.Index 4:", slices.Index(nums, 4))
+
+	m := map[string]int{"a": 1, "b": 2}
+	keys := Keys(m)
+	slices.Sort(keys) // map iteration order is random
+	fmt.Println("Keys sorted:", keys)
+}
+```
+
+**Expected output:**
+
+```text
+Map: [2 4 6 8]
+Filter: [2 4]
+Contains 3: true
+Contains 9: false
+slices.Contains 3: true
+slices.Index 4: 3
+Keys sorted: [a b]
+```
+
+**What to notice:** Type parameters preserve element types end-to-end (`[]int` in, `[]int` out). The stdlib `slices` package already covers many of these helpers — write your own when the transform is domain-specific.
+
+**Try next:** Add `Reduce[T any](in []T, init T, fn func(T, T) T) T`; map `[]string` to `[]int` lengths with `Map`.

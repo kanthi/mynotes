@@ -1,0 +1,474 @@
+---
+title: Static Analysis and Security
+---
+
+# Static Analysis and Security
+
+## Overview
+
+Go provides built-in and third-party tools for code quality and security analysis.
+
+## go vet
+
+```bash
+go vet ./...
+```
+
+Catches:
+- Printf format errors
+- Unreachable code
+- Suspicious constructs
+
+## staticcheck
+
+```bash
+go install honnef.co/go/tools/cmd/staticcheck@latest
+staticcheck ./...
+```
+
+Catches:
+- Deprecated APIs
+- Simplifications
+- Performance issues
+
+## GoHawk: resource and concurrency checks
+
+[GoHawk](https://gohawk.dev/) (`gohawk`) examines resource ownership and
+concurrency in Go source. Its function summaries let it follow cleanup through
+helpers and across packages. Use it alongside `go vet`, Staticcheck, and
+`govulncheck`: each examines a different class of problem. The
+[project overview](https://github.com/kojah/gohawk) describes this scope.
+
+### Install and inspect the checks
+
+This example pins v0.7.1. Building it requires Go 1.26 or newer; the documented
+supported analysis toolchains are Go 1.26 and 1.27. Build with a toolchain at
+least as new as the one used by the project, and rebuild after upgrading Go.
+Prebuilt binaries are also available through the
+[installation guide](https://github.com/kojah/gohawk/blob/v0.7.1/docs/installation.md).
+
+```bash
+go install github.com/kojah/gohawk@v0.7.1
+```
+
+Put the installation directory on `PATH`: Go uses `GOBIN` when set, otherwise
+the `bin` directory under `GOPATH` (`go env GOBIN GOPATH` shows both).
+From a module directory, run:
+
+```bash
+gohawk -V
+gohawk list
+gohawk doc resourcelifetime
+gohawk ./...
+```
+
+The default run uses core checks. Start there; select individual analyzers
+while investigating a finding:
+
+```bash
+gohawk -enable=resourcelifetime,cancellationownership ./...
+```
+
+As documented in the
+[configuration guide](https://github.com/kojah/gohawk/blob/v0.7.1/docs/configuration.md),
+v0.7.1 analyzes production code and excludes `_test.go` files. A clean report
+does not establish that tests, shutdown paths, or all possible executions are
+correct. Keep `go test -race ./...` in the workflow: race testing observes
+executed code, whereas GoHawk reasons about source without running the program.
+
+### Exercise: cleanup registered too late
+
+In a fresh directory, run `go mod init example.com/resourcecheck` and save this
+as `size.go`. It compiles, but the `Stat` error path returns before cleanup is
+registered:
+
+```go
+package resourcecheck
+
+import "os"
+
+func FileSize(path string) (int64, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return 0, err
+	}
+	info, err := f.Stat()
+	if err != nil {
+		return 0, err // f is still open on this path.
+	}
+	defer f.Close() // Too late for the earlier return.
+	return info.Size(), nil
+}
+```
+
+```bash
+go test ./...
+gohawk -enable=resourcelifetime ./...
+```
+
+Expect a `resourcelifetime/missing-release` finding. Move `defer f.Close()`
+immediately after the successful `os.Open` error check, before `f.Stat()`,
+and rerun both commands. The resource finding should disappear. This is a
+read-only example; code writing data must also handle errors from flushing
+and closing before reporting success.
+
+The ownership question is: **who releases the resource on every return path?**
+The [resource-lifetime check](https://github.com/kojah/gohawk/blob/v0.7.1/docs/analyzers/resources-and-lifecycle/resourcelifetime.mdx)
+also covers HTTP response bodies and database resources. Returning a resource
+can deliberately transfer cleanup to the caller, so review that contract too.
+
+Two related checks apply the same reasoning to other lifetimes:
+
+- [Cancellation ownership](https://github.com/kojah/gohawk/blob/v0.7.1/docs/analyzers/resources-and-lifecycle/cancellationownership.mdx)
+  tracks derived cancel functions. Arrange `defer cancel()` when the current
+  function owns the context, or explicitly transfer responsibility.
+- [Goroutine ownership](https://github.com/kojah/gohawk/blob/v0.7.1/docs/analyzers/concurrency-and-synchronization/goroutineownership.mdx)
+  looks for recognizable completion signals that callers fail to wait for.
+  It deliberately leaves some patterns unreported; it is not a general proof
+  that goroutines terminate.
+
+Read the reported return path and cleanup evidence before changing code.
+Use the smallest check selection needed to understand a finding, then rerun
+the default set and the relevant tests after the fix.
+
+## `deadcode`: find unreachable functions
+
+The Go project's [deadcode tool](https://go.dev/blog/deadcode) finds functions
+unreachable from the selected program entry points, including calls through
+interfaces. Use it during refactoring to find code that may no longer need
+maintenance.
+
+```bash
+go install golang.org/x/tools/cmd/deadcode@v0.52.0
+deadcode ./...
+deadcode -test ./...
+```
+
+The second scan includes test executables as entry points. For a small
+experiment, save this as `main.go` in a fresh module:
+
+```go
+package main
+
+import "fmt"
+
+func currentLabel() string { return "current" }
+func retiredLabel() string { return "retired" }
+
+func main() { fmt.Println(currentLabel()) }
+```
+
+Run `go mod init example.com/reachability`, then `deadcode .`: expect
+`retiredLabel` in the report. Call it from `main` and rerun; it becomes live.
+
+Review findings before deleting public APIs: external consumers may use a
+library function absent from the scanned executables. Repeat the analysis
+for relevant operating systems, architectures, and build tags. See the
+[command documentation](https://pkg.go.dev/golang.org/x/tools/cmd/deadcode)
+for configuration boundaries. Findings are printed without making the
+command fail; choose an explicit reporting policy before using it as a CI gate.
+
+## NilAway: follow nil values across calls
+
+[NilAway](https://github.com/uber-go/nilaway) tracks potential nil dereferences
+within and across packages. It complements GoHawk's lifetime checks. The
+[Security Tools chapter](../21-security/80-security-tools.md#4-nilaway--static-nil-flows)
+has setup instructions; evaluate the findings on your module before making
+the check mandatory. Its maintainers note that false positives and breaking
+changes remain possible during active development.
+
+## golangci-lint
+
+Install a pinned v2 release binary using the
+[official installation guide](https://golangci-lint.run/docs/welcome/install/local/).
+The maintainers recommend binary installation over `go install` or a tool
+directive because the analyzer dependency versions matter.
+
+```bash
+golangci-lint --version
+# Run the linters selected by the configuration/defaults.
+golangci-lint run
+```
+
+For an existing v1 configuration, use the
+[migration guide](https://golangci-lint.run/docs/product/migration-guide/)
+before moving to v2. `run` does not mean every available linter is enabled.
+
+## govulncheck
+
+```bash
+go install golang.org/x/vuln/cmd/govulncheck@latest
+govulncheck ./...
+```
+
+Checks dependencies for known vulnerabilities.
+
+## gosec
+
+```bash
+go install github.com/securego/gosec/v2/cmd/gosec@latest
+gosec ./...
+```
+
+Security-focused linter:
+- SQL injection
+- Hardcoded credentials
+- Weak crypto
+
+## Common Security Issues
+
+```go
+// SQL injection - BAD
+query := "SELECT * FROM users WHERE id = " + id
+
+// Use parameters - GOOD
+db.Query("SELECT * FROM users WHERE id = ?", id)
+
+// Path traversal - BAD
+path := filepath.Join(baseDir, userInput)
+
+// Sanitize - GOOD
+if strings.Contains(userInput, "..") {
+    return errors.New("invalid path")
+}
+```
+
+## CI Integration
+
+After the Go toolchain is configured, add GoHawk as a separate step:
+
+```yaml
+- name: Install GoHawk
+  run: go install github.com/kojah/gohawk@v0.7.1
+
+- name: Check resource and concurrency ownership
+  run: gohawk ./...
+```
+
+Ensure the Go binary installation directory is on the runner's `PATH`, as
+with the local setup above. The standalone CLI exits with status 0 for no
+findings, 3 for findings, and 1 for build or analysis failures, so the scan
+step fails naturally when attention is needed. See the
+[CLI installation and execution guide](https://github.com/kojah/gohawk/blob/v0.7.1/docs/installation.md).
+
+GoHawk currently offers a module plugin for a custom `golangci-lint` binary;
+the ordinary binary does not include it as a native linter. Keep this
+standalone step unless you deliberately adopt the
+[plugin integration](https://gohawk.dev/golangci-lint/).
+
+```yaml
+# .github/workflows/lint.yml
+- name: Lint
+  run: golangci-lint run
+
+- name: Security scan
+  run: |
+    govulncheck ./...
+    gosec ./...
+```
+
+## Summary
+
+| Tool | Focus |
+|------|-------|
+| `go vet` | Basic correctness |
+| `staticcheck` | Advanced analysis |
+| `gohawk` | Resource cleanup and concurrency ownership |
+| `deadcode` | Unreachable functions from selected entry points |
+| NilAway | Potential nil dereferences across calls |
+| `golangci-lint` | Multiple linters |
+| `govulncheck` | Vulnerability scan |
+| `gosec` | Security issues |
+
+## Worked example
+
+Path traversal guards unit-tested (the boring fix scanners want).
+
+Save as `pathx.go` and `pathx_test.go`. Then:
+
+```bash
+go mod init example
+go test -v
+go vet ./...
+```
+
+```go
+// pathx.go
+package main
+
+import (
+	"errors"
+	"path/filepath"
+	"strings"
+)
+
+func UnderRoot(root, user string) (string, error) {
+	if user == "" || strings.Contains(user, "..") {
+		return "", errors.New("invalid path")
+	}
+	full := filepath.Clean(filepath.Join(root, user))
+	root = filepath.Clean(root)
+	sep := string(filepath.Separator)
+	if full != root && !strings.HasPrefix(full, root+sep) {
+		return "", errors.New("escape")
+	}
+	return full, nil
+}
+```
+
+```go
+// pathx_test.go
+package main
+
+import (
+	"path/filepath"
+	"testing"
+)
+
+func TestUnderRoot(t *testing.T) {
+	root := filepath.Join("var", "data")
+	ok, err := UnderRoot(root, "a.txt")
+	if err != nil || ok != filepath.Join(root, "a.txt") {
+		t.Fatalf("got %q err=%v", ok, err)
+	}
+	if _, err := UnderRoot(root, "../etc/passwd"); err == nil {
+		t.Fatal("expected error")
+	}
+}
+```
+
+**Expected output:**
+
+```text
+=== RUN   TestUnderRoot
+--- PASS: TestUnderRoot (0.00s)
+PASS
+```
+
+## More examples
+
+SQL placeholder style vs string concat (pattern comparison only).
+
+```go
+package main
+
+import (
+	"fmt"
+	"strings"
+)
+
+func main() {
+	q := "SELECT * FROM t WHERE id=?"
+	args := []any{"42"}
+	fmt.Println("placeholder query:", q, "args:", args)
+	bad := "SELECT * FROM t WHERE id='" + "x' OR '1'='1" + "'"
+	fmt.Println("concat is dangerous:", strings.Contains(bad, "OR"))
+}
+```
+
+**Expected output:**
+
+```text
+placeholder query: SELECT * FROM t WHERE id=? args: [42]
+concat is dangerous: true
+```
+
+## Runnable example
+
+> External scanners (`staticcheck`, `gosec`, `govulncheck`) need separate installs. This stdlib program demonstrates **safe vs unsafe** patterns those tools flag, and runs cleanly under `go vet` / `go test`.
+
+Save as `safe.go` and `safe_test.go`. Then:
+
+```bash
+go mod init example
+go test -v
+go vet ./...
+```
+
+```go
+// safe.go
+package main
+
+import (
+	"errors"
+	"path/filepath"
+	"strings"
+)
+
+// badQuery shows string-built SQL (do not use with real drivers).
+func badQuery(id string) string {
+	return "SELECT * FROM users WHERE id = '" + id + "'"
+}
+
+// goodQuery keeps user data out of the SQL string (placeholder style).
+func goodQuery() (query string, args []any) {
+	return "SELECT * FROM users WHERE id = ?", []any{"42"}
+}
+
+// safeJoin cleans user input and rejects paths that escape base.
+func safeJoin(base, userInput string) (string, error) {
+	if userInput == "" || strings.Contains(userInput, "..") {
+		return "", errors.New("invalid path")
+	}
+	// Build under base, then verify the cleaned result still has base as prefix.
+	full := filepath.Clean(filepath.Join(base, userInput))
+	baseClean := filepath.Clean(base)
+	sep := string(filepath.Separator)
+	if full != baseClean && !strings.HasPrefix(full, baseClean+sep) {
+		return "", errors.New("invalid path")
+	}
+	return full, nil
+}
+```
+
+```go
+// safe_test.go
+package main
+
+import (
+	"path/filepath"
+	"testing"
+)
+
+func TestSafeJoin(t *testing.T) {
+	base := filepath.Join("var", "data")
+	ok, err := safeJoin(base, "notes.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ok != filepath.Join(base, "notes.txt") {
+		t.Fatalf("got %q", ok)
+	}
+	if _, err := safeJoin(base, "../etc/passwd"); err == nil {
+		t.Fatal("expected rejection")
+	}
+}
+
+func TestGoodQuery(t *testing.T) {
+	q, args := goodQuery()
+	if q == badQuery("x") {
+		t.Fatal("good query should not embed user input")
+	}
+	if len(args) != 1 {
+		t.Fatal("expected bound args")
+	}
+}
+```
+
+**Expected output:**
+
+```text
+=== RUN   TestSafeJoin
+--- PASS: TestSafeJoin (0.00s)
+=== RUN   TestGoodQuery
+--- PASS: TestGoodQuery (0.00s)
+PASS
+```
+
+**What to notice:** Parameterized queries and path containment are the boring fixes `gosec` pushes for. `go vet` is free CI; layer `staticcheck` / `golangci-lint` / `govulncheck` once the module is real.
+
+**Try next:** Install `staticcheck` and run it on this package. Introduce an unused write and watch the tool complain.
+
+## Related Topics
+- [Formatting, Vetting, Docs](../01-foundations/06-formatting-vetting-docs.md)
+- [Building and Releasing](../20-infrastructure/74-building-releasing.md)

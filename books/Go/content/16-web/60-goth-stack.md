@@ -1,0 +1,247 @@
+---
+title: The GOTH Stack
+---
+
+# The GOTH Stack: Go, Templ, HTMX, Tailwind
+
+In 2026, the pendulum has swung back. The complexity of React/Next.js/Hydration/ServerComponents has pushed many developers toward simpler, server-driven architectures.
+
+Enter the **GOTH Stack**:
+*   **G**o: Backend logic and router.
+*   **O** (Templ?): Usually **Templ**, a type-safe templating language for Go.
+*   **T**ailwind: Utility-first CSS.
+*   **H**TMX: High-power tools for HTML.
+
+## Why GOTH?
+It combines the type safety and speed of Go with the interactivity of an SPA, without the JSON-serialization overhead or state synchronization nightmares (Redux/Zustand).
+
+## 1. Templ: Type-Safe HTML
+Standard Go `html/template` is loosely typed. If you misspell a variable, it renders nothing. **Templ** compiles `.templ` files into Go code.
+
+```go
+// hello.templ
+package main
+
+templ Hello(name string) {
+    <div class="p-4 bg-blue-100 text-blue-800 rounded">
+        <h1>Hello, { name }!</h1>
+    </div>
+}
+```
+If you pass an `int` to `Hello`, the Go compiler screams. This is revolutionary for backend rendering.
+
+## 2. HTMX: The Engine
+HTMX allows you to swap parts of the page via AJAX attributes directly in HTML.
+
+```html
+<!-- When clicked, POST to /clicked, and replace this button with the response -->
+<button hx-post="/clicked" hx-swap="outerHTML">
+    Click Me
+</button>
+```
+
+No JavaScript required. The server returns the *new HTML* (rendered via Templ), and HTMX injects it.
+
+## 3. Tailwind: The Style
+Since HTMX swaps HTML chunks, scoping CSS classes is hard. Tailwind solves this by embedding styles *in* the HTML. When HTMX injects a new `<div>`, it brings its styles with it.
+
+## A Simple Handler Example
+
+```go
+func Handler(w http.ResponseWriter, r *http.Request) {
+    // 1. Logic
+    user := db.GetUser()
+
+    // 2. Render Component
+    component := components.UserProfile(user)
+
+    // 3. Serve
+    component.Render(r.Context(), w)
+}
+```
+
+## When NOT to use GOTH
+*   **Offline-first Apps:** If you need it to work in a tunnel, you need a heavy client (React/Flutter).
+*   **Complex Canvas/Games:** WebGL implementations.
+
+For 95% of CRUD apps, Dashboards, and SaaS tools, the GOTH stack is faster to build and orders of magnitude faster to run.
+
+## Worked example
+
+Server-rendered form post that returns an HTML fragment (HTMX-style).
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"html/template"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+)
+
+var formTpl = template.Must(template.New("f").Parse(`
+{{define "form"}}<form hx-post="/greet" hx-target="#out">
+  <input name="name" value="{{.}}">
+  <button type="submit">Greet</button>
+</form>{{end}}
+{{define "result"}}<p id="out">Hello, {{.}}!</p>{{end}}
+`))
+
+func main() {
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_ = formTpl.ExecuteTemplate(w, "form", "world")
+	})
+	mux.HandleFunc("POST /greet", func(w http.ResponseWriter, r *http.Request) {
+		_ = r.ParseForm()
+		name := r.FormValue("name")
+		if name == "" {
+			name = "friend"
+		}
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_ = formTpl.ExecuteTemplate(w, "result", name)
+	})
+
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+
+	res, _ := http.PostForm(srv.URL+"/greet", map[string][]string{"name": {"Ada"}})
+	body, _ := io.ReadAll(res.Body)
+	res.Body.Close()
+	fmt.Println(strings.TrimSpace(string(body)))
+}
+```
+
+**Expected output:**
+
+```text
+<p id="out">Hello, Ada!</p>
+```
+
+## More examples
+
+Compose page + partial templates without external Templ.
+
+```go
+package main
+
+import (
+	"fmt"
+	"html/template"
+	"strings"
+)
+
+func main() {
+	t := template.Must(template.New("root").Parse(`
+{{define "card"}}<div class="card">{{.}}</div>{{end}}
+{{define "page"}}<main>{{template "card" .}}</main>{{end}}
+`))
+	var b strings.Builder
+	_ = t.ExecuteTemplate(&b, "page", "Revenue OK")
+	fmt.Println(strings.TrimSpace(b.String()))
+}
+```
+
+**Expected output:**
+
+```text
+<main><div class="card">Revenue OK</div></main>
+```
+
+## Runnable example
+
+> **Note:** Production GOTH uses **Templ**, **HTMX**, and **Tailwind**. This stdlib-only stand-in shows the same idea: the server returns HTML fragments, and a client can request partial updates.
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"html/template"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"sync/atomic"
+)
+
+var clicks atomic.Int64
+
+// One template set: page embeds the "counter" partial (HTMX-style fragment).
+var tpls = template.Must(template.New("root").Parse(`
+{{define "counter"}}<button hx-post="/clicked">Clicks: {{.}}</button>{{end}}
+{{define "page"}}<!doctype html>
+<html><body>
+  <h1>GOTH-style (stdlib)</h1>
+  <div id="counter">{{template "counter" .}}</div>
+</body></html>{{end}}
+`))
+
+func main() {
+	mux := http.NewServeMux()
+
+	// Full page (initial load)
+	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_ = tpls.ExecuteTemplate(w, "page", clicks.Load())
+	})
+
+	// HTMX-style partial: return only the button HTML
+	mux.HandleFunc("POST /clicked", func(w http.ResponseWriter, r *http.Request) {
+		clicks.Add(1)
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_ = tpls.ExecuteTemplate(w, "counter", clicks.Load())
+	})
+
+	// Drive requests without binding a port forever
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+
+	resp, err := http.Get(srv.URL + "/")
+	if err != nil {
+		panic(err)
+	}
+	body, _ := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	fmt.Println("status:", resp.StatusCode)
+	fmt.Println("page contains counter:", strings.Contains(string(body), "Clicks: 0"))
+
+	post, err := http.Post(srv.URL+"/clicked", "text/plain", nil)
+	if err != nil {
+		panic(err)
+	}
+	frag, _ := io.ReadAll(post.Body)
+	post.Body.Close()
+	fmt.Println("fragment:", strings.TrimSpace(string(frag)))
+}
+```
+
+**Expected output:**
+
+```text
+status: 200
+page contains counter: true
+fragment: <button hx-post="/clicked">Clicks: 1</button>
+```
+
+**What to notice:** Full page vs fragment is just different handlers. `httptest.NewServer` exercises real HTTP without leaving a process listening. Production Templ/HTMX would swap `#counter` automatically; here we print the fragment.
+
+**Try next:** Add a `GET /clicked` that returns the same fragment, and chain three POSTs to watch the count rise.

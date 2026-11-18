@@ -1,0 +1,335 @@
+---
+title: The Must Pattern & No-GC Handling
+---
+
+# Advanced Error Patterns: The "Must" & The "Odin" Way
+
+Go's error handling (`if err != nil`) is explicit, but sometimes you need different strategies for initialization vs. runtime, or you want to adopt patterns from systems languages like Odin/Zig.
+
+## 1. The "Must" Pattern
+
+**Rule:** Return errors to callers; Panic only on programmer error or unrecoverable startup failure.
+
+The "Must" pattern is a convention for functions that wrap a standard error-returning function but `panic` instead of returning the error.
+
+### When to use it?
+*   **Global/Package Initialization:** `var t = template.Must(template.New(...))`
+*   **Startup Configuration:** If your compiled regex is invalid, the app is broken. Don't start.
+
+### Implementation
+```go
+func Must[T any](obj T, err error) T {
+    if err != nil {
+        panic(err)
+    }
+    return obj
+}
+
+// Usage
+var db = Must(sql.Open("postgres", "..."))
+var regex = Must(regexp.Compile("^[a-z]+$"))
+```
+With Generics (Go 1.18+), you can write a universal `Must` wrapper one time and use it everywhere.
+
+---
+
+## 2. Linear Error Handling (The Odin/Zig Influence)
+
+Languages like **Odin** (a data-oriented C alternative) handle errors by treating them as distinct return values, much like Go, but often with syntactic sugar (`or_return`) or strict definitions.
+
+While Go doesn't have `try` or `?` operators, we can adopt the **"Guard Clause" mentality**.
+
+### The Happy Path must remain left-aligned
+**Bad (Nested):**
+```go
+func process() error {
+    err := step1()
+    if err == nil {
+        err = step2()
+        if err == nil {
+            return step3()
+        }
+    }
+    return err
+}
+```
+
+**Good (Guard Clauses / "Odin Style"):**
+```go
+func process() error {
+    if err := step1(); err != nil {
+        return fmt.Errorf("step1: %w", err)
+    }
+
+    // The "Happy Path" stays at indentation 0
+    if err := step2(); err != nil {
+        return fmt.Errorf("step2: %w", err)
+    }
+
+    return step3()
+}
+```
+
+### No-GC Thinking: Errors as Resource Cleanup Triggers
+In non-GC languages, an error often implies manual resource cleanup (`defer` in Swift/Zig). Go automates memory, but not *resources* (Files, Sockets, DB Connections).
+
+**The `defer` Trap in Loops:**
+```go
+for _, file := range files {
+    f, err := os.Open(file)
+    if err != nil { return err }
+    defer f.Close() // DANGEROUS: Closes only at end of function, not loop!
+    // FD exhaustion possible.
+}
+```
+
+**The Fix (Anonymous Function):**
+```go
+for _, file := range files {
+    err := func() error {
+        f, err := os.Open(file)
+        if err != nil { return err }
+        defer f.Close() // Closes at end of this anonymous func
+        return process(f)
+    }()
+    if err != nil { return err }
+}
+```
+
+## 3. Errors in 2026: "Join" and Structure
+Since Go 1.20+, `errors.Join` allows returning *multiple* errors at once (e.g., from parallel validation).
+
+```go
+func validate(u User) error {
+    var errs error
+    if u.Name == "" {
+        errs = errors.Join(errs, errors.New("missing name"))
+    }
+    if u.Age < 0 {
+        errs = errors.Join(errs, errors.New("invalid age"))
+    }
+    return errs // Returns nil if no errors joined
+}
+```
+This is cleaner than older `multierror` libraries.
+
+## Summary
+1.  **Must**: Use for hard startup dependencies. Crash early.
+2.  **Left-Align**: Keep your happy path on the left edge.
+3.  **Defer scope**: Remember `defer` is function-scoped, not block-scoped.
+
+## Worked example
+
+Guard-clause pipeline with `errors.Join` validation and scoped `defer` cleanup.
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"errors"
+	"fmt"
+)
+
+type Resource struct {
+	Name   string
+	closed bool
+}
+
+func open(name string) (*Resource, error) {
+	if name == "" {
+		return nil, errors.New("empty name")
+	}
+	return &Resource{Name: name}, nil
+}
+
+func (r *Resource) Close() {
+	r.closed = true
+	fmt.Println("closed:", r.Name)
+}
+
+func (r *Resource) Work() error {
+	if r.closed {
+		return errors.New("use after close")
+	}
+	fmt.Println("work:", r.Name)
+	return nil
+}
+
+func processAll(names []string) error {
+	for _, name := range names {
+		// Inner func scopes defer so each resource closes per iteration.
+		if err := func() error {
+			r, err := open(name)
+			if err != nil {
+				return fmt.Errorf("open %q: %w", name, err)
+			}
+			defer r.Close()
+			return r.Work()
+		}(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func main() {
+	if err := processAll([]string{"a.txt", "b.txt"}); err != nil {
+		fmt.Println("process:", err)
+	}
+
+	var errs error
+	errs = errors.Join(errs, errors.New("missing name"))
+	errs = errors.Join(errs, errors.New("invalid age"))
+	fmt.Println("joined:", errs)
+}
+```
+
+**Expected output:**
+
+```text
+work: a.txt
+closed: a.txt
+work: b.txt
+closed: b.txt
+joined: missing name
+invalid age
+```
+
+## More examples
+
+Generic `Must` for compile-time-valid startup data only.
+
+```go
+package main
+
+import (
+	"fmt"
+	"net/url"
+	"regexp"
+)
+
+func Must[T any](v T, err error) T {
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
+func main() {
+	re := Must(regexp.Compile(`^[a-z]+$`))
+	u := Must(url.Parse("https://example.com/path"))
+	fmt.Println("regex:", re.MatchString("gopher"))
+	fmt.Println("host:", u.Host, "path:", u.Path)
+}
+```
+
+**Expected output:**
+
+```text
+regex: true
+host: example.com path: /path
+```
+
+## Runnable example
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"errors"
+	"fmt"
+	"regexp"
+)
+
+func Must[T any](v T, err error) T {
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
+func openConfig(path string) (string, error) {
+	if path == "" {
+		return "", errors.New("empty path")
+	}
+	return "config:" + path, nil
+}
+
+func validate(name string, age int) error {
+	var errs error
+	if name == "" {
+		errs = errors.Join(errs, errors.New("missing name"))
+	}
+	if age < 0 {
+		errs = errors.Join(errs, errors.New("invalid age"))
+	}
+	return errs
+}
+
+func process() error {
+	// Guard clauses keep the happy path left-aligned.
+	cfg, err := openConfig("app.toml")
+	if err != nil {
+		return fmt.Errorf("step open: %w", err)
+	}
+
+	if err := validate("Ada", 36); err != nil {
+		return fmt.Errorf("step validate: %w", err)
+	}
+
+	fmt.Println("happy path with", cfg)
+	return nil
+}
+
+func main() {
+	// Must: fine for static startup data that must be correct.
+	re := Must(regexp.Compile(`^[a-z]+$`))
+	fmt.Println("must regex:", re.MatchString("gopher"))
+
+	if err := process(); err != nil {
+		fmt.Println("process:", err)
+	}
+
+	if err := validate("", -1); err != nil {
+		fmt.Println("joined:", err)
+	}
+
+	// Recover a deliberate Must failure for demo purposes only.
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Println("must panicked as expected:", r)
+			}
+		}()
+		_ = Must(openConfig(""))
+	}()
+}
+```
+
+**Expected output:**
+
+```text
+must regex: true
+happy path with config:app.toml
+joined: missing name
+invalid age
+must panicked as expected: empty path
+```
+
+**What to notice:** Generic `Must` collapses `(T, error)` for irrecoverable init. `errors.Join` reports multiple validation problems at once. Guard clauses avoid nested `if err == nil` pyramids.
+
+**Try next:** Move `Must(regexp.Compile(...))` to package level `var`; add a loop that opens several pseudo-files with an inner `func() error { defer close... }` so `defer` runs per iteration.

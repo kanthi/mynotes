@@ -1,0 +1,163 @@
+---
+title: Ansible Provisioning with Nix
+---
+
+# Ansible Provisioning with Nix
+
+Ansible mutates hosts. NixOS **replaces** that for machines you own. The boring default is: **do not Ansible a NixOS box; if you must drive a fleet of Ubuntu leftovers, pin `pkgs.ansible` in a 26.05 devShell and keep inventory in git**.
+
+## Mental model
+
+| Host OS | Tool |
+|---|---|
+| NixOS | `nixos-rebuild` / Colmena / nixos-anywhere |
+| Legacy Ubuntu/Debian you cannot reinstall this quarter | Ansible from a Nix shell |
+
+Using both on the same NixOS host (`ansible ad-hoc apt`) fights the next `switch`. The playbook that `copy`s a `configuration.nix` and then `shell: nixos-rebuild` is two sources of truth.
+
+Collections are FODs (or nixpkgs packages), not `ansible-galaxy install` on Monday morning on the runner. Inventory lives in git. Ad-hoc `ansible all` is how a leftover gets a surprise reboot.
+
+Plan the reinstall to NixOS. Ansible is a bridge with a retirement date.
+
+## Worked examples
+
+### Case 1: Pinned ansible CLI
+
+Save as `flake.nix`:
+
+```nix
+# flake.nix
+{
+  description = "Desk Ansible (legacy only)";
+
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+
+  outputs = { self, nixpkgs }:
+    let
+      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+    in
+    {
+      devShells.x86_64-linux.default = pkgs.mkShell {
+        packages = [ pkgs.ansible ];
+      };
+    };
+}
+```
+
+```bash
+nix develop --command ansible --version
+which ansible
+```
+
+`which` must be a store path. `~/.local/bin/ansible` is the unpinned CLI you just tried to retire.
+
+### Case 2: Inventory in git
+
+Save as `inventory.ini`:
+
+```ini
+# inventory.ini
+[legacy]
+ubuntu-leftover.desk.internal
+
+[nixos]
+app-01.desk.internal
+```
+
+```bash
+nix develop --command ansible legacy -i inventory.ini -m ping
+```
+
+Do not put NixOS hosts in the group you run playbooks against. The `[nixos]` group exists so Case 5 can refuse them.
+
+### Case 3: Collections pinned, not Galaxy at runtime
+
+If nixpkgs has the collection, use it. If not, vendor the tarball as a fixed-output derivation and point `ANSIBLE_COLLECTIONS_PATH` at it.
+
+Save as `collections.nix`:
+
+```nix
+# collections.nix
+{ pkgs ? import <nixpkgs> { } }:
+
+pkgs.stdenv.mkDerivation {
+  pname = "desk-ansible-collections";
+  version = "1.0.0";
+  src = pkgs.fetchurl {
+    url = "https://example.invalid/community-general-9.0.0.tar.gz";
+    hash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+  };
+  installPhase = ''
+    mkdir -p $out/ansible_collections
+    tar -C $out/ansible_collections -xzf $src
+  '';
+}
+```
+
+```nix
+# in the devShell
+{
+  packages = [ pkgs.ansible collections ];
+  ANSIBLE_COLLECTIONS_PATH = "${collections}";
+}
+```
+
+Do not `ansible-galaxy install` on the runner every job. That is `terraform init` downloading providers again.
+
+### Case 4: Playbook that only talks to leftover Ubuntu
+
+Save as `ping.yml`:
+
+```yaml
+# ping.yml
+- hosts: legacy
+  gather_facts: false
+  tasks:
+    - ping:
+```
+
+```bash
+nix develop --command ansible-playbook -i inventory.ini ping.yml
+```
+
+If this playbook grows `apt: name=nginx`, you are postponing the NixOS reinstall. Put a date in `README.md`.
+
+### Case 5: Refuse NixOS in the inventory
+
+Save as `assert.yml`:
+
+```yaml
+# assert.yml
+- hosts: all
+  gather_facts: true
+  tasks:
+    - name: refuse NixOS
+      ansible.builtin.fail:
+        msg: "Use nixos-rebuild / Colmena, not Ansible"
+      when: ansible_facts['os_family'] | default('') == 'NixOS'
+```
+
+```bash
+nix develop --command ansible-playbook -i inventory.ini assert.yml
+```
+
+A NixOS host in `all` must fail the play. That failure is the boring default working.
+
+## The trap
+
+The trap is **Ansible `copy` of a `configuration.nix` then `shell: nixos-rebuild`**. You now have two sources of truth, and the one that wins is whoever ran last. SSH to the host and rebuild from the flake, or Colmena from `ops-01`.
+
+## The boring rule
+
+- NixOS hosts: no Ansible. Fail the play if `os_family` is NixOS.
+- Legacy hosts: Ansible from a Nix-pinned CLI + vendored collections.
+- Inventory in git. No ad-hoc `ansible all`.
+- Collections are FODs, not galaxy-on-Monday.
+- Plan the reinstall to NixOS; Ansible is a bridge with a date.
+
+## Try this
+
+1. `which ansible` inside `nix develop` — store path.
+2. Add a fake inventory host, `ansible-inventory --list`.
+3. `git grep ansible` on NixOS modules — should be empty.
+4. Write the retirement date for the last Ubuntu leftover in the desk README.

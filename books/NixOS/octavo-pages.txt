@@ -1,0 +1,203 @@
+# Every page address this book's website has had, kept by Octavo so that
+# links to moved chapters keep working. Commit this file with the book.
+# Each line: the page, a tab, then its chapter title, or "-> " and the page
+# its old address now forwards to.
+content/00-front-matter/00-syllabus.html	Syllabus
+content/00-front-matter/00b-reproducibility-crisis.html	Introduction: The Reproducibility Crisis
+content/00-front-matter/01a-lab-overview-and-roles.html	Lab 0 — Overview: roles before the Why Nix exists chapter
+content/00-front-matter/01b-lab-journey-single-server.html	Lab 0A — Journey single-server (KVM + containers)
+content/00-front-matter/01c-lab-nixos-dev-machine.html	Lab 0B — NixOS development machine
+content/00-front-matter/01d-lab-elitebook-2570p.html	Lab 0C — HP Elitebook 2570p (16 GB) profile
+content/00-front-matter/01e-lab-ops-cheatsheet.html	Lab 0D — Ops cheatsheet
+content/01-concepts/00-index.html	Concepts — Nix language, store, CLI, flakes
+content/01-concepts/01-why-nix-exists.html	Why Nix exists
+content/01-concepts/02-store-and-closures.html	The Nix store and closures
+content/01-concepts/03-language-attrsets.html	Nix language: values and attrsets
+content/01-concepts/04-language-functions.html	Nix language: functions
+content/01-concepts/05-laziness-imports-lib.html	Laziness, imports, and lib
+content/01-concepts/06-derivations.html	Derivations as an idea
+content/01-concepts/07-modern-cli.html	Modern Nix CLI
+content/01-concepts/08-flakes-devshell.html	Flakes and project devShells
+content/01-concepts/09-classic-cli-literacy.html	Classic CLI literacy
+content/02-nix-on-linux/00-index.html	Nix on Linux — Fedora bridge path
+content/02-nix-on-linux/01-why-nix-on-linux.html	Why Nix on Linux first
+content/02-nix-on-linux/02-fedora-44-install.html	Install Nix on Fedora 44
+content/02-nix-on-linux/03-store-profiles-and-gc.html	Store, profiles, and GC on Linux
+content/02-nix-on-linux/03b-chroot-stores-without-root.html	Nix without /nix: chroot stores, --store, and why paths bake in /nix/store
+content/02-nix-on-linux/04-daily-cli-and-devshells.html	Daily CLI, flakes, and devShells
+content/02-nix-on-linux/04b-nix-shell-shebang-scripts.html	Self-contained scripts with #! nix-shell / #! nix
+content/02-nix-on-linux/05-home-manager-standalone.html	Home Manager on Fedora (standalone)
+content/02-nix-on-linux/06-dnf-and-nix-coexistence.html	dnf and Nix coexistence
+content/02-nix-on-linux/07-selinux-atomic-and-ops.html	SELinux, Atomic, and day-2 ops
+content/02-nix-on-linux/08-bridge-to-nixos.html	Bridge to NixOS
+content/03-nixos-host/00-index.html	NixOS host — install, configure, modules
+content/03-nixos-host/01-install.html	Installing NixOS
+content/03-nixos-host/02-flake-host.html	Flake-defined hosts
+content/03-nixos-host/03-rebuild-and-generations.html	Rebuild modes and generations
+content/03-nixos-host/04-users-and-access.html	Users and access
+content/03-nixos-host/05-networking-firewall.html	Networking and firewall
+content/03-nixos-host/06-packages-and-programs.html	Packages and programs
+content/03-nixos-host/07-systemd-via-nix.html	systemd via Nix
+content/03-nixos-host/08-modules-as-consumer.html	Modules as a consumer
+content/03-nixos-host/09-custom-modules.html	Writing custom modules
+content/03-nixos-host/10-boot-and-hardware.html	Boot and hardware
+content/03-nixos-host/11-filesystems.html	Filesystems and state
+content/03-nixos-host/12-activation-reload-restart-deprecation.html	Activation Reload/Restart Deprecation
+content/03-nixos-host/13-clevis-luks-askpass.html	Clevis LUKS Askpass in Initrd
+content/03-nixos-host/14-specialisations.html	Specialisations
+content/03-nixos-host/15-modular-services.html	Modular Services
+content/03-nixos-host/16-systemd-stage-1.html	systemd in Stage 1: the 26.05 Initrd Default
+content/03-nixos-host/17-locales-and-locale-archive.html	Locales: the Locale Archive, i18n.extraLocales, and the Missing-Locale Crash
+content/03-nixos-host/18-state-version.html	system.stateVersion: What It Changes, and How to Bump It Without Losing Data
+content/03-nixos-host/19-boot-partition-full.html	/boot Is Full: How systemd-boot Fills the ESP, and How to Empty It
+content/04-home-and-flake-layout/00-index.html	Home Manager and flake layout
+content/04-home-and-flake-layout/01-flake-layout.html	Flake repository layout
+content/04-home-and-flake-layout/02-lock-discipline.html	Lock file discipline
+content/04-home-and-flake-layout/03-home-manager.html	Home Manager on NixOS
+content/04-home-and-flake-layout/04-hm-files-xdg.html	Home files and XDG
+content/04-home-and-flake-layout/04b-shell-and-editor-configuration.html	Shell and Editor Configuration
+content/04-home-and-flake-layout/05-hm-services.html	Home Manager user services
+content/04-home-and-flake-layout/06-direnv-devshell.html	direnv and project shells
+content/04-home-and-flake-layout/06b-multi-language-dev-environments.html	Multi-Language Development Environments
+content/04-home-and-flake-layout/06c-migrating-docker-desktop-to-devshells.html	Migrating from Docker Desktop to Nix DevShells
+content/04-home-and-flake-layout/07-flake-parts.html	flake-parts (optional structure)
+content/04-home-and-flake-layout/08-flake-checks.html	Flake checks
+content/04-home-and-flake-layout/09-overlays-light.html	Overlays (light introduction)
+content/04-home-and-flake-layout/10-determinate-wasm-and-flake-schemas.html	Determinate Nix: Wasm in Expressions and Flake Schemas
+content/04-home-and-flake-layout/11-multi-arch-flake-template.html	A Multi-Arch Flake Template that Stays Boring
+content/05-services-and-security/00-index.html	Services and security patterns
+content/05-services-and-security/01-secrets-problem.html	The secrets problem
+content/05-services-and-security/02-sops-nix.html	sops-nix
+content/05-services-and-security/03-agenix.html	agenix (comparison)
+content/05-services-and-security/03b-secrets-sops-vs-agenix.html	Choosing between sops-nix and agenix
+content/05-services-and-security/03c-vault-integration.html	HashiCorp Vault Integration
+content/05-services-and-security/04-hardening.html	Host hardening patterns
+content/05-services-and-security/05-firewall-discipline.html	Firewall discipline
+content/05-services-and-security/06-tls-front-door.html	TLS and reverse-proxy front door
+content/05-services-and-security/07-data-service.html	A data service pattern
+content/05-services-and-security/08-nixos-containers.html	NixOS containers
+content/05-services-and-security/09-podman-docker.html	Podman and Docker patterns
+content/05-services-and-security/10-observability.html	Observability patterns
+content/05-services-and-security/11-k3s-optional.html	k3s (optional awareness)
+content/05-services-and-security/12-nixos-vex.html	nixos-vex: configuration-aware VEX for vulnerability triage
+content/05-services-and-security/12-vuln-inventory-across-profiles.html	Vulnerability Inventory across Profiles and Images
+content/06-packaging/00-index.html	Packaging craft
+content/06-packaging/01-stdenv-phases.html	stdenv and build phases
+content/06-packaging/02-fetchers-fod.html	Fetchers and fixed-output derivations
+content/06-packaging/03-language-ecosystems-a.html	Language ecosystems (part A)
+content/06-packaging/04-language-ecosystems-b.html	Language ecosystems (part B)
+content/06-packaging/05-patching-overrides.html	Patching and overrides
+content/06-packaging/06-multiple-outputs.html	Multiple outputs
+content/06-packaging/07-debug-builds.html	Debugging builds
+content/06-packaging/08-nixpkgs-layout.html	Navigating nixpkgs
+content/06-packaging/09-binary-caches.html	Binary caches
+content/06-packaging/10-remote-builders.html	Remote builders
+content/06-packaging/11-reproducibility.html	Reproducibility (honest view)
+content/06-packaging/12-ros2-nix-ros-overlay.html	ROS 2 robotics with nix-ros-overlay
+content/06-packaging/13-running-a-nixpkgs-team.html	Running a Nixpkgs team
+content/06-packaging/14-overlays-fix-everything.html	Fixing Packages with Overlays
+content/06-packaging/15-cross-compilation-multiple-platforms.html	Cross-Compilation for Multiple Platforms
+content/07-ops-and-fleet/00-index.html	Operations and fleet
+content/07-ops-and-fleet/01-disko.html	Disko
+content/07-ops-and-fleet/02-impermanence.html	Impermanence (idea and patterns)
+content/07-ops-and-fleet/03-deploy-rs.html	deploy-rs
+content/07-ops-and-fleet/04-colmena.html	Colmena
+content/07-ops-and-fleet/05-shared-modules.html	Shared modules across hosts
+content/07-ops-and-fleet/06-images-generators.html	Images with nixos-generators
+content/07-ops-and-fleet/07-terraform-boundary.html	Terraform boundary
+content/07-ops-and-fleet/08-nixos-tests.html	nixosTest
+content/07-ops-and-fleet/09-more-tests.html	More testing patterns
+content/07-ops-and-fleet/10-ci-pipeline.html	CI pipelines for flakes
+content/07-ops-and-fleet/11-gc-hygiene.html	GC and store hygiene
+content/07-ops-and-fleet/12-secure-boot-tpm.html	Secure Boot and TPM (awareness)
+content/07-ops-and-fleet/13-backups.html	Backup story
+content/07-ops-and-fleet/14-auto-upgrade.html	Unattended upgrades (system.autoUpgrade)
+content/07-ops-and-fleet/15-read-an-update-before-switching.html	Read an Update Before You Switch: diff-closures, path-info and why-depends
+content/07-ops-and-fleet/16-is-my-flake-lock-stale.html	Is My flake.lock Stale? Lock Age, Branch Distance and End-of-Life Branches
+content/08-internals/00-index.html	Internals and currency
+content/08-internals/01-evaluator.html	The evaluator
+content/08-internals/01b-nix-implementations-conformance.html	One language, several evaluators
+content/08-internals/02-module-system-deep.html	Module system in depth
+content/08-internals/03-store-daemon.html	Store and daemon
+content/08-internals/03b-eval-daemon-traffic.html	What evaluation sends to the daemon
+content/08-internals/03c-builtins-readfile-eval-cost.html	builtins.readFile: file bytes become Nix strings (and pay at eval)
+content/08-internals/03d-store-path-computation.html	How Nix computes a store path
+content/08-internals/04-nix-performance.html	Nix performance
+content/08-internals/05-ca-derivations.html	Content-addressed derivations (awareness)
+content/08-internals/06-nixos-test-mastery.html	nixosTest mastery
+content/08-internals/07-ecosystem-map.html	Ecosystem map
+content/08-internals/08-comparative-landscape.html	Comparative landscape
+content/08-internals/09-release-notes.html	Reading release notes (26.05)
+content/08-internals/10-upgrade-planning.html	Upgrade planning
+content/08-internals/11-troubleshooting.html	Troubleshooting drills
+content/08-internals/12-architecture-review.html	Architecture review
+content/08-internals/13-metadata-normalization.html	How Nix Normalizes Metadata for Reproducibility
+content/09-capstone/00-index.html	Capstone and recovery
+content/09-capstone/01-scope-and-plan.html	Capstone: scope and plan
+content/09-capstone/02-implement.html	Capstone: implement
+content/09-capstone/03-harden-and-document.html	Capstone: harden and document
+content/09-capstone/04-prove-rebuild.html	Capstone: prove rebuildability
+content/09-capstone/05-optional-multi-node.html	Capstone: optional multi-node bar
+content/09-capstone/06-disaster-recovery.html	Disaster recovery notes
+content/09-capstone/07-rollback-and-tests.html	Rollback and tests
+content/09-capstone/08-retrospective.html	Retrospective
+content/10-cicd/01-binary-caches.html	Setting Up Binary Caches
+content/10-cicd/02-github-actions-with-nix.html	GitHub Actions with Nix
+content/10-cicd/03-gitlab-ci.html	GitLab CI Integration
+content/10-cicd/04-build-caching-strategies.html	Build Caching Strategies
+content/10-cicd/05-testing-in-ci-pipelines.html	Testing in CI Pipelines
+content/10-cicd/06-secrets-management-in-ci.html	Secrets Management in CI
+content/10-cicd/07-remote-builders.html	Remote Builders
+content/10-cicd/08-systemd-nspawn-test-backend.html	systemd-nspawn Test Backend
+content/100-appendices/01-glossary.html	Glossary of Terms
+content/100-appendices/02-command-cheat-sheet.html	Command Cheat Sheet
+content/100-appendices/03-nix-version-reference.html	Nix and NixOS Version Reference
+content/11-containers-and-kubernetes/01-container-images-with-nix.html	Creating Container Images with Nix (dockerTools)
+content/11-containers-and-kubernetes/02-kubernetes-manifests-as-modules.html	Kubernetes Manifests as Nix Modules
+content/11-containers-and-kubernetes/03-helm-charts-from-nix.html	Helm Charts Generated from Nix
+content/11-containers-and-kubernetes/04-gitops-argo-flux.html	GitOps with Argo CD and Flux
+content/11-containers-and-kubernetes/05-service-mesh-observability.html	Service Mesh and Observability
+content/12-iac-and-cloud/01-terraform-providers-with-nix.html	Managing Terraform Providers with Nix
+content/12-iac-and-cloud/02-opentofu-integration.html	OpenTofu Integration
+content/12-iac-and-cloud/03-ansible-provisioning.html	Ansible Provisioning with Nix
+content/12-iac-and-cloud/04-cloud-provider-config.html	Cloud Provider Configuration
+content/12-iac-and-cloud/05-multi-cloud-deployment.html	Multi-Cloud Deployment Patterns
+content/13-platform-engineering/01-internal-developer-platform.html	The Internal Developer Platform Pattern
+content/13-platform-engineering/02-monorepo-strategies.html	Monorepo Strategies with Nix
+content/13-platform-engineering/03-multi-platform-distribution.html	Multi-Platform Development and Distribution
+content/13-platform-engineering/04-build-optimization-tuning.html	Build Optimization and Performance Tuning
+content/13-platform-engineering/05-debugging-troubleshooting.html	Debugging and Troubleshooting Production Issues
+content/13-platform-engineering/06-testing-strategies.html	Testing Strategies for Nix Configurations
+content/13-platform-engineering/07-maintenance-upgrades-migration.html	Maintenance, Upgrades, and Migration
+content/13-platform-engineering/08-enterprise-operational-checklists.html	Enterprise Operational Checklists
+content/13-platform-engineering/09-fleet-deployments-colmena.html	Fleet Deployments with Colmena
+content/13-platform-engineering/10-microvms-and-virtualisation.html	Lightweight MicroVMs with microvm.nix
+content/13-platform-engineering/11-content-addressed-nix-internals.html	Content-Addressed Nix Internals
+content/13-platform-engineering/12-agent-sandboxes-loop-engineering-and-overlays.html	AI Agent Sandboxes, Loop Engineering, and Universal Overlays
+content/14-production-labs/01-reading-nixos-infra.html	Reading NixOS.org Infra as a Pattern Source
+content/14-production-labs/02-operator-keys-and-groups.html	Operator Keys and Groups
+content/14-production-labs/03-critical-vs-noncritical.html	Critical vs Non-Critical Hives
+content/14-production-labs/04-builder-factory-and-restricted-ssh.html	Builder Factory and Restricted Store SSH
+content/14-production-labs/05-channel-promotion-and-ci-hosts.html	Channel Promotion and CI Host Groups
+content/15-production-capstones/01-enterprise-architecture-and-threat-model.html	Production Architecture and Threat Model
+content/15-production-capstones/02-disko-storage-and-ephemeral-base.html	Disko Storage and Ephemeral Base System
+content/15-production-capstones/03-hardened-network-and-vpn-mesh.html	Hardened Networking and WireGuard Mesh
+content/15-production-capstones/04-distributed-application-stack.html	Distributed Application Stack and Secrets
+content/15-production-capstones/05-automated-fleet-rollout-and-disaster-recovery.html	Automated Fleet Rollout and Disaster Recovery
+content/15-production-capstones/06-conclusion-the-path-forward.html	Conclusion: The Path Forward
+content/16-misc/00-index.html	Misc
+content/16-misc/01-current-nix-and-nixos.html	Current Nix and NixOS
+content/16-misc/02-how-a-release-is-built.html	How a Release Is Built
+content/16-misc/03-minimal-iso-to-desktop.html	Minimal ISO to a Desktop
+content/16-misc/04-sleeping-builder.html	A Builder That Sleeps
+content/99-projects/00-index.html	Projects index
+content/99-projects/01-derivation-hello-cli.html	Project 1: Hello CLI derivation
+content/99-projects/02-derivation-script-tool.html	Project 2: Script tool derivation
+content/99-projects/03-derivation-language-package.html	Project 3: Language package derivation
+content/99-projects/04-overlay-pin-patch.html	Project 4: Overlay pin and patch
+content/99-projects/05-distro-identity-branding.html	Project 5: Distro identity and branding
+content/99-projects/06-distro-iso-themes.html	Project 6: Distro ISO and themes
+content/99-projects/07-distro-complete-product.html	Project 7: Complete custom distro product
+content/99-projects/branding/README.html	Sample distro branding assets (lab only)
+content/99-projects/branding/plymouth-theme-notes.html	Plymouth / greeter theme notes (lab)
+index.html	Notes on Nix & NixOS

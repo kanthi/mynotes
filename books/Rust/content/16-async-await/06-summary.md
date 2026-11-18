@@ -1,0 +1,12 @@
+---
+title: Summary
+---
+
+# Summary
+### Chapter Key Takeaways
+
+- Futures are poll-driven state machines executed by a runtime.
+- Tokio provides a work-stealing multithreaded async runtime.
+- `Pin` prevents memory moves of self-referential generator frames.
+- Async code avoids thread exhaustion on high-concurrency I/O workloads.
+- Dropping a future cancels it at its current `.await`: race only cancel-safe operations in `select!` and `timeout`, and keep progress outside futures that may be dropped.

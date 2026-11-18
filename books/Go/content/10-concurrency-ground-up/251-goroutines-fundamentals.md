@@ -1,0 +1,495 @@
+---
+title: Goroutines Fundamentals
+---
+
+# Goroutines Fundamentals
+
+## Overview
+
+A **goroutine** is a function executing independently under the Go runtime. The keyword `go` starts that execution; it does not create an OS thread by itself. Thousands of goroutines can multiplex onto far fewer threads.
+
+The order of ideas below follows the opening chapter of Anton Zhiyanov's [Gist of Go: Goroutines](https://antonz.org/go-concurrency/goroutines/). The programs are this book's. If you already use `async`/`await` in another language, leave that model at the door: a goroutine is not a promise you `await`, and `main` does not suspend until the calls you started come back.
+
+## Sequential vs concurrent
+
+```go
+func say(id int, phrase string) {
+	for _, word := range strings.Fields(phrase) {
+		fmt.Printf("Worker #%d: %s\n", id, word)
+		time.Sleep(time.Duration(rand.Intn(50)) * time.Millisecond)
+	}
+}
+
+// Sequential: second talker starts only after the first finishes.
+func sequential() {
+	say(1, "go is awesome")
+	say(2, "cats are cute")
+}
+
+// Concurrent: both run; main must still wait somehow.
+func concurrent() {
+	go say(1, "go is awesome")
+	go say(2, "cats are cute")
+	time.Sleep(300 * time.Millisecond) // fragile — prefer WaitGroup
+}
+```
+
+```text
+sequence (top → bottom):
+  actors: Main, say#1, say#2
+  Main --> say#1  : call
+  say#1 --> Main  : return
+  Main --> say#2  : call
+  say#2 --> Main  : return
+  Main --> say#1  : go
+  Main --> say#2  : go
+  Main --> Main  : must wait or exit
+  note: sequential
+  note: concurrent
+```
+
+## Main is a goroutine
+
+When `main` returns, the **process** ends. Other goroutines are abandoned—even if they had more work.
+
+```text
+Without wait:
+
+  main ──go──► G1
+       ──go──► G2
+       ──return──► process exit  (G1/G2 may print nothing)
+```
+
+## WaitGroup: correct waiting
+
+```go
+func concurrentWait() {
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		say(1, "go is awesome")
+	}()
+	go func() {
+		defer wg.Done()
+		say(2, "cats are cute")
+	}()
+	wg.Wait()
+}
+```
+
+**Separate concurrency from business logic.** A worker that takes `*sync.WaitGroup` cannot be called from a test or from ordinary sequential code without inventing a group:
+
+```go
+func say(wg *sync.WaitGroup, id int, phrase string) {
+	defer wg.Done()
+	// ...print the phrase...
+}
+```
+
+Keep `say` as a plain function. The goroutine wrapper owns the counter:
+
+```go
+wg.Add(1)
+go func() {
+	defer wg.Done()
+	say(1, "go is awesome")
+}()
+```
+
+`defer wg.Done()` still runs if `say` panics, so the waiter is not stuck on a counter that never reaches zero. `Add` happens **before** `go`. If you `Add` inside the new goroutine, `Wait` can observe zero and return before the increment.
+
+### WaitGroup.Go (Go 1.25+)
+
+```go
+var wg sync.WaitGroup
+wg.Go(func() { say(1, "go is awesome") })
+wg.Go(func() { say(2, "cats are cute") })
+wg.Wait()
+```
+
+Under the hood, `WaitGroup.Go` is the wrapper above: `Add(1)`, start the function, `defer Done()`. One goroutine per word, before any channel, can store into a `sync.Map` (safe for concurrent `Store`) and then `Wait`. Since Go 1.22 the loop variable is per iteration, so the closure may capture `word` directly:
+
+```go
+stats := new(sync.Map)
+for _, word := range words {
+	wg.Go(func() {
+		stats.Store(word, countVowels(word))
+	})
+}
+wg.Wait()
+```
+
+That works, and it mixes a concurrent map into the tally. The rest of this chapter passes values on channels instead, so the vowel counter stays a plain function.
+
+## First channel: producer and consumer
+
+```text
+┌─────────────┐    ┌─────────────┐
+│ goroutine B │    │ goroutine A │
+│   send X    │───►│   recv X    │
+└─────────────┘    └─────────────┘
+```
+
+```go
+func main() {
+	messages := make(chan string)
+	go func() { messages <- "ping" }()
+	msg := <-messages
+	fmt.Println(msg)
+}
+```
+
+**Unbuffered send blocks** until a receiver is ready (and vice versa). Channels transfer data **and** synchronize. The sender does not continue past `messages <- "ping"` until `main` has taken the value:
+
+```text
+sequence (top → bottom):
+  actors: sender, channel, receiver
+  receiver --> receiver  : other work
+  sender --> channel  : send "ping" (blocks)
+  receiver --> channel  : receive
+  channel --> receiver  : "ping"
+  channel --> sender  : send completes
+```
+
+No `WaitGroup` is required for this program. `main`'s receive is the join: it cannot return until the send has happened.
+
+## Result channel, same list on both sides
+
+A producer-consumer split is the next step. The producer counts vowels in each word and sends the **count**. The consumer still has the word slice, so it can zip counts back onto words. One sender, in slice order, matches one receiver, in the same order. An unbuffered channel keeps that handshake.
+
+```go
+func countVowels(word string) int {
+	n := 0
+	for _, r := range word {
+		switch unicode.ToLower(r) {
+		case 'a', 'e', 'i', 'o', 'u':
+			n++
+		}
+	}
+	return n
+}
+
+func tallyKnown(phrase string) map[string]int {
+	words := strings.Fields(phrase)
+	counted := make(chan int)
+	go func() {
+		for _, word := range words {
+			counted <- countVowels(word)
+		}
+	}()
+	stats := map[string]int{}
+	for _, word := range words {
+		stats[word] = <-counted
+	}
+	return stats
+}
+```
+
+The receive loop runs exactly `len(words)` times, so it does not need an end marker. Launching one goroutine **per** word would scramble that zip: counts would no longer line up with the consumer's range. That is the case for a pair, or for the `sync.Map` above.
+
+## Generator: the consumer does not know the length
+
+A live source (a scanner, a query) does not hand you the slice up front. Pass a generator. Each call returns the next word, or `""` when the source is done. Only one goroutine may call `next`.
+
+```go
+func wordSource(phrase string) func() string {
+	words := strings.Fields(phrase)
+	i := 0
+	return func() string {
+		if i >= len(words) {
+			return ""
+		}
+		w := words[i]
+		i++
+		return w
+	}
+}
+```
+
+Sending only `int` now fails twice: the consumer does not know which word a count belongs to, and it does not know when to stop receiving. Send a pair, and send the empty word once so the receiver can break. Later chapters replace that empty word with `close`.
+
+```go
+type pair struct {
+	word  string
+	count int
+}
+
+func tallyStream(next func() string) map[string]int {
+	counted := make(chan pair)
+	go func() {
+		for {
+			word := next()
+			counted <- pair{word, countVowels(word)}
+			if word == "" {
+				return
+			}
+		}
+	}()
+	stats := map[string]int{}
+	for {
+		p := <-counted
+		if p.word == "" {
+			break
+		}
+		stats[p.word] = p.count
+	}
+	return stats
+}
+```
+
+The empty word is a sentinel, not data. Do not use it once real input can be empty. [Channels Complete](252-channels-complete.md) uses `close` for the same signal.
+
+## Reader and worker
+
+Split "pull the next word" from "count vowels". Two channels, two goroutines, and the outer function only fills the map:
+
+```text
+┌────────────┐   pending    ┌────────────┐   counted    ┌───────────┐
+│ next()     │ ───────────► │ count      │ ───────────► │ fill map  │
+│ reader     │   string     │ worker     │   pair       │ caller    │
+└────────────┘              └────────────┘              └───────────┘
+```
+
+```go
+func tallySplit(next func() string) map[string]int {
+	pending := make(chan string)
+	counted := make(chan pair)
+
+	go func() {
+		for {
+			word := next()
+			pending <- word
+			if word == "" {
+				return
+			}
+		}
+	}()
+	go func() {
+		for {
+			word := <-pending
+			counted <- pair{word, countVowels(word)}
+			if word == "" {
+				return
+			}
+		}
+	}()
+
+	stats := map[string]int{}
+	for {
+		p := <-counted
+		if p.word == "" {
+			break
+		}
+		stats[p.word] = p.count
+	}
+	return stats
+}
+```
+
+Send the empty word **before** returning, on both hops. If the reader returns without that send, the worker blocks on `<-pending` forever, and `main` blocks on `<-counted`.
+
+## Name the stages
+
+The anonymous functions are three jobs. Naming them makes the parent read as a pipeline:
+
+```go
+func tallyNamed(next func() string) map[string]int {
+	pending := make(chan string)
+	go submitWords(next, pending)
+	counted := make(chan pair)
+	go countWords(pending, counted)
+	return fillStats(counted)
+}
+
+func submitWords(next func() string, out chan string) {
+	for {
+		word := next()
+		out <- word
+		if word == "" {
+			return
+		}
+	}
+}
+
+func countWords(in chan string, out chan pair) {
+	for {
+		word := <-in
+		out <- pair{word, countVowels(word)}
+		if word == "" {
+			return
+		}
+	}
+}
+
+func fillStats(in chan pair) map[string]int {
+	stats := map[string]int{}
+	for {
+		p := <-in
+		if p.word == "" {
+			break
+		}
+		stats[p.word] = p.count
+	}
+	return stats
+}
+```
+
+## The stage owns its output channel
+
+`pending` exists in the parent only so it can be handed to `submitWords`. Create the channel inside the stage that sends on it, start the goroutine there, and return the channel. The parent stops choosing lifetimes:
+
+```go
+func tallyOwned(next func() string) map[string]int {
+	pending := submitWordsOwned(next)
+	counted := countWordsOwned(pending)
+	return fillStats(counted)
+}
+
+func submitWordsOwned(next func() string) chan string {
+	out := make(chan string)
+	go func() {
+		for {
+			word := next()
+			out <- word
+			if word == "" {
+				return
+			}
+		}
+	}()
+	return out
+}
+
+func countWordsOwned(in chan string) chan pair {
+	out := make(chan pair)
+	go func() {
+		for {
+			word := <-in
+			out <- pair{word, countVowels(word)}
+			if word == "" {
+				return
+			}
+		}
+	}()
+	return out
+}
+```
+
+Returning a channel that an inner goroutine fills is a standard Go shape. The cost is that `submitWordsOwned` and `countWordsOwned` are no longer plain functions: calling them starts work. Pick one style per pipeline. Either the parent starts goroutines and passes channels in, or each stage owns its output. Mixing the two makes it unclear who closes or who sends the sentinel.
+
+`fillStats` stays synchronous. It is the consumer, and it runs on the caller's goroutine, which is why `tallyOwned` does not return until every word has been counted.
+
+## Rules of thumb
+
+| Do | Don't |
+|----|--------|
+| Wait with WaitGroup / channel / context | `time.Sleep` to "hope" work finished |
+| Keep pure functions free of sync types | Pass WaitGroup into every helper |
+| `Add` before `go`, `Done` in a `defer` | `Add` inside the goroutine you are waiting for |
+| Start with unbuffered channels | Buffer "just in case" without a reason |
+| Let one stage own each channel | Mix "parent starts the goroutine" with "child creates the channel" |
+
+## Runnable example
+
+```bash
+mkdir -p /tmp/vowel-tally && cd /tmp/vowel-tally
+go mod init example
+```
+
+Save as `main.go`, then `go run .`.
+
+```go
+package main
+
+import (
+	"fmt"
+	"strings"
+	"unicode"
+)
+
+func countVowels(word string) int {
+	n := 0
+	for _, r := range word {
+		switch unicode.ToLower(r) {
+		case 'a', 'e', 'i', 'o', 'u':
+			n++
+		}
+	}
+	return n
+}
+
+type pair struct {
+	word  string
+	count int
+}
+
+func wordSource(phrase string) func() string {
+	words := strings.Fields(phrase)
+	i := 0
+	return func() string {
+		if i >= len(words) {
+			return ""
+		}
+		w := words[i]
+		i++
+		return w
+	}
+}
+
+func submitWords(next func() string) chan string {
+	out := make(chan string)
+	go func() {
+		for {
+			word := next()
+			out <- word
+			if word == "" {
+				return
+			}
+		}
+	}()
+	return out
+}
+
+func countWords(in chan string) chan pair {
+	out := make(chan pair)
+	go func() {
+		for {
+			word := <-in
+			out <- pair{word, countVowels(word)}
+			if word == "" {
+				return
+			}
+		}
+	}()
+	return out
+}
+
+func fillStats(in chan pair) map[string]int {
+	stats := map[string]int{}
+	for {
+		p := <-in
+		if p.word == "" {
+			break
+		}
+		stats[p.word] = p.count
+	}
+	return stats
+}
+
+func main() {
+	stats := fillStats(countWords(submitWords(wordSource("router spine leaf"))))
+	for _, word := range []string{"router", "spine", "leaf"} {
+		fmt.Printf("%s: %d\n", word, stats[word])
+	}
+}
+```
+
+```text
+router: 3
+spine: 2
+leaf: 2
+```
+
+**What to notice:** `main` blocks in `fillStats` until the empty word arrives, so the process does not exit early. `router` has three vowels (`o`, `u`, `e`).
+
+**Try next:** Delete the `out <- word` of the empty string in `submitWords` and run again. The worker blocks, `fillStats` blocks, and the runtime reports that all goroutines are asleep. [Channels Complete](252-channels-complete.md) is the structured replacement for that sentinel.

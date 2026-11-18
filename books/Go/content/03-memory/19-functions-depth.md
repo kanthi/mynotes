@@ -1,0 +1,278 @@
+---
+title: Functions in Depth
+---
+
+# Functions in Depth
+
+## Overview
+
+Functions are fundamental building blocks in Go. They support multiple return values, named returns, variadic parameters, and closures.
+
+## Function Declaration
+
+```go
+func name(params) returnType {
+    // body
+}
+
+func add(a, b int) int {
+    return a + b
+}
+
+func greet(name string) {
+    fmt.Println("Hello,", name)
+}
+```
+
+## Multiple Return Values
+
+```go
+func divide(a, b float64) (float64, error) {
+    if b == 0 {
+        return 0, errors.New("division by zero")
+    }
+    return a / b, nil
+}
+
+result, err := divide(10, 2)
+```
+
+## Named Return Values
+
+```go
+func split(sum int) (x, y int) {
+    x = sum * 4 / 9
+    y = sum - x
+    return  // Naked return
+}
+```
+
+## Variadic Functions
+
+```go
+func sum(nums ...int) int {
+    total := 0
+    for _, n := range nums {
+        total += n
+    }
+    return total
+}
+
+sum(1, 2, 3)           // 6
+sum([]int{1, 2, 3}...) // Spread slice
+```
+
+## Closures
+
+Functions can capture variables from their enclosing scope:
+
+```go
+func counter() func() int {
+    count := 0
+    return func() int {
+        count++
+        return count
+    }
+}
+
+c := counter()
+c()  // 1
+c()  // 2
+c()  // 3
+```
+
+## Defer
+
+Defer postpones execution until the surrounding function returns:
+
+```go
+func readFile(name string) error {
+    f, err := os.Open(name)
+    if err != nil {
+        return err
+    }
+    defer f.Close()  // Executes when function returns
+
+    // Use file...
+    return nil
+}
+```
+
+### Defer Order (LIFO)
+
+```go
+defer fmt.Println("1")
+defer fmt.Println("2")
+defer fmt.Println("3")
+// Output: 3, 2, 1
+```
+
+## Function Signatures
+
+```go
+// Function type
+type Operation func(int, int) int
+
+func apply(op Operation, a, b int) int {
+    return op(a, b)
+}
+
+add := func(a, b int) int { return a + b }
+result := apply(add, 2, 3)  // 5
+```
+
+## Summary
+
+| Feature | Syntax |
+|---------|--------|
+| Multiple returns | `func f() (T1, T2)` |
+| Named returns | `func f() (x T1, y T2)` |
+| Variadic | `func f(args ...T)` |
+| Closure | `func() { /* capture vars */ }` |
+| Defer | `defer cleanup()` |
+
+## Related Topics
+- [Functions as Values](20-functions-values.md)
+- [Methods and Receivers](21-methods-receivers.md)
+
+## More examples
+
+### Example: multiple returns and named results
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import (
+	"errors"
+	"fmt"
+)
+
+func div(a, b int) (quot int, err error) {
+	if b == 0 {
+		err = errors.New("divide by zero")
+		return
+	}
+	quot = a / b
+	return
+}
+
+func main() {
+	q, err := div(10, 2)
+	fmt.Println("10/2:", q, err)
+	q, err = div(10, 0)
+	fmt.Println("10/0:", q, err)
+}
+```
+
+Expected:
+
+```text
+10/2: 5 <nil>
+10/0: 0 divide by zero
+```
+
+### Example: defer runs LIFO
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("start")
+	defer fmt.Println("first defer")
+	defer fmt.Println("second defer")
+	fmt.Println("end")
+}
+```
+
+Expected:
+
+```text
+start
+end
+second defer
+first defer
+```
+
+## Runnable example
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"errors"
+	"fmt"
+)
+
+func add(a, b int) int { return a + b }
+
+func divide(a, b float64) (float64, error) {
+	if b == 0 {
+		return 0, errors.New("division by zero")
+	}
+	return a / b, nil
+}
+
+func sum(nums ...int) int {
+	total := 0
+	for _, n := range nums {
+		total += n
+	}
+	return total
+}
+
+func counter() func() int {
+	count := 0
+	return func() int {
+		count++
+		return count
+	}
+}
+
+func main() {
+	fmt.Println("add:", add(2, 3))
+
+	q, err := divide(10, 2)
+	fmt.Println("divide ok:", q, err)
+	_, err = divide(1, 0)
+	fmt.Println("divide err:", err)
+
+	fmt.Println("sum:", sum(1, 2, 3, 4))
+
+	c := counter()
+	fmt.Println("counter:", c(), c(), c())
+
+	defer fmt.Println("defer: first (runs last)")
+	defer fmt.Println("defer: second")
+	fmt.Println("before return")
+}
+```
+
+**Expected output:**
+
+```text
+add: 5
+divide ok: 5 <nil>
+divide err: division by zero
+sum: 10
+counter: 1 2 3
+before return
+defer: second
+defer: first (runs last)
+```
+
+**What to notice:** Multiple returns make success and failure explicit; the closure keeps private `count` state; deferred calls run LIFO after the rest of `main`.
+
+**Try next:** Add a named-return `split(sum int) (x, y int)` and print both values; wrap `divide` so callers always get a non-nil error message with the operands.

@@ -1,0 +1,191 @@
+# Every page address this book's website has had, kept by Octavo so that
+# links to moved chapters keep working. Commit this file with the book.
+# Each line: the page, a tab, then its chapter title, or "-> " and the page
+# its old address now forwards to.
+content/01-the-linux-machine-and-the-administration-lab/01-system-foundations/01-what-linux-consists-of.html	What Linux Consists Of
+content/01-the-linux-machine-and-the-administration-lab/01-system-foundations/02-hardware-firmware-and-virtual-machines.html	Hardware, Firmware and Virtual Machines
+content/01-the-linux-machine-and-the-administration-lab/01-system-foundations/03-cpu-memory-storage-and-network-resources.html	CPU, Memory, Storage and Network Resources
+content/01-the-linux-machine-and-the-administration-lab/01-system-foundations/04-system-paths-configuration-and-state.html	System Paths, Configuration and State
+content/01-the-linux-machine-and-the-administration-lab/01-system-foundations/05-processes-services-and-sessions.html	Processes, Services and Sessions
+content/01-the-linux-machine-and-the-administration-lab/01-system-foundations/06-distributions-releases-and-documentation.html	Distributions, Releases and Documentation
+content/01-the-linux-machine-and-the-administration-lab/02-building-and-observing-the-lab/01-building-the-first-virtual-machine.html	Building the First Virtual Machine
+content/01-the-linux-machine-and-the-administration-lab/02-building-and-observing-the-lab/02-inventory-evidence-and-first-troubleshooting.html	Inventory, Evidence and First Troubleshooting
+content/02-installing-and-provisioning-linux/01-installation-foundations/01-installation-media-and-verification.html	Installation Media, Authenticity and Integrity
+content/02-installing-and-provisioning-linux/01-installation-foundations/02-planning-an-installation.html	Planning Firmware, Storage, Identity and Networking
+content/02-installing-and-provisioning-linux/01-installation-foundations/03-guided-installation-and-storage-layout.html	Guided Installation and the Resulting Storage Layout
+content/02-installing-and-provisioning-linux/01-installation-foundations/04-manual-storage-encryption-and-swap.html	Manual Storage Choices, Encryption and Swap
+content/02-installing-and-provisioning-linux/02-first-boot-and-device-readiness/01-first-boot-administration-and-updates.html	First Boot: Administrative Access, Updates and Service Inventory
+content/02-installing-and-provisioning-linux/02-first-boot-and-device-readiness/02-hardware-and-virtual-device-discovery.html	Hardware and Virtual-Device Discovery
+content/02-installing-and-provisioning-linux/03-provisioning-and-recovery/01-image-based-and-unattended-installation.html	Image-Based and Unattended Installation
+content/02-installing-and-provisioning-linux/03-provisioning-and-recovery/02-reinstallation-and-host-configuration-recovery.html	Reinstallation and Host Configuration Recovery
+content/03-boot-shutdown-and-recovery/01-firmware-and-boot-selection/01-firmware-uefi-gpt-and-efi-system-partition.html	Firmware, UEFI Variables, GPT and the EFI System Partition
+content/03-boot-shutdown-and-recovery/01-firmware-and-boot-selection/02-bootloader-selection-grub-and-systemd-boot.html	Bootloader Selection: GRUB and systemd-boot
+content/03-boot-shutdown-and-recovery/02-kernel-and-early-userspace/01-kernel-images-command-lines-and-modules.html	Kernel Images, Command Lines and Matching Modules
+content/03-boot-shutdown-and-recovery/02-kernel-and-early-userspace/02-initramfs-and-reaching-the-real-root.html	Initramfs and Reaching the Real Root
+content/03-boot-shutdown-and-recovery/02-kernel-and-early-userspace/03-root-handoff-pid1-and-boot-transaction.html	Root Handoff, PID 1 and the Boot Transaction
+content/03-boot-shutdown-and-recovery/03-startup-and-shutdown/01-targets-activation-readiness-and-boot-timing.html	Targets, Activation, Readiness and Boot Timing
+content/03-boot-shutdown-and-recovery/03-startup-and-shutdown/02-shutdown-reboot-and-stuck-services.html	Shutdown, Reboot and Services That Delay Shutdown
+content/03-boot-shutdown-and-recovery/04-boot-trust-and-recovery/01-secure-boot-ukis-and-measured-boot.html	Secure Boot, Unified Images and Measured Boot
+content/03-boot-shutdown-and-recovery/04-boot-trust-and-recovery/02-rescue-emergency-and-external-media.html	Rescue, Emergency and External-Media Recovery
+content/03-boot-shutdown-and-recovery/04-boot-trust-and-recovery/03-offline-inspection-chroot-and-normal-boot.html	Offline Inspection, Chroot Repair and the Next Normal Boot
+content/04-users-identity-and-administrative-access/01-local-identities-and-account-lifecycle/01-uids-gids-groups-and-ownership.html	UIDs, GIDs, Groups and Ownership
+content/04-users-identity-and-administrative-access/01-local-identities-and-account-lifecycle/02-account-databases-nss-and-lookup.html	Account Databases, NSS and Identity Lookup
+content/04-users-identity-and-administrative-access/01-local-identities-and-account-lifecycle/03-account-creation-locking-expiration-and-removal.html	Account Creation, Locking, Expiration and Removal
+content/04-users-identity-and-administrative-access/01-local-identities-and-account-lifecycle/04-home-directories-skeletons-and-sessions.html	Home Directories, Skeletons and Session Environments
+content/04-users-identity-and-administrative-access/02-authentication-and-privilege/01-passwords-credential-storage-and-policy.html	Passwords, Credential Storage and Policy
+content/04-users-identity-and-administrative-access/02-authentication-and-privilege/02-pam-stacks-and-login-diagnosis.html	PAM Stacks and Diagnosing Login Failures
+content/04-users-identity-and-administrative-access/02-authentication-and-privilege/03-sudo-root-and-bounded-delegation.html	Administrative Privilege and Bounded Delegation
+content/04-users-identity-and-administrative-access/03-service-identities/01-service-accounts-and-runtime-credentials.html	Service Accounts and Runtime Credentials
+content/04-users-identity-and-administrative-access/04-sessions-and-central-identity/01-logind-sessions-and-polkit.html	Sessions, logind and Authorization Beyond the Terminal
+content/04-users-identity-and-administrative-access/04-sessions-and-central-identity/02-central-identity-ldap-kerberos-and-sssd.html	Central Identity: LDAP, Kerberos and SSSD Foundations
+content/05-packages-software-and-updates/01-package-state-and-transactions/01-package-metadata-and-file-ownership.html	Package Metadata, File Ownership and Installed State
+content/05-packages-software-and-updates/01-package-state-and-transactions/02-dpkg-apt-and-dependency-resolution.html	dpkg, APT and Dependency Resolution
+content/05-packages-software-and-updates/02-sources-selection-and-configuration/01-repositories-signatures-and-source-configuration.html	Repositories, Signatures and Source Configuration
+content/05-packages-software-and-updates/02-sources-selection-and-configuration/02-versions-holds-pinning-and-conflicts.html	Version Selection, Holds, Pinning and Dependency Conflicts
+content/05-packages-software-and-updates/02-sources-selection-and-configuration/03-configuration-files-alternatives-and-hooks.html	Configuration Files, Alternatives and Package Hooks
+content/05-packages-software-and-updates/03-updates-and-kernel-lifecycle/01-security-updates-and-maintenance-windows.html	Security Updates and Maintenance Windows
+content/05-packages-software-and-updates/03-updates-and-kernel-lifecycle/02-kernel-updates-reboots-and-livepatch.html	Kernel Updates, Reboots and Livepatch
+content/05-packages-software-and-updates/04-other-formats-and-software-supply/01-snaps-flatpak-and-other-formats.html	Snaps, Flatpak and Other Software Formats
+content/05-packages-software-and-updates/04-other-formats-and-software-supply/02-source-builds-local-packages-and-reproducibility.html	Source Builds, Local Packages and Reproducibility
+content/05-packages-software-and-updates/04-other-formats-and-software-supply/03-offline-repositories-mirrors-and-caches.html	Offline Repositories, Mirrors and Disconnected Installation
+content/05-packages-software-and-updates/05-transaction-recovery/01-interrupted-transactions-and-recovery.html	Interrupted Package Transactions and Recovery
+content/06-services-systemd-and-scheduled-work/01-service-supervision-and-execution/01-supervision-units-and-managers.html	Service Supervision, Units and Managers
+content/06-services-systemd-and-scheduled-work/01-service-supervision-and-execution/02-execution-environment-and-exit-status.html	Execution Environment, Identity and Exit Status
+content/06-services-systemd-and-scheduled-work/02-readiness-and-dependencies/01-startup-readiness-watchdogs-and-restarts.html	Startup Types, Readiness, Watchdogs and Restarts
+content/06-services-systemd-and-scheduled-work/02-readiness-and-dependencies/02-requirements-ordering-and-failure.html	Requirements, Ordering and Failure Propagation
+content/06-services-systemd-and-scheduled-work/03-unit-configuration-and-activation/01-vendor-local-units-drop-ins-and-generators.html	Vendor Units, Local Units, Drop-ins, Generators and Effective Configuration
+content/06-services-systemd-and-scheduled-work/03-unit-configuration-and-activation/02-socket-path-and-device-activation.html	Socket, Path and Device Activation
+content/06-services-systemd-and-scheduled-work/03-unit-configuration-and-activation/03-timers-cron-and-anacron.html	Timers, Cron and Anacron
+content/06-services-systemd-and-scheduled-work/03-unit-configuration-and-activation/04-mount-automount-and-swap-units.html	Mount, Automount and Swap Units
+content/06-services-systemd-and-scheduled-work/03-unit-configuration-and-activation/05-service-cgroups-resource-boundaries-and-a-first-sandbox.html	Service Cgroups, Resource Boundaries and a First Sandbox
+content/06-services-systemd-and-scheduled-work/04-service-operations-and-recovery/01-reloads-restarts-validation-and-graceful-shutdown.html	Reloads, Restarts, Configuration Validation and Graceful Shutdown
+content/06-services-systemd-and-scheduled-work/04-service-operations-and-recovery/02-user-services-lingering-and-session-lifecycle.html	User services, lingering, and session lifecycle
+content/06-services-systemd-and-scheduled-work/04-service-operations-and-recovery/03-service-failures-diagnosis-and-recovery.html	Service failures: diagnosis, start-rate limits, and controlled recovery
+content/07-processes-memory-and-resource-administration/01-process-lifecycle-states-and-parent-child.html	Process and thread lifecycle, states, and parent/child relationships
+content/07-processes-memory-and-resource-administration/02-signals-process-groups-sessions-zombies.html	Signals, process groups, sessions, zombies and reaping
+content/07-processes-memory-and-resource-administration/03-cpu-scheduling-priorities-and-affinity.html	CPU scheduling from the administrator view: priorities and affinity
+content/07-processes-memory-and-resource-administration/04-memory-accounting-virtual-resident-shared.html	Memory accounting: virtual, resident, and shared memory
+content/07-processes-memory-and-resource-administration/05-page-cache-writeback-and-apparently-free-memory.html	Page cache, buffering, writeback and interpreting apparently free memory
+content/07-processes-memory-and-resource-administration/08-cgroups-v2-hierarchy-controllers-delegation-and-accounting.html	cgroups v2: hierarchy, controllers, delegation and accounting
+content/07-processes-memory-and-resource-administration/10-file-descriptors-process-limits-and-exhaustion.html	File descriptors, process limits and exhaustion patterns
+content/07-processes-memory-and-resource-administration/11-psi-contention-and-pressure-versus-utilization.html	PSI, contention and distinguishing pressure from utilization
+content/33-running-multiple-kernels-on-one-bare-metal-server/00-introduction-the-multikernel-problem.html	Introduction: The Multikernel Problem
+content/33-running-multiple-kernels-on-one-bare-metal-server/01-linux-kernel-fundamentals.html	Chapter 1: Linux Kernel Fundamentals
+content/33-running-multiple-kernels-on-one-bare-metal-server/02-the-boot-process-in-depth.html	Chapter 2: The Boot Process in Depth
+content/33-running-multiple-kernels-on-one-bare-metal-server/03-virtualization-vs-true-bare-metal-multi-kernel.html	Chapter 3: Virtualization vs True Bare-Metal Multi-Kernel
+content/33-running-multiple-kernels-on-one-bare-metal-server/04-kexec-and-kernel-to-kernel-transitions.html	Chapter 4: kexec and Kernel-to-Kernel Transitions
+content/33-running-multiple-kernels-on-one-bare-metal-server/05-hardware-assisted-multi-kernel-with-kvm-qemu.html	Chapter 5: Hardware-Assisted Multi-Kernel with KVM/QEMU
+content/33-running-multiple-kernels-on-one-bare-metal-server/06-device-assignment-and-io-isolation.html	Chapter 6: Device Assignment and I/O Isolation
+content/33-running-multiple-kernels-on-one-bare-metal-server/07-networking-between-kernel-instances.html	Chapter 7: Networking Between Kernel Instances
+content/33-running-multiple-kernels-on-one-bare-metal-server/08-resource-isolation-strategies.html	Chapter 8: Resource Isolation Strategies
+content/33-running-multiple-kernels-on-one-bare-metal-server/09-security-analysis-and-threat-modeling.html	Chapter 9: Security Analysis and Threat Modeling
+content/33-running-multiple-kernels-on-one-bare-metal-server/10-observability-and-operations.html	Chapter 10: Observability and Operations
+content/33-running-multiple-kernels-on-one-bare-metal-server/11-performance-engineering.html	Chapter 11: Performance Engineering
+content/33-running-multiple-kernels-on-one-bare-metal-server/12-production-operations-and-lifecycle-management.html	Chapter 12: Production Operations and Lifecycle Management
+content/33-running-multiple-kernels-on-one-bare-metal-server/13-troubleshooting-guide.html	Chapter 13: Troubleshooting Guide
+content/33-running-multiple-kernels-on-one-bare-metal-server/14-architecture-comparisons-and-decision-framework.html	Chapter 14: Architecture Comparisons and Decision Framework
+content/33-running-multiple-kernels-on-one-bare-metal-server/15-complete-project-plan.html	Chapter 15: Complete Project Plan: From Requirements to Decommissioning
+content/33-running-multiple-kernels-on-one-bare-metal-server/16-conclusion.html	Conclusion
+content/33-running-multiple-kernels-on-one-bare-metal-server/index.html	Running Multiple Kernels on One Bare-Metal Server
+content/34-linux-performance-engineering-and-server-benchmarking/00-introduction-the-discipline-of-performance-engineering.html	Introduction: The Discipline of Performance Engineering
+content/34-linux-performance-engineering-and-server-benchmarking/01-the-performance-engineering-methodology.html	Chapter 1: The Performance Engineering Methodology
+content/34-linux-performance-engineering-and-server-benchmarking/02-linux-kernel-architecture-and-performance.html	Chapter 2: Linux Kernel Architecture and Performance
+content/34-linux-performance-engineering-and-server-benchmarking/03-cpu-architecture-and-performance-counters.html	Chapter 3: CPU Architecture and Performance Counters
+content/34-linux-performance-engineering-and-server-benchmarking/04-cpu-scheduling-and-process-placement.html	Chapter 4: CPU Scheduling and Process Placement
+content/34-linux-performance-engineering-and-server-benchmarking/05-memory-management-virtual-memory-and-pages.html	Chapter 5: Memory Management: Virtual Memory and Pages
+content/34-linux-performance-engineering-and-server-benchmarking/06-numa-architecture-and-memory-placement.html	Chapter 6: NUMA Architecture and Memory Placement
+content/34-linux-performance-engineering-and-server-benchmarking/07-the-page-cache-and-memory-mapped-files.html	Chapter 7: The Page Cache and Memory-Mapped Files
+content/34-linux-performance-engineering-and-server-benchmarking/08-io-subsystems-from-block-layer-to-disk.html	Chapter 8: I/O Subsystems: From Block Layer to Disk
+content/34-linux-performance-engineering-and-server-benchmarking/09-storage-technologies-and-performance-characteristics.html	Chapter 9: Storage Technologies and Performance Characteristics
+content/34-linux-performance-engineering-and-server-benchmarking/10-filesystems-and-mount-options.html	Chapter 10: Filesystems and Mount Options
+content/34-linux-performance-engineering-and-server-benchmarking/11-the-networking-stack-and-performance.html	Chapter 11: The Networking Stack and Performance
+content/34-linux-performance-engineering-and-server-benchmarking/12-network-performance-tuning-in-practice.html	Chapter 12: Network Performance Tuning in Practice
+content/34-linux-performance-engineering-and-server-benchmarking/13-system-call-tracing-and-process-analysis.html	Chapter 13: System Call Tracing and Process Analysis
+content/34-linux-performance-engineering-and-server-benchmarking/14-ebpf-and-bpf-based-observability.html	Chapter 14: eBPF and BPF-Based Observability
+content/34-linux-performance-engineering-and-server-benchmarking/15-performance-analysis-tools-and-flame-graphs.html	Chapter 15: Performance Analysis Tools and Flame Graphs
+content/34-linux-performance-engineering-and-server-benchmarking/16-system-monitoring-and-observability.html	Chapter 16: System Monitoring and Observability
+content/34-linux-performance-engineering-and-server-benchmarking/17-benchmarking-design-and-execution.html	Chapter 17: Benchmarking: Design and Execution
+content/34-linux-performance-engineering-and-server-benchmarking/18-benchmarking-tools-and-suites.html	Chapter 18: Benchmarking Tools and Suites
+content/34-linux-performance-engineering-and-server-benchmarking/19-cpu-and-memory-tuning-for-production.html	Chapter 19: CPU and Memory Tuning for Production
+content/34-linux-performance-engineering-and-server-benchmarking/20-io-and-filesystem-tuning-for-production.html	Chapter 20: I/O and Filesystem Tuning for Production
+content/34-linux-performance-engineering-and-server-benchmarking/21-cgroups-systemd-and-resource-management.html	Chapter 21: cgroups, systemd and Resource Management
+content/34-linux-performance-engineering-and-server-benchmarking/22-containers-virtualization-and-noisy-neighbors.html	Chapter 22: Containers, Virtualization and Noisy Neighbors
+content/34-linux-performance-engineering-and-server-benchmarking/23-databases-and-high-performance-applications.html	Chapter 23: Databases and High-Performance Applications
+content/34-linux-performance-engineering-and-server-benchmarking/24-distributed-systems-and-cluster-performance.html	Chapter 24: Distributed Systems and Cluster Performance
+content/34-linux-performance-engineering-and-server-benchmarking/25-production-case-studies.html	Chapter 25: Production Case Studies
+content/34-linux-performance-engineering-and-server-benchmarking/26-capacity-planning-and-performance-regression.html	Chapter 26: Capacity Planning and Performance Regression
+content/34-linux-performance-engineering-and-server-benchmarking/27-advanced-topics-and-emerging-technologies.html	Chapter 27: Advanced Topics and Emerging Technologies
+content/34-linux-performance-engineering-and-server-benchmarking/28-conclusion-putting-it-all-together.html	Conclusion: Putting It All Together
+content/34-linux-performance-engineering-and-server-benchmarking/index.html	Linux Performance Engineering & Server Benchmarking
+content/35-a-practical-guide-to-securing-linux-from-kernel-to-cloud/00-introduction-why-linux-security-is-not-a-given.html	Introduction: Why Linux Security Is Not a Given
+content/35-a-practical-guide-to-securing-linux-from-kernel-to-cloud/01-the-state-of-linux-security.html	Chapter 1: The State of Linux Security
+content/35-a-practical-guide-to-securing-linux-from-kernel-to-cloud/02-the-linux-security-model.html	Chapter 2: The Linux Security Model
+content/35-a-practical-guide-to-securing-linux-from-kernel-to-cloud/03-boot-initialization-and-runtime-environment.html	Chapter 3: Boot, Initialization, and Runtime Environment
+content/35-a-practical-guide-to-securing-linux-from-kernel-to-cloud/04-identity-authentication-and-access-control.html	Chapter 4: Identity, Authentication, and Access Control
+content/35-a-practical-guide-to-securing-linux-from-kernel-to-cloud/05-filesystem-security-and-data-protection.html	Chapter 5: Filesystem Security and Data Protection
+content/35-a-practical-guide-to-securing-linux-from-kernel-to-cloud/06-network-security-hardening.html	Chapter 6: Network Security Hardening
+content/35-a-practical-guide-to-securing-linux-from-kernel-to-cloud/07-kernel-security-mechanisms.html	Chapter 7: Kernel Security Mechanisms
+content/35-a-practical-guide-to-securing-linux-from-kernel-to-cloud/08-mandatory-access-control-selinux-and-apparmor.html	Chapter 8: Mandatory Access Control: SELinux and AppArmor
+content/35-a-practical-guide-to-securing-linux-from-kernel-to-cloud/09-auditing-logging-and-security-monitoring.html	Chapter 9: Auditing, Logging, and Security Monitoring
+content/35-a-practical-guide-to-securing-linux-from-kernel-to-cloud/10-secure-service-and-workload-configuration.html	Chapter 10: Secure Service and Workload Configuration
+content/35-a-practical-guide-to-securing-linux-from-kernel-to-cloud/11-container-and-virtualization-security.html	Chapter 11: Container and Virtualization Security
+content/35-a-practical-guide-to-securing-linux-from-kernel-to-cloud/12-common-attack-paths-and-defensive-strategies.html	Chapter 12: Common Attack Paths and Defensive Strategies
+content/35-a-practical-guide-to-securing-linux-from-kernel-to-cloud/13-enterprise-hardening-at-scale.html	Chapter 13: Enterprise Hardening at Scale
+content/35-a-practical-guide-to-securing-linux-from-kernel-to-cloud/14-compliance-benchmarks-and-security-standards.html	Chapter 14: Compliance, Benchmarks, and Security Standards
+content/35-a-practical-guide-to-securing-linux-from-kernel-to-cloud/15-incident-response-troubleshooting-and-continuous-improvement.html	Chapter 15: Incident Response, Troubleshooting, and Continuous Improvement
+content/35-a-practical-guide-to-securing-linux-from-kernel-to-cloud/16-conclusion-continuous-security-improvement.html	Conclusion: Continuous Security Improvement
+content/35-a-practical-guide-to-securing-linux-from-kernel-to-cloud/index.html	A Practical Guide to Securing Linux from Kernel to Cloud
+content/36-the-ext4-filesystem-architecture-internals-and-implementation/00-introduction.html	Introduction
+content/36-the-ext4-filesystem-architecture-internals-and-implementation/01-the-story-of-ext.html	Chapter 1: The Story of ext
+content/36-the-ext4-filesystem-architecture-internals-and-implementation/02-on-disk-layout-fundamentals.html	Chapter 2: On-Disk Layout Fundamentals
+content/36-the-ext4-filesystem-architecture-internals-and-implementation/03-the-inode-anatomy-of-a-file.html	Chapter 3: The Inode – Anatomy of a File
+content/36-the-ext4-filesystem-architecture-internals-and-implementation/04-directory-formats.html	Chapter 4: Directory Formats
+content/36-the-ext4-filesystem-architecture-internals-and-implementation/05-extents-modern-block-mapping.html	Chapter 5: Extents – Modern Block Mapping
+content/36-the-ext4-filesystem-architecture-internals-and-implementation/06-block-allocation-algorithms.html	Chapter 6: Block Allocation Algorithms
+content/36-the-ext4-filesystem-architecture-internals-and-implementation/07-journaling-with-jbd2.html	Chapter 7: Journaling with JBD2
+content/36-the-ext4-filesystem-architecture-internals-and-implementation/08-extended-attributes-acls-and-quotas.html	Chapter 8: Extended Attributes, ACLs and Quotas
+content/36-the-ext4-filesystem-architecture-internals-and-implementation/09-advanced-features.html	Chapter 9: Advanced Features
+content/36-the-ext4-filesystem-architecture-internals-and-implementation/10-feature-flags-and-compatibility.html	Chapter 10: Feature Flags and Compatibility
+content/36-the-ext4-filesystem-architecture-internals-and-implementation/11-vfs-integration-and-kernel-implementation.html	Chapter 11: VFS Integration and Kernel Implementation
+content/36-the-ext4-filesystem-architecture-internals-and-implementation/12-recovery-corruption-detection-and-repair.html	Chapter 12: Recovery, Corruption Detection and Repair
+content/36-the-ext4-filesystem-architecture-internals-and-implementation/13-performance-scalability-and-comparisons.html	Chapter 13: Performance, Scalability and Comparisons
+content/36-the-ext4-filesystem-architecture-internals-and-implementation/14-implementation-guide.html	Chapter 14: Implementation Guide
+content/36-the-ext4-filesystem-architecture-internals-and-implementation/index.html	The ext4 Filesystem: Architecture, Internals, and Implementation
+content/37-a-complete-guide-to-virtual-memory-allocators-paging-and-performance-in-the-modern-linux-kernel/00-introduction.html	Introduction
+content/37-a-complete-guide-to-virtual-memory-allocators-paging-and-performance-in-the-modern-linux-kernel/01-foundations-of-memory-abstraction.html	Chapter 1: Foundations of Memory Abstraction
+content/37-a-complete-guide-to-virtual-memory-allocators-paging-and-performance-in-the-modern-linux-kernel/02-hardware-foundations-and-address-translation.html	Chapter 2: Hardware Foundations and Address Translation
+content/37-a-complete-guide-to-virtual-memory-allocators-paging-and-performance-in-the-modern-linux-kernel/03-linux-address-spaces-and-the-virtual-memory-layout.html	Chapter 3: Linux Address Spaces and the Virtual Memory Layout
+content/37-a-complete-guide-to-virtual-memory-allocators-paging-and-performance-in-the-modern-linux-kernel/04-physical-memory-management-and-the-buddy-allocator.html	Chapter 4: Physical Memory Management and the Buddy Allocator
+content/37-a-complete-guide-to-virtual-memory-allocators-paging-and-performance-in-the-modern-linux-kernel/05-kernel-memory-allocators-slab-slub-and-slob.html	Chapter 5: Kernel Memory Allocators: Slab, Slub, and SLOB
+content/37-a-complete-guide-to-virtual-memory-allocators-paging-and-performance-in-the-modern-linux-kernel/06-user-space-memory-allocation-and-vmalloc.html	Chapter 6: User-Space Memory Allocation and vmalloc
+content/37-a-complete-guide-to-virtual-memory-allocators-paging-and-performance-in-the-modern-linux-kernel/07-demand-paging-page-faults-and-copy-on-write.html	Chapter 7: Demand Paging, Page Faults, and Copy-on-Write
+content/37-a-complete-guide-to-virtual-memory-allocators-paging-and-performance-in-the-modern-linux-kernel/08-the-page-cache-and-buffer-head-architecture.html	Chapter 8: The Page Cache and Buffer Head Architecture
+content/37-a-complete-guide-to-virtual-memory-allocators-paging-and-performance-in-the-modern-linux-kernel/09-swapping-reclaim-and-page-replacement-policies.html	Chapter 9: Swapping, Reclaim, and Page Replacement Policies
+content/37-a-complete-guide-to-virtual-memory-allocators-paging-and-performance-in-the-modern-linux-kernel/10-memory-compaction-defragmentation-and-huge-pages.html	Chapter 10: Memory Compaction, Defragmentation, and Huge Pages
+content/37-a-complete-guide-to-virtual-memory-allocators-paging-and-performance-in-the-modern-linux-kernel/11-numa-memory-policy-and-scalability.html	Chapter 11: NUMA, Memory Policy, and Scalability
+content/37-a-complete-guide-to-virtual-memory-allocators-paging-and-performance-in-the-modern-linux-kernel/12-memory-cgroups-controllers-and-resource-limits.html	Chapter 12: Memory Cgroups, Controllers, and Resource Limits
+content/37-a-complete-guide-to-virtual-memory-allocators-paging-and-performance-in-the-modern-linux-kernel/13-out-of-memory-handling-panic-and-recovery.html	Chapter 13: Out-of-Memory Handling, Panic, and Recovery
+content/37-a-complete-guide-to-virtual-memory-allocators-paging-and-performance-in-the-modern-linux-kernel/14-synchronization-concurrency-and-locking-in-memory-management.html	Chapter 14: Synchronization, Concurrency, and Locking in Memory Management
+content/37-a-complete-guide-to-virtual-memory-allocators-paging-and-performance-in-the-modern-linux-kernel/15-performance-optimization-profiling-and-debugging.html	Chapter 15: Performance Optimization, Profiling, and Debugging
+content/37-a-complete-guide-to-virtual-memory-allocators-paging-and-performance-in-the-modern-linux-kernel/16-security-implications-exploits-and-mitigations.html	Chapter 16: Security Implications, Exploits, and Mitigations
+content/37-a-complete-guide-to-virtual-memory-allocators-paging-and-performance-in-the-modern-linux-kernel/17-architecture-specific-implementations-and-source-walkthroughs.html	Chapter 17: Architecture-Specific Implementations and Source Walkthroughs
+content/37-a-complete-guide-to-virtual-memory-allocators-paging-and-performance-in-the-modern-linux-kernel/18-conclusion-synthesis-and-future-directions.html	Chapter 18: Conclusion, Synthesis, and Future Directions
+content/37-a-complete-guide-to-virtual-memory-allocators-paging-and-performance-in-the-modern-linux-kernel/index.html	A Complete Guide to Virtual Memory, Allocators, Paging, and Performance in the Modern Linux Kernel
+content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/00-introduction.html	Introduction: Why Ubuntu 26.04 Matters
+content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/01-what-is-ubuntu-26-04-lts.html	Chapter 1: What Is Ubuntu 26.04 LTS?
+content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/02-system-requirements-and-installation.html	Chapter 2: System Requirements and Installation
+content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/03-first-boot-and-desktop-experience.html	Chapter 3: First Boot and Desktop Experience
+content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/04-command-line-fundamentals.html	Chapter 4: Command-Line Fundamentals
+content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/05-system-administration-essentials.html	Chapter 5: System Administration Essentials
+content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/06-security-hardening.html	Chapter 6: Security Hardening
+content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/07-networking-and-services.html	Chapter 7: Networking and Services
+content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/08-virtualization-and-containers.html	Chapter 8: Virtualization and Containers
+content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/09-cloud-infrastructure.html	Chapter 9: Cloud Infrastructure
+content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/10-development-workflow.html	Chapter 10: Development Workflow
+content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/11-troubleshooting-and-diagnostics.html	Chapter 11: Troubleshooting and Diagnostics
+content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/12-performance-tuning-and-optimization.html	Chapter 12: Performance Tuning and Optimization
+content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/13-customization-and-flavors.html	Chapter 13: Customization and Flavors
+content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/14-enterprise-deployment-and-management.html	Chapter 14: Enterprise Deployment and Management
+content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/15-conclusion-the-road-ahead.html	Conclusion: The Road Ahead
+content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/index.html	Part 38 — Ubuntu 26.04 LTS: From Desktop to Enterprise Cloud
+index.html	Introduction

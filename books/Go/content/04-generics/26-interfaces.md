@@ -1,0 +1,270 @@
+---
+title: Designing with Interfaces
+---
+
+# Designing with Interfaces
+
+## Overview
+
+Go interfaces enable polymorphism through implicit satisfaction—types implement interfaces by having matching methods, without explicit declarations.
+
+## Interface Basics
+
+```go
+type Reader interface {
+    Read(p []byte) (n int, err error)
+}
+
+// Any type with Read method satisfies Reader
+type File struct { /* ... */ }
+func (f *File) Read(p []byte) (int, error) { /* ... */ }
+
+type Buffer struct { /* ... */ }
+func (b *Buffer) Read(p []byte) (int, error) { /* ... */ }
+```
+
+## Implicit Satisfaction
+
+```go
+type Stringer interface {
+    String() string
+}
+
+type Person struct {
+    Name string
+}
+
+// Person implicitly implements Stringer
+func (p Person) String() string {
+    return p.Name
+}
+
+var s Stringer = Person{Name: "Alice"}  // Works!
+```
+
+## The Empty Interface
+
+```go
+interface{}  // Matches any type
+any          // Alias (Go 1.18+)
+
+func print(v any) {
+    fmt.Println(v)
+}
+
+print(42)
+print("hello")
+print(true)
+```
+
+## Interface Values
+
+An interface value holds a (type, value) pair:
+
+```go
+var r io.Reader
+r = os.Stdin       // (type: *os.File, value: stdin)
+r = &bytes.Buffer{}  // (type: *bytes.Buffer, value: buf)
+```
+
+### nil Interface vs nil Value
+
+```go
+var r io.Reader    // nil interface (no type, no value)
+var f *os.File     // nil pointer
+
+r = f              // Interface holds (*os.File, nil)
+r == nil           // false! Has type, value is nil
+```
+
+## Common Patterns
+
+### Accept Interface, Return Concrete
+
+```go
+// Accept interface
+func Process(r io.Reader) error { }
+
+// Return concrete type
+func NewBuffer() *bytes.Buffer {
+    return &bytes.Buffer{}
+}
+```
+
+### Small Interfaces
+
+```go
+type Reader interface {
+    Read([]byte) (int, error)
+}
+
+type Writer interface {
+    Write([]byte) (int, error)
+}
+
+type ReadWriter interface {
+    Reader
+    Writer
+}
+```
+
+### Assert Interface Compliance
+
+```go
+var _ io.Reader = (*MyReader)(nil)  // Compile-time check
+```
+
+## Summary
+
+| Concept | Description |
+|---------|-------------|
+| Implicit | No `implements` keyword |
+| `any`/`interface{}` | Matches all types |
+| Small interfaces | Prefer 1-3 methods |
+| Accept interface | Flexible function parameters |
+
+## Related Topics
+- [Interface Best Practices](27-interface-practices.md)
+- [Type Assertions](28-type-assertions.md)
+
+## More examples
+
+### Example: implicit satisfaction
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+type Speaker interface {
+	Speak() string
+}
+
+type Dog struct{ Name string }
+
+func (d Dog) Speak() string { return d.Name + " says woof" }
+
+func greet(s Speaker) {
+	fmt.Println(s.Speak())
+}
+
+func main() {
+	// Dog never writes "implements Speaker".
+	greet(Dog{Name: "Rex"})
+}
+```
+
+Expected:
+
+```text
+Rex says woof
+```
+
+### Example: empty interface / any
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func describe(v any) {
+	fmt.Printf("%T -> %v\n", v, v)
+}
+
+func main() {
+	describe(42)
+	describe("hi")
+	describe(true)
+}
+```
+
+Expected:
+
+```text
+int -> 42
+string -> hi
+bool -> true
+```
+
+## Runnable example
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"io"
+	"strings"
+)
+
+type Stringer interface {
+	String() string
+}
+
+type Person struct{ Name string }
+
+func (p Person) String() string { return p.Name }
+
+// Implicit satisfaction: no "implements" keyword.
+var _ Stringer = Person{}
+
+type ByteCounter int
+
+func (c *ByteCounter) Write(p []byte) (int, error) {
+	*c += ByteCounter(len(p))
+	return len(p), nil
+}
+
+func dump(r io.Reader) (string, error) {
+	b, err := io.ReadAll(r)
+	return string(b), err
+}
+
+func main() {
+	var s Stringer = Person{Name: "Alice"}
+	fmt.Println("Stringer:", s.String())
+
+	// Interface value is a (type, value) pair.
+	var r io.Reader = strings.NewReader("hello interfaces")
+	text, err := dump(r)
+	fmt.Println("from Reader:", text, err)
+
+	var c ByteCounter
+	// *ByteCounter satisfies io.Writer.
+	_, _ = c.Write([]byte("abcd"))
+	_, _ = fmt.Fprintf(&c, "ef")
+	fmt.Println("bytes written:", int(c))
+
+	// nil interface vs typed-nil inside interface
+	var w io.Writer
+	fmt.Println("nil interface:", w == nil)
+	var bc *ByteCounter
+	w = bc
+	fmt.Println("typed-nil interface equals nil?", w == nil)
+}
+```
+
+**Expected output:**
+
+```text
+Stringer: Alice
+from Reader: hello interfaces <nil>
+bytes written: 6
+nil interface: true
+typed-nil interface equals nil? false
+```
+
+**What to notice:** Types satisfy interfaces by method set alone. An interface holding a typed nil is not equal to a true nil interface — a common source of surprising error checks.
+
+**Try next:** Assert compile-time compliance with `var _ io.Writer = (*ByteCounter)(nil)`; pass both `strings.Reader` and `*ByteCounter` into one function that only accepts small interfaces.

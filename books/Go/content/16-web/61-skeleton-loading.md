@@ -1,0 +1,264 @@
+---
+title: Skeleton Loading & HTMX
+---
+
+# Skeleton Loading with Go & HTMX
+
+Users hate waiting. If your dashboard takes 2 seconds to calculate "Total Revenue," the entire page shouldn't hang for 2 seconds.
+
+In standard MPAs (Multi-Page Apps), the browser waits for the full HTML response.
+In the GOTH stack, we use **Lazy Loading** with Skeleton screens.
+
+## The Pattern
+
+1.  **Initial Load:** Return the page structure immediately (Header, Sidebar, Footer) but fill the "Slow Widgets" with **Skeleton Loaders** (grey pulsing boxes).
+2.  **Trigger:** The Skeleton HTML includes `hx-trigger="load"` to immediately ask the server for the real content.
+3.  **Swap:** The server calculates the expensive data and returns the real HTML, swapping out the skeleton.
+
+## Implementation
+
+### 1. The Dashboard Handler (Fast)
+```go
+func DashboardHandler(w http.ResponseWriter, r *http.Request) {
+    // Render the layout immediately.
+    // Notice we don't fetch revenue here.
+    Layout(
+        // Inject Skeletons
+        components.RevenueSkeleton(),
+        components.UsersSkeleton(),
+    ).Render(r.Context(), w)
+}
+```
+
+### 2. The Skeleton Component (Templ)
+```html
+templ RevenueSkeleton() {
+    <div hx-get="/api/revenue"
+         hx-trigger="load"
+         hx-swap="outerHTML"
+         class="animate-pulse bg-gray-200 h-32 rounded">
+       <!-- Pulsing Grey Box -->
+    </div>
+}
+```
+
+### 3. The Real Data Handler (Slow)
+```go
+func RevenueHandler(w http.ResponseWriter, r *http.Request) {
+    // Extensive DB calculation...
+    time.Sleep(1 * time.Second)
+    amount := db.CalculateRevenue()
+
+    // Return real component
+    components.RevenueCard(amount).Render(r.Context(), w)
+}
+```
+
+## Why this wins
+*   **TTFB (Time To First Byte):** 10-20ms. The user sees the UI instantly.
+*   **Perceived Performance:** The app feels alive while data loads in parallel.
+*   **Simplicity:** No `useEffect`, no `isLoading` state management, no JSON parsing. Just HTML swapping.
+
+## Advanced: Request Coalescing
+If 10 widgets all fire `hx-get` at once, you might hit browser connection limits (HTTP/1.1 limit is 6).
+*   **HTTP/2 or HTTP/3:** Go's `net/http` supports these automatically if you use TLS. They multiplex requests, so 10 requests cost nearly the same connection overhead as 1.
+*   Ensure your server supports TLS (Let's Encrypt) to enable H2/H3.
+
+## Worked example
+
+Fast shell + parallel widget endpoints (stdlib model of skeleton fill).
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"sync"
+	"time"
+)
+
+func main() {
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /dash", func(w http.ResponseWriter, r *http.Request) {
+		_, _ = io.WriteString(w, `<div class="skel" data-src="/w/a"></div><div class="skel" data-src="/w/b"></div>`)
+	})
+	mux.HandleFunc("GET /w/{id}", func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(15 * time.Millisecond)
+		fmt.Fprintf(w, `<div class="card">widget %s</div>`, r.PathValue("id"))
+	})
+
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+
+	shell, _ := http.Get(srv.URL + "/dash")
+	sb, _ := io.ReadAll(shell.Body)
+	shell.Body.Close()
+	fmt.Println("shell has skeleton:", strings.Contains(string(sb), `class="skel"`))
+
+	// Parallel widget fetch (what the browser/HTMX would do)
+	var wg sync.WaitGroup
+	for _, id := range []string{"a", "b"} {
+		wg.Add(1)
+		go func(id string) {
+			defer wg.Done()
+			res, err := http.Get(srv.URL + "/w/" + id)
+			if err != nil {
+				panic(err)
+			}
+			b, _ := io.ReadAll(res.Body)
+			res.Body.Close()
+			fmt.Println(strings.TrimSpace(string(b)))
+		}(id)
+	}
+	wg.Wait()
+}
+```
+
+**Expected output:** (widget lines may reorder)
+
+```text
+shell has skeleton: true
+<div class="card">widget a</div>
+<div class="card">widget b</div>
+```
+## More examples
+
+Measure shell TTFB vs sequential widgets.
+
+```go
+package main
+
+import (
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"time"
+)
+
+func main() {
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /fast", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("ok")) })
+	mux.HandleFunc("GET /slow", func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(30 * time.Millisecond)
+		w.Write([]byte("data"))
+	})
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+
+	t0 := time.Now()
+	http.Get(srv.URL + "/fast")
+	fast := time.Since(t0)
+
+	t1 := time.Now()
+	http.Get(srv.URL + "/slow")
+	slow := time.Since(t1)
+
+	fmt.Println("fast < slow:", fast < slow)
+}
+```
+
+**Expected output:**
+
+```text
+fast < slow: true
+```
+
+## Runnable example
+
+> **Note:** Real skeleton UIs use HTMX (`hx-trigger="load"`) + Templ. This stdlib demo models the same flow: fast shell HTML, then a slow partial.
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"time"
+)
+
+func main() {
+	mux := http.NewServeMux()
+
+	// Fast shell: structure + skeleton placeholder
+	mux.HandleFunc("GET /dashboard", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_, _ = io.WriteString(w, `<!doctype html>
+<html><body>
+  <h1>Dashboard</h1>
+  <div id="revenue"
+       hx-get="/api/revenue"
+       hx-trigger="load"
+       class="skeleton">Loading revenue…</div>
+</body></html>`)
+	})
+
+	// Slow widget: pretend DB work, return final HTML card
+	mux.HandleFunc("GET /api/revenue", func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(25 * time.Millisecond)
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_, _ = io.WriteString(w, `<div id="revenue" class="card">Total revenue: $42,000</div>`)
+	})
+
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+
+	t0 := time.Now()
+	shell, err := http.Get(srv.URL + "/dashboard")
+	if err != nil {
+		panic(err)
+	}
+	shellBody, _ := io.ReadAll(shell.Body)
+	shell.Body.Close()
+	shellMS := time.Since(t0).Milliseconds()
+
+	t1 := time.Now()
+	widget, err := http.Get(srv.URL + "/api/revenue")
+	if err != nil {
+		panic(err)
+	}
+	widgetBody, _ := io.ReadAll(widget.Body)
+	widget.Body.Close()
+	widgetMS := time.Since(t1).Milliseconds()
+
+	fmt.Println("shell status:", shell.StatusCode)
+	fmt.Println("shell has skeleton:", strings.Contains(string(shellBody), "class=\"skeleton\""))
+	fmt.Println("shell faster than widget:", shellMS < widgetMS)
+	fmt.Println("widget:", strings.TrimSpace(string(widgetBody)))
+	fmt.Println("widget latency ms >= 20:", widgetMS >= 20)
+}
+```
+
+**Expected output:**
+
+```text
+shell status: 200
+shell has skeleton: true
+shell faster than widget: true
+widget: <div id="revenue" class="card">Total revenue: $42,000</div>
+widget latency ms >= 20: true
+```
+
+**What to notice:** Time-to-first-byte for the shell stays low because expensive work lives on a separate endpoint. The browser (or HTMX) fills the skeleton after load; the user sees structure immediately.
+
+**Try next:** Fire three parallel `GET /api/revenue` requests with goroutines and measure wall time vs sequential.

@@ -1,0 +1,192 @@
+---
+title: '019 Project 19: Linux ps-lite'
+---
+
+# 019 Build a Linux `ps`-Lite Tool
+
+Read process info from `/proc` and print a compact process table. Linux-only; detect unsupported platforms cleanly.
+
+```text
+/proc -> parse /proc/<pid>/stat + comm -> rows -> sort by pid -> table
+```
+
+## Problem statement
+
+```text
+gps [-n N]
+```
+
+- Scan `/proc` numeric directories
+- Parse `stat` for state and RSS (pages → bytes)
+- Print PID, state, RSS MiB, comm
+- Limit rows with `-n`
+
+## Acceptance criteria
+
+- [ ] Works on Linux with `/proc`
+- [ ] Clear message on macOS/Windows
+- [ ] Sorted by PID
+- [ ] Handles processes vanishing mid-scan
+- [ ] Stdlib only
+
+## Setup
+
+```bash
+mkdir gps && cd gps
+go mod init example.com/gps
+# go 1.27
+```
+
+## Full `main.go`
+
+```go
+package main
+
+import (
+	"flag"
+	"fmt"
+	"os"
+	"path/filepath"
+	"sort"
+	"strconv"
+	"strings"
+)
+
+type proc struct {
+	PID   int
+	Comm  string
+	RSS   int64
+	State string
+}
+
+func parseProc(pid int) (proc, error) {
+	statPath := fmt.Sprintf("/proc/%d/stat", pid)
+	b, err := os.ReadFile(statPath)
+	if err != nil {
+		return proc{}, err
+	}
+	// comm is in parentheses and may contain spaces: (chrome --type=...)
+	s := string(b)
+	l := strings.IndexByte(s, '(')
+	r := strings.LastIndexByte(s, ')')
+	if l < 0 || r < 0 || r <= l {
+		return proc{}, fmt.Errorf("bad stat format")
+	}
+	comm := s[l+1 : r]
+	rest := strings.Fields(s[r+2:]) // after ") "
+	if len(rest) < 22 {
+		return proc{}, fmt.Errorf("short stat")
+	}
+	state := rest[0]
+	// rss is field 24 in /proc/[pid]/stat → index 21 in rest (after state=rest[0])
+	rssPages, err := strconv.ParseInt(rest[21], 10, 64)
+	if err != nil {
+		return proc{}, err
+	}
+	pageSize := int64(os.Getpagesize())
+	return proc{PID: pid, Comm: comm, State: state, RSS: rssPages * pageSize}, nil
+}
+
+func main() {
+	limit := flag.Int("n", 50, "max rows")
+	flag.Parse()
+
+	entries, err := os.ReadDir("/proc")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "/proc unavailable (Linux only):", err)
+		os.Exit(1)
+	}
+
+	var rows []proc
+	for _, e := range entries {
+		if !e.IsDir() {
+			continue
+		}
+		pid, err := strconv.Atoi(e.Name())
+		if err != nil {
+			continue
+		}
+		p, err := parseProc(pid)
+		if err != nil {
+			continue // process exited
+		}
+		rows = append(rows, p)
+	}
+
+	sort.Slice(rows, func(i, j int) bool { return rows[i].PID < rows[j].PID })
+	if *limit > len(rows) {
+		*limit = len(rows)
+	}
+
+	fmt.Printf("%-8s %-4s %-10s %s\n", "PID", "S", "RSS(MB)", "COMM")
+	for i := 0; i < *limit; i++ {
+		r := rows[i]
+		fmt.Printf("%-8d %-4s %-10.1f %s\n",
+			r.PID, r.State, float64(r.RSS)/1024.0/1024.0, filepath.Base(r.Comm))
+	}
+}
+```
+
+## Step-by-step build path
+
+1. List `/proc` and filter numeric PIDs.
+2. Parse `stat` carefully (comm parentheses).
+3. Convert RSS pages with `os.Getpagesize()`.
+4. Sort and format table.
+5. Skip races where PID disappears.
+
+## Run and verification
+
+```bash
+go run . -n 40
+# compare:
+ps -eo pid,stat,rss,comm | head
+```
+
+## Tests
+
+On non-Linux, skip:
+
+```go
+package main
+
+import (
+	"os"
+	"runtime"
+	"testing"
+)
+
+func TestParseSelf(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("linux only")
+	}
+	p, err := parseProc(os.Getpid())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if p.PID == 0 || p.Comm == "" {
+		t.Fatalf("%+v", p)
+	}
+}
+```
+
+## Stretch goals
+
+1. Sort by RSS descending (`-sort rss`).
+2. Filter by comm regex.
+3. Read `/proc/pid/cmdline` null-separated.
+4. TUI refresh every second.
+
+## Pitfalls
+
+| Pitfall | Fix |
+|---------|-----|
+| Naive Fields on whole stat | parse comm via parentheses |
+| Hard-coded page size 4096 | `os.Getpagesize()` |
+| Crashing when process exits | ignore read errors |
+
+## Learning goals
+
+- `/proc` as an API
+- Robust parsing of kernel text formats
+- Linux-specific tooling with clean failure elsewhere

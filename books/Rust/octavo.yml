@@ -1,0 +1,321 @@
+book:
+  title: Rust
+  author: K19G
+  date: '2026-11-17'
+  description: Systems programming in Rust
+  chapters:
+  - index.md
+  - part: Getting Started with Rust
+    contents:
+    - content/01-getting-started-with-rust/01-the-story-of-rust.md
+    - content/01-getting-started-with-rust/02-installing-rust-with-rustup.md
+    - content/01-getting-started-with-rust/03-your-first-program-hello-world.md
+    - content/01-getting-started-with-rust/04-understanding-rustc-and-cargo.md
+    - content/01-getting-started-with-rust/05-exploring-a-cargo-project-structure.md
+    - content/01-getting-started-with-rust/06-summary.md
+  - part: 'Language Basics: Variables, Types, and Expressions'
+    contents:
+    - content/02-language-basics/01-variables-mutability-and-shadowing.md
+    - content/02-language-basics/02-primitive-data-types-in-detail.md
+    - content/02-language-basics/03-compound-types-tuples-and-arrays.md
+    - content/02-language-basics/04-functions-statements-and-expressions.md
+    - content/02-language-basics/05-control-flow-if-loop-while-for.md
+    - content/02-language-basics/05b-nonzero-types.md
+    - content/02-language-basics/06-summary.md
+  - part: 'Ownership: The Heart of Rust'
+    contents:
+    - content/03-ownership/01-what-is-ownership-and-why-it-exists.md
+    - content/03-ownership/02-stack-vs-heap-memory-in-rust.md
+    - content/03-ownership/03-move-semantics-explained.md
+    - content/03-ownership/04-copy-types-and-clone.md
+    - content/03-ownership/05-the-drop-trait-and-resource-cleanup.md
+    - content/03-ownership/05b-cost-of-drop-chains.md
+    - content/03-ownership/06-summary.md
+  - part: Borrowing, References, and Slices
+    contents:
+    - content/04-borrowing-and-slices/01-shared-and-mutable-references.md
+    - content/04-borrowing-and-slices/02-the-borrowing-rules-demystified.md
+    - content/04-borrowing-and-slices/03-dangling-references-prevented-at-compile-time.md
+    - content/04-borrowing-and-slices/04-string-slices-and-str.md
+    - content/04-borrowing-and-slices/05-slice-types-and-range-syntax.md
+    - content/04-borrowing-and-slices/06-summary.md
+  - part: Structs, Enums, and Pattern Matching
+    contents:
+    - content/05-structs-and-enums/01-defining-and-using-structs.md
+    - content/05-structs-and-enums/02-enumerations-beyond-simple-tags.md
+    - content/05-structs-and-enums/03-the-match-expression-in-depth.md
+    - content/05-structs-and-enums/04-if-let-and-while-let-for-partial-matching.md
+    - content/05-structs-and-enums/04b-if-let-guards-and-cfg-select.md
+    - content/05-structs-and-enums/05-real-world-data-modeling-with-enums.md
+    - content/05-structs-and-enums/06-summary.md
+  - part: Modules, Crates, and Visibility
+    contents:
+    - content/06-modules-and-crates/01-modules-and-the-filesystem.md
+    - content/06-modules-and-crates/02-the-use-statement-and-path-resolution.md
+    - content/06-modules-and-crates/03-public-vs-private-visibility-rules.md
+    - content/06-modules-and-crates/04-crates-packages-and-cargo-workspaces.md
+    - content/06-modules-and-crates/05-re-exporting-and-organizing-large-projects.md
+    - content/06-modules-and-crates/06-summary.md
+  - part: Collections and Strings
+    contents:
+    - content/07-collections-and-strings/01-vec-and-dynamic-arrays.md
+    - content/07-collections-and-strings/02-string-vs-str-deep-dive.md
+    - content/07-collections-and-strings/03-hashmap-and-btreemap-for-key-value-storage.md
+    - content/07-collections-and-strings/03b-hashmap-hashers-and-hash-flooding.md
+    - content/07-collections-and-strings/03c-bbtree-concurrent-ordered-map.md
+    - content/07-collections-and-strings/04-other-collections-hashset-binaryheap-linkedlist.md
+    - content/07-collections-and-strings/05-efficient-collection-operations.md
+    - content/07-collections-and-strings/06-summary.md
+  - part: 'Project 1: Building a CLI Task Manager'
+    contents:
+    - content/08-project-1-task-manager/01-building-a-cli-task-manager.md
+    - content/08-project-1-task-manager/02-testing-the-task-manager.md
+    - content/08-project-1-task-manager/03-benchmarking-the-task-manager.md
+    - content/08-project-1-task-manager/04-deploying-the-task-manager.md
+  - part: Error Handling in Rust
+    contents:
+    - content/09-error-handling/01-unrecoverable-errors-with-panic.md
+    - content/09-error-handling/02-recoverable-errors-with-result.md
+    - content/09-error-handling/03-the-option-type-for-absent-values.md
+    - content/09-error-handling/04-propagating-errors-with-the-question-operator.md
+    - content/09-error-handling/05-custom-error-types-and-thiserror.md
+    - content/09-error-handling/05b-the-never-type-and-infallible.md
+    - content/09-error-handling/06-summary.md
+  - part: Generics, Traits, and Associated Types
+    contents:
+    - content/10-generics-and-traits/01-generic-functions-and-data-structures.md
+    - content/10-generics-and-traits/02-defining-and-implementing-traits.md
+    - content/10-generics-and-traits/03-trait-bounds-and-where-clauses.md
+    - content/10-generics-and-traits/04-associated-types-vs-generics.md
+    - content/10-generics-and-traits/05-trait-objects-and-dynamic-dispatch.md
+    - content/10-generics-and-traits/05b-generic-const-arguments.md
+    - content/10-generics-and-traits/05c-asref-borrow-and-deref.md
+    - content/10-generics-and-traits/05d-cow-borrow-or-own.md
+    - content/10-generics-and-traits/05e-phantomdata-and-typestate.md
+    - content/10-generics-and-traits/05f-newtype-pattern.md
+    - content/10-generics-and-traits/06-summary.md
+  - part: 'Lifetimes: Complete Understanding'
+    contents:
+    - content/11-lifetimes/01-what-lifetimes-are-and-are-not.md
+    - content/11-lifetimes/02-the-lifetime-elision-rules.md
+    - content/11-lifetimes/03-annotating-lifetimes-in-functions-and-structs.md
+    - content/11-lifetimes/04-lifetime-bounds-on-traits.md
+    - content/11-lifetimes/05-advanced-lifetime-patterns.md
+    - content/11-lifetimes/05b-variance-and-subtyping.md
+    - content/11-lifetimes/06-summary.md
+  - part: Smart Pointers and Interior Mutability
+    contents:
+    - content/12-smart-pointers/01-box-for-heap-allocation.md
+    - content/12-smart-pointers/02-reference-counting-with-rc-and-arc.md
+    - content/12-smart-pointers/03-interior-mutability-with-refcell.md
+    - content/12-smart-pointers/04-cell-and-mutex-for-shared-state.md
+    - content/12-smart-pointers/05-weak-references-and-breaking-cycles.md
+    - content/12-smart-pointers/05b-lazylock-and-oncelock.md
+    - content/12-smart-pointers/05c-maybeuninit-and-uninitialized-memory.md
+    - content/12-smart-pointers/05d-custom-allocators-and-the-allocator-api.md
+    - content/12-smart-pointers/05e-arc-new-cyclic.md
+    - content/12-smart-pointers/06-summary.md
+  - part: Iterators, Closures, and Functional Patterns
+    contents:
+    - content/13-iterators-and-closures/01-the-iterator-trait-and-protocol.md
+    - content/13-iterators-and-closures/02-creating-custom-iterators.md
+    - content/13-iterators-and-closures/03-closures-and-capture-semantics.md
+    - content/13-iterators-and-closures/04-higher-order-functions-and-combinators.md
+    - content/13-iterators-and-closures/05-lazy-evaluation-and-performance.md
+    - content/13-iterators-and-closures/05b-fused-iterators.md
+    - content/13-iterators-and-closures/05c-float-reductions-and-algebraic-ops.md
+    - content/13-iterators-and-closures/05d-copy-range-types-core-range.md
+    - content/13-iterators-and-closures/06-summary.md
+    - part: Iterator Cookbook
+      contents:
+      - content/13-iterators-and-closures/iterator-cookbook/00-preface.md
+      - content/13-iterators-and-closures/iterator-cookbook/01-how-iterators-work.md
+      - content/13-iterators-and-closures/iterator-cookbook/02-choosing-the-right-iterator.md
+      - content/13-iterators-and-closures/iterator-cookbook/03-lazy-evaluation.md
+      - content/13-iterators-and-closures/iterator-cookbook/04-transforming-data.md
+      - content/13-iterators-and-closures/iterator-cookbook/05-filtering-and-selecting.md
+      - content/13-iterators-and-closures/iterator-cookbook/06-aggregating-and-consuming.md
+      - content/13-iterators-and-closures/iterator-cookbook/07-composing-pipelines.md
+      - content/13-iterators-and-closures/iterator-cookbook/08-implementing-iterator.md
+      - content/13-iterators-and-closures/iterator-cookbook/09-custom-adaptors.md
+      - content/13-iterators-and-closures/iterator-cookbook/10-specialized-traits.md
+      - content/13-iterators-and-closures/iterator-cookbook/11-performance.md
+      - content/13-iterators-and-closures/iterator-cookbook/12-parallel-rayon.md
+      - content/13-iterators-and-closures/iterator-cookbook/13-async-streams.md
+      - content/13-iterators-and-closures/iterator-cookbook/14-error-handling.md
+      - content/13-iterators-and-closures/iterator-cookbook/15-itertools.md
+      - content/13-iterators-and-closures/iterator-cookbook/16-when-not-to-use-iterators.md
+      - content/13-iterators-and-closures/iterator-cookbook/17-exercises.md
+  - part: 'Concurrency: Fearless Parallelism'
+    contents:
+    - content/14-concurrency/01-spawning-threads-with-std-thread.md
+    - content/14-concurrency/02-message-passing-with-channels.md
+    - content/14-concurrency/03-shared-state-with-mutex-and-rwlock.md
+    - content/14-concurrency/03b-rwlock-vs-mutex-and-locks-across-await.md
+    - content/14-concurrency/04-atomic-operations-for-lock-free-code.md
+    - content/14-concurrency/05-send-and-sync-traits-explained.md
+    - content/14-concurrency/06-summary.md
+  - part: 'Project 3: Parallel Data Processing Pipeline with rayon'
+    contents:
+    - content/15-project-3-parallel-pipeline/01-parallel-data-processing-pipeline-with-rayon.md
+    - content/15-project-3-parallel-pipeline/02-testing-the-text-analyzer.md
+    - content/15-project-3-parallel-pipeline/03-benchmarking-the-text-analyzer.md
+    - content/15-project-3-parallel-pipeline/04-deploying-the-text-analyzer.md
+  - part: Asynchronous Programming with async/await
+    contents:
+    - content/16-async-await/01-the-future-trait-and-async-basics.md
+    - content/16-async-await/02-running-async-code-with-tokio.md
+    - content/16-async-await/03-pinning-and-self-referential-types.md
+    - content/16-async-await/04-async-streams-and-error-handling.md
+    - content/16-async-await/05-production-async-applications.md
+    - content/16-async-await/05b-tokio-and-rayon-separate-lanes.md
+    - content/16-async-await/05c-sans-io-protocol-design.md
+    - content/16-async-await/05d-cancel-safety.md
+    - content/16-async-await/05e-tiny-async-runtime.md
+    - content/16-async-await/05f-async-fn-in-traits-vs-dyn.md
+    - content/16-async-await/06-summary.md
+  - part: Macros, Unsafe Rust, and FFI
+    contents:
+    - content/17-macros-and-unsafe/01-declarative-macros-with-macro-rules.md
+    - content/17-macros-and-unsafe/02-procedural-macros-and-derive.md
+    - content/17-macros-and-unsafe/03-understanding-unsafe-rust.md
+    - content/17-macros-and-unsafe/04-memory-layout-and-representation.md
+    - content/17-macros-and-unsafe/05-foreign-function-interfaces.md
+    - content/17-macros-and-unsafe/05b-c-variadic-functions-and-valist.md
+    - content/17-macros-and-unsafe/05c-ffi-bool-miscompile-x86-64.md
+    - content/17-macros-and-unsafe/05d-safe-uaf-covariant-field.md
+    - content/17-macros-and-unsafe/05e-life-before-main-init-array.md
+    - content/17-macros-and-unsafe/06-summary.md
+  - part: Testing, Documentation, Performance, and Deployment
+    contents:
+    - content/18-testing-and-deployment/01-unit-tests-integration-tests-and-doctests.md
+    - content/18-testing-and-deployment/02-benchmarking-with-criterion.md
+    - content/18-testing-and-deployment/03-writing-great-documentation.md
+    - content/18-testing-and-deployment/04-profiling-and-optimization-techniques.md
+    - content/18-testing-and-deployment/05-building-and-deploying-rust-applications.md
+    - content/18-testing-and-deployment/05b-msrv-rust-version-and-the-msrv-aware-resolver.md
+    - content/18-testing-and-deployment/05c-build-scripts-supply-chain.md
+    - content/18-testing-and-deployment/05d-cargo-min-publish-age.md
+    - content/18-testing-and-deployment/06-summary.md
+  - part: 'The Rust Ecosystem: Essential Crates for Production Development'
+    contents:
+    - content/19-rust-ecosystem/01-serde-serialization-and-deserialization.md
+    - content/19-rust-ecosystem/02-clap-command-line-argument-parsing.md
+    - content/19-rust-ecosystem/03-reqwest-http-client.md
+    - content/19-rust-ecosystem/04-axum-web-framework.md
+    - content/19-rust-ecosystem/05-actix-web-high-performance-web-framework.md
+    - content/19-rust-ecosystem/06-project-2-async-http-api-with-axum-sqlx-tracing.md
+    - content/19-rust-ecosystem/07-testing-the-user-api.md
+    - content/19-rust-ecosystem/08-benchmarking-the-user-api.md
+    - content/19-rust-ecosystem/09-deploying-the-user-api.md
+    - content/19-rust-ecosystem/10-sqlx-async-database-access.md
+    - content/19-rust-ecosystem/11-rayon-data-parallelism.md
+    - content/19-rust-ecosystem/12-tracing-structured-logging-and-observability.md
+    - content/19-rust-ecosystem/13-chrono-date-and-time.md
+    - content/19-rust-ecosystem/14-uuid-universally-unique-identifiers.md
+    - content/19-rust-ecosystem/15-rand-random-number-generation.md
+    - content/19-rust-ecosystem/16-regex-regular-expressions.md
+    - content/19-rust-ecosystem/17-bytes-efficient-binary-buffers.md
+    - content/19-rust-ecosystem/18-futures-async-primitives.md
+    - content/19-rust-ecosystem/19-summary.md
+    - content/19-rust-ecosystem/20-servo-0-1-embeddable.md
+  - part: 'Advanced Topics: Compiler, Debugging, Security, and Anti-Patterns'
+    contents:
+    - content/20-advanced-topics/01-the-rust-compilation-pipeline.md
+    - content/20-advanced-topics/01b-a-tiny-jit-with-cranelift.md
+    - content/20-advanced-topics/02-debugging-rust-programs.md
+    - content/20-advanced-topics/03-security-considerations-in-rust.md
+    - content/20-advanced-topics/04-common-anti-patterns-and-how-to-avoid-them.md
+    - content/20-advanced-topics/05-summary.md
+  - part: WebAssembly with Rust
+    contents:
+    - content/21-webassembly/01-why-rust-for-webassembly.md
+    - content/21-webassembly/02-webassembly-fundamentals.md
+    - content/21-webassembly/03-setting-up-wasm-pack-and-wasm-bindgen.md
+    - content/21-webassembly/04-building-your-first-webassembly-module.md
+    - content/21-webassembly/05-interacting-with-the-dom.md
+    - content/21-webassembly/06-handling-events-and-async.md
+    - content/21-webassembly/07-wasm-performance.md
+    - content/21-webassembly/08-server-side-webassembly.md
+    - content/21-webassembly/09-publishing-and-distribution.md
+    - content/21-webassembly/10-summary.md
+  - part: Embedded Rust and no_std Development
+    contents:
+    - content/22-embedded-rust/01-understanding-no-std.md
+    - content/22-embedded-rust/02-choosing-a-target-cortex-m.md
+    - content/22-embedded-rust/03-writing-an-embedded-application-blinking-an-led.md
+    - content/22-embedded-rust/04-memory-management-without-a-heap.md
+    - content/22-embedded-rust/05-interrupts-and-concurrency.md
+    - content/22-embedded-rust/06-choosing-an-executor-or-rtos.md
+    - content/22-embedded-rust/07-testing-embedded-code.md
+    - content/22-embedded-rust/08-toolchain-and-debugging.md
+    - content/22-embedded-rust/09-summary.md
+  - part: Command-Line Tools in Rust
+    contents:
+    - content/23-command-line-tools/index.md
+    - part: Part 1 – Foundations
+      contents:
+      - content/23-command-line-tools/01-foundations/01-introduction-to-command-line-tools-in-rust.md
+      - content/23-command-line-tools/01-foundations/02-setting-up-your-development-environment.md
+      - content/23-command-line-tools/01-foundations/03-command-line-fundamentals.md
+      - content/23-command-line-tools/01-foundations/04-parsing-arguments-with-clap.md
+    - part: Part 2 – Core Skills
+      contents:
+      - content/23-command-line-tools/02-core-skills/05-working-with-the-file-system.md
+      - content/23-command-line-tools/02-core-skills/06-processing-text-data.md
+      - content/23-command-line-tools/02-core-skills/07-error-handling.md
+      - content/23-command-line-tools/02-core-skills/08-structuring-your-application.md
+    - part: Part 3 – Networking & Async
+      contents:
+      - content/23-command-line-tools/03-networking-and-async/09-running-external-processes.md
+      - content/23-command-line-tools/03-networking-and-async/10-building-http-clients.md
+      - content/23-command-line-tools/03-networking-and-async/11-async-programming-with-tokio.md
+      - content/23-command-line-tools/03-networking-and-async/12-terminal-user-interfaces-with-ratatui.md
+    - part: Part 4 – Testing & Distribution
+      contents:
+      - content/23-command-line-tools/04-testing-and-distribution/13-configuration-and-persistence.md
+      - content/23-command-line-tools/04-testing-and-distribution/14-logging-and-observability.md
+      - content/23-command-line-tools/04-testing-and-distribution/15-testing-command-line-tools.md
+      - content/23-command-line-tools/04-testing-and-distribution/16-building-cross-platform-tools.md
+    - part: Part 5 – Advanced
+      contents:
+      - content/23-command-line-tools/05-advanced/17-designing-for-production.md
+      - content/23-command-line-tools/05-advanced/18-advanced-rust-patterns-for-cli-tools.md
+      - content/23-command-line-tools/05-advanced/19-building-developer-tools.md
+      - content/23-command-line-tools/05-advanced/20-distributing-and-shipping-your-tool.md
+    - part: Part 6 – Capstone Projects
+      contents:
+      - content/23-command-line-tools/06-capstone-projects/21-capstone-1-fsearch-fast-file-search.md
+      - content/23-command-line-tools/06-capstone-projects/22-capstone-2-tudo-tui-task-manager.md
+      - content/23-command-line-tools/06-capstone-projects/23-capstone-3-sysmon-system-monitor.md
+      - content/23-command-line-tools/06-capstone-projects/24-capstone-4-devkit-developer-toolkit.md
+    - part: Part 7 – The Rust CLI Ecosystem
+      contents:
+      - content/23-command-line-tools/07-the-rust-cli-ecosystem/25-contributing-to-the-rust-ecosystem.md
+      - content/23-command-line-tools/07-the-rust-cli-ecosystem/26-the-future-of-rust-cli-development.md
+  - part: 'Conclusion: The Rust Mindset'
+    contents:
+    - content/24-conclusion/01-core-principles.md
+    - content/24-conclusion/02-where-rust-shines.md
+    - content/24-conclusion/03-where-rust-may-not-be-the-best-fit.md
+    - content/24-conclusion/04-continuing-your-journey.md
+    - content/24-conclusion/05-final-thoughts.md
+  - part: Rust Atomics and Locks
+    contents:
+    - content/25-rust-atomics-and-locks/00-preface-and-foreword.md
+    - content/25-rust-atomics-and-locks/01-basics-of-rust-concurrency.md
+    - content/25-rust-atomics-and-locks/02-atomics.md
+    - content/25-rust-atomics-and-locks/03-memory-ordering.md
+    - content/25-rust-atomics-and-locks/04-building-our-own-spin-lock.md
+    - content/25-rust-atomics-and-locks/05-building-our-own-channels.md
+    - content/25-rust-atomics-and-locks/06-building-our-own-arc.md
+    - content/25-rust-atomics-and-locks/07-understanding-the-processor.md
+    - content/25-rust-atomics-and-locks/08-operating-system-primitives.md
+    - content/25-rust-atomics-and-locks/09-building-our-own-locks.md
+    - content/25-rust-atomics-and-locks/10-ideas-and-inspiration.md
+format:
+  html:
+    theme: auto
+  epub: {}
+  pdf:
+    paper: A4

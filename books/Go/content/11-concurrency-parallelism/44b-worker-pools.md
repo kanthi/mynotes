@@ -1,0 +1,353 @@
+---
+title: Worker Pools
+---
+
+# Worker Pools: Controlling Chaos
+
+Go makes it easy to spawn 100,000 goroutines. The OS makes it easy to crash when you open 100,000 file descriptors.
+
+**Unbounded concurrency is a bug.** You must limit parallelism to match your resource limits (CPU, Memory, Network/DB Connections).
+
+## Pattern 1: The Semaphore (Simple Limiter)
+The easiest way to limit concurrency is a buffered channel (semaphore).
+
+```go
+func ProcessItems(items []string) {
+    sem := make(chan struct{}, 10) // Limit to 10 concurrent
+    var wg sync.WaitGroup
+
+    for _, item := range items {
+        wg.Add(1)
+        go func(val string) {
+            defer wg.Done()
+
+            sem <- struct{}{}        // Acquire token (blocks if full)
+            defer func() { <-sem }() // Release token
+
+            DoWork(val)
+        }(item)
+    }
+    wg.Wait()
+}
+```
+**Pros:** Trivial to implement.
+**Cons:** Still spawns N goroutines (memory cost), just blocks them from *executing* the heavy work.
+
+## Pattern 2: The Worker Pool (Fixed Goroutines)
+Instead of spawning a goroutine per item, spawn a fixed number of workers (e.g., `runtime.NumCPU()`) and feed them work.
+
+```go
+func WorkerPool(jobs <-chan Job, results chan<- Result, workers int) {
+    var wg sync.WaitGroup
+
+    // Spawn fixed workers
+    for i := 0; i < workers; i++ {
+        wg.Add(1)
+        go func(id int) {
+            defer wg.Done()
+            for job := range jobs {
+                results <- process(job)
+            }
+        }(i)
+    }
+
+    wg.Wait()
+    close(results) // Close results when all workers satisfy
+}
+
+func main() {
+    jobs := make(chan Job, 100)
+    results := make(chan Result, 100)
+
+    go func() {
+        // Enqueue jobs
+        jobs <- Job{...}
+        close(jobs) // Important: Tell workers no more jobs coming
+    }()
+
+    // Start pool
+    WorkerPool(jobs, results, 5)
+
+    // Consume results
+    for res := range results {
+        fmt.Println(res)
+    }
+}
+```
+**Pros:** Fixed memory footprint. Zero waste.
+**Cons:** Slightly more code.
+
+## 2026: `errgroup` with Limits
+The `golang.org/x/sync/errgroup` package handles error propagation and limits.
+
+```go
+g := new(errgroup.Group)
+g.SetLimit(10) // New in recent versions
+
+for _, item := range items {
+    item := item
+    g.Go(func() error {
+        return process(item)
+    })
+}
+
+if err := g.Wait(); err != nil {
+    return err
+}
+```
+**This is the preferred modern way.** It handles wait groups, error propagation (first error cancels context), and concurrency limits in one standard package.
+
+## Summary
+*   Never use `go func()` inside a loop without a limit mechanism.
+*   Use `errgroup.SetLimit` for 90% of cases.
+*   Use manual Worker Patterns for complex, long-lived background processing queues.
+
+## Worked example
+
+Fixed pool with context cancel mid-flight (workers and producer both exit cleanly).
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"sync"
+)
+
+func pool(ctx context.Context, jobs <-chan int, workers int) <-chan int {
+	out := make(chan int)
+	var wg sync.WaitGroup
+	for w := 0; w < workers; w++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case j, ok := <-jobs:
+					if !ok {
+						return
+					}
+					select {
+					case out <- j * 2:
+					case <-ctx.Done():
+						return
+					}
+				}
+			}
+		}()
+	}
+	go func() {
+		wg.Wait()
+		close(out)
+	}()
+	return out
+}
+
+func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	jobs := make(chan int)
+	results := pool(ctx, jobs, 3)
+
+	go func() {
+		defer close(jobs)
+		for i := 1; i <= 20; i++ {
+			select {
+			case <-ctx.Done():
+				return
+			case jobs <- i:
+			}
+		}
+	}()
+
+	count := 0
+	for r := range results {
+		_ = r
+		count++
+		if count == 5 {
+			cancel() // stop early; remaining workers observe ctx.Done()
+		}
+	}
+	fmt.Println("stopped after:", count)
+}
+```
+
+**Expected output:** (may be 5 or a few more if in-flight sends complete)
+
+```text
+stopped after: 5
+```
+## More examples
+
+Stdlib-only errgroup-style first-error cancel.
+
+```go
+package main
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"sync"
+)
+
+func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	var (
+		wg   sync.WaitGroup
+		once sync.Once
+		err  error
+	)
+	tasks := []func(context.Context) error{
+		func(ctx context.Context) error { return nil },
+		func(ctx context.Context) error { return errors.New("boom") },
+		func(ctx context.Context) error {
+			<-ctx.Done()
+			return ctx.Err()
+		},
+	}
+	for _, t := range tasks {
+		t := t
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if e := t(ctx); e != nil {
+				once.Do(func() {
+					err = e
+					cancel()
+				})
+			}
+		}()
+	}
+	wg.Wait()
+	fmt.Println("first error:", err)
+}
+```
+
+**Expected output:**
+
+```text
+first error: boom
+```
+
+## Runnable example
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+type Job struct {
+	ID  int
+	Val int
+}
+
+type Result struct {
+	JobID  int
+	Worker int
+	Out    int
+}
+
+func runPool(jobs <-chan Job, workers int) <-chan Result {
+	results := make(chan Result)
+	var wg sync.WaitGroup
+
+	for w := 1; w <= workers; w++ {
+		wg.Add(1)
+		go func(id int) {
+			defer wg.Done()
+			for job := range jobs {
+				results <- Result{
+					JobID:  job.ID,
+					Worker: id,
+					Out:    job.Val * job.Val,
+				}
+			}
+		}(w)
+	}
+
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+	return results
+}
+
+func main() {
+	const nJobs = 8
+	const nWorkers = 3
+
+	jobs := make(chan Job, nJobs)
+	results := runPool(jobs, nWorkers)
+
+	// Enqueue, then close so workers drain and exit.
+	for i := 1; i <= nJobs; i++ {
+		jobs <- Job{ID: i, Val: i}
+	}
+	close(jobs)
+
+	// Semaphore-style limiter (spawn per item, cap concurrency)
+	sem := make(chan struct{}, 2)
+	var limWG sync.WaitGroup
+	limitedSum := 0
+	var mu sync.Mutex
+	for i := 1; i <= 4; i++ {
+		limWG.Add(1)
+		go func(n int) {
+			defer limWG.Done()
+			sem <- struct{}{}
+			defer func() { <-sem }()
+			mu.Lock()
+			limitedSum += n
+			mu.Unlock()
+		}(i)
+	}
+	limWG.Wait()
+
+	poolSum := 0
+	seenWorkers := map[int]bool{}
+	for r := range results {
+		poolSum += r.Out
+		seenWorkers[r.Worker] = true
+	}
+
+	fmt.Println("pool workers used:", len(seenWorkers))
+	fmt.Println("pool sum of squares:", poolSum) // 1+4+9+16+25+36+49+64 = 204
+	fmt.Println("semaphore sum:", limitedSum)    // 10
+}
+```
+
+**Expected output:**
+
+```text
+pool workers used: 3
+pool sum of squares: 204
+semaphore sum: 10
+```
+
+**What to notice:** Fixed workers + closed job channel give a hard cap on goroutines and a clean shutdown. Closing `results` only after `wg.Wait()` prevents “send on closed channel.” The semaphore still spawns N goroutines but caps concurrent critical sections—cheaper to write, less ideal under huge N.
+
+**Try next:** Set `nWorkers` to 1 and confirm the sum is unchanged. Replace the mutex around `limitedSum` with `atomic.AddInt64`. For production error propagation + limits, prefer `golang.org/x/sync/errgroup` (not shown here so this stays stdlib-only).

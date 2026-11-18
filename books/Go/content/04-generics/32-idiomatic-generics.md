@@ -1,0 +1,283 @@
+---
+title: Idiomatic Generics
+---
+
+# Idiomatic Generics
+
+## Overview
+
+Generics are powerful but should be used judiciously. This chapter covers when to use generics vs interfaces, and best practices.
+
+## When to Use Generics
+
+✅ **Good uses:**
+- Container types (Stack, Set, Queue)
+- Utility functions (Map, Filter, Reduce)
+- Type-safe concurrent constructs
+- Avoiding reflection
+
+❌ **Don't use when:**
+- Interface works fine
+- Only one type will ever be used
+- Adding complexity without benefit
+
+Go 1.27 generic **methods** (`func (s *Store) Put[T any](v T)`) are for operations namespaced on a type. They cannot implement interface methods—keep those non-generic.
+
+## Generics vs Interfaces
+
+### Use Interface When:
+
+```go
+// Behavior-based polymorphism
+type Writer interface {
+    Write([]byte) (int, error)
+}
+
+func Save(w Writer, data []byte) error {
+    _, err := w.Write(data)
+    return err
+}
+```
+
+### Use Generics When:
+
+```go
+// Type preservation needed
+func Reverse[T any](s []T) []T {
+    result := make([]T, len(s))
+    for i, v := range s {
+        result[len(s)-1-i] = v
+    }
+    return result
+}
+```
+
+## Guidelines
+
+### 1. Start with Concrete Types
+
+```go
+// Start here
+func ReverseInts(s []int) []int { }
+
+// Generalize only when needed
+func Reverse[T any](s []T) []T { }
+```
+
+### 2. Use Meaningful Constraints
+
+```go
+// Too broad
+func Process[T any](v T) { }
+
+// Better: documents requirements
+func Process[T constraints.Ordered](v T) { }
+```
+
+### 3. Don't Over-Constrain
+
+```go
+// Over-constrained
+type Number interface {
+    int | int8 | int16 | int32 | int64 |
+    uint | uint8 | uint16 | uint32 | uint64 |
+    float32 | float64
+}
+
+// Better: use existing constraint
+func Sum[T constraints.Integer | constraints.Float](nums []T) T
+```
+
+### 4. Type Inference is Your Friend
+
+```go
+// Let Go infer when obvious
+result := Map(nums, double)
+
+// Explicit only when needed
+result := Convert[int, float64](nums)
+```
+
+## Common Patterns
+
+### slices Package (stdlib)
+
+```go
+import "slices"
+
+slices.Sort(nums)
+slices.Reverse(nums)
+slices.Contains(nums, 5)
+slices.Index(nums, 5)
+```
+
+### maps Package (stdlib)
+
+```go
+import "maps"
+
+maps.Clone(m)
+maps.Keys(m)
+maps.Values(m)
+```
+
+## Summary
+
+| Decision | Choice |
+|----------|--------|
+| Need type preservation | Generics |
+| Need polymorphic behavior | Interface |
+| Operating on containers | Generics |
+| Method set requirements | Interface |
+
+## Related Topics
+- [Why Generics Matter](29-generics-intro.md)
+- [Interface Best Practices](27-interface-practices.md)
+
+## More examples
+
+### Example: prefer clear non-generic API when one type
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+// SumInts is clearer than Sum[int] when you only ever sum ints.
+func SumInts(nums []int) int {
+	total := 0
+	for _, n := range nums {
+		total += n
+	}
+	return total
+}
+
+func main() {
+	fmt.Println(SumInts([]int{1, 2, 3}))
+	fmt.Println(SumInts(nil))
+}
+```
+
+Expected:
+
+```text
+6
+0
+```
+
+### Example: constrain only what you need
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import (
+	"fmt"
+	"strconv"
+)
+
+// Stringer-like constraint without importing fmt for the type set.
+type stringer interface {
+	String() string
+}
+
+type ID int
+
+func (id ID) String() string { return "id=" + strconv.Itoa(int(id)) }
+
+func PrintAll[T stringer](items []T) {
+	for _, it := range items {
+		fmt.Println(it.String())
+	}
+}
+
+func main() {
+	PrintAll([]ID{7, 8})
+}
+```
+
+Expected:
+
+```text
+id=7
+id=8
+```
+
+## Runnable example
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"io"
+	"maps"
+	"slices"
+	"strings"
+)
+
+// Behavior polymorphism → interface (not generics).
+func Save(w io.Writer, data []byte) error {
+	_, err := w.Write(data)
+	return err
+}
+
+// Type preservation on containers → generics.
+func Reverse[T any](s []T) []T {
+	out := make([]T, len(s))
+	for i, v := range s {
+		out[len(s)-1-i] = v
+	}
+	return out
+}
+
+func main() {
+	var b strings.Builder
+	_ = Save(&b, []byte("hello"))
+	fmt.Println("interface writer:", b.String())
+
+	nums := []int{1, 2, 3}
+	fmt.Println("Reverse ints:", Reverse(nums))
+	fmt.Println("original unchanged:", nums)
+
+	words := []string{"go", "is", "fun"}
+	fmt.Println("Reverse strings:", Reverse(words))
+
+	// Prefer stdlib generic helpers when they fit.
+	cloned := slices.Clone(nums)
+	slices.Sort(cloned)
+	fmt.Println("slices.Sort clone:", cloned)
+	fmt.Println("slices.Contains:", slices.Contains(words, "is"))
+
+	m := map[string]int{"b": 2, "a": 1}
+	cp := maps.Clone(m)
+	cp["c"] = 3
+	fmt.Println("maps.Clone size:", len(m), "->", len(cp))
+}
+```
+
+**Expected output:**
+
+```text
+interface writer: hello
+Reverse ints: [3 2 1]
+original unchanged: [1 2 3]
+Reverse strings: [fun is go]
+slices.Sort clone: [1 2 3]
+slices.Contains: true
+maps.Clone size: 2 -> 3
+```
+
+**What to notice:** `Save` cares about behavior (`Write`), so an interface is enough. `Reverse` must preserve element type across many containers, so generics win. Reach for `slices` / `maps` before inventing another utility package.
+
+**Try next:** Start from a concrete `ReverseInts` and only generalize when a second type appears; replace a hand-rolled `Contains` with `slices.Contains`.

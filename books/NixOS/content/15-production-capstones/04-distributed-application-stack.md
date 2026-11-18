@@ -1,0 +1,222 @@
+---
+title: Distributed Application Stack and Secrets
+---
+
+# Distributed Application Stack and Secrets
+
+Storage and the mesh exist. Now the workload: **Caddy + ACME on `gw-01`, sandboxed `desk-api` on the apps, PostgreSQL on `db-01`, sops-nix for the password**. The boring default is: **TLS at the edge, `EnvironmentFile` for secrets, `DynamicUser` + `ProtectSystem=strict` on the API**.
+
+## Mental model
+
+```
+Internet --443--> Caddy (gw-01)
+                    │  reverse_proxy 10.100.0.11:8080, .12:8080
+                    ▼
+                 desk-api  --wg0-->  Postgres 10.100.0.21
+                    ▲
+                    └── /run/secrets/db_password  (sops, tmpfs)
+```
+
+Caddy talks HTTP to the apps **on the mesh**. Apps do not terminate TLS. Postgres does not listen on the public NIC (previous chapter).
+
+`MemoryDenyWriteExecute` is fine for `CGO_ENABLED=0` Go. Drop it if you add a JIT.
+
+## Worked examples
+
+### Case 1: Caddy on the gateway
+
+Save as `hosts/gw-01.nix`:
+
+```nix
+# hosts/gw-01.nix
+{
+  services.caddy = {
+    enable = true;
+    email = "ops@desk.internal";
+    # Lab: Let's Encrypt staging so you do not burn production rate limits.
+    # Production: acmeCA = null; (26.05 default) so Caddy can fall back issuers.
+    acmeCA = "https://acme-staging-v02.api.letsencrypt.org/directory";
+    virtualHosts."api.desk.internal".extraConfig = ''
+      reverse_proxy 10.100.0.11:8080 10.100.0.12:8080 {
+        lb_policy round_robin
+        health_uri /healthz
+        health_interval 5s
+        health_timeout 2s
+      }
+    '';
+  };
+
+  networking.firewall.allowedTCPPorts = [ 80 443 ];
+
+  # Ephemeral root: ACME private keys live here. Miss this and every reboot
+  # is a new account + a new cert (and a rate-limit event).
+  environment.persistence."/persist".directories = [ "/var/lib/caddy" ];
+}
+```
+
+ACME HTTP-01 needs 80/443 reachable on `gw-01`. DNS `api.desk.internal` → that public IP. `reverse_proxy` to **mesh** IPs (`10.100.0.11/12`), not `127.0.0.1` (the API is not on the gateway).
+
+Caddy's ACME is **not** `security.acme`. Do not enable both for the same name unless you set `virtualHosts.<name>.useACMEHost` and point Caddy at lego's files. The boring path is Caddy's built-in ACME + persist `dataDir` (`/var/lib/caddy`). DNS-01 (Cloudflare etc.) belongs in `globalConfig` with `{$API_TOKEN}` and `services.caddy.environmentFile` from sops — never the token in the Caddyfile store path.
+
+After the lab cert looks right in `curl -vI https://api.desk.internal`, set `acmeCA = null;` and switch. A staging cert in a browser is "not trusted"; that is success for the lab.
+
+### Case 2: Sandboxed API
+
+Save as `modules/desk-service.nix`:
+
+```nix
+# modules/desk-service.nix
+{ config, pkgs, lib, ... }:
+
+let
+  appPkg = pkgs.buildGoModule {
+    pname = "desk-api";
+    version = "2.0.0";
+    src = lib.cleanSource ./src;
+    vendorHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+    env.CGO_ENABLED = "0";
+  };
+in
+{
+  sops.secrets.db_password = { };
+
+  systemd.services.desk-api = {
+    description = "Desk API";
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+    wantedBy = [ "multi-user.target" ];
+    environment = {
+      PORT = "8080";
+      DB_HOST = "10.100.0.21";
+      DB_USER = "desk_user";
+      DB_NAME = "desk_production";
+    };
+    serviceConfig = {
+      ExecStart = "${appPkg}/bin/desk-api";
+      DynamicUser = true;
+      # dotenv (DB_PASSWORD=…). Alternative: LoadCredential=db:/run/secrets/…
+      # and read CREDENTIALS_DIRECTORY/db in the app — never argv.
+      EnvironmentFile = config.sops.secrets.db_password.path;
+      ProtectSystem = "strict";
+      ProtectHome = true;
+      PrivateTmp = true;
+      PrivateDevices = true;
+      NoNewPrivileges = true;
+      RestrictRealtime = true;
+      RestrictAddressFamilies = [ "AF_INET" "AF_INET6" "AF_UNIX" ];
+      MemoryDenyWriteExecute = true;
+    };
+  };
+}
+```
+
+`db_password` file is dotenv (`DB_PASSWORD=…`), not a CLI flag. For `DynamicUser`, leave the secret **root-owned** `0400` and readable via `EnvironmentFile` / `LoadCredential` — do not `owner = "desk-api"` on a user that does not exist at decrypt time.
+
+### Case 3: Postgres on `db-01`
+
+```nix
+# hosts/db-01.nix fragment
+{ config, pkgs, ... }:
+
+{
+  services.postgresql = {
+    enable = true;
+    package = pkgs.postgresql_16;
+    enableTCPIP = true;
+    settings.listen_addresses = "10.100.0.21";
+    authentication = pkgs.lib.mkForce ''
+      local all all peer
+      host  desk_production desk_user 10.100.0.11/32 scram-sha-256
+      host  desk_production desk_user 10.100.0.12/32 scram-sha-256
+    '';
+    ensureDatabases = [ "desk_production" ];
+    ensureUsers = [{
+      name = "desk_user";
+      ensureDBOwnership = true;
+    }];
+  };
+
+  # Password is not a Nix string. A oneshot reads sops at runtime (peer as postgres).
+  systemd.services.desk-pg-password = {
+    after = [ "postgresql.service" ];
+    wants = [ "postgresql.service" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      User = "postgres";
+      PrivateTmp = true;
+      LoadCredential = "dbpw:${config.sops.secrets.db_password.path}";
+      ExecStart = pkgs.writeShellScript "desk-pg-password" ''
+        set -euo pipefail
+        pw=$(cat "$CREDENTIALS_DIRECTORY/dbpw")
+        umask 077
+        # Dollar-quote so a password with ' does not break SQL. Not argv.
+        printf "ALTER USER desk_user PASSWORD \$\$%s\$\$;\n" "$pw" > /tmp/alter.sql
+        ${config.services.postgresql.package}/bin/psql -v ON_ERROR_STOP=1 -f /tmp/alter.sql
+        rm -f /tmp/alter.sql
+      '';
+    };
+  };
+
+  # Do not open 5432 on the public NIC. Mesh only.
+  networking.firewall.interfaces.wg0.allowedTCPPorts = [ 5432 ];
+
+  environment.persistence."/persist".directories = [ "/var/lib/postgresql" ];
+}
+```
+
+Do **not** `pkgs.writeText` an `initialScript` that interpolates the password (or even a sops placeholder). `initialScript` is a store path; placeholders only expand in **sops templates**, not in `writeText`. `LoadCredential` + `psql` as `postgres` (peer on the local socket) keeps the bytes out of the NAR. `journalctl` of that oneshot must not use `set -x`.
+
+`listen_addresses = "10.100.0.21"` is the mesh IP of `db-01`, not `*`. Not `postgres` trust on `0.0.0.0/0`.
+
+`ensureUsers` does **not** set a password. `scram-sha-256` without `ALTER USER` is a login that never succeeds. Data dir is `/var/lib/postgresql` — persist it; the store does not hold tables. Dump **before** restic (backups chapter): a running cluster's files without `pg_dumpall` are crash-consistent maybe.
+
+### Case 4: Eval the unit path
+
+```bash
+nix eval .#nixosConfigurations.app-01.config.systemd.services.desk-api.serviceConfig.ExecStart
+```
+
+Output (shape):
+
+```
+"/nix/store/…-desk-api-2.0.0/bin/desk-api"
+```
+
+No `--password=` in that string.
+
+### Case 5: Security score
+
+On a deployed app node:
+
+```bash
+systemd-analyze security desk-api --no-pager | tail
+curl -fsS http://127.0.0.1:8080/healthz
+```
+
+`curl` from the **node** (localhost) or via Caddy. From the public internet, `/healthz` on port 8080 should not answer — only 443 on `gw-01`.
+
+## The trap
+
+The trap is **`--password=$DB_PASSWORD` on `ExecStart`**. `ps` shows it. `EnvironmentFile` from sops.
+
+The other trap is `DynamicUser` plus a secret `owner = "desk-api"` that does not exist at decrypt time. For DynamicUser, leave the secret root-owned `0400` and `LoadCredential=` / group, or use a **named** user instead of DynamicUser when the secret must be that uid.
+
+A third: **production Let's Encrypt on the first lab boot** (`acmeCA` left at the public CA while DNS still points at a laptop). Staging first. A fourth: not persisting `/var/lib/caddy` on tmpfs root — new cert every reboot, then a rate limit. A fifth: `listen_addresses = "*"` on postgres.
+
+## The boring rule
+
+- TLS only on Caddy. Staging `acmeCA` in lab; `null` in prod. Persist `/var/lib/caddy`.
+- Apps HTTP on `wg0`. `buildGoModule` + `CGO_ENABLED=0` + sandbox.
+- DB: `listen_addresses` = mesh IP, `pg_hba` `/32`s, 5432 on `wg0` only. Persist the data dir. Dump before restic.
+- Secrets: sops file / `LoadCredential`, not argv. `ensureUsers` is not a password.
+- Health checks from Caddy over WireGuard.
+
+## Try this
+
+1. `systemd-analyze security desk-api` on a lab VM with Case 2.
+2. `grep -R password /nix/store/…-desk-api*` should miss the production password (rotate if it hits).
+3. From a third VM not on the mesh, `curl` the public IP `:8080` — expect fail; `:443` — expect Caddy.
+4. Fail a healthz on `app-01`; Caddy should still serve `app-02`.
+5. `nix eval .#nixosConfigurations.gw-01.config.services.caddy.acmeCA` in the lab — staging URL. After cutover, `null`.
+6. `ss -lntp | rg 5432` on `db-01` — only `10.100.0.21`.

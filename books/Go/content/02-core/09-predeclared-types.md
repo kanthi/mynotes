@@ -1,0 +1,381 @@
+---
+title: Predeclared Types
+---
+
+# Predeclared Types
+
+## Overview
+
+Go provides a set of built-in types that form the foundation of all programs. Understanding these predeclared types—booleans, numerics, strings, and the error interface—is essential for writing effective Go code.
+
+## Boolean Type
+
+The `bool` type represents true/false values.
+
+```go
+var enabled bool      // Zero value: false
+active := true
+disabled := false
+
+// Boolean operators
+result := active && disabled  // AND: false
+result = active || disabled   // OR: true
+result = !active              // NOT: false
+```
+
+### Boolean Expressions
+
+```go
+x := 10
+y := 20
+
+greater := x > y      // false
+equal := x == y       // false
+notEqual := x != y    // true
+lessEqual := x <= y   // true
+```
+
+## Numeric Types
+
+### Integer Types
+
+| Type | Size | Range |
+|------|------|-------|
+| `int8` | 8 bits | -128 to 127 |
+| `int16` | 16 bits | -32,768 to 32,767 |
+| `int32` | 32 bits | -2B to 2B |
+| `int64` | 64 bits | ±9 quintillion |
+| `int` | Platform | 32 or 64 bits |
+
+```go
+var small int8 = 127
+var medium int32 = 2_147_483_647  // Underscores for readability
+var large int64 = 9_223_372_036_854_775_807
+var auto int = 42  // Platform-dependent size
+```
+
+### Unsigned Integers
+
+| Type | Size | Range |
+|------|------|-------|
+| `uint8` | 8 bits | 0 to 255 |
+| `uint16` | 16 bits | 0 to 65,535 |
+| `uint32` | 32 bits | 0 to 4B |
+| `uint64` | 64 bits | 0 to 18 quintillion |
+| `uint` | Platform | 32 or 64 bits |
+
+```go
+var age uint8 = 30
+var count uint = 1000
+```
+
+### Type Aliases
+
+```go
+type byte = uint8   // Alias for byte data
+type rune = int32   // Alias for Unicode code points
+```
+
+### Floating-Point Types
+
+| Type | Size | Precision |
+|------|------|-----------|
+| `float32` | 32 bits | ~7 decimal digits |
+| `float64` | 64 bits | ~15 decimal digits |
+
+```go
+var pi float32 = 3.14159
+var precise float64 = 3.141592653589793
+
+// Scientific notation
+avogadro := 6.022e23
+planck := 6.626e-34
+```
+
+### Complex Numbers
+
+```go
+var c1 complex64 = 3 + 4i
+c2 := complex(5, 12)  // 5 + 12i
+
+real := real(c2)      // 5
+imag := imag(c2)      // 12
+```
+
+## String Type
+
+Strings are immutable sequences of bytes (typically UTF-8).
+
+```go
+var greeting string = "Hello, World!"
+name := "Go"
+
+// String concatenation
+message := greeting + " Welcome to " + name
+
+// Multi-line strings (raw string literals)
+poem := `Roses are red,
+Violets are blue,
+Go is awesome,
+And so are you!`
+
+// String length (bytes, not characters)
+len(greeting)  // 13
+```
+
+### Strings vs Runes
+
+```go
+s := "Hello, 世界"
+
+len(s)              // 13 bytes
+len([]rune(s))      // 9 characters
+
+// Iterate by byte
+for i := 0; i < len(s); i++ {
+    fmt.Printf("%x ", s[i])
+}
+
+// Iterate by rune (character)
+for i, r := range s {
+    fmt.Printf("%d: %c\n", i, r)
+}
+```
+
+## The Error Type
+
+`error` is a built-in interface type:
+
+```go
+type error interface {
+    Error() string
+}
+```
+
+```go
+import "errors"
+
+func divide(a, b float64) (float64, error) {
+    if b == 0 {
+        return 0, errors.New("division by zero")
+    }
+    return a / b, nil
+}
+
+result, err := divide(10, 0)
+if err != nil {
+    fmt.Println("Error:", err)
+}
+```
+
+## Type Conversions
+
+Go requires explicit type conversions:
+
+```go
+var i int = 42
+var f float64 = float64(i)    // int to float64
+var u uint = uint(i)          // int to uint
+
+// String conversions
+import "strconv"
+
+s := strconv.Itoa(42)          // "42"
+n, _ := strconv.Atoi("42")     // 42
+
+fs := strconv.FormatFloat(3.14, 'f', 2, 64)  // "3.14"
+```
+
+### Common Conversion Pitfalls
+
+```go
+// Overflow (no error, just wraps)
+var big int64 = 1000
+var small int8 = int8(big)  // Overflow! Result: -24
+
+// Float to int truncates
+var f float64 = 3.9
+var i int = int(f)  // 3 (not 4)
+```
+
+## Type Information
+
+```go
+import "fmt"
+
+var x int = 42
+fmt.Printf("Type: %T, Value: %v\n", x, x)
+// Output: Type: int, Value: 42
+```
+
+## Numeric Literals
+
+```go
+// Decimal
+decimal := 42
+
+// Binary (0b prefix)
+binary := 0b101010  // 42
+
+// Octal (0o prefix)
+octal := 0o52  // 42
+
+// Hexadecimal (0x prefix)
+hex := 0x2A  // 42
+
+// With underscores for readability
+billion := 1_000_000_000
+```
+
+## Summary
+
+| Category | Types |
+|----------|-------|
+| Boolean | `bool` |
+| Signed Integers | `int`, `int8`, `int16`, `int32`, `int64` |
+| Unsigned Integers | `uint`, `uint8`, `uint16`, `uint32`, `uint64` |
+| Floating Point | `float32`, `float64` |
+| Complex | `complex64`, `complex128` |
+| String | `string` |
+| Aliases | `byte` (uint8), `rune` (int32) |
+| Error | `error` |
+
+## Related Topics
+- [Zero Values and Initialization](10-zero-values.md)
+- [Constants and Literals](11-constants-literals.md)
+
+## More examples
+
+### Example: integer and float basics
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	var i int = 42
+	var f float64 = 3.5
+	fmt.Println("int:", i)
+	fmt.Println("float:", f)
+	fmt.Println("int(f):", int(f))
+	fmt.Println("float64(i):", float64(i))
+}
+```
+
+Expected:
+
+```text
+int: 42
+float: 3.5
+int(f): 3
+float64(i): 42
+```
+
+### Example: bool and rune
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	ok := true
+	r := 'G'
+	fmt.Println("ok:", ok)
+	fmt.Printf("rune %q codepoint %d\n", r, r)
+	fmt.Println("not ok:", !ok)
+}
+```
+
+Expected:
+
+```text
+ok: true
+rune 'G' codepoint 71
+not ok: false
+```
+
+## Runnable example
+
+Save as `main.go`. From an empty directory:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"errors"
+	"fmt"
+	"strconv"
+)
+
+func divide(a, b float64) (float64, error) {
+	if b == 0 {
+		return 0, errors.New("division by zero")
+	}
+	return a / b, nil
+}
+
+func main() {
+	var enabled bool = true
+	var small int8 = 127
+	var count int = 42
+	var pi float64 = 3.141592653589793
+	var c complex128 = complex(3, 4)
+	s := "Hello, 世界"
+	b := byte('A')
+	r := rune('世')
+
+	fmt.Printf("bool=%t int8=%d int=%d float64=%g\n", enabled, small, count, pi)
+	fmt.Printf("complex=%v real=%g imag=%g\n", c, real(c), imag(c))
+	fmt.Printf("string=%q bytes=%d runes=%d\n", s, len(s), len([]rune(s)))
+	fmt.Printf("byte=%d rune=%c (%U)\n", b, r, r)
+
+	// Numeric bases and conversion
+	fmt.Printf("0b101010=%d 0x2A=%d\n", 0b101010, 0x2A)
+	n, err := strconv.Atoi("42")
+	fmt.Printf("Atoi=%d err=%v Itoa=%s\n", n, err, strconv.Itoa(n))
+
+	// Overflow wraps; float→int truncates (use variables so the conversions are runtime)
+	big := int64(1000)
+	fl := 3.9
+	fmt.Printf("int8(1000)=%d int(3.9)=%d\n", int8(big), int(fl))
+
+	if _, err := divide(10, 0); err != nil {
+		fmt.Println("error:", err)
+	}
+	q, err := divide(10, 4)
+	fmt.Printf("10/4=%g err=%v types: q is %T\n", q, err, q)
+}
+```
+
+**Expected output** (illustrative):
+
+```text
+bool=true int8=127 int=42 float64=3.141592653589793
+complex=(3+4i) real=3 imag=4
+string="Hello, 世界" bytes=13 runes=9
+byte=65 rune=世 (U+4E16)
+0b101010=42 0x2A=42
+Atoi=42 err=<nil> Itoa=42
+int8(1000)=-24 int(3.9)=3
+error: division by zero
+10/4=2.5 err=<nil> types: q is float64
+```
+
+**What to notice:**
+- `%T` / `%v` make types and values observable.
+- `len(string)` is bytes; `len([]rune(s))` is characters.
+- Conversions are explicit; overflow wraps without an error.
+- `error` is a value returned and checked like any other type.
+
+**Try next:** Change `int8(1000)` to a value you pick and predict the wrapped result.

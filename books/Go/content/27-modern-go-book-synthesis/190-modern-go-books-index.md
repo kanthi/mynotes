@@ -1,0 +1,180 @@
+---
+title: 190 Modern Go Books (2024-2025) Index
+---
+
+# 190 Modern Go Books (2024-2025) Index
+
+This section distills practical curriculum additions from recent Go books (published in 2024 and 2025), then maps those ideas into this book's structure.
+
+The intent is not to duplicate any book. Instead, this section extracts high-value topic patterns that repeatedly appear across recent publications and turns them into production-oriented learning content.
+
+## Selection Criteria
+
+- Publication date within 2024-2025.
+- Reliable public metadata for release date and chapter/index signals.
+- Topics that improve production readiness for Go developers.
+
+## Source-Derived Synthesis Chapters
+
+1. [191 Patterns from Go Programming (2nd ed., 2024)](191-patterns-from-go-programming-2e-2024.md)
+2. [192 Patterns from Effective Go Recipes (2024)](192-patterns-from-effective-go-recipes-2024.md)
+3. [193 Patterns from Go in Practice (2nd ed., 2025)](193-patterns-from-go-in-practice-2e-2025.md)
+4. [194 Patterns from Mastering Go (4th ed., 2024)](194-patterns-from-mastering-go-4e-2024.md)
+5. [195 Patterns from Let Us Go! (2025)](195-patterns-from-let-us-go-2025.md)
+6. [196 Patterns from Automate Your Home Using Go (2024)](196-patterns-from-home-automation-go-2024.md)
+
+## Cross-Book Theme Map
+
+```text
+Language fundamentals -> Systems/networking -> Web APIs -> Concurrency -> Testing/Tooling -> Cloud/Operations
+```
+
+Recent books emphasize this transition strongly: Go learning now expects developers to move from syntax to production operations quickly.
+
+## More examples
+
+### Tour: options + httptest handler + typed error
+
+A single demo that previews synthesis themes: constructor options, boundary HTTP, and `errors.Is`.
+
+```bash
+mkdir -p /tmp/go-synth-tour && cd /tmp/go-synth-tour
+go mod init example.com/synth-tour
+```
+
+Save as `main.go`:
+
+```go
+package main
+
+import (
+	"errors"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+)
+
+var ErrNotFound = errors.New("not found")
+
+type App struct {
+	name string
+}
+
+type Option func(*App)
+
+func WithName(n string) Option { return func(a *App) { a.name = n } }
+
+func NewApp(opts ...Option) *App {
+	a := &App{name: "app"}
+	for _, o := range opts {
+		o(a)
+	}
+	return a
+}
+
+func (a *App) Get(id int) error {
+	if id != 1 {
+		return fmt.Errorf("%w: %d", ErrNotFound, id)
+	}
+	return nil
+}
+
+func main() {
+	app := NewApp(WithName("demo"))
+	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := app.Get(2); errors.Is(err, ErrNotFound) {
+			http.Error(w, "missing", http.StatusNotFound)
+			return
+		}
+		fmt.Fprintln(w, app.name)
+	})
+	rr := httptest.NewRecorder()
+	h.ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/", nil))
+	fmt.Println("status:", rr.Code, "name:", app.name)
+}
+```
+
+```bash
+go run .
+```
+
+**Expected output:**
+
+```
+status: 404 name: demo
+```
+
+## Runnable example
+
+Tour of the synthesis themes: config from env, a timeout budget, and a tiny HTTP handler—stdlib patterns that modern Go books keep circling.
+
+```bash
+mkdir -p /tmp/go-synth-tour && cd /tmp/go-synth-tour
+go mod init example.com/synth-tour
+```
+
+Save as `main.go`:
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"time"
+)
+
+func envDuration(key string, fallback time.Duration) time.Duration {
+	v := os.Getenv(key)
+	if v == "" {
+		return fallback
+	}
+	d, err := time.ParseDuration(v)
+	if err != nil {
+		return fallback
+	}
+	return d
+}
+
+func main() {
+	budget := envDuration("REQ_TIMEOUT", 200*time.Millisecond)
+	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithTimeout(r.Context(), budget)
+		defer cancel()
+		select {
+		case <-time.After(20 * time.Millisecond):
+			fmt.Fprintln(w, "ok")
+		case <-ctx.Done():
+			http.Error(w, "timeout", http.StatusGatewayTimeout)
+		}
+	})
+	rr := httptest.NewRecorder()
+	h.ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/", nil))
+	fmt.Println("status:", rr.Code, "budget:", budget)
+	fmt.Println("synthesis tour: config + budgets + http")
+}
+```
+
+```bash
+go run .
+REQ_TIMEOUT=50ms go run .
+```
+
+**Expected output:**
+
+```
+status: 200 budget: 200ms
+synthesis tour: config + budgets + http
+```
+
+**What to notice**
+
+- Recent books stress production boundaries (timeouts, config, tests) as much as syntax.
+- Chapters 191–196 extract one pattern cluster each—run those examples next.
+
+**Try next**
+
+- Skim each synthesis chapter's runnable example and map it back to an earlier part of this book.

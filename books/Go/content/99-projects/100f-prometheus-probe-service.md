@@ -1,0 +1,147 @@
+---
+title: '032 Project 32: Prometheus Probe Service'
+---
+
+# 032 Build a Prometheus Probe Service
+
+Probe a target URL on demand and export health/latency metrics—similar in spirit to blackbox exporter, but tiny and educational.
+
+```text
+GET /probe?target=URL -> HTTP GET target -> set probe_up + probe_duration_seconds
+GET /metrics -> scrape
+```
+
+## Problem statement
+
+Service on `:9115`:
+
+- `/probe?target=https://example.com` performs a GET with timeout
+- Updates labeled gauges `probe_up` and `probe_duration_seconds`
+- Returns `up`/`down` body and HTTP 200/503
+- `/metrics` for Prometheus
+
+## Acceptance criteria
+
+- [ ] Missing target → 400
+- [ ] Successful GET (2xx/3xx policy you document) → `probe_up=1`
+- [ ] Error or 4xx/5xx → `probe_up=0`
+- [ ] Duration always recorded when attempt finishes
+- [ ] HTTP client timeout configured
+
+## Setup
+
+```bash
+mkdir probe && cd probe
+go mod init example.com/probe
+go get github.com/prometheus/client_golang/prometheus@latest
+go get github.com/prometheus/client_golang/prometheus/promhttp@latest
+go mod tidy
+# go 1.27
+```
+
+## Full `main.go`
+
+```go
+package main
+
+import (
+	"log"
+	"net/http"
+	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+)
+
+func main() {
+	up := prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "probe_up",
+		Help: "1 if last probe succeeded",
+	}, []string{"target"})
+	dur := prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "probe_duration_seconds",
+		Help: "Duration of last probe",
+	}, []string{"target"})
+	prometheus.MustRegister(up, dur)
+
+	client := &http.Client{Timeout: 2 * time.Second}
+
+	mux := http.NewServeMux()
+	mux.Handle("/metrics", promhttp.Handler())
+	mux.HandleFunc("/probe", func(w http.ResponseWriter, r *http.Request) {
+		target := r.URL.Query().Get("target")
+		if target == "" {
+			http.Error(w, "missing target", http.StatusBadRequest)
+			return
+		}
+		start := time.Now()
+		resp, err := client.Get(target)
+		elapsed := time.Since(start).Seconds()
+		dur.WithLabelValues(target).Set(elapsed)
+
+		if err != nil {
+			up.WithLabelValues(target).Set(0)
+			w.WriteHeader(http.StatusServiceUnavailable)
+			_, _ = w.Write([]byte("down\n"))
+			return
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode >= 400 {
+			up.WithLabelValues(target).Set(0)
+			w.WriteHeader(http.StatusServiceUnavailable)
+			_, _ = w.Write([]byte("down\n"))
+			return
+		}
+		up.WithLabelValues(target).Set(1)
+		_, _ = w.Write([]byte("up\n"))
+	})
+
+	log.Println("probe service on :9115  /probe /metrics")
+	log.Fatal(http.ListenAndServe(":9115", mux))
+}
+```
+
+## Run and verification
+
+```bash
+go run .
+curl -s 'http://localhost:9115/probe?target=https://example.com'
+curl -s 'http://localhost:9115/probe?target=http://127.0.0.1:1'
+curl -s localhost:9115/metrics | grep probe_
+```
+
+Prometheus scrape config sketch:
+
+```yaml
+scrape_configs:
+  - job_name: blackbox-lite
+    metrics_path: /probe
+    params:
+      target: [https://example.com]
+    static_configs:
+      - targets: ['localhost:9115']
+```
+
+(Real blackbox uses `relabel_configs`; this lab keeps metrics on the probe process itself.)
+
+## Stretch goals
+
+1. Histogram of probe durations instead of gauge-only.
+2. Support `module=http_2xx|tcp_connect`.
+3. Limit label cardinality (hash target or fixed list).
+4. Concurrent probe limit with semaphore.
+
+## Pitfalls
+
+| Pitfall | Fix |
+|---------|-----|
+| Unbounded `target` labels | allowlist or drop after scrape |
+| No timeout | hang worker | client Timeout |
+| Not closing body | connection leak |
+| Following redirects to evil URLs | custom CheckRedirect |
+
+## Learning goals
+
+- On-demand probes vs push metrics
+- Labeled gauges for latest status
+- Building blocks for SLO synthetic checks

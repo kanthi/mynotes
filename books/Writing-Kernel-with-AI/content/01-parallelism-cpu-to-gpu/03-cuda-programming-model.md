@@ -1,0 +1,218 @@
+---
+title: The CUDA Programming Model & GPU Puzzles
+---
+
+# The CUDA Programming Model & GPU Puzzles
+
+Modern GPUs execute programs using the **SIMT (Single Instruction, Multiple Threads)** execution model. While SIMD on a CPU executes a single vector instruction over vector registers on a single core, SIMT executes hundreds of independent scalar threads grouped into lockstep units called **warps**.
+
+Writing effective CUDA kernels requires understanding both the logical programming abstractions and how the hardware scheduler physically maps them onto silicon.
+
+---
+
+## 1. The Logical vs Physical Hierarchy
+
+CUDA defines a hierarchical programming model that scales seamlessly from a single-SM embedded chip (e.g. Jetson) to a massive data-center accelerator with 144 SMs (e.g. Hopper H100).
+
+```text
+Logical Abstraction                     Physical Hardware
+-------------------                     -----------------
+Grid (Entire Kernel Launch)   ------>   GPU Device
+  |
+  +--> Thread Block (Cooperative) --->   Streaming Multiprocessor (SM)
+         |
+         +--> Warp (32 Threads)  ----->   Warp Scheduler & Execution Units
+                |
+                +--> Thread     ----->   CUDA Core / Register Slice
+```
+
+### The Dimensions
+
+1. **Thread:** The finest unit of execution. Each thread has its own program counter, private registers, and local memory stack.
+2. **Warp:** A contiguous group of **32 threads**. The warp is the fundamental unit of scheduling on the GPU. All 32 threads in a warp execute the same instruction simultaneously.
+3. **Thread Block (CTA - Cooperative Thread Array):** A group of up to 1,024 threads. Threads within the same block reside on the **same physical SM**, share fast on-chip Shared Memory (SRAM), and can synchronize using barrier primitives (`__syncthreads()`).
+4. **Grid:** The full set of thread blocks dispatched to execute a kernel. Thread blocks within a grid execute independently; there is no guaranteed execution order across blocks.
+
+---
+
+## 2. Multi-Dimensional Index Calculations
+
+CUDA allows Grids and Blocks to be configured in 1D, 2D, or 3D using `dim3`. The hardware provides built-in read-only variables:
+- `threadIdx.{x,y,z}`: Thread coordinates within its block.
+- `blockIdx.{x,y,z}`: Block coordinates within the grid.
+- `blockDim.{x,y,z}`: Dimensions (thread count) of the block.
+- `gridDim.{x,y,z}`: Dimensions (block count) of the grid.
+
+### 1D Global Index Calculation
+
+For a 1D grid processing a flat vector of length $N$:
+
+$$\text{Global ID} = \text{blockIdx.x} \times \text{blockDim.x} + \text{threadIdx.x}$$
+
+```cuda
+int idx = blockIdx.x * blockDim.x + threadIdx.x;
+if (idx < n) {
+    // Process element idx
+}
+```
+
+### 2D Global Index Calculation (Matrix Coordinates)
+
+For a 2D matrix with width $W$ (columns) and height $H$ (rows):
+
+```cuda
+// Map block and thread coordinates to row and column
+int col = blockIdx.x * blockDim.x + threadIdx.x;
+int row = blockIdx.y * blockDim.y + threadIdx.y;
+
+// Linear memory index (Row-Major layout)
+int linear_idx = row * width + col;
+
+if (row < height && col < width) {
+    matrix[linear_idx] = 42.0f;
+}
+```
+
+---
+
+## 3. Warp Divergence and the SIMT Execution Mask
+
+All 32 threads in a warp share a single instruction unit. If threads within a warp take different execution paths at a conditional branch (`if / else`), the hardware executes every branch path sequentially, disabling threads that are not on that path via a hardware **execution mask**.
+
+```text
+Instruction Stream:
+Thread 0-15:   Takes IF branch (condition is true)
+Thread 16-31:  Takes ELSE branch (condition is false)
+
+Execution Timeline:
+Cycle 1-10:  [Thread 0-15 Active] [Thread 16-31 MASKED OFF] -> Executes IF body
+Cycle 11-20: [Thread 0-15 MASKED OFF] [Thread 16-31 Active] -> Executes ELSE body
+Reconverge:  [All Threads 0-31 Active]
+```
+
+### The Cost of Divergence
+
+- When a warp diverges 2-ways, execution time roughly doubles.
+- When 32 threads take 32 distinct branch paths (e.g. `switch(threadIdx.x % 32)`), the warp serializes into 32 separate execution passes, dropping warp computational throughput to **3.1%** of peak.
+
+### Best Practices to Eliminate Divergence
+
+1. **Align branches by warp boundary:** Branches that depend strictly on `blockIdx` or `threadIdx.x / 32` cause zero divergence because all 32 threads in the warp evaluate to the exact same condition.
+2. **Predicated Instructions:** For tiny branches (1-2 instructions), the compiler automatically uses predicated instructions instead of jumping.
+3. **Use Intrinsic Math Primitives:** Replace `if (a < b) val = a; else val = b;` with `fminf(a, b)`, which compiles to a single non-branching instruction.
+
+---
+
+## 4. Complete Worked Example: Vectorized FMA with Error Handling
+
+A robust production CUDA implementation requires careful host allocation, device memory management, asynchronous stream synchronization, and error checking macros.
+
+```cuda
+#include <cuda_runtime.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+// Macro for robust CUDA API error checking
+#define CUDA_CHECK(call)                                                      \
+    do {                                                                      \
+        cudaError_t err = call;                                               \
+        if (err != cudaSuccess) {                                             \
+            fprintf(stderr, "CUDA error at %s:%d: %s\n", __FILE__, __LINE__,  \
+                    cudaGetErrorString(err));                                 \
+            exit(EXIT_FAILURE);                                               \
+        }                                                                     \
+    } while (0)
+
+// Fused Multiply-Add Kernel: d[i] = a[i] * b[i] + c[i]
+__global__ void fma_kernel(const float* __restrict__ a,
+                          const float* __restrict__ b,
+                          const float* __restrict__ c,
+                          float* __restrict__ d,
+                          int n) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < n) {
+        // Generates single hardware FFMA instruction
+        d[idx] = a[idx] * b[idx] + c[idx];
+    }
+}
+
+int main(void) {
+    const int N = 1 << 22; // ~4.19 million elements
+    const size_t bytes = N * sizeof(float);
+
+    // 1. Allocate Host Memory
+    float *h_a = (float*)malloc(bytes);
+    float *h_b = (float*)malloc(bytes);
+    float *h_c = (float*)malloc(bytes);
+    float *h_d = (float*)malloc(bytes);
+
+    for (int i = 0; i < N; ++i) {
+        h_a[i] = 1.0f;
+        h_b[i] = 2.0f;
+        h_c[i] = 3.0f;
+    }
+
+    // 2. Allocate Device Memory
+    float *d_a, *d_b, *d_c, *d_d;
+    CUDA_CHECK(cudaMalloc(&d_a, bytes));
+    CUDA_CHECK(cudaMalloc(&d_b, bytes));
+    CUDA_CHECK(cudaMalloc(&d_c, bytes));
+    CUDA_CHECK(cudaMalloc(&d_d, bytes));
+
+    // 3. Copy inputs to Device
+    CUDA_CHECK(cudaMemcpy(d_a, h_a, bytes, cudaMemcpyHostToDevice));
+    CUDA_CHECK(cudaMemcpy(d_b, h_b, bytes, cudaMemcpyHostToDevice));
+    CUDA_CHECK(cudaMemcpy(d_c, h_c, bytes, cudaMemcpyHostToDevice));
+
+    // 4. Configure Grid & Launch Kernel
+    const int threads_per_block = 256;
+    const int blocks_per_grid = (N + threads_per_block - 1) / threads_per_block;
+
+    fma_kernel<<<blocks_per_grid, threads_per_block>>>(d_a, d_b, d_c, d_d, N);
+
+    // Check for launch errors and synchronize
+    CUDA_CHECK(cudaGetLastError());
+    CUDA_CHECK(cudaDeviceSynchronize());
+
+    // 5. Copy results back
+    CUDA_CHECK(cudaMemcpy(h_d, d_d, bytes, cudaMemcpyDeviceToHost));
+
+    // Verify result: 1.0 * 2.0 + 3.0 = 5.0
+    printf("Result verification: d[0] = %f, d[N-1] = %f\n", h_d[0], h_d[N-1]);
+
+    // 6. Cleanup
+    CUDA_CHECK(cudaFree(d_a));
+    CUDA_CHECK(cudaFree(d_b));
+    CUDA_CHECK(cudaFree(d_c));
+    CUDA_CHECK(cudaFree(d_d));
+    free(h_a); free(h_b); free(h_c); free(h_d);
+
+    printf("Kernel execution completed successfully.\n");
+    return 0;
+}
+```
+
+---
+
+## 5. Inspecting Intermediate PTX and Machine SASS
+
+To understand what the GPU physically executes, compile to PTX (virtual assembly) and SASS (machine assembly):
+
+```bash
+# Generate PTX virtual assembly
+nvcc -ptx -arch=sm_90 -O3 fma.cu -o fma.ptx
+
+# Disassemble binary machine SASS
+nvcc -arch=sm_90 -O3 fma.cu -o fma
+cuobjdump --dump-sass fma > fma.sass
+```
+
+Inside `fma.sass`, locate the inner loop body:
+```text
+/*0030*/  LDG.E.SYS R2, [R4.64] ;      // Load 32-bit float from global memory
+/*0040*/  LDG.E.SYS R3, [R6.64] ;      // Load 32-bit float from global memory
+/*0050*/  FFMA R0, R2, R3, R0 ;        // Single-cycle Fused Multiply-Add instruction!
+/*0060*/  STG.E.SYS [R8.64], R0 ;      // Store result back to global memory
+```
+
+Notice `FFMA`: The hardware fused multiply and addition into a single instruction without an intermediate rounding step, preserving numeric precision while doubling arithmetic throughput.

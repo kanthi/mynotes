@@ -1,0 +1,345 @@
+---
+title: Maps
+---
+
+# Maps
+
+## Overview
+
+Maps are Go's built-in hash table type, providing O(1) average-time lookups, insertions, and deletions.
+
+## Creating Maps
+
+```go
+var m map[string]int           // nil map (read-only!)
+m := make(map[string]int)      // Empty, ready to use
+m := make(map[string]int, 100) // With capacity hint
+m := map[string]int{           // Literal
+    "one": 1,
+    "two": 2,
+}
+```
+
+## Basic Operations
+
+### Set
+
+```go
+m["key"] = value
+```
+
+### Get
+
+```go
+val := m["key"]  // Returns zero value if missing
+```
+
+### Delete
+
+```go
+delete(m, "key")  // No-op if key doesn't exist
+```
+
+### Check Existence
+
+```go
+val, ok := m["key"]
+if ok {
+    // Key exists
+}
+
+if _, exists := m["key"]; exists {
+    // Key exists
+}
+```
+
+## nil Map Behavior
+
+```go
+var m map[string]int  // nil
+
+val := m["key"]       // OK: returns 0
+m["key"] = 1          // PANIC! Cannot write to nil map
+```
+
+**Always initialize before writing:**
+
+```go
+m := make(map[string]int)
+m["key"] = 1  // OK
+```
+
+## Iteration
+
+```go
+for key, value := range m {
+    fmt.Printf("%s: %d\n", key, value)
+}
+
+for key := range m {  // Keys only
+    fmt.Println(key)
+}
+```
+
+**Warning:** Iteration order is randomized!
+
+## Common Patterns
+
+### Set (Unique Values)
+
+```go
+set := make(map[string]struct{})
+set["item"] = struct{}{}
+if _, exists := set["item"]; exists {
+    // Item is in set
+}
+delete(set, "item")
+```
+
+### Counter
+
+```go
+counter := make(map[string]int)
+for _, word := range words {
+    counter[word]++  // Zero value works!
+}
+```
+
+### Grouping
+
+```go
+groups := make(map[string][]User)
+for _, user := range users {
+    groups[user.Country] = append(groups[user.Country], user)
+}
+```
+
+### Default Value
+
+```go
+val := m["key"]
+if val == 0 {
+    val = defaultValue
+}
+```
+
+## Concurrency Warning
+
+Maps are **not** goroutine-safe:
+
+```go
+// Unsafe: concurrent read/write
+go func() { m["key"] = 1 }()
+go func() { _ = m["key"] }()
+
+// Use sync.Map or mutex
+var mu sync.Mutex
+mu.Lock()
+m["key"] = 1
+mu.Unlock()
+```
+
+## The `maps` Package (Go 1.21+)
+
+The standard library `maps` package provides generic utilities for common operations.
+
+```go
+import "maps"
+
+maps.Clone(m)                 // Shallow copy
+maps.Equal(m1, m2)            // Compare
+maps.DeleteFunc(m, func(k K, v V) bool {
+    return v < 10             // Conditional delete
+})
+```
+
+### Modern Loop Pattern (Go 1.23+)
+
+Using iterators with maps:
+
+```go
+for k, v := range maps.All(m) { /* ... */ }
+for k := range maps.Keys(m) { /* ... */ }
+for v := range maps.Values(m) { /* ... */ }
+```
+
+## Map Internals
+
+- Keys must be comparable (`==` must work)
+- Valid key types: bool, numeric, string, pointer, channel, interface, structs/arrays of comparable types
+- Invalid: slices, maps, functions
+
+## Summary
+
+| Operation | Syntax |
+|-----------|--------|
+| Create | `make(map[K]V)` |
+| Set | `m[key] = value` |
+| Get | `val := m[key]` |
+| Check | `val, ok := m[key]` |
+| Delete | `delete(m, key)` |
+| Length | `len(m)` |
+
+## Related Topics
+- [Arrays and Slices](15-arrays-slices.md)
+- [Synchronization](../11-concurrency-parallelism/42-synchronization.md)
+
+## More examples
+
+### Example: comma-ok lookup
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	m := map[string]int{"a": 1}
+	if v, ok := m["a"]; ok {
+		fmt.Println("a:", v)
+	}
+	if _, ok := m["missing"]; !ok {
+		fmt.Println("missing: not present")
+	}
+}
+```
+
+Expected:
+
+```text
+a: 1
+missing: not present
+```
+
+### Example: delete and range
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	m := map[string]int{"x": 10, "y": 20}
+	delete(m, "x")
+	fmt.Println("len:", len(m))
+	for k, v := range m {
+		fmt.Printf("%s=%d\n", k, v)
+	}
+}
+```
+
+Expected:
+
+```text
+len: 1
+y=20
+```
+
+## Runnable example
+
+Save as `main.go`. From an empty directory:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"maps"
+)
+
+func main() {
+	// nil map: read ok, write panics — initialize first
+	var nilMap map[string]int
+	fmt.Println("nil read:", nilMap["x"])
+
+	m := make(map[string]int)
+	m["one"] = 1
+	m["two"] = 2
+	fmt.Println("m:", m, "len:", len(m))
+
+	if v, ok := m["two"]; ok {
+		fmt.Println("found two:", v)
+	}
+	if _, ok := m["three"]; !ok {
+		fmt.Println("three missing")
+	}
+
+	delete(m, "one")
+	fmt.Println("after delete one:", m)
+
+	// Word counter uses zero value on missing keys
+	counter := make(map[string]int)
+	for _, w := range []string{"go", "is", "go", "fun", "go"} {
+		counter[w]++
+	}
+	fmt.Println("counts:", counter)
+
+	// Set via map[T]struct{}
+	set := make(map[string]struct{})
+	set["alpha"] = struct{}{}
+	set["beta"] = struct{}{}
+	if _, ok := set["alpha"]; ok {
+		fmt.Println("set has alpha")
+	}
+
+	// Grouping
+	type User struct{ Name, Country string }
+	users := []User{
+		{"Ada", "UK"},
+		{"Linus", "FI"},
+		{"Alan", "UK"},
+	}
+	groups := make(map[string][]string)
+	for _, u := range users {
+		groups[u.Country] = append(groups[u.Country], u.Name)
+	}
+	fmt.Println("groups:", groups)
+
+	// maps package (Go 1.21+)
+	clone := maps.Clone(counter)
+	clone["fun"] = 99
+	fmt.Println("original fun:", counter["fun"], "clone fun:", clone["fun"])
+	fmt.Println("equal?", maps.Equal(counter, clone))
+
+	fmt.Println("keys (order random):")
+	for k, v := range counter {
+		fmt.Printf("  %s=%d\n", k, v)
+	}
+}
+```
+
+**Expected output** (illustrative; key order varies):
+
+```text
+nil read: 0
+m: map[one:1 two:2] len: 2
+found two: 2
+three missing
+after delete one: map[two:2]
+counts: map[fun:1 go:3 is:1]
+set has alpha
+groups: map[FI:[Linus] UK:[Ada Alan]]
+original fun: 1 clone fun: 99
+equal? false
+keys (order random):
+  go=3
+  is=1
+  fun=1
+```
+
+**What to notice:**
+- Comma-ok distinguishes missing keys from zero values.
+- `counter[w]++` works because missing keys read as `0`.
+- `map[T]struct{}` is an idiomatic set with near-zero value size.
+- Iteration order is deliberately random.
+
+**Try next:** Uncomment a write to `nilMap["x"] = 1` once to see the panic, then remove it.

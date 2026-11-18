@@ -1,0 +1,102 @@
+---
+title: What Is Networking?
+---
+
+# What Is Networking?
+
+A network moves **data** between **endpoints** over **links**, using **protocols**—agreed rules for format, addressing, and behavior. Everything later in this book (VLANs, OSPF, VXLAN) is a specialization of that idea.
+
+## Learning goals
+
+- Name the main building blocks of a network and what problem each solves
+- Distinguish local delivery (same L2 domain) from routed delivery (across networks)
+- Explain why we use layered protocols instead of one monolithic format
+- Tie lab tools (Containerlab, `ip`, captures) to those ideas
+
+## Building blocks
+
+| Piece | Role | Lab example |
+|-------|------|-------------|
+| **Endpoint / host** | Source or sink of traffic | Alpine container, your laptop |
+| **Interface** | Attachment to a link | `eth0`, `eth1` |
+| **Link** | Path between interfaces | Cable, veth pair, Wi‑Fi |
+| **Switch / bridge** | Forward within an L2 domain by MAC | Linux bridge, virtual switch |
+| **Router** | Forward between L3 networks by IP | FRR node, Linux with forwarding |
+| **Protocol** | Rules and message formats | Ethernet, IPv4, TCP, DNS |
+
+## What problem networking solves
+
+Without a network, processes on different machines cannot cooperate. Networking provides:
+
+1. **Reachability** — a path exists (or is reported as unreachable)
+2. **Naming / addressing** — who is who (MAC, IP, names via DNS)
+3. **Multiplexing** — many conversations share links (ports, VLANs, queues)
+4. **Reliability options** — best-effort (UDP/IP) vs recovered streams (TCP)
+5. **Policy** — who may talk to whom, with what priority
+
+## Switching vs routing (first cut)
+
+```
+Same subnet / VLAN          Different subnets
+─────────────────          ─────────────────
+  Host A ──switch── Host B    Host A → gateway → … → Host B
+  Frame uses MAC             Packet uses IP; each hop rewrites L2
+```
+
+- **Switching (L2):** deliver a frame inside one broadcast domain; learn MACs; flood unknown unicasts.
+- **Routing (L3):** deliver a packet across networks; each router decrements TTL and chooses a next hop.
+
+You will refine both in the Layer 2 and Layer 3 parts. Foundations give vocabulary and host-level truth.
+
+## Protocols as contracts
+
+A protocol answers:
+
+- What bits mean (headers, fields)
+- Who may send what next (state machines)
+- How errors are signaled (ICMP, TCP RST, DHCP NAK)
+
+Vendors invent CLIs; **RFCs and open implementations** define the contracts this book cares about.
+
+## Why labs beat slideware
+
+Networks fail in partial, asymmetric, and time-dependent ways. A Containerlab topology lets you:
+
+- Change **one** variable (shut a link, wrong mask, bad gateway)
+- Observe **tables** (ARP, routes, MAC) and **packets** (tcpdump)
+- Reset and try again
+
+## Observation toolkit (preview)
+
+| Tool | Use |
+|------|-----|
+| `ip addr` / `ip route` / `ip neigh` | Host addressing and neighbors |
+| `ping` / `traceroute` / `mtr` | Reachability and path hints |
+| `ss` / `netstat` | Sockets and listeners |
+| `tcpdump` / `tshark` | On-the-wire proof |
+| Containerlab | Multi-node topologies as code |
+
+## A network as a chain of decisions
+
+A network is a collection of links and forwarding systems that carry data between endpoints. A host does not need a complete map of the Internet: it needs a destination address, a usable route, and a way to send to the next hop. Each router repeats a local forwarding decision. That division of work scales, but it also means one wrong decision anywhere on the path can prevent delivery.
+
+Consider a browser contacting a server on another subnet. The host obtains an IP address for the name, selects a source address and route, resolves the local next-hop address to a link-layer address, and sends a frame. A switch forwards that frame within its VLAN. The router removes the incoming link header, selects an outgoing route, and sends a new frame. The server processes the IP packet, delivers its transport payload to a socket, and responds along a route of its own. The return path need not be identical to the forward path.
+
+### Delay, capacity, and loss
+
+**Bandwidth** is a link's transmission capacity; **throughput** is the useful data delivered per unit time. **Latency** includes serialization (putting bits on a link), propagation, processing, and queueing. On a 100 Mb/s link, transmitting a 1,500-byte IP packet alone takes roughly 120 microseconds, excluding link overhead; propagation and queues add more. A 10 ms round trip is not the time to transmit every packet: several packets can be in flight simultaneously.
+
+Buffers absorb bursts but cannot fix a sustained arrival rate above service capacity. When a queue fills, packets are dropped; before it fills, queueing delay increases. A link can therefore have high latency or loss without being physically broken. Distinguish **availability** (can it work?), **correctness** (does it reach the intended destination?), and **performance** (does it work within the required time and capacity?).
+
+> [!TIP]
+> Before changing a device, write down the source, destination, expected path, and observable proof at each hop. A successful ping proves a particular ICMP exchange, not that every application or packet size works.
+
+
+
+## Checkpoint
+
+Before deeper chapters, you should be able to point at a simple two-host lab and say: *these are endpoints, this is a link, delivery is L2 or L3 for this destination, and here is how I would prove it.*
+
+## Next
+
+- [TCP/IP and the Layered Stack](02-tcpip-and-layered-models.md)

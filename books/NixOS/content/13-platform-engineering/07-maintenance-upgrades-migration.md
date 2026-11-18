@@ -1,0 +1,157 @@
+---
+title: Maintenance, Upgrades, and Migration
+---
+
+# Maintenance, Upgrades, and Migration
+
+`nix flake update` on Friday without a plan is a weekend. The boring default is: **pin `nixos-26.05`, bump in a dedicated PR, `flake check` + one lab host, then Colmena — never bump `stateVersion` in that same PR**.
+
+## Mental model
+
+| Move | What changes |
+|---|---|
+| `nix flake update nixpkgs` | Same train, newer commit |
+| `nixos-25.11` → `nixos-26.05` | Release upgrade; read the notes |
+| `stateVersion` | Almost never |
+
+25.11 is EOL. New hosts: `"26.05"`. Old hosts: change the **input**, keep their birth `stateVersion`.
+
+The 26.05 **channel** ships Nix **2.34**; this book’s CLI baseline is **2.35+** via the installer or `nix.package`. Do not confuse those in the upgrade PR: bumping the channel does not magically bump the daemon.
+
+Home Manager's `release-26.05` follows the same train. HM 24.11 + nixpkgs 26.05 is eval pain.
+
+## Worked examples
+
+### Case 1: Lock bump inside 26.05
+
+Save as the existing `flake.nix` input (already on 26.05):
+
+```nix
+# flake.nix
+{
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+}
+```
+
+```bash
+nix flake update nixpkgs
+nix flake metadata
+nix flake check -L
+sudo nixos-rebuild dry-activate --flake .#desk-lab
+```
+
+Read which units restart. Switch the lab. Then Colmena `--on app-01`, then the rest. One commit, one PR, changelog the rev.
+
+### Case 2: Release upgrade
+
+```nix
+# flake.nix — was nixos-25.11
+{
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+  inputs.home-manager.url = "github:nix-community/home-manager/release-26.05";
+  inputs.home-manager.inputs.nixpkgs.follows = "nixpkgs";
+}
+```
+
+`git diff flake.lock` is huge. Run VM tests. Stage-1 systemd is **default** on 26.05 — if you still set `boot.initrd.systemd.enable` by hand, read that chapter before the fleet apply.
+
+```bash
+nix flake check -L
+nixos-rebuild dry-activate --flake .#desk-lab
+```
+
+### Case 3: `stateVersion` stays
+
+Save as `hosts/app-01.nix` for a box born on 25.11:
+
+```nix
+# hosts/app-01.nix
+{
+  system.stateVersion = "25.11"; # born on 25.11; input is 26.05
+}
+```
+
+Still correct. Do not “tidy” it to `"26.05"` in the lock-bump PR. Database dirs and module defaults then migrate on a surprise.
+
+New metal:
+
+```nix
+# hosts/app-03.nix
+{
+  system.stateVersion = "26.05";
+}
+```
+
+Birth, not channel.
+
+### Case 4: Home Manager follows the same train
+
+```nix
+# flake.nix
+{
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+  inputs.home-manager.url = "github:nix-community/home-manager/release-26.05";
+  inputs.home-manager.inputs.nixpkgs.follows = "nixpkgs";
+}
+```
+
+```bash
+nix flake metadata
+```
+
+One nixpkgs. `home.stateVersion` is also birth (`"25.11"` on an old user, `"26.05"` on a new one). Same rule as the system.
+
+### Case 5: Record the lock
+
+Save as a changelog line, not a wiki:
+
+```markdown
+# CHANGELOG.md
+- 2026-09-10: nixpkgs 26.05.<rev> on desk-lab, then app-01 (Colmena).
+  stateVersion unchanged. Nix CLI still 2.35+ via nix.package.
+```
+
+If you cannot name the lock in prod, you cannot roll back with confidence.
+
+```bash
+git show HEAD:flake.lock | jq -r '.nodes.nixpkgs.locked.rev'
+```
+
+Paste **that** rev, not “we updated nixpkgs.” A Colmena rollback without this line in git is a generation the next apply will overwrite.
+
+Do not bump Home Manager in the same PR as nixpkgs unless you must. Two diffs, two rollbacks:
+
+```bash
+nix flake update nixpkgs
+nix flake check -L
+# merge, then:
+nix flake update home-manager
+nix flake check -L
+```
+
+HM `release-26.05` already `follows` nixpkgs; updating HM alone is usually a module-fix, not a stdenv rebuild.
+
+```bash
+nix flake metadata --json | jq -r '.locks.nodes.nixpkgs.locked.rev'
+```
+
+Paste that rev into the changelog.
+
+## The trap
+
+The trap is **changing `stateVersion` to match the channel**. Channel bump ≠ stateVersion bump. The other trap is `nix flake update` with no arguments on Friday, which also bumps every other input you forgot you had.
+
+## The boring rule
+
+- 26.05 train. Lock PRs, not surprise `update`.
+- Lab, then canary, then fleet.
+- `stateVersion` / `home.stateVersion` is birth.
+- HM release matches nixpkgs release. `follows`.
+- Changelog the rev. Channel Nix 2.34 ≠ CLI 2.35+.
+
+## Try this
+
+1. `nix flake metadata` — write the locked date and rev.
+2. `dry-activate` after a lock bump; list units that would restart.
+3. `git grep stateVersion` — none “updated” to 26.05 on old hosts without notes.
+4. Skim 26.05 release notes for one module you use (Caddy, postgres, sshd).

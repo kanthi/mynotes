@@ -1,0 +1,237 @@
+---
+title: '010 Project 10: Build a tail -f Clone'
+---
+
+# 010 Build a `tail -f` Clone
+
+Read the last N lines of a file, then optionally follow appended content—core log-watching skill for operators.
+
+```text
+open file -> ring buffer last N -> print -> poll growth -> print new data
+```
+
+## Problem statement
+
+```text
+gtail [-n N] [-f] <file>
+```
+
+- Print last `N` lines (default 10)
+- `-f` follow: after initial print, stream new bytes as the file grows
+- Exit 2 on usage errors; 1 on IO errors
+
+## Acceptance criteria
+
+- [ ] Last N lines correct for files with ≥N and <N lines
+- [ ] Follow mode prints newly appended lines
+- [ ] Does not busy-spin (sleep/poll)
+- [ ] Missing file → clear error
+- [ ] Stdlib only
+
+## Setup
+
+```bash
+mkdir gtail && cd gtail
+go mod init example.com/gtail
+# go 1.27
+```
+
+## Full `main.go`
+
+```go
+package main
+
+import (
+	"bufio"
+	"context"
+	"flag"
+	"fmt"
+	"io"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+)
+
+func lastNLines(path string, n int) ([]string, error) {
+	if n < 0 {
+		n = 0
+	}
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	buf := make([]string, 0, n)
+	s := bufio.NewScanner(f)
+	sbuf := make([]byte, 0, 64*1024)
+	s.Buffer(sbuf, 1024*1024)
+	for s.Scan() {
+		if n == 0 {
+			continue
+		}
+		if len(buf) == n {
+			copy(buf, buf[1:])
+			buf[n-1] = s.Text()
+		} else {
+			buf = append(buf, s.Text())
+		}
+	}
+	return buf, s.Err()
+}
+
+func follow(ctx context.Context, path string, offset int64, poll time.Duration) error {
+	f, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	if _, err := f.Seek(offset, io.SeekStart); err != nil {
+		return err
+	}
+
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		default:
+		}
+		n, err := io.Copy(os.Stdout, f)
+		if err != nil {
+			return err
+		}
+		if n == 0 {
+			// optional: detect truncation/rotation via Stat size < offset
+			select {
+			case <-ctx.Done():
+				return nil
+			case <-time.After(poll):
+			}
+		}
+	}
+}
+
+func main() {
+	n := flag.Int("n", 10, "show last n lines")
+	followMode := flag.Bool("f", false, "follow file")
+	poll := flag.Duration("poll", 500*time.Millisecond, "follow poll interval")
+	flag.Parse()
+
+	if flag.NArg() != 1 {
+		fmt.Fprintln(os.Stderr, "usage: gtail [-n N] [-f] <file>")
+		os.Exit(2)
+	}
+
+	path := flag.Arg(0)
+	lines, err := lastNLines(path, *n)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	for _, line := range lines {
+		fmt.Println(line)
+	}
+
+	if !*followMode {
+		return
+	}
+
+	st, err := os.Stat(path)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	if err := follow(ctx, path, st.Size(), *poll); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
+```
+
+## Step-by-step build path
+
+1. Ring buffer for last N lines (or `container/ring`).
+2. Print initial window.
+3. Seek to end size; `Copy` loop with poll sleep.
+4. SIGINT via context.
+5. Stretch: re-open on truncation/rotation.
+
+## Run and verification
+
+```bash
+printf '1\n2\n3\n4\n5\n' > app.log
+go run . -n 3 app.log
+# 3 4 5
+
+# follow:
+go run . -n 2 -f app.log
+# other terminal:
+echo new >> app.log
+```
+
+## Tests
+
+```go
+package main
+
+import (
+	"os"
+	"path/filepath"
+	"testing"
+)
+
+func TestLastN(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "f")
+	_ = os.WriteFile(path, []byte("a\nb\nc\nd\n"), 0o644)
+	lines, err := lastNLines(path, 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(lines) != 2 || lines[0] != "c" || lines[1] != "d" {
+		t.Fatalf("%v", lines)
+	}
+}
+
+func TestLastNShortFile(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "f")
+	_ = os.WriteFile(path, []byte("only\n"), 0o644)
+	lines, err := lastNLines(path, 10)
+	if err != nil || len(lines) != 1 {
+		t.Fatalf("%v %v", lines, err)
+	}
+}
+```
+
+```bash
+go test ./...
+```
+
+## Stretch goals
+
+1. Detect truncate (size < offset) and reopen from start.
+2. Inotify/fsnotify instead of poll (Linux).
+3. Multiple files (like `tail -f a b`).
+4. `-F` forever reopen by name after rotation.
+
+## Pitfalls
+
+| Pitfall | Fix |
+|---------|-----|
+| Loading whole file for last N | ring buffer while scanning |
+| Busy loop on EOF | sleep/poll or fsnotify |
+| Ignoring rotation | track size/inode |
+| No Ctrl+C in `-f` | signal.NotifyContext |
+
+## Learning goals
+
+- Ring buffers for trailing windows
+- Follow-mode IO
+- Operator UX for log tools

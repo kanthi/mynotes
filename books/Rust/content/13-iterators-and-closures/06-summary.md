@@ -1,0 +1,13 @@
+---
+title: Summary
+---
+
+# Summary
+### Chapter Key Takeaways
+
+- Iterators are lazy; evaluation only happens when consumed (e.g., `collect`, `sum`).
+- Closures capture environment variables via `Fn`, `FnMut`, or `FnOnce`.
+- Combinators (`map`, `filter`, `fold`) form clear functional pipelines.
+- Modern Rust compilers optimize iterator pipelines into highly vectorized machine loops.
+
+The cookbook section after this summary is one runnable recipe per job, from `next` through custom adaptors, rayon, streams, and the places a `for` loop is the clearer tool.

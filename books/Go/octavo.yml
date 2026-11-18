@@ -1,0 +1,528 @@
+book:
+  title: Go
+  author: K19G
+  date: '2026-11-17'
+  description: 'A deep Go library: learning paths and projects'
+  chapters:
+  - index.md
+  - part: Foundations
+    contents:
+    - content/01-foundations/01-why-go-exists.md
+    - content/01-foundations/01a-learning-path-2026.md
+    - content/01-foundations/01b-boring-philosophy.md
+    - content/01-foundations/01c-3-layer-practice.md
+    - content/01-foundations/01d-java-node-transition.md
+    - content/01-foundations/01e-whats-new-in-go-1-27.md
+    - content/01-foundations/01f-upgrading-a-module-to-go-1-27.md
+    - content/01-foundations/02-installing-running-go.md
+    - content/01-foundations/03-code-organization.md
+    - content/01-foundations/05-core-go-commands.md
+    - content/01-foundations/06-formatting-vetting-docs.md
+    - content/01-foundations/07-dependency-management.md
+    - content/01-foundations/08-workspaces-multimodule.md
+    - part: Formatting Vetting Docs_files
+      contents:
+      - part: Mediabag
+        contents: []
+  - part: Core
+    contents:
+    - content/02-core/09-predeclared-types.md
+    - content/02-core/10-zero-values.md
+    - content/02-core/11-constants-literals.md
+    - content/02-core/12-variables-scope.md
+    - content/02-core/13-conditional-logic.md
+    - content/02-core/14-loops-iteration.md
+    - content/02-core/15-arrays-slices.md
+    - content/02-core/16-strings.md
+    - content/02-core/17-maps.md
+    - content/02-core/18-structs.md
+    - content/02-core/18b-time.md
+    - content/02-core/19-cmp-or-defaults.md
+  - part: Memory
+    contents:
+    - content/03-memory/19-functions-depth.md
+    - content/03-memory/20-functions-values.md
+    - content/03-memory/21-methods-receivers.md
+    - content/03-memory/22-memory.md
+    - content/03-memory/23-pointers.md
+    - content/03-memory/24-mutability.md
+    - content/03-memory/25-garbage-collection.md
+    - content/03-memory/25b-stack-heap-mechanics.md
+    - content/03-memory/25c-escape-analysis-alignment.md
+    - content/03-memory/25d-size-specialized-malloc.md
+    - content/03-memory/25e-measuring-size-specialized-malloc.md
+  - part: Generics
+    contents:
+    - content/04-generics/26-interfaces.md
+    - content/04-generics/27-interface-practices.md
+    - content/04-generics/28-type-assertions.md
+    - content/04-generics/29-generics-intro.md
+    - content/04-generics/30-generic-functions.md
+    - content/04-generics/31-generic-types.md
+    - content/04-generics/31b-generic-methods.md
+    - content/04-generics/32-idiomatic-generics.md
+  - part: Errors
+    contents:
+    - content/05-errors/33-errors-values.md
+    - content/05-errors/34-error-wrapping.md
+    - content/05-errors/35-panic-recover.md
+    - content/05-errors/35b-must-pattern-odin.md
+  - part: Testing
+    contents:
+    - content/06-testing/36-testing-fundamentals.md
+    - content/06-testing/37-test-organization.md
+    - content/06-testing/38-advanced-testing.md
+    - content/06-testing/39-integration-testing.md
+    - content/06-testing/40-fuzzing-and-property-tests.md
+    - content/06-testing/41-httptest-and-api-testing.md
+    - content/06-testing/42-golden-files-and-testdata.md
+    - content/06-testing/43-project-service-test-suite.md
+  - part: Standard Library Tour
+    contents:
+    - content/07-stdlib/980-stdlib-index.md
+    - content/07-stdlib/981-fmt-log-slog.md
+    - content/07-stdlib/982-bytes-strings-strconv.md
+    - content/07-stdlib/983-io-bufio-composition.md
+    - content/07-stdlib/984-os-filepath-fs-embed.md
+    - content/07-stdlib/985-encoding-json-csv-xml.md
+    - content/07-stdlib/985b-encoding-json-v2.md
+    - content/07-stdlib/986-net-http-stdlib.md
+    - content/07-stdlib/987-flag-os-exec-signal.md
+    - content/07-stdlib/988-time-context-recipes.md
+    - content/07-stdlib/989-sync-atomic-stdlib.md
+    - content/07-stdlib/990-slices-maps-cmp-iter.md
+    - content/07-stdlib/991-testing-examples-fuzz-bench.md
+    - content/07-stdlib/992-crypto-hash-rand-regexp.md
+    - content/07-stdlib/993-database-sql-stdlib.md
+    - content/07-stdlib/993b-rows-err-and-sqlrowserr.md
+    - content/07-stdlib/994-net-dial-listen-stdlib.md
+    - content/07-stdlib/995-templates-html-text-stdlib.md
+    - content/07-stdlib/996-compress-archive-stdlib.md
+    - content/07-stdlib/997-encoding-binary-gob-pem.md
+    - content/07-stdlib/998-math-bits-big-stdlib.md
+    - content/07-stdlib/999-mime-multipart-expvar-debug.md
+    - content/07-stdlib/999a-container-heap-list-ring.md
+    - content/07-stdlib/999b-path-filepath-deep.md
+    - content/07-stdlib/999c-bufio-scanner-advanced.md
+    - content/07-stdlib/999d-crypto-mldsa.md
+    - content/07-stdlib/999e-crypto-mlkem.md
+    - content/07-stdlib/999f-uuid.md
+    - content/07-stdlib/999g-maphash-hasher.md
+  - part: Data Structures and Algorithms
+    contents:
+    - content/08-data-structures-and-algorithms/01-algorithmic-complexity.md
+    - content/08-data-structures-and-algorithms/02-stacks-and-queues.md
+    - content/08-data-structures-and-algorithms/03-linked-lists.md
+    - content/08-data-structures-and-algorithms/04-binary-search-trees.md
+    - content/08-data-structures-and-algorithms/05-heaps-and-priority-queues.md
+    - content/08-data-structures-and-algorithms/06-tries-and-prefix-trees.md
+    - content/08-data-structures-and-algorithms/07-sorting-algorithms.md
+    - content/08-data-structures-and-algorithms/08-binary-search-and-selection.md
+    - content/08-data-structures-and-algorithms/09-graphs-and-traversals.md
+    - content/08-data-structures-and-algorithms/10-shortest-paths-dijkstra.md
+    - content/08-data-structures-and-algorithms/11-string-search-and-bloom-filters.md
+  - part: CLI Tools in Go
+    contents:
+    - content/09-cli-tools-in-go/300-golang-cli-index.md
+    - content/09-cli-tools-in-go/301-cli-first-tools-os-args.md
+    - content/09-cli-tools-in-go/302-flag-package-deep.md
+    - content/09-cli-tools-in-go/303-subcommands-flagset.md
+    - content/09-cli-tools-in-go/304-exit-codes-stdout-stderr.md
+    - content/09-cli-tools-in-go/305-env-config-files.md
+    - content/09-cli-tools-in-go/306-stdin-pipes-files.md
+    - content/09-cli-tools-in-go/307-os-exec-orchestration.md
+    - content/09-cli-tools-in-go/308-signals-context-cli.md
+    - content/09-cli-tools-in-go/309-testing-cli.md
+    - content/09-cli-tools-in-go/310-structuring-cli-apps.md
+    - content/09-cli-tools-in-go/311-cobra-basics.md
+    - content/09-cli-tools-in-go/312-cobra-advanced.md
+    - content/09-cli-tools-in-go/313-viper-config-libs.md
+    - content/09-cli-tools-in-go/314-other-cli-frameworks.md
+    - content/09-cli-tools-in-go/315-shipping-version-completion.md
+    - content/09-cli-tools-in-go/316-cli-cookbook-examples.md
+    - content/09-cli-tools-in-go/317-project-network-cli-tools.md
+    - content/09-cli-tools-in-go/318-project-network-security-mini-tools.md
+    - content/09-cli-tools-in-go/319-project-text-and-log-tools.md
+    - content/09-cli-tools-in-go/320-project-http-debug-cli.md
+    - content/09-cli-tools-in-go/321-cross-platform-cli-notes.md
+  - part: Concurrency Ground Up
+    contents:
+    - content/10-concurrency-ground-up/250-concurrency-ground-up-index.md
+    - content/10-concurrency-ground-up/251-goroutines-fundamentals.md
+    - content/10-concurrency-ground-up/252-channels-complete.md
+    - content/10-concurrency-ground-up/253-pipelines-select-cancel.md
+    - content/10-concurrency-ground-up/254-time-throttle-backpressure.md
+    - content/10-concurrency-ground-up/254b-streaming-api-backpressure.md
+    - content/10-concurrency-ground-up/255-context-complete.md
+    - content/10-concurrency-ground-up/256-waitgroups-encapsulation.md
+    - content/10-concurrency-ground-up/257-data-races-mutex.md
+    - content/10-concurrency-ground-up/258-semaphores-rendezvous.md
+    - content/10-concurrency-ground-up/259-atomics-complete.md
+    - content/10-concurrency-ground-up/260-testing-concurrent-code.md
+    - content/10-concurrency-ground-up/261-scheduler-model-diagrams.md
+    - content/10-concurrency-ground-up/262-race-conditions-vs-data-races.md
+    - content/10-concurrency-ground-up/263-signaling-cond-broadcast.md
+  - part: Advanced Concurrency Patterns
+    contents:
+    - content/11-concurrency-parallelism/40-concurrency-basics.md
+    - content/11-concurrency-parallelism/41-channel-patterns.md
+    - content/11-concurrency-parallelism/42-synchronization.md
+    - content/11-concurrency-parallelism/43-context.md
+    - content/11-concurrency-parallelism/44-concurrency-guidelines.md
+    - content/11-concurrency-parallelism/44b-worker-pools.md
+    - content/11-concurrency-parallelism/44c-pipelines-cond.md
+    - content/11-concurrency-parallelism/44d-goroutine-leak-profile.md
+  - part: Socket Programming
+    contents:
+    - content/12-socket-programming/00-introduction-why-sockets-matter-in-go.md
+    - content/12-socket-programming/01-networking-fundamentals.md
+    - content/12-socket-programming/02-gos-net-package.md
+    - content/12-socket-programming/03-building-tcp-servers-and-clients.md
+    - content/12-socket-programming/04-tcp-reliability-flow-control-and-tuning.md
+    - content/12-socket-programming/04b-multipath-tcp-defaults-and-kill-switches.md
+    - content/12-socket-programming/05-udp-programming.md
+    - content/12-socket-programming/06-unix-domain-sockets.md
+    - content/12-socket-programming/07-concurrency-patterns-for-network-programming.md
+    - content/12-socket-programming/08-timeouts-deadlines-and-context-cancellation.md
+    - content/12-socket-programming/09-protocols-text-binary-and-custom.md
+    - content/12-socket-programming/10-serialization-json-protobuf-and-beyond.md
+    - content/12-socket-programming/11-tls-ssl-encrypting-connections.md
+    - content/12-socket-programming/12-websockets-real-time-bidirectional.md
+    - content/12-socket-programming/13-high-performance-networking.md
+    - content/12-socket-programming/14-production-patterns-proxies-and-load-balancers.md
+    - content/12-socket-programming/15-testing-network-code.md
+    - content/12-socket-programming/16-debugging-and-diagnosing-network-problems.md
+    - content/12-socket-programming/17-conclusion-art-of-reliable-network-programming.md
+  - part: Network Systems
+    contents:
+    - content/13-network-systems/130-network-systems-index.md
+    - content/13-network-systems/131-tcp-services-deep-dive.md
+    - content/13-network-systems/132-http-client-server-resilience.md
+    - content/13-network-systems/133-reverse-proxy-load-balancing.md
+    - content/13-network-systems/134-tls-clients-servers.md
+    - content/13-network-systems/135-dns-resolution-patterns.md
+    - content/13-network-systems/136-http-transport-tuning.md
+    - content/13-network-systems/137-project-netcheck.md
+  - part: Network Performance
+    contents:
+    - content/14-network-performance/01-netpoller-and-goroutine-scaling.md
+    - content/14-network-performance/02-http-client-and-connection-pooling.md
+    - content/14-network-performance/03-scaling-to-ten-thousand-connections.md
+    - content/14-network-performance/04-resilience-backpressure-and-load-shedding.md
+    - content/14-network-performance/05-long-lived-connections-and-leak-prevention.md
+    - content/14-network-performance/06-socket-options-and-low-level-tuning.md
+    - content/14-network-performance/07-tls-and-dns-optimization.md
+    - content/14-network-performance/08-http1-connection-reuse-go-1-27.md
+  - part: Web Development in Go
+    contents:
+    - content/15-web-development-in-go/270-web-dev-golang-index.md
+    - content/15-web-development-in-go/271-intro-web-dev-go.md
+    - content/15-web-development-in-go/272-structuring-go-web-app.md
+    - content/15-web-development-in-go/273-http-requests-routing.md
+    - content/15-web-development-in-go/274-templating-rendering.md
+    - content/15-web-development-in-go/275-databases.md
+    - content/15-web-development-in-go/276-concurrency-web.md
+    - content/15-web-development-in-go/277-sessions-auth-authz.md
+    - content/15-web-development-in-go/278-frontend-backend-communication.md
+    - content/15-web-development-in-go/279-testing-debugging.md
+    - content/15-web-development-in-go/280-middleware-patterns.md
+    - content/15-web-development-in-go/281-graceful-shutdown-web.md
+    - content/15-web-development-in-go/282-rate-limiting.md
+    - content/15-web-development-in-go/283-websockets-basics.md
+    - content/15-web-development-in-go/284-file-uploads-downloads.md
+    - content/15-web-development-in-go/285-project-bookstore-api-capstone.md
+  - part: Modern Web Architectures
+    contents:
+    - content/16-web/60-goth-stack.md
+    - content/16-web/61-skeleton-loading.md
+    - content/16-web/62-grpc-microservices.md
+    - content/16-web/63-huma-openapi.md
+    - content/16-web/64-db-postgres-redis.md
+    - content/16-web/65-http-networking.md
+    - content/16-web/66-encoding.md
+  - part: Systems Programming
+    contents:
+    - content/17-systems-programming/140-systems-programming-index.md
+    - content/17-systems-programming/140a-go-as-systems-language.md
+    - content/17-systems-programming/141-processes-signals-supervisors.md
+    - content/17-systems-programming/142-filesystem-automation-safe-io.md
+    - content/17-systems-programming/142b-write-ahead-log.md
+    - content/17-systems-programming/143-unix-pipeline-cli-tools.md
+    - content/17-systems-programming/144-env-user-cwd-umask.md
+    - content/17-systems-programming/145-file-descriptors-redirection.md
+    - content/17-systems-programming/146-memory-mapped-files.md
+    - content/17-systems-programming/147-unix-domain-sockets.md
+    - content/17-systems-programming/148-locking-pidfiles-single-instance.md
+    - content/17-systems-programming/149-project-systems-mini-tools.md
+    - content/17-systems-programming/150-time-clocks-timers.md
+    - content/17-systems-programming/151-filesystem-watching.md
+    - content/17-systems-programming/152-pty-terminals.md
+    - content/17-systems-programming/153-resource-limits-rlimit.md
+    - content/17-systems-programming/154-privileges-capabilities-overview.md
+    - content/17-systems-programming/154b-rootless-namespaces.md
+    - content/17-systems-programming/155-syslog-and-ops-logging.md
+    - content/17-systems-programming/156-project-systems-ops-toolkit.md
+    - content/17-systems-programming/157-systemd-socket-activation.md
+    - content/17-systems-programming/158-linux-procfs-introspection.md
+    - content/17-systems-programming/159-project-mini-supervisor.md
+  - part: Distributed Infrastructure
+    contents:
+    - content/18-distributed-infra/150-distributed-infra-index.md
+    - content/18-distributed-infra/150a-system-design-method-and-capacity.md
+    - content/18-distributed-infra/150b-consistent-hashing.md
+    - content/18-distributed-infra/150c-distributed-id-generation.md
+    - content/18-distributed-infra/151-service-discovery-health-checks.md
+    - content/18-distributed-infra/152-retry-circuit-breaker-patterns.md
+    - content/18-distributed-infra/153-queue-workers-backpressure.md
+    - content/18-distributed-infra/153b-distributed-message-queue.md
+    - content/18-distributed-infra/154-caching-patterns.md
+    - content/18-distributed-infra/155-idempotency-keys.md
+    - content/18-distributed-infra/156-leader-election-basics.md
+    - content/18-distributed-infra/157-outbox-reliable-side-effects.md
+    - content/18-distributed-infra/158-project-resilient-worker.md
+  - part: Observability and SRE
+    contents:
+    - content/19-observability-sre/160-observability-sre-index.md
+    - content/19-observability-sre/161-structured-logging-correlation.md
+    - content/19-observability-sre/162-metrics-prometheus-design.md
+    - content/19-observability-sre/163-tracing-context-propagation.md
+    - content/19-observability-sre/164-sli-slo-error-budgets.md
+    - content/19-observability-sre/165-health-readiness-probes.md
+    - content/19-observability-sre/166-alerting-and-runbooks.md
+    - content/19-observability-sre/166b-flight-recorder.md
+    - content/19-observability-sre/167-project-instrumented-mini-service.md
+    - content/19-observability-sre/168-monitoring-alerting-system-design.md
+  - part: Cloud and Infrastructure
+    contents:
+    - content/20-infrastructure/70-docker-multistage.md
+    - content/20-infrastructure/71-render-leapcell.md
+    - content/20-infrastructure/72-nixos-freebsd.md
+    - content/20-infrastructure/73-ci-cd-security.md
+    - content/20-infrastructure/74-building-releasing.md
+    - content/20-infrastructure/75-kubernetes-deploy-basics.md
+    - content/20-infrastructure/76-goreleaser-github-actions.md
+    - content/20-infrastructure/77-container-health-and-signals.md
+    - content/20-infrastructure/78-workloadbuilder-gang-scheduling.md
+  - part: Security Tools and Design
+    contents:
+    - content/21-security/80-security-tools.md
+    - content/21-security/81-hardening.md
+    - content/21-security/82-solid-design.md
+  - part: Security Hardening
+    contents:
+    - content/22-security-hardening/170-security-hardening-index.md
+    - content/22-security-hardening/171-tls-mtls-deep-dive.md
+    - content/22-security-hardening/172-authn-authz-patterns.md
+    - content/22-security-hardening/173-secrets-management-rotation.md
+    - content/22-security-hardening/174-jwt-and-token-validation.md
+    - content/22-security-hardening/175-input-validation-and-ssrf.md
+    - content/22-security-hardening/175b-os-root-traversal-resistant-files.md
+    - content/22-security-hardening/175c-csrf-crossoriginprotection.md
+    - content/22-security-hardening/175d-error-boundaries-without-leaks.md
+    - content/22-security-hardening/176-supply-chain-dependencies.md
+    - content/22-security-hardening/177-project-secure-service-checklist.md
+    - content/22-security-hardening/178-goleash-package-policy.md
+    - content/22-security-hardening/179-runtime-secret-zeroization.md
+    - content/22-security-hardening/179b-ca-distrust-rebuild-your-binaries.md
+  - part: Performance and Tooling
+    contents:
+    - content/23-performance-tooling/01-pprof-trace.md
+    - content/23-performance-tooling/02-modern-toolkit.md
+    - content/23-performance-tooling/03-static-analysis.md
+    - content/23-performance-tooling/04-codegen.md
+    - content/23-performance-tooling/05-documentation.md
+    - content/23-performance-tooling/06-toolexec-build-hooks.md
+    - content/23-performance-tooling/07-pkgsite-api-client.md
+    - content/23-performance-tooling/08-go-fix-modernizers.md
+  - part: Performance Engineering
+    contents:
+    - content/24-performance-engineering/180-performance-engineering-index.md
+    - content/24-performance-engineering/181-benchmarking-profiling-workflow.md
+    - content/24-performance-engineering/182-memory-allocations-gc.md
+    - content/24-performance-engineering/183-contention-concurrency-tuning.md
+    - content/24-performance-engineering/184-load-testing-baselines.md
+    - content/24-performance-engineering/185-allocation-hot-path-recipes.md
+    - content/24-performance-engineering/186-pgo-and-build-flags.md
+    - content/24-performance-engineering/186b-simd-with-archsimd.md
+    - content/24-performance-engineering/186c-compress-flate-rewrite.md
+    - content/24-performance-engineering/186d-inside-pgo-compiler-internals.md
+    - content/24-performance-engineering/187-project-optimize-hot-endpoint.md
+  - part: Go Deep Dives
+    contents:
+    - content/25-go-deep-dives/200-deep-dives-index.md
+    - content/25-go-deep-dives/201-scheduler-gmp-deep-dive.md
+    - content/25-go-deep-dives/202-memory-model-happens-before.md
+    - content/25-go-deep-dives/203-channels-select-internals.md
+    - content/25-go-deep-dives/204-interface-representation.md
+    - content/25-go-deep-dives/205-slice-map-internals.md
+    - content/25-go-deep-dives/206-defer-panic-stack.md
+    - content/25-go-deep-dives/207-generics-implementation.md
+    - content/25-go-deep-dives/208-gc-internals-pacer.md
+    - content/25-go-deep-dives/209-compiler-ssa-pgo.md
+    - content/25-go-deep-dives/210-link-build-modes-race.md
+    - content/25-go-deep-dives/211-reflect-internals.md
+    - content/25-go-deep-dives/212-modules-mvs-toolchain.md
+    - content/25-go-deep-dives/213-netpoller-network-io.md
+    - content/25-go-deep-dives/214-timers-time-after-pitfalls.md
+    - content/25-go-deep-dives/215-stack-growth-copying.md
+    - content/25-go-deep-dives/216-finalizers-cleanup.md
+    - content/25-go-deep-dives/217-weak-unique-packages.md
+    - content/25-go-deep-dives/218-swiss-maps-maphash.md
+    - content/25-go-deep-dives/219-sync-pool-zero-alloc.md
+    - content/25-go-deep-dives/220-goroutine-leaks-diagnosis.md
+    - content/25-go-deep-dives/221-godebug-runtime-knobs.md
+    - content/25-go-deep-dives/222-pprof-trace-under-the-hood.md
+    - content/25-go-deep-dives/223-testing-synctest-bubbles.md
+    - content/25-go-deep-dives/224-zero-copy-io.md
+    - content/25-go-deep-dives/225-http-transport-conn-pool.md
+    - content/25-go-deep-dives/226-context-cancel-tree.md
+    - content/25-go-deep-dives/227-mutex-semaphore-runtime.md
+    - content/25-go-deep-dives/228-cgo-scheduler-transitions.md
+    - content/25-go-deep-dives/229-iterators-range-over-func.md
+    - content/25-go-deep-dives/230-abi-assembly-nosplit.md
+    - content/25-go-deep-dives/231-coverage-fuzz-engine.md
+    - content/25-go-deep-dives/232-build-cache-reproducibility.md
+    - content/25-go-deep-dives/233-goexperiment-catalog.md
+    - content/25-go-deep-dives/234-wasm-wasip1.md
+    - content/25-go-deep-dives/234b-wasm-binary-size.md
+    - content/25-go-deep-dives/235-string-byte-internals.md
+    - content/25-go-deep-dives/236-error-interface-cost.md
+    - content/25-go-deep-dives/237-production-mistakes-deep-dive.md
+    - content/25-go-deep-dives/238-production-debugging-tooling.md
+    - content/25-go-deep-dives/239-sysmon-scavenger-runtime.md
+    - content/25-go-deep-dives/240-reading-runtime-source.md
+    - content/25-go-deep-dives/241-tls-handshake-path.md
+    - content/25-go-deep-dives/242-slog-handler-design.md
+    - content/25-go-deep-dives/243-gomaxprocs-cgroup-containers.md
+    - content/25-go-deep-dives/244-plugin-buildmode-pitfalls.md
+    - content/25-go-deep-dives/245-x-scout-topic-radar.md
+    - content/25-go-deep-dives/246-internals-for-interns-radar.md
+    - content/25-go-deep-dives/247-memory-allocator-deep-dive.md
+    - content/25-go-deep-dives/248-runtime-bootstrap.md
+    - content/25-go-deep-dives/249-selectgo-compiler-runtime.md
+    - content/25-go-deep-dives/250-stacktraces-runtime-metadata.md
+    - content/25-go-deep-dives/251-mmap-vs-pread-storage.md
+    - content/25-go-deep-dives/252-compiler-frontend.md
+    - content/25-go-deep-dives/253-compiler-ir-ssa-backend.md
+    - content/25-go-deep-dives/254-race-detector-internals.md
+    - content/25-go-deep-dives/255-write-barrier-mark-assist.md
+    - content/25-go-deep-dives/256-work-stealing-findrunnable.md
+    - content/25-go-deep-dives/257-type-assert-convert-runtime.md
+    - content/25-go-deep-dives/258-os-signals-runtime.md
+    - content/25-go-deep-dives/259-http2-go-runtime.md
+    - content/25-go-deep-dives/260-database-sql-pool.md
+    - content/25-go-deep-dives/261-json-performance-patterns.md
+    - content/25-go-deep-dives/262-errgroup-patterns.md
+    - content/25-go-deep-dives/263-goroutine-switch-mechanics.md
+    - content/25-go-deep-dives/264-netip-addrto6-compiler-idiom.md
+    - content/25-go-deep-dives/265-binary-size-linker.md
+    - content/25-go-deep-dives/266-epoll-inside-the-go-scheduler.md
+    - content/25-go-deep-dives/267-gomaxprocs-and-p-counts.md
+    - content/25-go-deep-dives/268-go-list-json-package-metadata.md
+    - content/25-go-deep-dives/269-goroutineleak-pprof.md
+    - part: Assets
+      contents: []
+  - part: Long-Term Maintenance
+    contents:
+    - content/26-long-term-maintenance/01-reflection-in-practice.md
+    - content/26-long-term-maintenance/02-unsafe-code.md
+    - content/26-long-term-maintenance/03-cgo-and-ffi.md
+    - content/26-long-term-maintenance/04-performance-tuning.md
+    - content/26-long-term-maintenance/05-designing-for-the-long-term.md
+    - content/26-long-term-maintenance/06-deprecating-apis-with-go-fix-inline.md
+  - part: Modern Go Synthesis
+    contents:
+    - content/27-modern-go-book-synthesis/190-modern-go-books-index.md
+    - content/27-modern-go-book-synthesis/191-patterns-from-go-programming-2e-2024.md
+    - content/27-modern-go-book-synthesis/192-patterns-from-effective-go-recipes-2024.md
+    - content/27-modern-go-book-synthesis/193-patterns-from-go-in-practice-2e-2025.md
+    - content/27-modern-go-book-synthesis/194-patterns-from-mastering-go-4e-2024.md
+    - content/27-modern-go-book-synthesis/195-patterns-from-let-us-go-2025.md
+    - content/27-modern-go-book-synthesis/196-patterns-from-home-automation-go-2024.md
+  - part: Specialized Applications
+    contents:
+    - content/28-specialized/90-desktop-apps.md
+    - content/28-specialized/91-llm-apps.md
+    - content/28-specialized/92-systems-programming.md
+    - content/28-specialized/93-io-streaming.md
+    - content/28-specialized/94-logging-observability.md
+    - content/28-specialized/95-adk-go-agents.md
+  - part: Projects
+    contents:
+    - content/99-projects/100a-k8s-event-watcher.md
+    - content/99-projects/100b-k8s-rollout-checker.md
+    - content/99-projects/100c-terraform-plan-parser.md
+    - content/99-projects/100d-terraform-risk-reporter.md
+    - content/99-projects/100e-prometheus-exporter.md
+    - content/99-projects/100f-prometheus-probe-service.md
+    - content/99-projects/100g-ebpf-tracepoint-basics.md
+    - content/99-projects/100h-ebpf-xdp-packet-counter.md
+    - content/99-projects/100i-proxmox-multi-node-scheduler.md
+    - content/99-projects/100j-proxmox-capacity-balancer.md
+    - content/99-projects/100k-k8s-hpa-simulator.md
+    - content/99-projects/100l-terraform-cost-estimator.md
+    - content/99-projects/100m-prometheus-alert-rule-tester.md
+    - content/99-projects/100n-infra-reconciler-daemon.md
+    - content/99-projects/100o-tinygo-blink-and-toolchain.md
+    - content/99-projects/100p-tinygo-button-interrupt.md
+    - content/99-projects/100q-tinygo-uart-sensor-loop.md
+    - content/99-projects/100r-tinygo-cooperative-tasks.md
+    - content/99-projects/100s-tinygo-i2c-realtime-monitor.md
+    - content/99-projects/99-index.md
+    - content/99-projects/99a-cli-ping-tool.md
+    - content/99-projects/99b-url-shortener-api.md
+    - content/99-projects/99c-concurrent-log-analyzer.md
+    - content/99-projects/99d-file-integrity-checker.md
+    - content/99-projects/99e-concurrent-port-scanner.md
+    - content/99-projects/99f-mini-job-runner.md
+    - content/99-projects/99g-linux-ls-clone.md
+    - content/99-projects/99h-linux-cat-clone.md
+    - content/99-projects/99i-linux-grep-clone.md
+    - content/99-projects/99j-linux-tail-follow.md
+    - content/99-projects/99k-linux-du-clone.md
+    - content/99-projects/99l-linux-find-clone.md
+    - content/99-projects/99m-linux-wc-clone.md
+    - content/99-projects/99n-http-load-tester.md
+    - content/99-projects/99o-tui-system-monitor.md
+    - content/99-projects/99p-proxmox-tui-manager.md
+    - content/99-projects/99q-ssh-remote-orchestrator.md
+    - content/99-projects/99r-go-workout-200-exercises.md
+    - content/99-projects/99s-linux-ps-lite.md
+    - content/99-projects/99t-kv-http-store.md
+    - content/99-projects/99u-websocket-chat.md
+    - content/99-projects/99v-log-shipper-cli.md
+    - content/99-projects/99w-proxmox-batch-cli.md
+    - content/99-projects/99x-controller-pattern-sim.md
+    - content/99-projects/99y-resource-index-and-ideas.md
+    - content/99-projects/99z-k8s-pod-lister.md
+    - part: System Design
+      contents:
+      - content/99-projects/101-system-design/index.md
+      - content/99-projects/101-system-design/01-web-crawler.md
+      - content/99-projects/101-system-design/02-notification-delivery.md
+      - content/99-projects/101-system-design/03-news-feed.md
+      - content/99-projects/101-system-design/04-search-autocomplete.md
+      - content/99-projects/101-system-design/05-object-storage.md
+      - content/99-projects/101-system-design/06-video-platform.md
+      - content/99-projects/101-system-design/07-file-sync.md
+      - content/99-projects/101-system-design/08-proximity-service.md
+      - content/99-projects/101-system-design/09-nearby-friends.md
+      - content/99-projects/101-system-design/10-maps-and-routing.md
+      - content/99-projects/101-system-design/11-click-event-aggregation.md
+      - content/99-projects/101-system-design/12-hotel-reservations.md
+      - content/99-projects/101-system-design/13-distributed-email.md
+      - content/99-projects/101-system-design/14-gaming-leaderboard.md
+      - content/99-projects/101-system-design/15-payment-system.md
+      - content/99-projects/101-system-design/16-digital-wallet.md
+      - content/99-projects/101-system-design/17-stock-exchange.md
+  - part: Appendices
+    contents:
+    - content/100-appendices/01-glossary.md
+    - content/100-appendices/02-command-cheat-sheet.md
+    - content/100-appendices/03-whats-new-1-21-to-1-27.md
+format:
+  html:
+    theme: auto
+  epub: {}
+  pdf:
+    paper: A4

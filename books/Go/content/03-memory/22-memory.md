@@ -1,0 +1,275 @@
+---
+title: Understanding Memory in Go
+---
+
+# Understanding Memory in Go
+
+## Overview
+
+Go manages memory automatically through its runtime, but understanding stack vs heap allocation helps write more efficient code.
+
+## Stack vs Heap
+
+### Stack
+- Fast allocation/deallocation
+- Function-local variables
+- Fixed size per goroutine (~2KB initial)
+- Automatically cleaned up when function returns
+
+### Heap
+- Dynamic allocation
+- Survives function scope
+- Managed by garbage collector
+- More expensive than stack
+
+## Escape Analysis
+
+Go's compiler decides where to allocate based on **escape analysis**:
+
+```go
+func stackAlloc() int {
+    x := 42      // Stays on stack
+    return x     // Value copied
+}
+
+func heapAlloc() *int {
+    x := 42      // Escapes to heap
+    return &x    // Pointer returned
+}
+```
+
+### Check Escape Analysis
+
+```bash
+go build -gcflags="-m" main.go
+# Shows: "moved to heap" for escaped variables
+```
+
+## What Causes Escape
+
+```go
+// 1. Returning pointer to local
+func escape1() *int {
+    n := 1
+    return &n  // Escapes
+}
+
+// 2. Storing in interface
+func escape2() {
+    n := 1
+    fmt.Println(n)  // Escapes (interface{} argument)
+}
+
+// 3. Closure capturing variable
+func escape3() func() int {
+    n := 1
+    return func() int { return n }  // Escapes
+}
+
+// 4. Size too large for stack
+func escape4() {
+    _ = make([]byte, 10<<20)  // 10MB, escapes
+}
+```
+
+## Memory Layout
+
+### Value Types
+```go
+type Point struct { X, Y int }
+p := Point{1, 2}  // 16 bytes inline
+```
+
+### Reference Types
+```go
+s := make([]int, 10)  // Slice header on stack, data on heap
+m := make(map[string]int)  // Map structure on heap
+```
+
+## Best Practices
+
+### Reduce Allocations
+
+```go
+// Bad: allocates each iteration
+for i := 0; i < n; i++ {
+    data := make([]byte, 1024)
+    process(data)
+}
+
+// Good: reuse allocation
+data := make([]byte, 1024)
+for i := 0; i < n; i++ {
+    process(data)
+}
+```
+
+### Preallocate Slices
+
+```go
+// Bad: multiple reallocations
+var result []int
+for _, v := range data {
+    result = append(result, v)
+}
+
+// Good: preallocate
+result := make([]int, 0, len(data))
+for _, v := range data {
+    result = append(result, v)
+}
+```
+
+### Use Value Semantics When Possible
+
+```go
+// May allocate
+func process(p *Point) { }
+
+// Stays on stack
+func process(p Point) { }
+```
+
+## Summary
+
+| Location | Characteristics |
+|----------|-----------------|
+| Stack | Fast, automatic, limited size |
+| Heap | Dynamic, GC-managed, survives scope |
+
+| Causes Escape | Example |
+|---------------|---------|
+| Return pointer | `return &x` |
+| Interface | `fmt.Println(x)` |
+| Closure | `func() { use(x) }` |
+| Large size | `make([]byte, 1MB)` |
+
+## Related Topics
+- [Pointers Explained](23-pointers.md)
+- [Garbage Collection](25-garbage-collection.md)
+
+## More examples
+
+### Example: value stays local
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func double(x int) int {
+	return x * 2
+}
+
+func main() {
+	n := 21
+	fmt.Println("double:", double(n))
+	fmt.Println("original:", n)
+}
+```
+
+Expected:
+
+```text
+double: 42
+original: 21
+```
+
+### Example: interface argument often forces heap
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func show(v any) {
+	fmt.Printf("value=%v type=%T\n", v, v)
+}
+
+func main() {
+	x := 99
+	show(x) // boxing into any is a common escape trigger
+	show("ok")
+}
+```
+
+Expected:
+
+```text
+value=99 type=int
+value=ok type=string
+```
+
+## Runnable example
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+# Optional: see escape decisions
+# go build -gcflags="-m" .
+```
+
+```go
+package main
+
+import "fmt"
+
+type Point struct{ X, Y int }
+
+// Returns a value: caller gets a copy; x can stay on the stack.
+func stackAlloc() int {
+	x := 42
+	return x
+}
+
+// Returns a pointer: x must live past the call, so it escapes to the heap.
+func heapAlloc() *int {
+	x := 42
+	return &x
+}
+
+// Reuse one buffer instead of allocating per iteration.
+func processReuse(n int) int {
+	buf := make([]byte, 64)
+	sum := 0
+	for i := 0; i < n; i++ {
+		buf[0] = byte(i)
+		sum += int(buf[0])
+	}
+	return sum
+}
+
+func main() {
+	fmt.Println("stackAlloc:", stackAlloc())
+
+	p := heapAlloc()
+	fmt.Println("heapAlloc value:", *p)
+	// Do not print the address itself — it changes every run.
+
+	// Slice header can be on the stack; backing array is typically on the heap.
+	pts := make([]Point, 0, 3)
+	pts = append(pts, Point{1, 2}, Point{3, 4})
+	fmt.Printf("points len=%d cap=%d first=%v\n", len(pts), cap(pts), pts[0])
+
+	fmt.Println("processReuse:", processReuse(5))
+}
+```
+
+**Expected output:**
+
+```text
+stackAlloc: 42
+heapAlloc value: 42
+points len=2 cap=3 first={1 2}
+processReuse: 10
+```
+
+**What to notice:** Returning `*int` forces heap allocation; reusing one slice buffer avoids per-loop allocs. Run with `-gcflags="-m"` to confirm which locals the compiler marks as escaping.
+
+**Try next:** Change `heapAlloc` to return `int` by value and re-run escape analysis; preallocate `pts` with `make([]Point, 0, 100)` and watch capacity stay put under many `append`s.

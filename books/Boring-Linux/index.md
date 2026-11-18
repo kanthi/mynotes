@@ -1,0 +1,90 @@
+---
+title: Introduction
+unnumbered: true
+---
+
+# Boring Linux
+
+A detailed, progressive guide to understanding and operating Linux systems, from the first administered machine to advanced systems engineering.
+
+The book begins with the machine, installation and boot. It develops single-host administration, storage, Linux networking and network services, security, application services, virtual machines and containers. Later parts bring those facilities together through observability, performance, automation, fleets, availability, recovery and kernel-level investigation.
+
+## Starting point
+
+You should be comfortable opening a terminal, editing a text file and running a simple command. No prior systems-administration knowledge is assumed. New systems concepts are explained when they appear, and each practical task includes the command details needed to complete it.
+
+Worked examples use Ubuntu 26.04 LTS as the reference environment. General Linux mechanisms are distinguished from distribution-specific packaging, policy and defaults. Other distribution behavior is explained where it changes the administrative task.
+
+## How to learn
+
+Begin with Parts 01–11 in order, then select the route that fits the systems you want to operate. Each subject connects its mechanism to configuration, observation, operation, diagnosis and recovery. Diagrams show relationships; worked examples explain input, output and the limits of an observation. Labs provide results you can verify, and recall cards support later reference.
+
+The opening inspection examples can be studied before building the lab VM. Repeat them on that VM after completing the lab-building chapter. Configuration and recovery experiments belong in the designated disposable lab.
+
+## Choose a route
+
+| Goal | Reading route |
+|---|---|
+| One recoverable host | 01–11; then host networking, remote access and firewall essentials in 12–15, plus 17–18 |
+| A small site and application | 01–19, then observation in 23, reproducible builds in 25, performance in 24 and production operation in 26–28 |
+| VMs or containers | 01–19, then 20 and/or 21, followed by 23–28 |
+| Kubernetes on Linux | 01–19, then 21–22 and 23–28 |
+| Kernel investigation | Relevant foundations, then 23–24 and 29–30; select a depth track in 33–37 |
+| Ubuntu-specific integration | Relevant foundations, then the selected desktop/cloud branches in 31 and release-specific cases in 38 |
+
+Choose the services and technology branches relevant to your lab. The ordinary server route does not require Kubernetes, specialized hardware, every filesystem or every database. Later chapters explain their prerequisites; a branch can be studied when those prerequisites are satisfied.
+
+Attempt the Part 32 projects as you progress: a recoverable server after 11, a small site after 16, a monitored application after 19 and 23, and a reproducible fleet after 25–26. The performance project follows 24; failover and disaster recovery follow 27–28. Projects for VMs, containers and clusters follow their corresponding workload parts and observation in 23.
+
+## Current writing progress
+
+Parts 01–05 have complete chapter sequences. Part 06 contains nine chapters, through service cgroups, resource boundaries and an initial sandbox. Its next chapters cover reload/restart and graceful shutdown, user services, and failure diagnosis and recovery.
+
+Parts 07–32 are planned and are not yet in the sidebar. Parts 33–38 already contain optional depth-track material; they are being reviewed for prerequisites, overlap and technical accuracy. Their presence is not a substitute for the unwritten core parts. The sidebar lists the chapters currently available.
+
+The map below covers the whole curriculum, including planned parts. Part numbers are stable references; they do not require a reader to complete every optional track.
+
+## Curriculum map
+
+| Part | Subject |
+|---|---|
+| 01 | The Linux Machine and the Administration Lab |
+| 02 | Installing and Provisioning Linux |
+| 03 | Boot, Shutdown and Recovery |
+| 04 | Users, Identity and Administrative Access |
+| 05 | Packages, Software and Updates |
+| 06 | Services, systemd and Scheduled Work |
+| 07 | Processes, Memory and Resource Administration |
+| 08 | Configuration, Devices, Time and Local Logs |
+| 09 | Disks, Partitions and Filesystems |
+| 10 | Volumes, RAID, Encryption and Storage Health |
+| 11 | Backup, Restore and Data Lifecycle |
+| 12 | Linux Host Networking |
+| 13 | DNS, Address Assignment and Time Services |
+| 14 | Remote Access, Certificates and Trust Services |
+| 15 | Linux Gateways, Firewalls and Virtual Networks |
+| 16 | File, Storage and Messaging Services |
+| 17 | Linux Access Control and Isolation |
+| 18 | Hardening, Secrets, Audit and Security Response |
+| 19 | Web, Application and Data Services |
+| 20 | Virtualization and Virtual Machine Operations |
+| 21 | Containers and System Containers |
+| 22 | Kubernetes and Linux Cluster Workloads |
+| 23 | Troubleshooting and Observability |
+| 24 | Performance and Capacity Engineering |
+| 25 | Provisioning and Configuration Automation |
+| 26 | Fleet Maintenance and Software Delivery |
+| 27 | High Availability and Shared Infrastructure |
+| 28 | Reliability, Incidents and Disaster Recovery |
+| 29 | Advanced Linux Architecture and Kernel Internals |
+| 30 | Tracing, eBPF and Failure Analysis |
+| 31 | Specialist Linux Systems |
+| 32 | Integrated Systems Engineering Projects |
+| 33 | Running Multiple Kernels on One Bare-Metal Server |
+| 34 | Linux Performance Engineering & Server Benchmarking |
+| 35 | A Practical Guide to Securing Linux from Kernel to Cloud |
+| 36 | The ext4 Filesystem: Architecture, Internals, and Implementation |
+| 37 | A Complete Guide to Virtual Memory, Allocators, Paging, and Performance in the Modern Linux Kernel |
+| 38 | Ubuntu 26.04 LTS: From Desktop to Enterprise Cloud |
+
+Parts 29–32 provide investigation, specialist branches and integrated projects. Parts 33–38 provide optional depth in multiple-kernel architectures, benchmarking, security, ext4, memory management and Ubuntu-specific integration. Each track has prerequisites and a distinct practical outcome; choose it when it answers a question about the systems you operate.

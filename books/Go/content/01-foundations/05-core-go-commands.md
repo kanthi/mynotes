@@ -1,0 +1,506 @@
+---
+title: Core Go Commands
+---
+
+# Core Go Commands
+
+## Overview
+
+The `go` command is your Swiss Army knife for Go development. This chapter provides a deep dive into the essential commands you'll use daily, from building and testing to analyzing and maintaining your code.
+
+## Command Summary
+
+| Command | Purpose |
+|---------|---------|
+| `go build` | Compile packages and dependencies |
+| `go run` | Compile and run Go program |
+| `go test` | Run tests |
+| `go get` | Add dependencies to module |
+| `go mod` | Module maintenance |
+| `go fmt` | Format source code |
+| `go vet` | Report suspicious constructs |
+| `go doc` | Show documentation |
+| `go install` | Compile and install packages |
+| `go clean` | Remove object files |
+
+## `go build` - Compiling Code
+
+### Basic Usage
+
+```bash
+# Build current package
+$ go build
+
+# Build specific file
+$ go build main.go
+
+# Build with custom output name
+$ go build -o myapp
+
+# Build specific package
+$ go build ./cmd/server
+```
+
+### Build Flags
+
+```bash
+# Verbose output (show packages being compiled)
+$ go build -v ./...
+
+# Rebuild all packages (ignore cache)
+$ go build -a ./...
+
+# Print commands but don't run them
+$ go build -n
+
+# Show build work directory (don't delete)
+$ go build -work
+```
+
+### Cross-Compilation
+
+The toolchain ships the runtime for each target. Add `CGO_ENABLED=0` so you do not accidentally link the *host* libc (a Linux AMD64 binary with glibc will not run on Alpine).
+
+```bash
+# Build for Linux (AMD64), fully static
+$ GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o app-linux
+
+# Build for Windows
+$ GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -o app.exe
+
+# Build for macOS ARM (Apple Silicon)
+$ GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -o app-macos
+
+# Build for Raspberry Pi
+$ GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=0 go build -o app-arm
+```
+
+On Linux, `file app-linux` should say `statically linked`. Why that works — Go talks to the kernel without libc — is in [Go as a Systems Language](../17-systems-programming/140a-go-as-systems-language.md).
+
+### Linker Flags
+
+```bash
+# Strip debug info (smaller binary)
+$ go build -ldflags="-s -w" -o app
+
+# Embed version information
+$ go build -ldflags="-X main.version=1.0.0" -o app
+```
+
+```go
+// In your code
+var version = "dev"  // Overwritten by -ldflags
+
+func main() {
+    fmt.Println("Version:", version)
+}
+```
+
+## `go run` - Quick Execution
+
+```bash
+# Run a single file
+$ go run main.go
+
+# Run multiple files
+$ go run main.go helper.go
+
+# Run all files in directory
+$ go run .
+
+# Run with arguments
+$ go run main.go --port=8080 --debug
+```
+
+## `go test` - Testing
+
+```bash
+# Run all tests in current package
+$ go test
+
+# Run all tests recursively
+$ go test ./...
+
+# Verbose output
+$ go test -v
+
+# Run specific test
+$ go test -run TestFunctionName
+
+# Run with coverage
+$ go test -cover
+
+# Generate coverage report
+$ go test -coverprofile=coverage.out
+$ go tool cover -html=coverage.out
+
+# Run benchmarks
+$ go test -bench=.
+
+# Test with race detector
+$ go test -race ./...
+
+# JSON events (Go 1.27+: output lines may include OutputType)
+$ go test -json ./...
+```
+
+Go 1.27 runs the **`stdversion`** vet check with `go test` by default: using a standard-library symbol newer than the `go` version in `go.mod` (or the file’s build tags) is reported. Fix the call site or raise the module’s `go` directive.
+
+## `go get` - Dependency Management
+
+```bash
+# Add a dependency (latest version)
+$ go get github.com/gin-gonic/gin
+
+# Add specific version
+$ go get github.com/gin-gonic/gin@v1.9.0
+
+# Add specific commit
+$ go get github.com/gin-gonic/gin@a1b2c3d
+
+# Update a dependency
+$ go get -u github.com/gin-gonic/gin
+
+# Update all dependencies
+$ go get -u ./...
+
+# Update only patch versions
+$ go get -u=patch ./...
+```
+
+## `go mod` - Module Operations
+
+```bash
+# Initialize a new module
+$ go mod init github.com/username/project
+
+# Download dependencies
+$ go mod download
+
+# Tidy up go.mod (add missing, remove unused)
+$ go mod tidy
+
+# Verify dependencies
+$ go mod verify
+
+# Create vendor directory
+$ go mod vendor
+
+# Show dependency graph
+$ go mod graph
+
+# Explain why a dependency is needed
+$ go mod why github.com/some/package
+
+# Edit go.mod programmatically
+$ go mod edit -require github.com/pkg/errors@v0.9.1
+```
+
+## `go fmt` / `gofmt` - Formatting
+
+```bash
+# Format all Go files in current directory
+$ go fmt ./...
+
+# Use gofmt directly with options
+$ gofmt -w main.go        # Write changes to file
+$ gofmt -d main.go        # Show diff
+$ gofmt -l .              # List files that need formatting
+$ gofmt -s main.go        # Simplify code
+```
+
+## `go vet` - Static Analysis
+
+```bash
+# Vet current package
+$ go vet
+
+# Vet all packages
+$ go vet ./...
+
+# Run specific analyzers
+$ go vet -composites=false ./...
+```
+
+Common issues `go vet` catches:
+- Printf format string mismatches
+- Unreachable code
+- Suspicious mutex usage
+- Struct field tag issues
+
+## `go doc` - Documentation
+
+```bash
+# Show package documentation
+$ go doc fmt
+
+# Show function documentation
+$ go doc fmt.Println
+
+# Show type documentation
+$ go doc http.Client
+
+# Show all documentation
+$ go doc -all fmt
+
+# Executable examples (Go 1.27+)
+$ go doc -ex bytes.Buffer
+$ go doc bytes.ExampleBuffer
+
+# Docs for a module version (Go 1.27+)
+$ go doc example.com/pkg@v1.2.3
+
+# Start documentation server
+$ godoc -http=:6060
+# Then visit http://localhost:6060
+```
+
+## `go install` - Installing Binaries
+
+```bash
+# Install command to $GOBIN
+$ go install
+
+# Install specific version of a tool
+$ go install golang.org/x/tools/gopls@latest
+
+# Install from specific package
+$ go install ./cmd/myapp
+```
+
+## `go clean` - Cleanup
+
+```bash
+# Remove object files
+$ go clean
+
+# Remove cached build files
+$ go clean -cache
+
+# Remove test cache
+$ go clean -testcache
+
+# Remove all cached data
+$ go clean -cache -testcache -modcache
+
+# Show what would be removed
+$ go clean -n
+```
+
+## `go env` - Environment
+
+```bash
+# Show all environment variables
+$ go env
+
+# Show specific variable
+$ go env GOPATH
+
+# Set environment variable
+$ go env -w GOBIN=/usr/local/bin
+
+# Unset environment variable
+$ go env -u GOBIN
+```
+
+## `go list` - Package Information
+
+```bash
+# List current package
+$ go list
+
+# List all packages
+$ go list ./...
+
+# JSON output
+$ go list -json ./...
+
+# List dependencies
+$ go list -m all
+
+# List with template
+$ go list -f '{{.ImportPath}} -> {{.Deps}}' ./...
+```
+
+## `go generate` - Code Generation
+
+```bash
+# Run all generate directives
+$ go generate ./...
+
+# Run with verbose output
+$ go generate -v ./...
+```
+
+```go
+// In source file
+//go:generate stringer -type=Status
+type Status int
+```
+
+## Tool Installation Best Practices
+
+```bash
+# Install development tools
+$ go install golang.org/x/tools/gopls@latest          # Language server
+$ go install github.com/go-delve/delve/cmd/dlv@latest # Debugger
+$ go install honnef.co/go/tools/cmd/staticcheck@latest # Linter
+
+# Verify installation
+$ which gopls
+$ which dlv
+```
+
+## Common Workflows
+
+### Development Cycle
+```bash
+# 1. Write code
+# 2. Format
+$ go fmt ./...
+# 3. Vet
+$ go vet ./...
+# 4. Test
+$ go test ./...
+# 5. Build
+$ go build -o app ./cmd/server
+```
+
+### Release Build
+```bash
+# Production build with version
+$ go build \
+    -ldflags="-s -w -X main.version=$(git describe --tags)" \
+    -o bin/app \
+    ./cmd/server
+```
+
+## Summary
+
+| Task | Command |
+|------|---------|
+| Quick run | `go run main.go` |
+| Build binary | `go build -o app` |
+| Run tests | `go test ./...` |
+| Format code | `go fmt ./...` |
+| Check issues | `go vet ./...` |
+| Add dependency | `go get github.com/pkg@version` |
+| Clean modules | `go mod tidy` |
+| View docs | `go doc package.Function` |
+
+## Related Topics
+- [Formatting, Vetting, and Documentation](06-formatting-vetting-docs.md)
+- [Dependency Management](07-dependency-management.md)
+
+## More examples
+
+### Example: flags for `go run` experiments
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import (
+	"flag"
+	"fmt"
+)
+
+func main() {
+	name := flag.String("name", "world", "who to greet")
+	n := flag.Int("n", 1, "repeat count")
+	flag.Parse()
+
+	for i := 0; i < *n; i++ {
+		fmt.Printf("hello, %s\n", *name)
+	}
+}
+```
+
+Expected (`go run . -name gopher -n 2`):
+
+```text
+hello, gopher
+hello, gopher
+```
+
+### Example: build-time GOOS/GOARCH report
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import (
+	"fmt"
+	"runtime"
+)
+
+func main() {
+	// Same values you target with GOOS/GOARCH when cross-compiling.
+	fmt.Println("GOOS:", runtime.GOOS)
+	fmt.Println("GOARCH:", runtime.GOARCH)
+	fmt.Println("compiler:", runtime.Compiler)
+}
+```
+
+Expected (illustrative; machine-specific):
+
+```text
+GOOS: darwin
+GOARCH: arm64
+compiler: gc
+```
+
+## Runnable example
+
+A small app that prints a version string—ready for `go run`, `go build -ldflags`, and `go test` workflows.
+
+Save as `main.go`. From an empty directory:
+
+```bash
+go mod init example
+go run .
+go build -ldflags="-X main.version=1.2.3" -o app .
+./app
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+	"runtime"
+)
+
+// Overwritten at link time: go build -ldflags="-X main.version=1.2.3"
+var version = "dev"
+
+func main() {
+	fmt.Printf("app version=%s go=%s %s/%s\n",
+		version, runtime.Version(), runtime.GOOS, runtime.GOARCH)
+
+	if len(os.Args) > 1 && os.Args[1] == "-v" {
+		fmt.Println("verbose: argv=", os.Args)
+	}
+}
+```
+
+**Expected output** (illustrative):
+
+```text
+# go run .
+app version=dev go=go1.22.5 darwin/arm64
+
+# after go build -ldflags="-X main.version=1.2.3" -o app && ./app
+app version=1.2.3 go=go1.22.5 darwin/arm64
+```
+
+**What to notice:**
+- `go run` uses the source default (`dev`); `go build -ldflags` rewrites the variable.
+- `os.Args` is how CLI flags start before you reach `flag` package patterns.
+- Same file is the target of `go build`, `go run`, and (later) tests of pure helpers.
+- Runtime metadata is available without shelling out to `go env`.
+
+**Try next:** Run `go fmt .` and `go vet .` on this directory, then add a `main_test.go` that checks `version` is non-empty.

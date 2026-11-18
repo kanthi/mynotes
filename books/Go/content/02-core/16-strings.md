@@ -1,0 +1,301 @@
+---
+title: Working with Strings
+---
+
+# Working with Strings
+
+## Overview
+
+Strings in Go are immutable sequences of bytes, typically UTF-8 encoded. Understanding the distinction between bytes and runes is essential.
+
+## String Basics
+
+```go
+s := "Hello, World!"
+s := `Raw string with
+multiple lines`
+```
+
+### Immutability
+
+```go
+s := "hello"
+// s[0] = 'H'  // Error: cannot assign to s[0]
+s = "Hello"    // OK: reassign entire string
+```
+
+## Bytes vs Runes
+
+```go
+s := "Hello, 世界"
+
+len(s)              // 13 (bytes)
+len([]rune(s))      // 9 (characters)
+```
+
+### Iterating
+
+```go
+// By byte
+for i := 0; i < len(s); i++ {
+    fmt.Printf("%x ", s[i])
+}
+
+// By rune (character)
+for i, r := range s {
+    fmt.Printf("%d: %c\n", i, r)
+}
+```
+
+## String Operations
+
+### Concatenation
+
+```go
+s := "Hello" + ", " + "World"
+
+// Efficient building
+var b strings.Builder
+b.WriteString("Hello")
+b.WriteString(", World")
+result := b.String()
+```
+
+### Comparison
+
+```go
+s1 == s2              // Equality
+s1 < s2               // Lexicographic
+strings.EqualFold(s1, s2)  // Case-insensitive
+```
+
+## strings Package
+
+```go
+import "strings"
+
+strings.Contains(s, "sub")      // true/false
+strings.HasPrefix(s, "pre")     // true/false
+strings.HasSuffix(s, "suf")     // true/false
+strings.Index(s, "sub")         // Position or -1
+strings.Split(s, ",")           // []string
+strings.Join(parts, ",")        // string
+strings.ToUpper(s)              // UPPERCASE
+strings.ToLower(s)              // lowercase
+strings.TrimSpace(s)            // Remove whitespace
+strings.Replace(s, "old", "new", n)  // Replace n times
+strings.ReplaceAll(s, "old", "new")  // Replace all
+```
+
+## strconv Package
+
+```go
+import "strconv"
+
+// String to int
+n, err := strconv.Atoi("42")
+
+// Int to string
+s := strconv.Itoa(42)
+
+// Parse float
+f, err := strconv.ParseFloat("3.14", 64)
+
+// Format float
+s := strconv.FormatFloat(3.14, 'f', 2, 64)
+```
+
+## fmt Package
+
+```go
+// Formatting
+s := fmt.Sprintf("Name: %s, Age: %d", name, age)
+
+// Parsing
+var name string
+var age int
+fmt.Sscanf("Alice 30", "%s %d", &name, &age)
+```
+
+## Rune Operations
+
+```go
+r := 'A'
+unicode.IsLetter(r)    // true
+unicode.IsDigit(r)     // false
+unicode.ToUpper(r)     // 'A'
+unicode.ToLower(r)     // 'a'
+```
+
+## Summary
+
+| Operation | Method |
+|-----------|--------|
+| Length (bytes) | `len(s)` |
+| Length (chars) | `len([]rune(s))` |
+| Concatenate | `+` or `strings.Builder` |
+| Contains | `strings.Contains()` |
+| Split/Join | `strings.Split()`, `strings.Join()` |
+| Convert | `strconv.Atoi()`, `strconv.Itoa()` |
+
+## Related Topics
+- [Predeclared Types](09-predeclared-types.md)
+- [I/O and Streaming](../28-specialized/93-io-streaming.md)
+
+## More examples
+
+### Example: bytes vs runes
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	s := "Go✓"
+	fmt.Println("bytes:", len(s))
+	fmt.Println("runes:", len([]rune(s)))
+	for i, r := range s {
+		fmt.Printf("i=%d r=%q\n", i, r)
+	}
+}
+```
+
+Expected:
+
+```text
+bytes: 5
+runes: 3
+i=0 r='G'
+i=1 r='o'
+i=2 r='✓'
+```
+
+### Example: strings.Builder
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import (
+	"fmt"
+	"strings"
+)
+
+func main() {
+	var b strings.Builder
+	b.WriteString("hello")
+	b.WriteByte(' ')
+	b.WriteString("gopher")
+	fmt.Println(b.String())
+	fmt.Println("len:", b.Len())
+}
+```
+
+Expected:
+
+```text
+hello gopher
+len: 12
+```
+
+## Runnable example
+
+Save as `main.go`. From an empty directory:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"strconv"
+	"strings"
+	"unicode"
+)
+
+func main() {
+	s := "Hello, 世界"
+	fmt.Printf("%q bytes=%d runes=%d\n", s, len(s), len([]rune(s)))
+
+	fmt.Print("bytes: ")
+	for i := 0; i < len(s); i++ {
+		fmt.Printf("%02x ", s[i])
+	}
+	fmt.Println()
+
+	fmt.Println("runes:")
+	for i, r := range s {
+		fmt.Printf("  index %d -> %c U+%04X\n", i, r, r)
+	}
+
+	// Immutability: reassign whole string only
+	s = "Hello"
+	// s[0] = 'h' // compile error if uncommented
+	fmt.Println("reassigned:", s)
+
+	var b strings.Builder
+	b.WriteString("Go")
+	b.WriteString(" ")
+	b.WriteString("strings")
+	built := b.String()
+	fmt.Println("builder:", built)
+
+	fmt.Println("Contains Go?", strings.Contains(built, "Go"))
+	fmt.Println("fields:", strings.Fields("  a  b\tc  "))
+	fmt.Println("join:", strings.Join([]string{"a", "b", "c"}, "-"))
+	fmt.Println("upper:", strings.ToUpper("gopher"))
+
+	n, err := strconv.Atoi("42")
+	fmt.Printf("Atoi=%d err=%v Itoa=%s\n", n, err, strconv.Itoa(n+1))
+	f, _ := strconv.ParseFloat("3.14", 64)
+	fmt.Println("float:", strconv.FormatFloat(f, 'f', 2, 64))
+
+	r := 'g'
+	fmt.Printf("rune %q letter=%v upper=%q\n", r, unicode.IsLetter(r), unicode.ToUpper(r))
+
+	fmt.Println(fmt.Sprintf("Name: %s Age: %d", "Ada", 36))
+}
+```
+
+**Expected output** (illustrative):
+
+```text
+"Hello, 世界" bytes=13 runes=9
+bytes: 48 65 6c 6c 6f 2c 20 e4 b8 96 e7 95 8c
+runes:
+  index 0 -> H U+0048
+  index 1 -> e U+0065
+  index 2 -> l U+006C
+  index 3 -> l U+006C
+  index 4 -> o U+006F
+  index 5 -> , U+002C
+  index 6 ->   U+0020
+  index 7 -> 世 U+4E16
+  index 10 -> 界 U+754C
+reassigned: Hello
+builder: Go strings
+Contains Go? true
+fields: [a b c]
+join: a-b-c
+upper: GOPHER
+Atoi=42 err=<nil> Itoa=43
+float: 3.14
+rune 'g' letter=true upper='G'
+Name: Ada Age: 36
+```
+
+**What to notice:**
+- Multi-byte UTF-8 characters make `len` (bytes) larger than rune count.
+- `range` over a string steps by runes but indexes are byte offsets.
+- `strings.Builder` avoids quadratic `+` chains for assembly.
+- `strconv` is the explicit bridge between text and numbers.
+
+**Try next:** Use `strings.ReplaceAll` to censor a word in a sentence and print before/after.

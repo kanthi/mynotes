@@ -1,0 +1,167 @@
+---
+title: GitHub Actions with Nix
+---
+
+# GitHub Actions with Nix
+
+`actions/setup-go` plus `actions/setup-python` plus a matrix of cache keys is how CI drifts from laptops. The boring default is: **install Nix on the runner, `nix flake check` / `nix build`, and push results to the team binary cache**.
+
+## Mental model
+
+The runner starts empty. You give it Nix, the same `flake.lock` as the laptop, and a cache token. The graph that `nix develop` used locally is the graph CI builds. There is no second `Dockerfile` for CI.
+
+| Step | Job |
+|---|---|
+| checkout | The flake and the lock |
+| install Nix | Daemon + flakes |
+| cache auth | Cachix (or magic-nix-cache for GHA's own cache) |
+| `nix flake check` | Eval + checks + tests |
+| `nix build` | The artifacts you ship |
+
+Use **pinned action SHAs or release tags**, not `@main`, once the workflow is real. Examples below use tags for readability.
+
+## Worked examples
+
+### Case 1: Check and build, push to Cachix
+
+Save as `.github/workflows/ci.yml`:
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v27
+        with:
+          extra_nix_config: |
+            extra-substituters = https://desk-cache.cachix.org
+            extra-trusted-public-keys = desk-cache.cachix.org-1:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=
+      - uses: cachix/cachix-action@v15
+        with:
+          name: desk-cache
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          skipPush: ${{ github.event_name == 'pull_request' }}
+      - name: Check and build
+        run: |
+          nix flake check -L
+          nix build --print-build-logs
+          git diff --exit-code flake.lock
+```
+
+The flake lock already pins nixpkgs — `nix_path: nixpkgs=channel:…` does nothing for `nix flake check`. Skip it. `extra_nix_config` is how the **runner daemon** sees the team cache (same keys as `/etc/nix/nix.conf` on laptops).
+
+`CACHIX_AUTH_TOKEN` is a repository secret. Pull requests from forks should **not** receive a write token (GitHub's default is correct: `pull_request` from forks cannot read org secrets). `skipPush` on `pull_request` is belt-and-suspenders when the workflow still sees the token on internal PRs.
+
+Do not add `actions/setup-go` next to this job. The flake already has `go`.
+
+If CI rewrote the lock, `git diff --exit-code flake.lock` fails. The lock in git is the pin; the runner does not get a vote.
+
+```yaml
+# .github/workflows/ci.yml fragment
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+```
+
+`pull_request_target` is still forbidden with a write token (secrets chapter).
+
+### Case 2: `nix flake check` is the gate
+
+Save as a flake fragment (merge into `outputs`):
+
+```nix
+# checks.nix — conceptually part of flake outputs
+{
+  checks.x86_64-linux.fmt = pkgs.runCommand "fmt" { } ''
+    echo ok > $out
+  '';
+}
+```
+
+A failing check fails the job. You do not add a second "lint" job with a different Python.
+
+```bash
+nix flake check
+```
+
+Output on success:
+
+```
+evaluating flake...
+checking flake...
+```
+
+### Case 3: Magic Nix Cache when you do not have Cachix yet
+
+```yaml
+# .github/workflows/ci-magic.yml
+name: CI
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@v16
+      - uses: DeterminateSystems/magic-nix-cache-action@v8
+      - run: nix build
+```
+
+This uses GitHub's cache API. It is per-repository and evicts. It is a start. A team cache (Cachix/Attic) is what laptops share with CI.
+
+### Case 4: Pin the installer, pin nixpkgs
+
+The flake lock already pins nixpkgs. The installer action should not float `@main`:
+
+```yaml
+- uses: cachix/install-nix-action@v27
+```
+
+When you bump, bump in a dedicated commit. Same discipline as `flake.lock`.
+
+### Case 5: Free disk on the runner
+
+GitHub's Ubuntu image is busy. If `nix build` dies with `No space left on device`:
+
+```yaml
+- name: Free disk
+  run: |
+    sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/share/boost
+    df -h
+```
+
+Then GC at the end of self-hosted runners only (`nix-collect-garbage -d`). Hosted runners die anyway.
+
+## The trap
+
+The trap is **`nix-env -iA nixpkgs.go` in CI** after installing Nix, then `go test`. You just rebuilt the old world: an unpinned go, no flake, no cache sharing with the laptop.
+
+The other trap is `cachix-action` with a write token on `pull_request_target`. A fork PR can then push malware NARs to the team cache. Write tokens: `push` to `main` and trusted workflows only.
+
+A third: `nix_path: nixpkgs=channel:nixos-unstable` next to a 26.05 flake, then a step that uses `<nixpkgs>` — two pins, two worlds. A fourth: installing Nix twice (Cachix **and** Determinate) in one job.
+
+## The boring rule
+
+- One install-Nix action, then `nix flake check` and `nix build`. `git diff --exit-code flake.lock`.
+- Same `flake.lock` as developers. Team cache via `extra_nix_config`, not a channel `nix_path`.
+- Push to the team cache from trusted branches (`skipPush` on `pull_request`).
+- Pin action versions. One installer, not two.
+- Do not `setup-go` / `setup-python` next to Nix "just in case."
+
+## Try this
+
+1. Add Case 1 to a throwaway repo with a `flake.nix` that outputs `packages.x86_64-linux.default = pkgs.hello`. Confirm the Actions log shows a substitute or a build, then a second run that hits the cache.
+2. Break `flake.nix` syntax, push, and confirm the job fails at eval, not at a later custom script.
+3. List repository secrets and confirm `CACHIX_AUTH_TOKEN` is not printed in logs (`echo ${{ secrets.CACHIX_AUTH_TOKEN }}` is a firing offence).
+4. Time `nix flake check` locally versus in CI. If CI is 10× slower, you are compiling; fix substituters (`extra_nix_config` keys).
+5. Confirm the workflow YAML has no `pull_request_target` and no `nix_path` channel.

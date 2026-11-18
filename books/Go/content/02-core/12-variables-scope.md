@@ -1,0 +1,507 @@
+---
+title: Variables and Scope
+---
+
+# Variables and Scope
+
+## Overview
+
+Variables in Go store values that can change during program execution. Understanding declaration patterns and visibility rules (scope) is fundamental to writing correct Go programs.
+
+## Variable Declaration
+
+### Using `var`
+
+```go
+// Explicit type
+var name string
+var age int
+
+// With initialization
+var name string = "Alice"
+var age int = 30
+
+// Type inference
+var name = "Alice"  // Inferred as string
+var age = 30        // Inferred as int
+```
+
+### Short Variable Declaration (`:=`)
+
+Inside functions, use `:=` for concise declaration:
+
+```go
+func main() {
+    name := "Alice"   // var name = "Alice"
+    age := 30         // var age = 30
+    active := true    // var active = true
+}
+```
+
+### When to Use `var` vs `:=`
+
+| Use `var` | Use `:=` |
+|-----------|----------|
+| Package-level variables | Inside functions |
+| Explicit type needed | Type can be inferred |
+| Zero value is desired | Initialization value provided |
+
+```go
+// Package level (var only)
+var globalConfig Config
+
+func main() {
+    // Function level (either works, := preferred)
+    count := 0
+
+    // Explicit type needed
+    var ratio float64 = 0  // := 0 would be int
+}
+```
+
+### Multiple Variables
+
+```go
+// Same type
+var x, y, z int
+
+// Different values
+var a, b, c = 1, "hello", true
+
+// Short declaration
+name, age, active := "Alice", 30, true
+```
+
+### Variable Block
+
+```go
+var (
+    name   string = "Alice"
+    age    int    = 30
+    active bool   = true
+)
+```
+
+## Redeclaration and Shadowing
+
+### Redeclaration with `:=`
+
+`:=` can redeclare if at least one variable is new:
+
+```go
+x := 1
+x, y := 2, 3  // x redeclared, y is new (allowed)
+
+// This fails:
+// x := 4  // Error: no new variables on left side
+```
+
+### Variable Shadowing
+
+An inner scope can declare a variable with the same name as an outer scope:
+
+```go
+x := 1
+fmt.Println(x)  // 1
+
+if true {
+    x := 2       // New x, shadows outer x
+    fmt.Println(x)  // 2
+}
+
+fmt.Println(x)  // 1 (outer x unchanged)
+```
+
+**Warning:** Shadowing often creates bugs:
+
+```go
+var err error
+
+if condition {
+    result, err := someFunc()  // err shadows! Outer err unchanged
+    // ...
+}
+
+if err != nil {  // This checks outer err, always nil!
+    // Never reached
+}
+```
+
+**Fix:**
+
+```go
+var err error
+var result Result
+
+if condition {
+    result, err = someFunc()  // No :=, uses outer err
+}
+```
+
+## Scope Levels
+
+### Package Scope
+
+Variables declared outside functions are visible to the entire package:
+
+```go
+package mypackage
+
+var packageVar = "visible to all files in mypackage"
+
+func init() {
+    packageVar = "can modify here"
+}
+
+func SomeFunc() {
+    fmt.Println(packageVar)  // Accessible
+}
+```
+
+### File Scope (Imports)
+
+Import names are scoped to the file:
+
+```go
+// file1.go
+import "fmt"  // fmt available only in this file
+
+// file2.go
+import "fmt"  // Must import again
+```
+
+### Function Scope
+
+Parameters and local variables are visible within the function:
+
+```go
+func greet(name string) {
+    message := "Hello, " + name  // Local to greet
+    fmt.Println(message)
+}
+
+// name and message are not accessible here
+```
+
+### Block Scope
+
+Variables declared in blocks (`{}`) are visible only within that block:
+
+```go
+if x > 0 {
+    y := x * 2  // Only visible inside if block
+    fmt.Println(y)
+}
+// y is not accessible here
+
+for i := 0; i < 10; i++ {
+    // i is visible only in the loop
+}
+// i is not accessible here
+
+switch n := getValue(); n {
+case 1:
+    // n is visible in switch block
+}
+// n is not accessible here
+```
+
+## Visibility (Exported vs Unexported)
+
+Go uses capitalization for visibility across packages:
+
+```go
+package user
+
+var PublicVar = "accessible from other packages"   // Exported
+var privateVar = "only in user package"            // Unexported
+
+func PublicFunc() {}   // Exported
+func privateFunc() {}  // Unexported
+
+type PublicType struct {
+    PublicField  string  // Exported
+    privateField string  // Unexported
+}
+```
+
+## The Blank Identifier (`_`)
+
+Use `_` to discard unwanted values:
+
+```go
+// Discard second return value
+value, _ := someFunc()
+
+// Discard loop index
+for _, item := range items {
+    process(item)
+}
+
+// Import for side effects only
+import _ "github.com/lib/pq"
+```
+
+## Variable Lifetime
+
+### Stack vs Heap
+
+Go decides where to allocate based on escape analysis:
+
+```go
+func createValue() int {
+    x := 42  // Likely on stack
+    return x // Copy returned, x can be reclaimed
+}
+
+func createPointer() *int {
+    x := 42   // Must go on heap
+    return &x // Pointer escapes function
+}
+```
+
+### Garbage Collection
+
+You don't need to free memory—Go's garbage collector handles it:
+
+```go
+func process() {
+    data := make([]byte, 1024*1024)  // 1MB allocated
+    // Use data...
+}  // data becomes garbage, will be collected
+```
+
+## Common Patterns
+
+### Zero Value Initialization
+
+```go
+var config Config  // All fields are zero values
+config.Timeout = 30 * time.Second  // Set only what differs
+```
+
+### Conditional Initialization
+
+```go
+var s string
+if condition {
+    s = "yes"
+} else {
+    s = "no"
+}
+
+// Or with short declaration
+s := "default"
+if condition {
+    s = "override"
+}
+```
+
+### Multiple Assignment
+
+```go
+// Swap without temp variable
+a, b = b, a
+
+// Multiple returns
+x, y, z := multiReturn()
+```
+
+## Common Pitfalls
+
+### Accidental Shadowing
+
+```go
+// Bug: err is shadowed
+var err error
+if x > 0 {
+    y, err := compute()  // New err!
+    _ = y
+}
+// Original err still nil
+
+// Fix: declare y separately
+var err error
+var y int
+if x > 0 {
+    y, err = compute()  // Uses outer err
+}
+```
+
+### Loop Variable Capture
+
+```go
+// Bug: all goroutines see last value
+for _, v := range values {
+    go func() {
+        fmt.Println(v)  // v is shared!
+    }()
+}
+
+// Fix: pass as parameter
+for _, v := range values {
+    go func(v int) {
+        fmt.Println(v)
+    }(v)
+}
+
+// Go 1.22+ fixes this by default
+```
+
+## Summary
+
+| Declaration | Usage |
+|-------------|-------|
+| `var x T` | Zero value, explicit type |
+| `var x = value` | Type inference |
+| `x := value` | Short declaration (functions only) |
+| `var x, y T` | Multiple same type |
+| `x, y := a, b` | Multiple with inference |
+
+| Scope | Visibility |
+|-------|------------|
+| Package | All files in package |
+| File | Imports |
+| Function | Function body |
+| Block | `{}` boundaries |
+
+## Related Topics
+- [Constants and Literals](11-constants-literals.md)
+- [Functions in Depth](../03-memory/19-functions-depth.md)
+
+## More examples
+
+### Example: short declaration scope
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	x := 1
+	{
+		x := 2 // new x shadows outer
+		fmt.Println("inner:", x)
+	}
+	fmt.Println("outer:", x)
+}
+```
+
+Expected:
+
+```text
+inner: 2
+outer: 1
+```
+
+### Example: if with short statement
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import (
+	"fmt"
+	"strconv"
+)
+
+func main() {
+	if n, err := strconv.Atoi("42"); err != nil {
+		fmt.Println("err:", err)
+	} else {
+		fmt.Println("n:", n)
+	}
+	// n is not in scope here
+	fmt.Println("done")
+}
+```
+
+Expected:
+
+```text
+n: 42
+done
+```
+
+## Runnable example
+
+Save as `main.go`. From an empty directory:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import "fmt"
+
+var packageLevel = "package"
+
+func compute(ok bool) (int, error) {
+	if !ok {
+		return 0, fmt.Errorf("not ok")
+	}
+	return 42, nil
+}
+
+func main() {
+	// Short declaration inside functions
+	name := "Alice"
+	var ratio float64 // zero value; := 0 would be int
+	fmt.Printf("name=%s ratio=%g package=%s\n", name, ratio, packageLevel)
+
+	// Shadowing demo
+	x := 1
+	fmt.Println("outer x:", x)
+	if true {
+		x := 2 // new x in block scope
+		fmt.Println("inner x:", x)
+	}
+	fmt.Println("outer x after block:", x)
+
+	// Redeclare with := when at least one name is new
+	x, y := 3, 4
+	fmt.Printf("redecl x=%d new y=%d\n", x, y)
+
+	// Correct multi-return assignment (no accidental err shadow)
+	var err error
+	var n int
+	n, err = compute(true)
+	fmt.Printf("compute ok: n=%d err=%v\n", n, err)
+	n, err = compute(false)
+	fmt.Printf("compute fail: n=%d err=%v\n", n, err)
+
+	// Blank identifier discards values
+	_, _ = compute(true)
+	a, b := 1, 2
+	a, b = b, a
+	fmt.Printf("swapped a=%d b=%d\n", a, b)
+}
+```
+
+**Expected output** (illustrative):
+
+```text
+name=Alice ratio=0 package=package
+outer x: 1
+inner x: 2
+outer x after block: 1
+redecl x=3 new y=4
+compute ok: n=42 err=<nil>
+compute fail: n=0 err=not ok
+swapped a=2 b=1
+```
+
+**What to notice:**
+- Block scope shadows do not update the outer variable.
+- `:=` redeclares only when a new variable appears on the left.
+- Assigning with `=` keeps a single `err` in outer scope—critical for real code.
+- Package-level vars are visible to all functions in the package.
+
+**Try next:** Inside the `if true` block, change `x := 2` to `x = 2` and observe the outer value after the block.

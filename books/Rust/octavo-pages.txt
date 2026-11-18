@@ -1,0 +1,247 @@
+# Every page address this book's website has had, kept by Octavo so that
+# links to moved chapters keep working. Commit this file with the book.
+# Each line: the page, a tab, then its chapter title, or "-> " and the page
+# its old address now forwards to.
+content/01-getting-started-with-rust/01-the-story-of-rust.html	The Story of Rust: History and Philosophy
+content/01-getting-started-with-rust/02-installing-rust-with-rustup.html	Installing Rust with rustup
+content/01-getting-started-with-rust/03-your-first-program-hello-world.html	Your First Program: Hello World
+content/01-getting-started-with-rust/04-understanding-rustc-and-cargo.html	Understanding rustc and cargo
+content/01-getting-started-with-rust/05-exploring-a-cargo-project-structure.html	Exploring a Cargo Project Structure
+content/01-getting-started-with-rust/06-summary.html	Summary
+content/02-language-basics/01-variables-mutability-and-shadowing.html	Variables, Mutability, and Shadowing
+content/02-language-basics/02-primitive-data-types-in-detail.html	Primitive Data Types in Detail
+content/02-language-basics/03-compound-types-tuples-and-arrays.html	Compound Types: Tuples and Arrays
+content/02-language-basics/04-functions-statements-and-expressions.html	Functions, Statements, and Expressions
+content/02-language-basics/05-control-flow-if-loop-while-for.html	Control Flow: if, loop, while, and for
+content/02-language-basics/05b-nonzero-types.html	NonZero Integer Types
+content/02-language-basics/06-summary.html	Summary
+content/03-ownership/01-what-is-ownership-and-why-it-exists.html	What is Ownership and Why Does It Exist?
+content/03-ownership/02-stack-vs-heap-memory-in-rust.html	Stack vs Heap Memory in Rust
+content/03-ownership/03-move-semantics-explained.html	Move Semantics Explained
+content/03-ownership/04-copy-types-and-clone.html	Copy Types and Clone
+content/03-ownership/05-the-drop-trait-and-resource-cleanup.html	The Drop Trait and Resource Cleanup
+content/03-ownership/05b-cost-of-drop-chains.html	The Cost of Drop on Deep Ownership Chains
+content/03-ownership/06-summary.html	Summary
+content/04-borrowing-and-slices/01-shared-and-mutable-references.html	Shared and Mutable References
+content/04-borrowing-and-slices/02-the-borrowing-rules-demystified.html	The Borrowing Rules Demystified
+content/04-borrowing-and-slices/03-dangling-references-prevented-at-compile-time.html	Dangling References Prevented at Compile Time
+content/04-borrowing-and-slices/04-string-slices-and-str.html	String Slices and &str
+content/04-borrowing-and-slices/05-slice-types-and-range-syntax.html	Slice Types and Range Syntax
+content/04-borrowing-and-slices/06-summary.html	Summary
+content/05-structs-and-enums/01-defining-and-using-structs.html	Defining and Using Structs
+content/05-structs-and-enums/02-enumerations-beyond-simple-tags.html	Enumerations Beyond Simple Tags
+content/05-structs-and-enums/03-the-match-expression-in-depth.html	The match Expression in Depth
+content/05-structs-and-enums/04-if-let-and-while-let-for-partial-matching.html	if let and while let for Partial Matching
+content/05-structs-and-enums/04b-if-let-guards-and-cfg-select.html	if-let Guards and cfg_select!
+content/05-structs-and-enums/05-real-world-data-modeling-with-enums.html	Real-World Data Modeling with Enums
+content/05-structs-and-enums/06-summary.html	Summary
+content/06-modules-and-crates/01-modules-and-the-filesystem.html	Modules and the Filesystem
+content/06-modules-and-crates/02-the-use-statement-and-path-resolution.html	The use Statement and Path Resolution
+content/06-modules-and-crates/03-public-vs-private-visibility-rules.html	Public vs Private Visibility Rules
+content/06-modules-and-crates/04-crates-packages-and-cargo-workspaces.html	Crates, Packages, and Cargo Workspaces
+content/06-modules-and-crates/05-re-exporting-and-organizing-large-projects.html	Re-exporting and Organizing Large Projects
+content/06-modules-and-crates/06-summary.html	Summary
+content/07-collections-and-strings/01-vec-and-dynamic-arrays.html	Vec and Dynamic Arrays
+content/07-collections-and-strings/02-string-vs-str-deep-dive.html	String vs &str Deep Dive
+content/07-collections-and-strings/03-hashmap-and-btreemap-for-key-value-storage.html	HashMap and BTreeMap for Key-Value Storage
+content/07-collections-and-strings/03b-hashmap-hashers-and-hash-flooding.html	HashMap Hashers and Hash Flooding: Why the Default Is SipHash
+content/07-collections-and-strings/03c-bbtree-concurrent-ordered-map.html	bbtree: a concurrent ordered map (and unsync BTreeMap drop-in)
+content/07-collections-and-strings/04-other-collections-hashset-binaryheap-linkedlist.html	Other Collections: HashSet, BinaryHeap, LinkedList
+content/07-collections-and-strings/05-efficient-collection-operations.html	Efficient Collection Operations
+content/07-collections-and-strings/06-summary.html	Summary
+content/08-project-1-task-manager/01-building-a-cli-task-manager.html	Building a CLI Task Manager
+content/08-project-1-task-manager/02-testing-the-task-manager.html	Testing the Task Manager
+content/08-project-1-task-manager/03-benchmarking-the-task-manager.html	Benchmarking the Task Manager
+content/08-project-1-task-manager/04-deploying-the-task-manager.html	Deploying the Task Manager
+content/09-error-handling/01-unrecoverable-errors-with-panic.html	Unrecoverable Errors with panic!
+content/09-error-handling/02-recoverable-errors-with-result.html	Recoverable Errors with Result
+content/09-error-handling/03-the-option-type-for-absent-values.html	The Option Type for Absent Values
+content/09-error-handling/04-propagating-errors-with-the-question-operator.html	Propagating Errors with the ? Operator
+content/09-error-handling/05-custom-error-types-and-thiserror.html	Custom Error Types and thiserror
+content/09-error-handling/05b-the-never-type-and-infallible.html	The Never Type `!` and Infallible
+content/09-error-handling/06-summary.html	Summary
+content/10-generics-and-traits/01-generic-functions-and-data-structures.html	Generic Functions and Data Structures
+content/10-generics-and-traits/02-defining-and-implementing-traits.html	Defining and Implementing Traits
+content/10-generics-and-traits/03-trait-bounds-and-where-clauses.html	Trait Bounds and Where Clauses
+content/10-generics-and-traits/04-associated-types-vs-generics.html	Associated Types vs Generics
+content/10-generics-and-traits/05-trait-objects-and-dynamic-dispatch.html	Trait Objects and Dynamic Dispatch
+content/10-generics-and-traits/05b-generic-const-arguments.html	Generic Const Arguments (GCA)
+content/10-generics-and-traits/05c-asref-borrow-and-deref.html	AsRef, Borrow and Deref: Same Signature, Different Promises
+content/10-generics-and-traits/05d-cow-borrow-or-own.html	Cow — Borrow When You Can, Own When You Must
+content/10-generics-and-traits/05e-phantomdata-and-typestate.html	PhantomData and the Type-State Pattern: Protocol States the Compiler Enforces
+content/10-generics-and-traits/05f-newtype-pattern.html	The Newtype Pattern: Zero-Cost Type Safety, Validated Values and the Orphan Rule
+content/10-generics-and-traits/06-summary.html	Summary
+content/11-lifetimes/01-what-lifetimes-are-and-are-not.html	What Lifetimes Are (and Are Not)
+content/11-lifetimes/02-the-lifetime-elision-rules.html	The Lifetime Elision Rules
+content/11-lifetimes/03-annotating-lifetimes-in-functions-and-structs.html	Annotating Lifetimes in Functions and Structs
+content/11-lifetimes/04-lifetime-bounds-on-traits.html	Lifetime Bounds on Traits
+content/11-lifetimes/05-advanced-lifetime-patterns.html	Advanced Lifetime Patterns
+content/11-lifetimes/05b-variance-and-subtyping.html	Variance: Why `&mut` Makes Lifetimes Rigid
+content/11-lifetimes/06-summary.html	Summary
+content/12-smart-pointers/01-box-for-heap-allocation.html	Box for Heap Allocation
+content/12-smart-pointers/02-reference-counting-with-rc-and-arc.html	Reference Counting with Rc and Arc
+content/12-smart-pointers/03-interior-mutability-with-refcell.html	Interior Mutability with RefCell
+content/12-smart-pointers/04-cell-and-mutex-for-shared-state.html	Cell and Mutex for Shared State
+content/12-smart-pointers/05-weak-references-and-breaking-cycles.html	Weak References and Breaking Cycles
+content/12-smart-pointers/05b-lazylock-and-oncelock.html	LazyLock and OnceLock
+content/12-smart-pointers/05c-maybeuninit-and-uninitialized-memory.html	MaybeUninit and Uninitialized Memory
+content/12-smart-pointers/05d-custom-allocators-and-the-allocator-api.html	Custom Allocators and the Allocator API
+content/12-smart-pointers/05e-arc-new-cyclic.html	Arc::new_cyclic: self-referential shared ownership without a temporary Option
+content/12-smart-pointers/06-summary.html	Summary
+content/13-iterators-and-closures/01-the-iterator-trait-and-protocol.html	The Iterator Trait and Protocol
+content/13-iterators-and-closures/02-creating-custom-iterators.html	Creating Custom Iterators
+content/13-iterators-and-closures/03-closures-and-capture-semantics.html	Closures and Capture Semantics
+content/13-iterators-and-closures/04-higher-order-functions-and-combinators.html	Higher-Order Functions and Combinators
+content/13-iterators-and-closures/05-lazy-evaluation-and-performance.html	Lazy Evaluation and Performance
+content/13-iterators-and-closures/05b-fused-iterators.html	FusedIterator — Why Fuse Matters
+content/13-iterators-and-closures/05c-float-reductions-and-algebraic-ops.html	Fast Float Reductions: Algebraic Operations vs Explicit Lanes
+content/13-iterators-and-closures/05d-copy-range-types-core-range.html	Copy Range Types: core::range and Why a..b Was Never Copy
+content/13-iterators-and-closures/06-summary.html	Summary
+content/13-iterators-and-closures/iterator-cookbook/00-preface.html	Preface
+content/13-iterators-and-closures/iterator-cookbook/01-how-iterators-work.html	How Iterators Work
+content/13-iterators-and-closures/iterator-cookbook/02-choosing-the-right-iterator.html	Choosing the Right Iterator
+content/13-iterators-and-closures/iterator-cookbook/03-lazy-evaluation.html	Lazy Evaluation
+content/13-iterators-and-closures/iterator-cookbook/04-transforming-data.html	Transforming Data
+content/13-iterators-and-closures/iterator-cookbook/05-filtering-and-selecting.html	Filtering and Selecting
+content/13-iterators-and-closures/iterator-cookbook/06-aggregating-and-consuming.html	Aggregating and Consuming
+content/13-iterators-and-closures/iterator-cookbook/07-composing-pipelines.html	Composing Pipelines
+content/13-iterators-and-closures/iterator-cookbook/08-implementing-iterator.html	Implementing Iterator from Scratch
+content/13-iterators-and-closures/iterator-cookbook/09-custom-adaptors.html	Creating Custom Adaptors
+content/13-iterators-and-closures/iterator-cookbook/10-specialized-traits.html	Specialized Iterator Traits
+content/13-iterators-and-closures/iterator-cookbook/11-performance.html	Performance and Zero-Cost Abstractions
+content/13-iterators-and-closures/iterator-cookbook/12-parallel-rayon.html	Parallel Iterators with Rayon
+content/13-iterators-and-closures/iterator-cookbook/13-async-streams.html	Async Iterators with Stream
+content/13-iterators-and-closures/iterator-cookbook/14-error-handling.html	Error Handling in Pipelines
+content/13-iterators-and-closures/iterator-cookbook/15-itertools.html	The itertools Crate
+content/13-iterators-and-closures/iterator-cookbook/16-when-not-to-use-iterators.html	When Not to Use Iterators
+content/13-iterators-and-closures/iterator-cookbook/17-exercises.html	Exercises
+content/14-concurrency/01-spawning-threads-with-std-thread.html	Spawning Threads with std::thread
+content/14-concurrency/02-message-passing-with-channels.html	Message Passing with Channels
+content/14-concurrency/03-shared-state-with-mutex-and-rwlock.html	Shared State with Mutex and RwLock
+content/14-concurrency/03b-rwlock-vs-mutex-and-locks-across-await.html	RwLock Is Not a Faster Mutex: Lock Choice by Measurement, and Locks Across .await
+content/14-concurrency/04-atomic-operations-for-lock-free-code.html	Atomic Operations for Lock-Free Code
+content/14-concurrency/05-send-and-sync-traits-explained.html	Send and Sync Traits Explained
+content/14-concurrency/06-summary.html	Summary
+content/15-project-3-parallel-pipeline/01-parallel-data-processing-pipeline-with-rayon.html	Parallel Data Processing Pipeline with rayon
+content/15-project-3-parallel-pipeline/02-testing-the-text-analyzer.html	Testing the Text Analyzer
+content/15-project-3-parallel-pipeline/03-benchmarking-the-text-analyzer.html	Benchmarking the Text Analyzer
+content/15-project-3-parallel-pipeline/04-deploying-the-text-analyzer.html	Deploying the Text Analyzer
+content/16-async-await/01-the-future-trait-and-async-basics.html	The Future Trait and Async Basics
+content/16-async-await/02-running-async-code-with-tokio.html	Running Async Code with Tokio
+content/16-async-await/03-pinning-and-self-referential-types.html	Pinning and Self-Referential Types
+content/16-async-await/04-async-streams-and-error-handling.html	Async Streams and Error Handling
+content/16-async-await/05-production-async-applications.html	Building Production Async Applications
+content/16-async-await/05b-tokio-and-rayon-separate-lanes.html	Tokio and Rayon: Separate Lanes for I/O and CPU Work
+content/16-async-await/05c-sans-io-protocol-design.html	Sans-IO Protocol Design: State Machines Without Sockets
+content/16-async-await/05d-cancel-safety.html	Cancel Safety: Dropping a Future Is Cancelling It
+content/16-async-await/05e-tiny-async-runtime.html	A Tiny Async Runtime from Scratch
+content/16-async-await/05f-async-fn-in-traits-vs-dyn.html	async fn in Traits vs dyn Trait: Desugaring, Send Bounds and Boxing
+content/16-async-await/06-summary.html	Summary
+content/17-macros-and-unsafe/01-declarative-macros-with-macro-rules.html	Declarative Macros with macro_rules!
+content/17-macros-and-unsafe/02-procedural-macros-and-derive.html	Procedural Macros and Derive
+content/17-macros-and-unsafe/03-understanding-unsafe-rust.html	Understanding unsafe Rust
+content/17-macros-and-unsafe/04-memory-layout-and-representation.html	Memory Layout and Representation
+content/17-macros-and-unsafe/05-foreign-function-interfaces.html	Foreign Function Interfaces
+content/17-macros-and-unsafe/05b-c-variadic-functions-and-valist.html	C-Variadic Functions and VaList
+content/17-macros-and-unsafe/05c-ffi-bool-miscompile-x86-64.html	FFI bool miscompile on x86_64 (Rust 1.99.0 → 1.99.1)
+content/17-macros-and-unsafe/05d-safe-uaf-covariant-field.html	Safe Rust UAF via covariant field assignment (rust#164250)
+content/17-macros-and-unsafe/05e-life-before-main-init-array.html	Life before main: .init_array, #[used], and why LazyLock is usually the answer
+content/17-macros-and-unsafe/06-summary.html	Summary
+content/18-testing-and-deployment/01-unit-tests-integration-tests-and-doctests.html	Unit Tests, Integration Tests, and Doctests
+content/18-testing-and-deployment/02-benchmarking-with-criterion.html	Benchmarking with Criterion
+content/18-testing-and-deployment/03-writing-great-documentation.html	Writing Great Documentation
+content/18-testing-and-deployment/04-profiling-and-optimization-techniques.html	Profiling and Optimization Techniques
+content/18-testing-and-deployment/05-building-and-deploying-rust-applications.html	Building and Deploying Rust Applications
+content/18-testing-and-deployment/05b-msrv-rust-version-and-the-msrv-aware-resolver.html	MSRV in practice: rust-version and the MSRV-aware resolver
+content/18-testing-and-deployment/05c-build-scripts-supply-chain.html	build.rs Runs As You: Build Scripts and the Supply Chain
+content/18-testing-and-deployment/05d-cargo-min-publish-age.html	Cargo min-publish-age: dependency cooldowns against fresh crates.io publishes
+content/18-testing-and-deployment/06-summary.html	Summary
+content/19-rust-ecosystem/01-serde-serialization-and-deserialization.html	serde: Serialization and Deserialization
+content/19-rust-ecosystem/02-clap-command-line-argument-parsing.html	clap: Command-Line Argument Parsing
+content/19-rust-ecosystem/03-reqwest-http-client.html	reqwest: HTTP Client
+content/19-rust-ecosystem/04-axum-web-framework.html	axum: Web Framework
+content/19-rust-ecosystem/05-actix-web-high-performance-web-framework.html	actix-web: High-Performance Web Framework
+content/19-rust-ecosystem/06-project-2-async-http-api-with-axum-sqlx-tracing.html	Project 2: Async HTTP API with axum, sqlx, and tracing
+content/19-rust-ecosystem/07-testing-the-user-api.html	Testing the User API
+content/19-rust-ecosystem/08-benchmarking-the-user-api.html	Benchmarking the User API
+content/19-rust-ecosystem/09-deploying-the-user-api.html	Deploying the User API
+content/19-rust-ecosystem/10-sqlx-async-database-access.html	sqlx: Async Database Access
+content/19-rust-ecosystem/11-rayon-data-parallelism.html	rayon: Data Parallelism
+content/19-rust-ecosystem/12-tracing-structured-logging-and-observability.html	tracing: Structured Logging and Observability
+content/19-rust-ecosystem/13-chrono-date-and-time.html	chrono: Date and Time
+content/19-rust-ecosystem/14-uuid-universally-unique-identifiers.html	uuid: Universally Unique Identifiers
+content/19-rust-ecosystem/15-rand-random-number-generation.html	rand: Random Number Generation
+content/19-rust-ecosystem/16-regex-regular-expressions.html	regex: Regular Expressions
+content/19-rust-ecosystem/17-bytes-efficient-binary-buffers.html	bytes: Efficient Binary Buffers
+content/19-rust-ecosystem/18-futures-async-primitives.html	futures: Async Primitives
+content/19-rust-ecosystem/19-summary.html	Summary
+content/19-rust-ecosystem/20-servo-0-1-embeddable.html	Servo 0.1: Embeddable Engine on crates.io
+content/20-advanced-topics/01-the-rust-compilation-pipeline.html	The Rust Compilation Pipeline
+content/20-advanced-topics/01b-a-tiny-jit-with-cranelift.html	A Tiny JIT with Cranelift: From Postfix Expressions to Native Code
+content/20-advanced-topics/02-debugging-rust-programs.html	Debugging Rust Programs
+content/20-advanced-topics/03-security-considerations-in-rust.html	Security Considerations in Rust
+content/20-advanced-topics/04-common-anti-patterns-and-how-to-avoid-them.html	Common Anti-Patterns and How to Avoid Them
+content/20-advanced-topics/05-summary.html	Summary
+content/21-webassembly/01-why-rust-for-webassembly.html	Why Rust for WebAssembly?
+content/21-webassembly/02-webassembly-fundamentals.html	WebAssembly Fundamentals
+content/21-webassembly/03-setting-up-wasm-pack-and-wasm-bindgen.html	Setting Up: wasm-pack and wasm-bindgen
+content/21-webassembly/04-building-your-first-webassembly-module.html	Building Your First WebAssembly Module
+content/21-webassembly/05-interacting-with-the-dom.html	Interacting with the DOM
+content/21-webassembly/06-handling-events-and-async.html	Handling Events and Async
+content/21-webassembly/07-wasm-performance.html	Performance Considerations
+content/21-webassembly/08-server-side-webassembly.html	Server-Side WebAssembly
+content/21-webassembly/09-publishing-and-distribution.html	Publishing and Distribution
+content/21-webassembly/10-summary.html	Summary
+content/22-embedded-rust/01-understanding-no-std.html	Understanding no_std
+content/22-embedded-rust/02-choosing-a-target-cortex-m.html	Choosing a Target: Cortex-M
+content/22-embedded-rust/03-writing-an-embedded-application-blinking-an-led.html	Writing an Embedded Application: Blinking an LED
+content/22-embedded-rust/04-memory-management-without-a-heap.html	Memory Management Without a Heap
+content/22-embedded-rust/05-interrupts-and-concurrency.html	Interrupts and Concurrency
+content/22-embedded-rust/06-choosing-an-executor-or-rtos.html	Choosing an Executor or RTOS
+content/22-embedded-rust/07-testing-embedded-code.html	Testing Embedded Code
+content/22-embedded-rust/08-toolchain-and-debugging.html	Toolchain and Debugging
+content/22-embedded-rust/09-summary.html	Summary
+content/23-command-line-tools/01-foundations/01-introduction-to-command-line-tools-in-rust.html	Introduction to Command-Line Tools in Rust
+content/23-command-line-tools/01-foundations/02-setting-up-your-development-environment.html	Setting Up Your Development Environment
+content/23-command-line-tools/01-foundations/03-command-line-fundamentals.html	Command-Line Fundamentals
+content/23-command-line-tools/01-foundations/04-parsing-arguments-with-clap.html	Parsing Arguments with clap
+content/23-command-line-tools/02-core-skills/05-working-with-the-file-system.html	Working with the File System
+content/23-command-line-tools/02-core-skills/06-processing-text-data.html	Processing Text Data
+content/23-command-line-tools/02-core-skills/07-error-handling.html	Error Handling
+content/23-command-line-tools/02-core-skills/08-structuring-your-application.html	Structuring Your Application
+content/23-command-line-tools/03-networking-and-async/09-running-external-processes.html	Running External Processes
+content/23-command-line-tools/03-networking-and-async/10-building-http-clients.html	Building HTTP Clients
+content/23-command-line-tools/03-networking-and-async/11-async-programming-with-tokio.html	Async Programming with tokio
+content/23-command-line-tools/03-networking-and-async/12-terminal-user-interfaces-with-ratatui.html	Terminal User Interfaces with ratatui
+content/23-command-line-tools/04-testing-and-distribution/13-configuration-and-persistence.html	Configuration and Persistence
+content/23-command-line-tools/04-testing-and-distribution/14-logging-and-observability.html	Logging and Observability
+content/23-command-line-tools/04-testing-and-distribution/15-testing-command-line-tools.html	Testing Command-Line Tools
+content/23-command-line-tools/04-testing-and-distribution/16-building-cross-platform-tools.html	Building Cross-Platform Tools
+content/23-command-line-tools/05-advanced/17-designing-for-production.html	Designing for Production
+content/23-command-line-tools/05-advanced/18-advanced-rust-patterns-for-cli-tools.html	Advanced Rust Patterns for CLI Tools
+content/23-command-line-tools/05-advanced/19-building-developer-tools.html	Building Developer Tools
+content/23-command-line-tools/05-advanced/20-distributing-and-shipping-your-tool.html	Distributing and Shipping Your Tool
+content/23-command-line-tools/06-capstone-projects/21-capstone-1-fsearch-fast-file-search.html	Capstone 1: fsearch, a Fast File Search Tool
+content/23-command-line-tools/06-capstone-projects/22-capstone-2-tudo-tui-task-manager.html	Capstone 2: tudo, a TUI Task Manager
+content/23-command-line-tools/06-capstone-projects/23-capstone-3-sysmon-system-monitor.html	Capstone 3: sysmon, a System Monitor
+content/23-command-line-tools/06-capstone-projects/24-capstone-4-devkit-developer-toolkit.html	Capstone 4: devkit, a Developer Toolkit
+content/23-command-line-tools/07-the-rust-cli-ecosystem/25-contributing-to-the-rust-ecosystem.html	Contributing to the Rust Ecosystem
+content/23-command-line-tools/07-the-rust-cli-ecosystem/26-the-future-of-rust-cli-development.html	The Future of Rust CLI Development
+content/23-command-line-tools/index.html	Command-Line Tools in Rust
+content/24-conclusion/01-core-principles.html	Core Principles
+content/24-conclusion/02-where-rust-shines.html	Where Rust Shines
+content/24-conclusion/03-where-rust-may-not-be-the-best-fit.html	Where Rust May Not Be the Best Fit
+content/24-conclusion/04-continuing-your-journey.html	Continuing Your Journey
+content/24-conclusion/05-final-thoughts.html	Final Thoughts
+content/25-rust-atomics-and-locks/00-preface-and-foreword.html	Preface and Foreword
+content/25-rust-atomics-and-locks/01-basics-of-rust-concurrency.html	Basics of Rust Concurrency
+content/25-rust-atomics-and-locks/02-atomics.html	Atomics
+content/25-rust-atomics-and-locks/03-memory-ordering.html	Memory Ordering
+content/25-rust-atomics-and-locks/04-building-our-own-spin-lock.html	Building Our Own Spin Lock
+content/25-rust-atomics-and-locks/05-building-our-own-channels.html	Building Our Own Channels
+content/25-rust-atomics-and-locks/06-building-our-own-arc.html	Building Our Own Arc
+content/25-rust-atomics-and-locks/07-understanding-the-processor.html	Understanding the Processor
+content/25-rust-atomics-and-locks/08-operating-system-primitives.html	Operating System Primitives
+content/25-rust-atomics-and-locks/09-building-our-own-locks.html	Building Our Own Locks
+content/25-rust-atomics-and-locks/10-ideas-and-inspiration.html	Ideas and Inspiration
+index.html	Rust

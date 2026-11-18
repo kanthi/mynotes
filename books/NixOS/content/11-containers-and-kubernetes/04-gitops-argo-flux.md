@@ -1,0 +1,175 @@
+---
+title: GitOps with Argo CD and Flux
+---
+
+# GitOps with Argo CD and Flux
+
+SSH-from-laptop `kubectl apply` does not scale and does not audit. The boring default is: **the cluster pulls generated YAML from git (Flux or Argo), and Nix only runs in CI to refresh that YAML**.
+
+## Mental model
+
+| Tool | Pull model |
+|---|---|
+| Flux | controllers reconcile `GitRepository` + `Kustomization` |
+| Argo CD | Application CR points at a git path |
+
+Both want **plain YAML** in the repo (or a Helm release they render). They do not eval your flake on the control plane. CI:
+
+```
+nix build .#manifests  →  commit generated/  →  Flux applies
+```
+
+Pick **one**. Running Argo and Flux on the same cluster is a fight.
+
+## Worked examples
+
+### Case 1: Generated tree layout
+
+```
+generated/
+  desk/
+    namespace.yaml
+    deploy.yaml
+    svc.yaml
+```
+
+```bash
+nix build .#manifests
+rsync -a --delete result/ generated/desk/
+git add generated && git diff --cached
+```
+
+Human reviews the YAML, not the Nix, at merge time — or reviews both.
+
+### Case 2: Flux GitRepository (illustrative)
+
+Save as `generated/flux/gitrepo.yaml`:
+
+```yaml
+# gitrepo.yaml
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: desk
+  namespace: flux-system
+spec:
+  interval: 1m
+  url: https://git.desk.internal/platform/desk.git
+  ref:
+    branch: main
+```
+
+The URL is your repo. Auth is a Secret Flux already knows, not a token in Nix.
+
+### Case 3: Kustomization pointing at generated YAML
+
+```yaml
+# kustomization-flux.yaml
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: desk-api
+  namespace: flux-system
+spec:
+  interval: 5m
+  sourceRef:
+    kind: GitRepository
+    name: desk
+  path: ./generated/desk
+  prune: true
+  wait: true
+  timeout: 5m
+  targetNamespace: desk
+```
+
+`prune: true` deletes objects you removed from git. That is the point. Test in **staging** first: delete `deploy.yaml` in a branch that Flux watches on the staging cluster, `flux reconcile kustomization desk-api --with-source`, confirm the Deployment is gone, then merge the same prune policy to prod.
+
+`wait: true` blocks the Kustomization until health checks pass. Without it, Flux marks the apply done while pods are still `CrashLoop`. `targetNamespace` keeps generated namespaced objects out of `flux-system`.
+
+```bash
+flux diff kustomization desk-api --path generated/desk
+```
+
+That diff is what on-call reads. If it wants to delete a CRD or a Namespace you still need, `prune` is too wide — split those objects into a Kustomization with `prune: false`.
+
+### Case 4: CI gate
+
+```yaml
+# .github/workflows/manifests.yml
+name: manifests
+on: [pull_request]
+jobs:
+  gen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v27
+      - run: nix build .#manifests
+      - run: diff -ru generated/desk result
+```
+
+If someone edited YAML by hand, the PR fails. Edit Nix, regenerate, commit both. `diff` against `result/` (the store path), not against a dirty working tree. Empty diff on a no-op commit is the contract.
+
+Optional: `kubeconform` / `kubectl --dry-run=server apply -f` against staging as a second job. Nix generating YAML does not prove the API server will accept it.
+
+### Case 5: Argo Application (if the org standardised on Argo)
+
+```yaml
+# application.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: desk-api
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://git.desk.internal/platform/desk.git
+    targetRevision: main
+    path: generated/desk
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: desk
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+```
+
+Same generated path. Do not point Argo at `helm/` with unpinned deps. `selfHeal: true` reverts `kubectl edit` on the cluster — that is the GitOps contract, not a bug. Pin `targetRevision` to a **tag** for production if you need a freeze; `main` is a moving apply.
+
+Turn prune on in the staging Application first. Argo's prune of a shared `Namespace` or a CRD is the same footgun as Flux.
+
+Secrets in that tree stay encrypted. If you use KSOPS / Flux `sops-secrets`, the **cipher** is in git; the controller decrypts in-cluster. Plain `Secret` YAML in `generated/` is the store-is-public bug again.
+
+```yaml
+# do not
+apiVersion: v1
+kind: Secret
+stringData:
+  password: hunter2
+```
+
+## The trap
+
+The trap is **the laptop as GitOps**: `flux reconcile` after `kubectl apply` after `nix build` that never got pushed. Git is the desired state. If it is not in `main`, the cluster should not have it.
+
+The other trap is **`prune: true` first applied in production**. A deleted YAML is a deleted Deployment. Staging cluster, then prod. A third: committing plaintext `Secret` YAML (Case 5). A fourth: skipping the CI `diff` so generated/ and Nix drift.
+
+## The boring rule
+
+- One GitOps controller. Generated YAML in git. Nix in CI.
+- `diff -ru generated/ result` on every PR. Empty on no-ops.
+- `prune` + `wait` in **staging** before production. Split CRDs/namespaces if prune would eat them.
+- Secrets still not in that YAML (sops + KSOPS / External Secrets).
+- Pin git `targetRevision` to a tag for prod if you need freeze.
+
+## Try this
+
+1. `diff -ru` two `nix build .#manifests` trees with no edits — empty.
+2. Change a replica count in Nix, regenerate, read the YAML diff as if you were on-call.
+3. Write a one-page "we use Flux xor Argo" note in the desk repo.
+4. Confirm `kubectl` on your laptop is **read** against prod, not write (RBAC).
+5. On a lab cluster, enable prune, delete one generated manifest, reconcile, confirm the object is gone. Then restore it from git.

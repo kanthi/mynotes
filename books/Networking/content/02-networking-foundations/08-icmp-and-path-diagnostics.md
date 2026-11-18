@@ -1,0 +1,98 @@
+---
+title: ICMP and Path Diagnostics
+---
+
+# ICMP and Path Diagnostics
+
+**ICMP** (and ICMPv6) signal errors and support diagnostics. `ping` and `traceroute` are applications of those messages—not separate magic protocols.
+
+## Learning goals
+
+- Map common ICMP types to meaning
+- Use ping/traceroute with clear interpretation limits
+- Understand TTL expiry and “why traceroute hops appear”
+- Preview Path MTU Discovery
+
+## ICMPv4 types (operator set)
+
+| Type | Name | Typical meaning |
+|------|------|-----------------|
+| 0 / 8 | Echo reply / request | Ping |
+| 3 | Destination unreachable | No route, port unreachable, admin prohibited, … |
+| 11 | Time exceeded | TTL expired (traceroute hops) |
+
+Codes refine type 3 (network unreachable, host unreachable, etc.).
+
+## ICMPv6
+
+Similar roles: echo, destination unreachable, **packet too big**, time exceeded, ND messages (see previous chapter).
+
+```bash
+ping -c3 192.0.2.1
+ping -6 -c3 2001:db8::1
+```
+
+## Interpreting ping
+
+| Result | Possible meaning |
+|--------|------------------|
+| Reply | Forward path + return path + ICMP allowed |
+| Timeout | Drop, filter, wrong route, silent host |
+| Unreachable | Explicit ICMP error from some node |
+
+**Ping success ≠ application success.** TCP port filters can still block SSH/HTTP.
+
+## Traceroute mechanics (conceptual)
+
+1. Send probes with TTL=1, 2, 3, …
+2. Each hop that decrements TTL to 0 should send **time exceeded**
+3. Destination eventually responds (port unreachable / echo)
+
+```bash
+traceroute 192.0.2.1
+# or
+mtr -r -c 5 192.0.2.1
+```
+
+Limits: load balancers, ICMP rate limits, firewalls that hide hops, asymmetric return paths.
+
+## Path MTU Discovery (preview)
+
+- Senders prefer **not** to fragment (IPv6: no in-path fragmentation)
+- Hop returns **Packet Too Big** / frag-needed if DF set and MTU smaller
+- Broken PMTUD → hangs for large transfers while small pings work
+
+Deep labs: Layer 3 ICMP & Path MTU chapter.
+
+## Filters and policy
+
+Many networks rate-limit or block ICMP. That improves some attacks and **hurts** diagnostics and PMTUD. Lab hygiene: know your nftables/iptables ICMP rules.
+
+```bash
+# Example observability only—do not paste blindly into production
+nft list ruleset
+iptables -L -n
+```
+
+## Lab sketch
+
+1. Three-node line (A—B—C)
+2. Ping A→C; traceroute A→C
+3. ACL drop ICMP on B: compare symptoms
+
+## Interpret diagnostic replies carefully
+
+An ICMP echo reply establishes that a particular endpoint or responding device returned an echo response for that flow and size. A timeout could be a route, neighbor, firewall, host, rate-limit, or return-path problem; it is not proof of a physical failure. A destination-unreachable message can identify a failure, but the source address tells you who generated the message, which may be a router rather than the target.
+
+Traceroute sends probes with increasing IPv4 TTL or IPv6 Hop Limit. A router that expires a probe may return Time Exceeded, revealing a responding address. Different traceroute tools use UDP, ICMP, or TCP probes, and multipath forwarding may send those flows on different paths. Rate limiting or filtering can hide a hop even while later hops respond. Asterisks do not automatically identify packet loss at that hop.
+
+Path MTU is the smallest usable IP MTU along a particular path. Test progressively larger packets with the platform's ping options, and distinguish an ICMP error from silent timeout. A smaller probe succeeding while a larger one stalls suggests an MTU or filtering issue; verify with capture and interface MTUs. The reverse direction can have a different path or MTU.
+
+
+## Checkpoint
+
+Why can `ping` work while `curl http://…` fails? Why can `traceroute` show `* * *` on middle hops while the destination still answers?
+
+## Next
+
+- [Transport: TCP and UDP](09-transport-tcp-udp.md)

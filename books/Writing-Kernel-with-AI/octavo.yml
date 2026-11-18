@@ -1,0 +1,72 @@
+book:
+  title: Writing Kernel with AI
+  author: K19G
+  date: '2026-11-17'
+  description: Writing fast compute kernels for AI hardware
+  chapters:
+  - index.md
+  - part: 'Part I: Parallelism, from the CPU up'
+    contents:
+    - content/01-parallelism-cpu-to-gpu/01-cpu-parallelism-simd-threads.md
+    - content/01-parallelism-cpu-to-gpu/02-roofline-model-and-limits.md
+    - content/01-parallelism-cpu-to-gpu/03-cuda-programming-model.md
+    - content/01-parallelism-cpu-to-gpu/04-memory-hierarchy-and-coalescing.md
+    - content/01-parallelism-cpu-to-gpu/05-occupancy-mental-model.md
+  - part: 'Part II: The GEMM Worklog: Naive to cuBLAS'
+    contents:
+    - content/02-gemm-worklog/01-gemm-naive-to-tiled.md
+    - content/02-gemm-worklog/02-gemm-registers-and-warptiling.md
+    - content/02-gemm-worklog/03-tensor-cores-and-wmma.md
+    - content/02-gemm-worklog/04-split-k-and-stream-k.md
+  - part: 'Part III: Attention & Profiling'
+    contents:
+    - content/03-attention-and-profiling/01-profiling-and-debugging.md
+    - content/03-attention-and-profiling/01b-launch-bounds-and-register-pressure.md
+    - content/03-attention-and-profiling/01c-cuda-graphs-capture-replay.md
+    - content/03-attention-and-profiling/01d-nsight-compute-basics.md
+    - content/03-attention-and-profiling/02-attention-and-flashattention-v1.md
+    - content/03-attention-and-profiling/03-shared-memory-bank-conflicts.md
+  - part: 'Part IV: The Modern Frontier'
+    contents:
+    - content/04-modern-frontier/01-flashattention-from-scratch-fa1-to-fa3.md
+    - content/04-modern-frontier/02-beating-cublas-on-h100.md
+    - content/04-modern-frontier/03-triton-cutlass-cute-dsl.md
+    - content/04-modern-frontier/03b-pytorch-custom-ops-for-kernels.md
+    - content/04-modern-frontier/04-inference-serving-kernels.md
+    - content/04-modern-frontier/04b-decode-batch-size-roofline.md
+    - content/04-modern-frontier/04c-top-p-sampling-sort-free.md
+    - content/04-modern-frontier/05-blackwell-and-nvfp4.md
+    - content/04-modern-frontier/05b-blackwell-gemm-in-cute-dsl.md
+    - content/04-modern-frontier/05c-fused-hadamard-nvfp4-in-triton.md
+    - content/04-modern-frontier/06-flashattention-4.md
+    - content/04-modern-frontier/06b-jagged-flash-attention-with-tlx.md
+    - content/04-modern-frontier/06c-causal-tile-scheduling-lpt.md
+    - content/04-modern-frontier/07-pagedattention-kv-cache.md
+    - content/04-modern-frontier/07b-hybrid-sliding-window-global-attention.md
+    - content/04-modern-frontier/07c-kv-cache-eviction-policies.md
+    - content/04-modern-frontier/08-flash-decoding-split-kv.md
+    - content/04-modern-frontier/08b-turboquant-kv-cache-quantization.md
+    - content/04-modern-frontier/09-moe-routing-and-grouped-gemm.md
+    - content/04-modern-frontier/10-table-batched-embeddings-in-triton.md
+    - content/04-modern-frontier/11-tilelang-pythonic-gpu-kernels.md
+    - content/04-modern-frontier/12-batch-invariant-kernels.md
+    - content/04-modern-frontier/13-tokenspeed-portable-triton.md
+    - content/04-modern-frontier/14-fused-linear-cross-entropy.md
+  - part: 'Part V: AI-Written Kernels'
+    contents:
+    - content/05-ai-written-kernels/01-deepseek-flashmla-and-deepgemm.md
+    - content/05-ai-written-kernels/02-llm-generated-kernels-agent-profiler-loop.md
+    - content/05-ai-written-kernels/03-helion-gemm-vllm-backend.md
+    - content/05-ai-written-kernels/04-reward-hacking-false-speedups.md
+    - content/05-ai-written-kernels/05-kernelagent-hardware-guided.md
+  - part: 'Part VI: Kernel Engineering Capstone Projects'
+    contents:
+    - content/06-capstone-projects/01-crusoe-capstone-specifications.md
+    - content/06-capstone-projects/02-verification-and-benchmarking.md
+    - content/06-capstone-projects/03-demo-day-and-portfolio.md
+format:
+  html:
+    theme: auto
+  epub: {}
+  pdf:
+    paper: A4

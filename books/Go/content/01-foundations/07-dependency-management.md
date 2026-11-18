@@ -1,0 +1,546 @@
+---
+title: Dependency Management
+---
+
+# Dependency Management
+
+## Overview
+
+Go modules, introduced in Go 1.11 and default since Go 1.16, provide built-in dependency management. This chapter covers everything about `go.mod`, `go.sum`, versioning, and managing external libraries.
+
+## Understanding Go Modules
+
+A module is a collection of packages with a `go.mod` file that defines:
+- Module path (import path)
+- Go version
+- Dependencies and their versions
+
+### Creating a Module
+
+```bash
+$ mkdir myproject && cd myproject
+$ go mod init github.com/username/myproject
+```
+
+This creates `go.mod`:
+
+```
+module github.com/username/myproject
+
+go 1.27
+```
+
+## The `go.mod` File
+
+### Anatomy of go.mod
+
+```
+module github.com/username/myproject
+
+go 1.27
+
+require (
+    github.com/gin-gonic/gin v1.9.1
+    github.com/stretchr/testify v1.8.4
+)
+
+require (
+    // indirect dependencies
+    github.com/bytedance/sonic v1.9.1 // indirect
+    golang.org/x/net v0.10.0 // indirect
+)
+
+exclude (
+    github.com/broken/pkg v1.0.0
+)
+
+replace (
+    github.com/old/module => github.com/new/module v2.0.0
+    github.com/local/dev => ../local-dev
+)
+
+retract (
+    v1.0.0 // Contains security vulnerability
+    [v1.1.0, v1.2.0] // Accidental release
+)
+```
+
+### Directives Explained
+
+| Directive | Purpose |
+|-----------|---------|
+| `module` | Module path (required) |
+| `go` | Minimum Go version |
+| `require` | Dependencies with versions |
+| `exclude` | Versions to ignore |
+| `replace` | Substitute modules |
+| `retract` | Mark versions as broken |
+
+## The `go.sum` File
+
+`go.sum` contains cryptographic checksums representing module dependencies:
+
+```
+github.com/gin-gonic/gin v1.9.1 h1:4idEAncQnU5cB7BeOkPtxjfCSye0AAm1R0RVIqJ+Jmg=
+github.com/gin-gonic/gin v1.9.1/go.mod h1:hPrL7YrpYKXt5YId3A/Tn+7r7IyQ4PGNmP1c42GGpvQ=
+```
+
+Each entry has:
+- Module path and version
+- Hash of module contents (`h1:`)
+- Hash of `go.mod` file
+
+**Never edit `go.sum` manually** — it's managed by Go tools.
+
+## Adding Dependencies
+
+### Using `go get`
+
+```bash
+# Add latest version
+$ go get github.com/gin-gonic/gin
+
+# Add specific version
+$ go get github.com/gin-gonic/gin@v1.9.1
+
+# Add latest minor version
+$ go get github.com/gin-gonic/gin@v1.9
+
+# Add specific commit
+$ go get github.com/gin-gonic/gin@a1b2c3d
+
+# Add from branch
+$ go get github.com/gin-gonic/gin@main
+```
+
+### Automatic Detection
+
+Simply import and run:
+
+```go
+import "github.com/gin-gonic/gin"
+```
+
+```bash
+$ go mod tidy  # Downloads and records dependency
+```
+
+## Updating Dependencies
+
+```bash
+# Update specific package (latest minor/patch)
+$ go get -u github.com/gin-gonic/gin
+
+# Update to specific version
+$ go get github.com/gin-gonic/gin@v1.10.0
+
+# Update all dependencies
+$ go get -u ./...
+
+# Update only patch versions (safer)
+$ go get -u=patch ./...
+```
+
+## Semantic Versioning
+
+Go modules expect [Semantic Versioning](https://semver.org/):
+
+```
+v1.2.3
+│ │ │
+│ │ └── Patch: bug fixes (backward compatible)
+│ └──── Minor: new features (backward compatible)
+└────── Major: breaking changes
+```
+
+### Major Version Suffixes
+
+For v2+, the module path includes the major version:
+
+```go
+// go.mod
+require github.com/user/project/v2 v2.1.0
+
+// import
+import "github.com/user/project/v2"
+```
+
+## Managing go.mod
+
+### `go mod tidy`
+
+The most important maintenance command:
+
+```bash
+$ go mod tidy
+```
+
+This:
+- Adds missing dependencies
+- Removes unused dependencies
+- Updates `go.sum`
+- For modules with `go 1.27` or later, merges extra `require` blocks into the standard two-block layout (direct, then indirect). Comments on mixed blocks move onto the direct block.
+
+**Run this frequently, especially before commits.**
+
+The `go` command no longer talks to **Bazaar (`bzr`)** hosts. Modules that still live only on `bzr` need a `replace` to a Git (or other supported) mirror, or a vendor copy.
+
+### `go mod download`
+
+Pre-download all dependencies:
+
+```bash
+$ go mod download
+```
+
+Useful for CI caching or air-gapped environments.
+
+### `go mod verify`
+
+Check that dependencies haven't been modified:
+
+```bash
+$ go mod verify
+all modules verified
+```
+
+### `go mod why`
+
+Explain why a dependency is needed:
+
+```bash
+$ go mod why golang.org/x/net
+
+# github.com/username/myproject
+github.com/username/myproject
+github.com/gin-gonic/gin
+golang.org/x/net/html
+```
+
+### `go mod graph`
+
+Show dependency graph:
+
+```bash
+$ go mod graph
+github.com/username/myproject github.com/gin-gonic/gin@v1.9.1
+github.com/gin-gonic/gin@v1.9.1 github.com/bytedance/sonic@v1.9.1
+...
+```
+
+## Vendoring
+
+Copy dependencies into your repository:
+
+```bash
+# Create vendor directory
+$ go mod vendor
+
+# Build using vendor
+$ go build -mod=vendor
+```
+
+Vendoring pros:
+- Reproducible builds
+- Works offline
+- Audit dependencies
+
+Vendoring cons:
+- Bloated repository
+- Manual updates
+
+## Replace Directive
+
+### Local Development
+
+Replace a module with a local path:
+
+```
+replace github.com/some/package => ../local-package
+```
+
+### Fork Substitution
+
+Use your fork instead of original:
+
+```
+replace github.com/original/pkg => github.com/yourfork/pkg v1.2.3
+```
+
+### Version Override
+
+Force a specific version:
+
+```
+replace github.com/vulnerable/pkg v1.0.0 => github.com/vulnerable/pkg v1.0.1
+```
+
+## Private Modules
+
+### GOPRIVATE
+
+Configure private repository patterns:
+
+```bash
+$ go env -w GOPRIVATE=github.com/mycompany/*,gitlab.internal.com/*
+```
+
+### Git Credentials
+
+For private repos, configure Git:
+
+```bash
+# Use SSH
+$ git config --global url."git@github.com:".insteadOf "https://github.com/"
+
+# Or use access token
+$ git config --global url."https://token:${TOKEN}@github.com/".insteadOf "https://github.com/"
+```
+
+## Dependency Management Best Practices
+
+### 1. Pin Dependencies
+
+Always use exact versions in production:
+
+```bash
+# Good: exact version
+$ go get github.com/pkg/errors@v0.9.1
+
+# Risky: floating version
+$ go get github.com/pkg/errors@latest
+```
+
+### 2. Regular Updates
+
+Check for updates periodically:
+
+```bash
+$ go list -m -u all
+```
+
+### 3. Minimal Dependencies
+
+Fewer dependencies = fewer problems:
+- Check if you really need that package
+- Consider stdlib alternatives
+- Watch for transitive dependencies
+
+### 4. Security Scanning
+
+Use vulnerability scanning:
+
+```bash
+# Built-in (Go 1.18+)
+$ go install golang.org/x/vuln/cmd/govulncheck@latest
+$ govulncheck ./...
+```
+
+## Common Issues
+
+### Module Not Found
+
+```bash
+# Ensure GOPROXY is set
+$ go env GOPROXY
+https://proxy.golang.org,direct
+
+# Try direct fetch
+$ GOPROXY=direct go get github.com/some/package
+```
+
+### Version Conflicts
+
+```bash
+# See what's required
+$ go mod graph | grep conflicting-package
+
+# Force specific version
+$ go get conflicting-package@v1.2.3
+```
+
+### Checksum Mismatch
+
+```bash
+# Clear cache and retry
+$ go clean -modcache
+$ go mod download
+```
+
+## Summary
+
+| Command | Purpose |
+|---------|---------|
+| `go mod init` | Create new module |
+| `go mod tidy` | Sync dependencies |
+| `go get pkg@version` | Add/update dependency |
+| `go mod download` | Pre-fetch dependencies |
+| `go mod verify` | Verify checksums |
+| `go mod vendor` | Create vendor directory |
+
+## Related Topics
+- [Workspaces and Multi-Module Development](08-workspaces-multimodule.md)
+- [How Go Code Is Organized](03-code-organization.md)
+
+## More examples
+
+### Example: prefer stdlib before `go get`
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+)
+
+type Config struct {
+	Service string `json:"service"`
+	Port    int    `json:"port"`
+}
+
+func main() {
+	// Many needs are covered by encoding/json, net/http, etc.—no third party.
+	raw := []byte(`{"service":"api","port":8080}`)
+	var cfg Config
+	if err := json.Unmarshal(raw, &cfg); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	fmt.Printf("%s listens on %d\n", cfg.Service, cfg.Port)
+
+	out, _ := json.MarshalIndent(cfg, "", "  ")
+	fmt.Println(string(out))
+}
+```
+
+Expected:
+
+```text
+api listens on 8080
+{
+  "service": "api",
+  "port": 8080
+}
+```
+
+### Example: semantic version labels as data
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)
+
+// parseSemver is a teaching toy—not a full semver library.
+func parseSemver(v string) (major, minor, patch int, err error) {
+	v = strings.TrimPrefix(v, "v")
+	parts := strings.Split(v, ".")
+	if len(parts) != 3 {
+		return 0, 0, 0, fmt.Errorf("want major.minor.patch, got %q", v)
+	}
+	major, err = strconv.Atoi(parts[0])
+	if err != nil {
+		return
+	}
+	minor, err = strconv.Atoi(parts[1])
+	if err != nil {
+		return
+	}
+	patch, err = strconv.Atoi(parts[2])
+	return
+}
+
+func main() {
+	for _, v := range []string{"v1.2.3", "2.0.0", "1.2"} {
+		maj, min, pat, err := parseSemver(v)
+		if err != nil {
+			fmt.Printf("%s -> %v\n", v, err)
+			continue
+		}
+		fmt.Printf("%s -> major=%d minor=%d patch=%d\n", v, maj, min, pat)
+	}
+}
+```
+
+Expected:
+
+```text
+v1.2.3 -> major=1 minor=2 patch=3
+2.0.0 -> major=2 minor=0 patch=0
+1.2 -> want major.minor.patch, got "1.2"
+```
+
+## Runnable example
+
+Stdlib-only module demo: after `go mod init`, the program reports module path and dependency list via build info (empty deps until you `go get` something).
+
+Save as `main.go`. From an empty directory:
+
+```bash
+go mod init example.com/demo
+go mod tidy
+go run .
+cat go.mod
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"runtime/debug"
+)
+
+func main() {
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		fmt.Println("no build info (unusual for go run/build)")
+		return
+	}
+
+	fmt.Println("module:", info.Main.Path)
+	fmt.Println("go:", info.GoVersion)
+	if info.Main.Version != "" {
+		fmt.Println("main version:", info.Main.Version)
+	}
+
+	if len(info.Deps) == 0 {
+		fmt.Println("deps: (none — stdlib only)")
+	} else {
+		fmt.Println("deps:")
+		for _, d := range info.Deps {
+			fmt.Printf("  %s %s\n", d.Path, d.Version)
+		}
+	}
+
+	// Prefer stdlib until you truly need a third-party module.
+	fmt.Println("tip: run `go get github.com/some/pkg@vX.Y.Z` then `go mod tidy`")
+}
+```
+
+**Expected output** (illustrative):
+
+```text
+module: example.com/demo
+go: go1.22.5
+main version: (devel)
+deps: (none — stdlib only)
+tip: run `go get github.com/some/pkg@vX.Y.Z` then `go mod tidy`
+```
+
+**What to notice:**
+- `go mod init` sets the module path that appears in `ReadBuildInfo`.
+- With only stdlib imports, `go.mod` stays lean—minimal dependencies by design.
+- `go mod tidy` is safe to run anytime; it syncs `go.mod`/`go.sum` with imports.
+- Third-party modules only appear under `deps` after you import and tidy them.
+
+**Try next:** Add `import _ "golang.org/x/time/rate"`, run `go get golang.org/x/time@latest` and `go mod tidy`, then re-run and inspect `go.mod` / printed deps.

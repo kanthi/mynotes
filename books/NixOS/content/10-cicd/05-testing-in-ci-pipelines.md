@@ -1,0 +1,158 @@
+---
+title: Testing in CI Pipelines
+---
+
+# Testing in CI Pipelines
+
+Tests that need the office Wi-Fi are not tests. The boring default is: **hermetic `checkPhase` / `go test` inside the derivation, `nix flake check` on every PR against nixpkgs 26.05, and NixOS VM tests when a unit must listen**.
+
+## Mental model
+
+The sandbox has no network. `go test` that downloads modules fails. `vendorHash` (FOD) already fetched modules. `npm test` that hits staging fails. Mock it.
+
+| Kind | Where |
+|---|---|
+| Unit | `doCheck` / `checkPhase` on the package |
+| Lint | `checks.<system>.lint` |
+| Integration | `testers.runNixOSTest` (needs KVM) |
+| Gate | `nix flake check -L` in CI |
+
+GitHub Actions: install Nix 2.35 (or the 26.05-pinned Nix), then `nix flake check`. No `setup-go`. Staging probes are **deploy** jobs, not `checks`.
+
+## Worked examples
+
+### Case 1: Hermetic Go tests
+
+Save as `service.nix`:
+
+```nix
+# service.nix
+{ pkgs ? import <nixpkgs> { } }:
+
+pkgs.buildGoModule {
+  pname = "desk-service";
+  version = "1.0.0";
+  src = pkgs.lib.cleanSource ./.;
+  vendorHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+  doCheck = true;
+}
+```
+
+`buildGoModule` already runs `go test` when `doCheck` is true. Probe `vendorHash`. `null` is not a pin.
+
+```bash
+nix-build service.nix
+```
+
+### Case 2: Flake checks
+
+Save as `flake.nix`:
+
+```nix
+# flake.nix
+{
+  description = "desk-service checks";
+
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+
+  outputs = { self, nixpkgs }:
+    let
+      system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
+      pkg = pkgs.callPackage ./service.nix { };
+    in
+    {
+      packages.${system}.default = pkg;
+      checks.${system}.unit = pkg;
+      checks.${system}.vet = pkgs.runCommand "vet" {
+        nativeBuildInputs = [ pkgs.go ];
+        src = ./.;
+      } ''
+        cd $src
+        GOPROXY=off go vet ./...
+        touch $out
+      '';
+    };
+}
+```
+
+`GOPROXY=off` proves you are not downloading. If vet needs modules, use the same `buildGoModule` env.
+
+```bash
+nix flake check --print-build-logs
+```
+
+### Case 3: CI workflow
+
+Save as `.github/workflows/check.yml`:
+
+```yaml
+# .github/workflows/check.yml
+name: check
+on: [pull_request, push]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v27
+      - uses: cachix/cachix-action@v15
+        with:
+          name: desk-cache
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          skipPush: ${{ github.event_name == 'pull_request' }}
+      - run: nix flake check -L
+```
+
+Push cache on `main` only. `CACHIX_AUTH_TOKEN` is a GitHub secret, not a flake input.
+
+### Case 4: VM test job (KVM)
+
+```nix
+# test-nginx.nix fragment in checks
+{
+  checks.x86_64-linux.nginx = pkgs.testers.runNixOSTest {
+    name = "desk-nginx";
+    nodes.machine = { services.nginx.enable = true; };
+    testScript = ''
+      machine.wait_for_unit("nginx.service")
+      machine.succeed("curl -f http://127.0.0.1/")
+    '';
+  };
+}
+```
+
+```bash
+nix build .#checks.x86_64-linux.nginx -L
+```
+
+GitHub hosted runners often lack nested KVM. Use a self-hosted runner with `/dev/kvm` or skip VM tests on GHA and run them on the builder.
+
+### Case 5: Fail the gate
+
+```bash
+# break a test, then:
+nix flake check -L
+echo $?
+```
+
+Non-zero. The PR does not merge. Logs are in `nix log` / `-L`, not in a screenshot. Run check twice: the second should substitute.
+
+## The trap
+
+The trap is **`go test` that hits `https://staging.desk.internal`**. Sandbox: connection refused. "Works on my laptop" because your laptop is not a sandbox. `doCheck` must be hermetic. Integration against staging is a **deploy** job with secrets, not `flake check`.
+
+## The boring rule
+
+- `nix flake check -L` is the PR gate. 26.05 pin. Nix 2.35 on the runner.
+- `vendorHash` / `cargoHash` so tests do not download.
+- VM tests need KVM; do not pretend GHA ubuntu has it.
+- No prod credentials in check.
+- `-L` so failures are in the log.
+
+## Try this
+
+1. Flip an assertion, `nix flake check`, restore.
+2. Add `curl https://example.com` to `checkPhase` and confirm sandbox failure.
+3. `nix flake check` twice; second should substitute.
+4. Document whether VM tests run on GHA or on the builder.

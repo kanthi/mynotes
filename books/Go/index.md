@@ -1,0 +1,327 @@
+# Everything Go - Comprehensive Syllabus
+
+::: {.content-visible when-format="html"}
+![Updated for Go 1.27](https://img.shields.io/badge/Go-1.27-00ADD8?style=flat&logo=go)
+:::
+
+
+A **deep library and reference curriculum**, structured pedagogically from core language foundations to advanced systems engineering, runtime internals, and production operations.
+
+## How to read this book (pick a path)
+
+```text
+Path A — Core & Productive Go (≈ 2–4 weeks)
+  Foundations (01) → Core (02) → Memory (03) → Generics (04) → Errors (05)
+  → Testing (06) → Standard Library Tour (07) → CLI Tools (09) → Projects (99)
+
+Path B — Concurrent & Networked Systems
+  Standard Library (07) → CLI Tools (09) → Concurrency Ground Up (10)
+  → Advanced Concurrency Patterns (11) → Socket Programming (12)
+  → Network Systems (13) → Network Performance (14)
+
+Path C — Web Development & Distributed Services
+  Standard Library (07) → Concurrency (10–11) → Web Development in Go (15)
+  → Modern Web & API Architectures (16) → Distributed Infrastructure (18)
+  → Observability & SRE (19) → Cloud Infrastructure (20)
+
+Path D — Systems Programming & Linux Engineering
+  Foundations (01) → Memory Mechanics (03) → Standard Library (07)
+  → CLI Tools (09) → Sockets (12) → Systems Programming (17)
+  → Cloud & Deployment (20) → Long-Term Maintenance & FFI (26)
+
+Path E — Production Hardening, SRE & Performance
+  Observability & SRE (19) → Cloud Infrastructure (20) → Security Tools (21)
+  → Security Hardening (22) → Performance Tooling (23) → Performance Engineering (24)
+
+Path F — Runtime Internals & Compiler SSA
+  Memory Mechanics (03) → Concurrency (10–11) → Go Deep Dives (25: GMP, GC,
+  memory model, netpoller, Swiss maps, compiler SSA, assembly, synctest)
+  → Long-Term Maintenance (26: unsafe, cgo, reflection)
+
+Path G — Algorithms & Practical Drills
+  Data Structures & Algorithms (08) → CLI Cookbook (09)
+  → Capstone Projects (99: Linux clones, k8s controllers, eBPF, TinyGo, 200 workouts)
+
+Path H — System Design Implemented in Go
+  Web Development (15) → Distributed Infrastructure (18: estimates, hashing,
+  IDs, durable queues) → Observability (19: monitoring and alerting)
+  → System-Design Capstones (99: storage, feeds, geo, payments, matching)
+```
+
+## Curriculum Architecture & Progression
+
+The book is organized into structured phases of engineering depth:
+
+1. **Language Mastery (Parts 01–06):** Foundations, types, memory mechanics, pointers, interfaces, generics, errors, and testing.
+2. **Applied Language, Algorithms & CLI (Parts 07–09):** The standard library surface, data structures & algorithms, and production CLI automation.
+3. **Concurrency & Parallelism (Parts 10–11):** Diagram-first ground-up concurrency fundamentals, followed by advanced production coordination patterns.
+4. **Networking & Sockets (Parts 12–14):** Low-level socket programming, resilient network systems, and high-connection netpoller performance.
+5. **Web Services & Modern APIs (Parts 15–16):** Full-stack web development (Bookstore track) followed by modern architectures (GOTH stack, gRPC, Huma OpenAPI).
+6. **Systems Programming & OS Integration (Part 17):** Userspace Linux systems programming, processes, signals, safe I/O, WAL, and sandboxing without libc.
+7. **Distributed Systems & Cloud Infrastructure (Parts 18–20):** Resilient distributed patterns, full observability (slog, Prometheus, OpenTelemetry), and container/Kubernetes deployment.
+8. **Security Engineering & Hardening (Parts 21–22):** Security tooling audit, defense-in-depth, TLS/mTLS, authentication, SSRF/CSRF defense, and secret zeroization.
+9. **Performance Engineering & Tooling (Parts 23–24):** Profiling workflows, allocations/GC tuning, contention optimization, PGO, and SIMD vectorization.
+10. **Runtime Internals & Compiler Architecture (Part 25):** 71 deep dives into the GMP scheduler, memory allocator, GC pacer, compiler IR/SSA, and netpoller.
+11. **Long-Term Engineering & Synthesis (Parts 26–28):** Reflection, unsafe code, cgo/FFI, modern Go literature synthesis, and specialized frontiers (AI agents, desktop apps).
+12. **Capstones & Reference (Parts 99–100):** Hands-on builds, system-design labs, and master reference appendices.
+
+---
+
+## 1. Foundations & Mindset
+- **The Go Philosophy:** Why "boring" is a superpower.
+- **2026 Learning Roadmap:** Focusing on essentials vs. hype.
+- **The 3-Layer Practice System:** Read, Write, Ship.
+- **Transitioning to Go:** Insights for Java and Node.js developers.
+- **Go 1.27:** Language (generic methods, promoted field keys), toolchain, `json/v2`, `uuid`, `goroutineleak`, SIMD experiment. Official notes: [go.dev/doc/go1.27](https://go.dev/doc/go1.27).
+- **Tooling & Setup:** Installing Go, code organization, core commands, vetting, dependency management, and multi-module workspaces.
+
+## 2. Core Language Essentials
+- **Language Building Blocks:** Variables, types, and functions *(1.26: `new(expr)`; 1.27: generic methods, promoted field keys)*.
+- **Control Flow:** Effective use of `if`, `for`, and `switch`.
+- **Data Structures:** Arrays, slices, strings, and maps internals.
+- **Composite Types:** Structs and data modeling.
+- **Working with Time:** Wall clocks, monotonic timers, and formatting.
+
+## 3. Pointers & Memory Management
+- **The Mechanics:** Understanding Stack vs. Heap.
+- **Functions & Receivers:** First-class functions, closures, methods, and value vs. pointer receivers.
+- **Memory Optimization:**
+  - Escape Analysis: Where did memory allocate?
+  - Memory Alignment, Padding, and Size-Specialized Malloc.
+  - Garbage Collection (GC) fundamentals, tuning, and `GOMEMLIMIT` *(Go 1.26: Green Tea GC default)*.
+- **Pass by Value vs. Reference:** Performance and safety tradeoffs.
+
+## 4. Generics & Interfaces
+- **Designing with Interfaces:** Implicit implementation (The "Go Way") and small interfaces.
+- **Interface Practices:** Composition, decoupling, and mockability.
+- **Dynamic Inspection:** Type assertions and type switches.
+- **Generics Introduction:** Type parameters, constraints, and generic functions.
+- **Generic Types & Methods:** Generic structs, collections, and generic methods *(Go 1.27)*.
+- **Idiomatic Generics:** Guidelines on when to use generics and when to avoid them.
+
+## 5. Advanced Error Handling
+- **Beyond `if err != nil`:** Idiomatic error values and control flow.
+- **Patterns:** Sentinel errors, custom error types, and error wrapping (`fmt.Errorf`, `errors.Is`, `errors.As`).
+- **Defensive Programming:** Panic, recover, and runtime invariants.
+- **Modern Techniques:** The "Must" pattern and comparison with non-GC languages (Odin).
+
+## 6. Testing & Quality Assurance
+- **Testing Fundamentals:** Unit testing and table-driven tests.
+- **Test Organization:** Test suites, subtests, parallel tests, and test helpers.
+- **Advanced Testing:** Benchmarks, memory allocation tracking, and code coverage.
+- **Integration Testing:** Real dependencies, testcontainers, and build tags.
+- **Fuzzing:** Property-based testing and continuous fuzzing engines.
+- **Network & API Testing:** `net/http/httptest` client/server mocks.
+- **Golden Files:** Managing `testdata` snapshots and deterministic fixtures.
+- **Capstone Lab:** Designing an end-to-end service test suite.
+
+## 7. Standard Library Tour
+- **Map of the Standard Library:** When to reach for standard packages before any framework.
+- **Text & I/O:** `fmt`, `log`, `log/slog`, `bytes`, `strings`, `strconv`, `io`, and `bufio` composition.
+- **Filesystem & Embedding:** `os`, `path/filepath`, `io/fs`, and `//go:embed`.
+- **Serialization & Formats:** `encoding/json`, `encoding/json/v2`, `encoding/csv`, `encoding/xml`, `encoding/binary`, and `encoding/gob`.
+- **HTTP & OS Integration:** Modern `net/http.ServeMux`, HTTP clients with timeout budgets, `flag`, `os/exec`, and `os/signal`.
+- **Budgets & Concurrency Primitives:** `time` and `context` recipes, `sync`, and `sync/atomic`.
+- **Modern Collections:** `slices`, `maps`, `cmp`, and `iter` (range-over-func).
+- **Data & Sockets:** `database/sql` pools, transactions, and `net` dial/listen primitives.
+- **Security & Encodings:** `crypto`, `hash`, `crypto/rand`, post-quantum algorithms (`crypto/mldsa`, `crypto/mlkem`), and stdlib `uuid`.
+- **Templates & Archives:** `html/template`, `text/template`, `compress`, and `archive`.
+
+## 8. Data Structures and Algorithms
+- **Algorithmic Complexity:** Big-O notation, benchmarking, and cache friendliness in Go.
+- **Linear Structures:** Stacks, queues, ring buffers, and linked lists.
+- **Tree Structures:** Binary search trees, heaps, priority queues, and tries.
+- **Sorting & Searching:** Quick sort, merge sort, binary search, and quickselect.
+- **Graph Theory:** BFS and DFS traversals, topological sorting, and Dijkstra's algorithm.
+- **String Algorithms & Probabilistic Filters:** Pattern searching and Bloom filters.
+
+## 9. CLI Tools & Automation
+- **Stdlib-First CLI:** `os.Args`, `flag`, `FlagSet` subcommands, exit codes, and stdout vs. stderr.
+- **Environment & Configuration:** Environment variables, JSON/YAML configuration, and stdin pipes.
+- **System Orchestration:** `os/exec` process pipelines, signal trapping, and context cancellation.
+- **Testing & Architecture:** Structuring large CLI applications and writing CLI test suites.
+- **Cobra & Viper Ecosystem:** Commands, persistent flags, hooks, shell auto-completion, and layered Viper config.
+- **Shipping & Releases:** Version ldflags, cross-compilation, and GoReleaser automation.
+- **Cookbook & Projects:** Network tools (`netkit`: ping, DNS, port scanner, HTTP probe), security tools (`netsec`), text processing (`textkit`), and HTTP debugging (`httpdbg`).
+
+## 10. Concurrency From the Ground Up
+- **Diagram-First Mental Model:** Goroutines, threads, and cooperative scheduling.
+- **Channels in Depth:** Unbuffered vs. buffered, ownership transfer, channel state machines, and nil channels.
+- **Pipelines & Multiplexing:** Fan-out, fan-in, `select`, timeout handling, and cancellation trees.
+- **Backpressure & Flow Control:** Throttling, rate limiting, and backpressure in streaming APIs.
+- **Context Complete:** Lifecycles, deadlines, cancellation propagation, and context value hygiene.
+- **Synchronization Primitives:** WaitGroups, encapsulation, data races vs. race conditions, and `sync.Mutex`.
+- **Advanced Primitives:** Semaphores, rendezvous barriers, atomic memory operations, and `sync.Cond` broadcast.
+- **Verification:** Race detector internals, synctest bubbles, and testing concurrent code.
+
+## 11. Advanced Concurrency Patterns
+- **Architectural Patterns:** Worker pools, bounded concurrency, dynamic pool resizing, and pipeline coordination.
+- **High-Performance Sync:** `sync.Map`, `sync.Once`, and allocation-free `sync.Pool`.
+- **Production Guidelines:** Concurrency design principles, leak prevention, and lock ordering.
+- **Diagnostics:** Goroutine leak detection and the `goroutineleak` pprof profile.
+
+## 12. Socket Programming & Protocols
+- **Networking Fundamentals:** Transport layers, sockets, and Go's `net` package architecture.
+- **TCP Programming:** Reliable TCP servers and clients, buffer tuning, and flow control.
+- **UDP Programming:** Connectionless protocols, multicasting, and datagram services.
+- **Local IPC:** High-performance Unix Domain Sockets.
+- **Network Concurrency & Deadlines:** Concurrency models per connection, read/write deadlines, and context cancellation.
+- **Protocol Engineering:** Designing text-based, binary, and custom framed protocols; serialization with Protobuf and JSON.
+- **Encrypted Sockets:** TLS/SSL socket wrapping, certificates, and handshake management.
+- **Real-Time Communication:** WebSockets server and client implementation.
+- **Production Networking:** Reverse proxies, layer-4 load balancers, testing network code, and diagnostics.
+
+## 13. Network Systems & Resilient Services
+- **TCP Services Deep Dive:** Production connection management, keepalive, and socket options.
+- **HTTP Client & Server Resilience:** Timeout budgets, circuit breakers, backoff retries, and cancellation propagation.
+- **Reverse Proxies & Load Balancing:** `httputil.ReverseProxy`, health checking, and weighted routing.
+- **Production TLS:** Automated certificate management, mTLS, and cipher suite hardening.
+- **DNS Resolution:** Custom resolvers, DNS caching, and split-horizon resolution patterns.
+- **HTTP Transport Tuning:** Idle connection pool sizing, HTTP/2 multiplexing, and dial timeouts.
+- **Project Lab:** The `netcheck` network diagnostic toolkit.
+
+## 14. Network Performance Engineering
+- **The Netpoller:** Kernel event loops (`epoll`, `kqueue`) and goroutine scheduling integration.
+- **Connection Scaling:** Scaling to 10k+ concurrent connections (C10K) with minimal heap footprint.
+- **Socket Control:** Low-level syscalls, `TCP_NODELAY`, `SO_REUSEPORT`, and socket buffer tuning.
+- **Resilience Under Saturation:** Backpressure, load shedding, and graceful degradation.
+- **Connection Lifecycle:** Long-lived connection management, leak prevention, and HTTP/1 reuse optimizations.
+
+## 15. Web Development in Go (Bookstore Track)
+- **Foundations of Go Web:** Project layout, standard `net/http`, and modern `ServeMux` pattern matching.
+- **Request Lifecycle:** Handlers, request parsing, headers, query parameters, and form processing.
+- **Rendering & Templates:** Safe HTML templating, partials, layouts, and template caching.
+- **Data Persistence:** Connecting to PostgreSQL, connection pools, migrations, and query execution.
+- **Web Concurrency & Edge Safety:** Concurrency caps, request context timeouts, and edge thread safety.
+- **Authentication & Sessions:** Secure cookies, session stores, password hashing, and role-based authorization (RBAC).
+- **API Contracts & Frontend Comms:** JSON encoding/decoding, contract validation, and RESTful endpoints.
+- **Middleware Architecture:** Chaining middleware, request logging, panic recovery, and CORS headers.
+- **Operational Web:** Graceful shutdown, rate limiting, file uploads, and WebSockets.
+- **Capstone Project:** Full Bookstore REST API and admin dashboard.
+
+## 16. Modern Web & API Architectures
+- **The GOTH Stack:** Full-stack Go with Go, Templ, HTMX, and Tailwind CSS.
+- **Modern UI Patterns:** Skeleton loading, optimistic updates, and server-driven reactive UI.
+- **Microservices with gRPC:** Protocol Buffers, gRPC service generation, interceptors, and streaming RPCs.
+- **Modern REST APIs with Huma:** Type-safe OpenAPI 3.1 generation, automatic validation, and documentation.
+- **Enterprise Data Integrations:** High-throughput PostgreSQL with `pgx` and Redis caching strategies.
+
+## 17. Systems Programming & OS Engineering
+- **Go Without libc:** Pure static Linux binaries (`CGO_ENABLED=0`), kernel system calls, and glibc vs. musl.
+- **Process Management:** Process creation, signals, process groups, and daemon supervisors.
+- **Filesystem Systems:** Atomic writes, crash-consistent filesystems, and a corruption-proof Write-Ahead Log (WAL).
+- **Unix I/O:** Pipeline style CLIs, file descriptors, duplication, and stdio redirection.
+- **Memory & IPC:** Memory-mapped files (`mmap`), Unix Domain Sockets, file locking (`flock`), and pidfiles.
+- **System Observability:** Linux `procfs` introspection, `syslog`, `journald`, and filesystem watching (`inotify`).
+- **Sandboxing & Isolation:** Pseudo-terminals (PTY), resource limits (`rlimit`), Linux capabilities, and rootless namespaces.
+- **Projects:** Systems mini-tools, ops toolkit, and the `minisup` process supervisor.
+
+## 18. Distributed Infrastructure
+- **Design Foundations:** [Requirements, estimates, and scaling](content/18-distributed-infra/150a-system-design-method-and-capacity.md), [consistent hashing](content/18-distributed-infra/150b-consistent-hashing.md), and [distributed ID generation](content/18-distributed-infra/150c-distributed-id-generation.md).
+- **Service Discovery:** Health checks, consul/etcd registration, and client-side load balancing.
+- **Resilience Engineering:** Retry policies, exponential backoff, jitter, and circuit breaker patterns.
+- **Queue Workers & Streaming:** Asynchronous worker pools, backpressure control, dead-letter queues, and a [durable distributed message-queue lab](content/18-distributed-infra/153b-distributed-message-queue.md).
+- **Distributed Caching:** Cache invalidation strategies, stampede protection, and two-tier caching.
+- **Data Consistency:** Idempotency keys, deduplication, and the Transactional Outbox pattern.
+- **Coordination:** Distributed leader election and lease management.
+- **Project Lab:** High-reliability distributed worker system.
+
+## 19. Observability and SRE
+- **Structured Logging:** Production `log/slog` architecture, handler chains, and distributed trace correlation.
+- **Metrics Design:** Prometheus instrumentation, counters, gauges, histograms, and metric hygiene.
+- **Distributed Tracing:** OpenTelemetry context propagation, span creation, and exporter pipelines.
+- **SRE Principles:** Defining SLIs, SLOs, and error budgets in Go production services.
+- **Health Probes:** Kubernetes liveness, readiness, and startup probe implementation.
+- **Incident Response:** Alerting rule design, runbook automation, and Flight Recorder incident capture.
+- **Project Labs:** Instrumented microservice and [metrics collection, storage, and alerting design](content/19-observability-sre/168-monitoring-alerting-system-design.md).
+
+## 20. Cloud Infrastructure & Deployment
+- **Containerization:** Lean multi-stage Docker builds, scratch containers, and non-root execution.
+- **Cloud Platforms:** Deploying Go binaries to Render, Leapcell, and bare-metal environments.
+- **Cross-Platform Ops:** Go on NixOS, FreeBSD, and edge devices.
+- **CI/CD Automation:** Automated testing, vulnerability scanning, and supply-chain verification.
+- **Kubernetes Engineering:** Deployments, Services, ConfigMaps, Secrets, resource requests, and gang scheduling.
+- **Release Engineering:** Multi-architecture cross-compilation with GoReleaser and tag-driven GitHub Actions.
+
+## 21. Security Tools and Design
+- **Security Audit Tooling:** Vulnerability checking (`govulncheck`), static code auditing (`gosec`), capability auditing (`capslock`), and nil safety (`nilaway`).
+- **Application Hardening:** Defensive coding, hardening Linux hosts for Go apps, and least privilege.
+- **Software Architecture:** Applying SOLID design principles cleanly in Go.
+
+## 22. Security Hardening & Cryptography
+- **Transport Security:** Production TLS configuration, mTLS mutual authentication, and automated certificate renewal.
+- **Identity & Access:** Authentication patterns, authorization engines, and JWT validation.
+- **Secrets Management:** Secure secrets storage, dynamic retrieval, and rotation without service downtime.
+- **Application Defense:** Input validation, sanitization, and Server-Side Request Forgery (SSRF) defense.
+- **Filesystem Security:** `os.Root` traversal-resistant file access.
+- **Edge Protection:** CSRF defense without tokens via `net/http` CrossOriginProtection.
+- **Boundary Defense:** Error boundary translations that prevent internal data leakage.
+- **Supply Chain Security:** Software Bill of Materials (SBOM), dependency auditing, and GoLeash runtime policy.
+- **Memory Defense:** `runtime/secret` zeroization for sensitive cryptographic material.
+
+## 23. Performance and Tooling
+- **Profiling in Depth:** Profiling CPU, memory, goroutines, and block/mutex contention with `pprof` and `trace`.
+- **Developer Toolkit:** Command-line tooling ecosystem (`ripgrep`, `fd`, `fzf`, `gopsutil`).
+- **Static Analysis:** Writing custom AST analyzers and linters using `go/analysis`.
+- **Code Generation:** Type-safe SQL with `sqlc`, enum string generation with `stringer`, and asset embedding.
+- **Documentation & APIs:** Generating API documentation with `pkgsite` and developer docs.
+- **Build Interception:** `-toolexec` build hooks, compiler instrumentation, and build cache integration.
+
+## 24. Performance Engineering & Optimization
+- **Optimization Workflow:** Evidence-based benchmarking, profiling, and performance verification.
+- **Memory & Allocations:** Heap allocation reduction, memory layout alignment, and zero-allocation hot paths.
+- **Contention Tuning:** Lock contention diagnosis, sharded locks, and lock-free atomic alternatives.
+- **Load Testing:** Establishing performance baselines and load testing with saturation analysis.
+- **Compiler Optimizations:** Profile-Guided Optimization (PGO), build flags, and inlining heuristics.
+- **Hardware Acceleration:** Portable SIMD vectorization via `simd/archsimd` (`GOEXPERIMENT=simd`).
+- **Algorithm Modernization:** Go 1.27 `compress/flate` vectorization and rewrite.
+- **Project Lab:** Profiling and optimizing a high-traffic HTTP endpoint.
+
+## 25. Go Deep Dives (Runtime & Toolchain)
+- **The GMP Scheduler:** Work stealing, scheduler preemption, sysmon, and OS thread interaction.
+- **The Memory Allocator:** Multi-level allocation hierarchy (mcache, mcentral, mheap), spans, and size classes.
+- **The Garbage Collector:** Concurrent tri-color mark-sweep, GC pacer, write barriers, and assist ratios.
+- **Data Structure Internals:** Interface boxing (`iface`/`eface`), slice headers, map hash tables, Swiss tables, and string immutability.
+- **Language Mechanisms:** Defer and panic runtime stacks, dynamic stack growth, and finalizer mechanics.
+- **Compiler & Linker:** Frontend parsing, AST generation, SSA intermediate representation, backend code generation, and binary size optimization.
+- **Toolchain & Interop:** Modules and Minimal Version Selection (MVS), ABI internal calling conventions, assembly (`nosplit`), and `cgo` thread transitions.
+- **Emerging Runtime Features:** Testing with synctest bubbles, `weak` and `unique` pointers, and WebAssembly (`wasip1`).
+
+## 26. Long-Term Maintenance & Reliability
+- **Dynamic Inspection:** Reflection in practice, performance implications, and alternatives.
+- **Low-Level Access:** Unsafe pointer manipulation, memory layouts, and boundary safety.
+- **Foreign Function Interoperability:** Cgo, FFI bindings, and C memory management.
+- **API Evolution:** Deprecating APIs cleanly using `//go:fix inline` and automated refactoring tools.
+- **Architectural Longevity:** Designing Go systems that remain maintainable and resilient across decades.
+
+## 27. Modern Go Literature Synthesis
+- **Ecosystem Patterns:** Synthesis of modern Go patterns and production practices from 2024–2025 literature:
+  - *Go Programming* (2nd ed., 2024)
+  - *Effective Go Recipes* (2024)
+  - *Go in Practice* (2nd ed., 2025)
+  - *Mastering Go* (4th ed., 2024)
+  - *Let Us Go!* (2025)
+  - *Automate Your Home Using Go* (2024)
+
+## 28. Specialized Applications & Frontiers
+- **Desktop Applications:** Cross-platform GUI development using LCL, CEF, and Webview.
+- **Machine Learning & AI:** Building LLM-powered applications and AI pipelines in Go.
+- **AI Agent Frameworks:** Developing autonomous agents with ADK Go Agents.
+- **Advanced Streaming:** High-throughput streaming I/O pipelines and zero-copy transfers.
+
+## 99. Capstone Projects & Practice Labs
+- **Progressive Hands-On Projects:**
+  - CLI utilities: ping tools, Linux clones (`ls`, `cat`, `grep`, `tail`, `du`, `find`, `wc`, `ps`).
+  - Web & API projects: URL shortener, KV HTTP store, WebSocket chat server.
+  - Infrastructure & Cloud: Kubernetes pod lister, rollout checker, event watcher, Terraform plan parser & cost estimator.
+  - SRE & Observability: Prometheus exporters, probe services, and alert testers.
+  - Systems & Kernels: eBPF tracepoint monitors, XDP packet counters, and Proxmox cluster managers.
+  - Embedded Go: TinyGo hardware projects (LED blink, button interrupts, UART sensors, I2C monitors).
+  - 200 Workout Exercises: Targeted drills across all core topics.
+
+- **System Design in Go:** [28-topic capstone track](content/99-projects/101-system-design/index.md), including 17 new design-and-build labs and extensions to the existing URL shortener, KV store, and chat projects.
+
+## 100. Master Appendices & Reference
+- **Master Go Glossary:** Authoritative terminology and concepts across the entire language.
+- **Command Cheat Sheet:** Quick reference for `go build`, `go test`, `go tool pprof`, `go tool trace`, and environment variables.
+- **Go Version Release Radar:** Complete feature delta from Go 1.21 through Go 1.27.

@@ -1,0 +1,14 @@
+# Every page address this book's website has had, kept by Octavo so that
+# links to moved chapters keep working. Commit this file with the book.
+# Each line: the page, a tab, then its chapter title, or "-> " and the page
+# its old address now forwards to.
+content/00-intro/01-overview.html	What Pulumi is (and is not)
+content/01-foundations/01-getting-started.html	Install the CLI, create a project, and run your first preview
+content/01-foundations/02-projects-and-stacks.html	Projects, Stacks and State
+content/01-foundations/03-configuration-and-secrets.html	Configuration and Secrets
+content/01-foundations/04-inputs-and-outputs.html	Inputs, Outputs and the Dependency Graph
+content/01-foundations/05-unit-testing-with-mocks.html	Unit Testing Pulumi Programs with Mocks
+content/01-foundations/06-component-resources.html	Component Resources
+content/02-workflows/01-automation-api.html	Automation API: drive pulumi up from Python
+content/02-workflows/02-pulumi-esc.html	Pulumi ESC: environments, secrets, and dynamic credentials
+index.html	DevOps with Pulumi

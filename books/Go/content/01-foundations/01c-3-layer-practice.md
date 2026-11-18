@@ -1,0 +1,244 @@
+---
+title: The 3-Layer Practice System
+---
+
+# The 3-Layer Practice System: Read, Write, Ship
+
+Learning a language like Go isn't about memorizing syntax; it's about building muscle memory. In 2026, the most effective way to master Go is through a cyclic system we call **Read, Write, Ship**.
+
+## Layer 1: Read (Input)
+
+You cannot write idiomatic Go if you haven't seen idiomatic Go. Good writers are always avid readers.
+
+### What to Read
+1.  **The Standard Library:** The Go standard library is the gold standard.
+    *   Read `net/http` to see how interfaces are used.
+    *   Read `encoding/json` to understand reflection and tags.
+    *   Read `time` to see efficient data structures.
+2.  **High-Quality Open Source:**
+    *   [Caddy Server](https://github.com/caddyserver/caddy): For modular architecture and interfaces.
+    *   [HashiCorp Vault/Terraform](https://github.com/hashicorp): For CLI patterns and plugin systems.
+    *   [NATS Server](https://github.com/nats-io/nats-server): For high-performance concurrency.
+
+### How to Read
+Don't just skim. **Trace.** Pick a function call (like `http.ListenAndServe`) and follow it down the rabbit hole until you hit a syscall or assembly.
+
+## Layer 2: Write (Output)
+
+Tutorials give you a false sense of competence. You must build things that break.
+
+### The "Clone" Technique
+Don't wait for a unique idea. Clone existing tools to understand how they work.
+*   **Beginner:** Write a CLI tool (clone `ls` or `cat`).
+*   **Intermediate:** Write a load balancer (clone basic Nginx features).
+*   **Advanced:** Write a distributed key-value store (clone a tiny Redis).
+
+### Constraints
+Force yourself out of comfort zones:
+*   Write a program without using `struct` tags.
+*   Write a concurrent program without `sync.Mutex` (only channels).
+*   Write a web server without a framework (only `net/http`).
+
+## Layer 3: Ship (Feedback)
+
+Code on your laptop doesn't count. "Done" means deployed.
+
+### The Feedback Loop
+1.  **Linting:** `golangci-lint` is your first critic. Configure it to be strict.
+2.  **Code Review:** Even if solo, use PRs. Review your own diffs. AI tools can effectively review PRs now—use them to spot potential bugs.
+3.  **Production:** functionality implies running in a Linux container, on a cloud provider, with real traffic.
+    *   Deploy to **Render**, **Leapcell**, or a **VPS**.
+    *   Set up **Observability** (logs/metrics). You don't know your code until you see it fail in prod.
+
+## Summary
+
+*   **Read** to load the patterns into your brain.
+*   **Write** to test your understanding of those patterns.
+*   **Ship** to validate that your code actually solves the problem in the real world.
+
+> "Amateurs practice until they get it right. Professionals practice until they can't get it wrong."
+
+## More examples
+
+### Example: clone `cat` (Layer 2 write)
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import (
+	"fmt"
+	"io"
+	"os"
+	"strings"
+)
+
+func cat(r io.Reader, w io.Writer) error {
+	_, err := io.Copy(w, r)
+	return err
+}
+
+func main() {
+	// Demo when no args: practice without creating files.
+	if len(os.Args) < 2 {
+		r := strings.NewReader("line one\nline two\n")
+		fmt.Print("(demo)\n")
+		if err := cat(r, os.Stdout); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		return
+	}
+
+	for _, path := range os.Args[1:] {
+		f, err := os.Open(path)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		err = cat(f, os.Stdout)
+		f.Close()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+	}
+}
+```
+
+Expected:
+
+```text
+(demo)
+line one
+line two
+```
+
+### Example: intentional breakage (Layer 2 write)
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import (
+	"fmt"
+	"strconv"
+)
+
+// parsePositive demonstrates checking the compiler/runtime reaction to bad input.
+func parsePositive(s string) (int, error) {
+	n, err := strconv.Atoi(s)
+	if err != nil {
+		return 0, fmt.Errorf("not an int %q: %w", s, err)
+	}
+	if n <= 0 {
+		return 0, fmt.Errorf("need positive, got %d", n)
+	}
+	return n, nil
+}
+
+func main() {
+	for _, s := range []string{"42", "0", "nope"} {
+		n, err := parsePositive(s)
+		if err != nil {
+			fmt.Printf("%q -> error: %v\n", s, err)
+			continue
+		}
+		fmt.Printf("%q -> %d\n", s, n)
+	}
+}
+```
+
+Expected:
+
+```text
+"42" -> 42
+"0" -> error: need positive, got 0
+"nope" -> error: not an int "nope": strconv.Atoi: parsing "nope": invalid syntax
+```
+
+## Runnable example
+
+Layer 2 practice: a tiny clone of `wc -l` / `wc -w` (read stdin or a string, write counts).
+
+Save as `main.go`. From an empty directory:
+
+```bash
+go mod init example
+go run .
+printf 'hello world\nfoo bar baz\n' | go run .
+```
+
+```go
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"io"
+	"os"
+	"strings"
+)
+
+func count(r io.Reader) (lines, words, bytes int, err error) {
+	br := bufio.NewReader(r)
+	for {
+		line, e := br.ReadString('\n')
+		if len(line) > 0 {
+			bytes += len(line)
+			// Count a line if it ends with \n or is a final partial line.
+			if strings.HasSuffix(line, "\n") || e == io.EOF {
+				lines++
+			}
+			words += len(strings.Fields(line))
+		}
+		if e == io.EOF {
+			break
+		}
+		if e != nil {
+			return lines, words, bytes, e
+		}
+	}
+	return lines, words, bytes, nil
+}
+
+func main() {
+	// Demo mode when stdin is a terminal: practice without piping.
+	info, _ := os.Stdin.Stat()
+	var r io.Reader = os.Stdin
+	if (info.Mode() & os.ModeCharDevice) != 0 {
+		r = strings.NewReader("hello world\nfoo bar\n")
+		fmt.Println("(demo input)")
+	}
+
+	lines, words, bytes, err := count(r)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "count:", err)
+		os.Exit(1)
+	}
+	fmt.Printf("lines=%d words=%d bytes=%d\n", lines, words, bytes)
+}
+```
+
+**Expected output** (illustrative):
+
+```text
+(demo input)
+lines=2 words=4 bytes=20
+```
+
+With a pipe:
+
+```text
+lines=2 words=5 bytes=24
+```
+
+**What to notice:**
+- You wrote a real tool that reads input and prints observables—not a syntax drill.
+- Stdlib only: `bufio`, `io`, `strings`—good “read the standard library” practice.
+- Errors are checked; failure exits non-zero (ship-ready habit).
+- Demo mode lets you re-run without pipes while learning.
+
+**Try next:** Accept a filename as `os.Args[1]` and fall back to stdin when missing.

@@ -1,0 +1,305 @@
+---
+title: Interface Best Practices
+---
+
+# Interface Best Practices
+
+## Overview
+
+Well-designed interfaces make Go code flexible, testable, and maintainable.
+
+## Keep Interfaces Small
+
+```go
+// Good: small, focused
+type Reader interface {
+    Read([]byte) (int, error)
+}
+
+// Avoid: too many methods
+type DataProcessor interface {
+    Read([]byte) (int, error)
+    Write([]byte) (int, error)
+    Close() error
+    Flush() error
+    Seek(int64, int) (int64, error)
+    // ...10 more methods
+}
+```
+
+## Define Interfaces at Consumer
+
+```go
+// In the package that USES the interface
+package myapp
+
+type Storage interface {
+    Save(data []byte) error
+}
+
+func Process(s Storage) {
+    s.Save([]byte("data"))
+}
+
+// NOT in the package that implements it
+```
+
+## Accept Interfaces, Return Structs
+
+```go
+// Accept interface (flexible)
+func ParseJSON(r io.Reader) (*Config, error)
+
+// Return concrete type (clear)
+func NewFileReader(path string) *FileReader
+```
+
+## Interface Composition
+
+```go
+type Reader interface {
+    Read([]byte) (int, error)
+}
+
+type Closer interface {
+    Close() error
+}
+
+type ReadCloser interface {
+    Reader
+    Closer
+}
+```
+
+## Avoid Interface Pollution
+
+```go
+// Don't create interfaces for single implementations
+// Just use the concrete type
+
+// Unnecessary
+type UserService interface {
+    GetUser(id int) *User
+}
+type userServiceImpl struct{}
+
+// Better: just use the struct directly
+type UserService struct{}
+func (s *UserService) GetUser(id int) *User
+```
+
+## Testing with Interfaces
+
+```go
+type EmailSender interface {
+    Send(to, subject, body string) error
+}
+
+// Production
+type SMTPSender struct{}
+func (s *SMTPSender) Send(to, subject, body string) error
+
+// Test mock
+type MockSender struct {
+    SentEmails []string
+}
+func (m *MockSender) Send(to, subject, body string) error {
+    m.SentEmails = append(m.SentEmails, to)
+    return nil
+}
+```
+
+## Summary
+
+| Practice | Reason |
+|----------|--------|
+| Small interfaces | Easy to implement and mock |
+| Consumer-defined | Loose coupling |
+| Accept interfaces | Flexibility |
+| Return structs | Clarity |
+| Compose | Build from small pieces |
+
+## Related Topics
+- [Designing with Interfaces](26-interfaces.md)
+- [Testing Fundamentals](../06-testing/36-testing-fundamentals.md)
+
+## More examples
+
+### Example: accept interfaces, return structs
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+type Writer interface {
+	Write([]byte) (int, error)
+}
+
+type memWriter struct{ n int }
+
+func (m *memWriter) Write(p []byte) (int, error) {
+	m.n += len(p)
+	return len(p), nil
+}
+
+// NewMemWriter returns a concrete type; callers depend on Writer where needed.
+func NewMemWriter() *memWriter { return &memWriter{} }
+
+func writeAll(w Writer, msg string) error {
+	_, err := w.Write([]byte(msg))
+	return err
+}
+
+func main() {
+	mw := NewMemWriter()
+	_ = writeAll(mw, "hello")
+	_ = writeAll(mw, "!")
+	fmt.Println("bytes written:", mw.n)
+}
+```
+
+Expected:
+
+```text
+bytes written: 6
+```
+
+### Example: small interfaces compose
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+type Reader interface{ Read() string }
+type Closer interface{ Close() error }
+type ReadCloser interface {
+	Reader
+	Closer
+}
+
+type src struct{ closed bool }
+
+func (s *src) Read() string {
+	if s.closed {
+		return ""
+	}
+	return "data"
+}
+func (s *src) Close() error {
+	s.closed = true
+	return nil
+}
+
+func drain(rc ReadCloser) {
+	fmt.Println("read:", rc.Read())
+	_ = rc.Close()
+	fmt.Println("after close:", rc.Read())
+}
+
+func main() {
+	drain(&src{})
+}
+```
+
+Expected:
+
+```text
+read: data
+after close:
+```
+
+## Runnable example
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"io"
+	"strings"
+)
+
+// Small, consumer-defined interfaces.
+type Storage interface {
+	Save(data []byte) error
+}
+
+type EmailSender interface {
+	Send(to, subject, body string) error
+}
+
+// Concrete production types — no interface required at definition site.
+type MemoryStorage struct {
+	items []string
+}
+
+func (m *MemoryStorage) Save(data []byte) error {
+	m.items = append(m.items, string(data))
+	return nil
+}
+
+type MockSender struct {
+	Sent []string
+}
+
+func (m *MockSender) Send(to, subject, body string) error {
+	m.Sent = append(m.Sent, to+":"+subject)
+	return nil
+}
+
+// Accept interfaces, return concrete values.
+func ParseConfig(r io.Reader) (string, error) {
+	b, err := io.ReadAll(r)
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(b)), nil
+}
+
+func Process(s Storage, msg string) error {
+	return s.Save([]byte(msg))
+}
+
+func Notify(sender EmailSender, user string) error {
+	return sender.Send(user, "welcome", "hello")
+}
+
+func main() {
+	cfg, err := ParseConfig(strings.NewReader("  port=8080  "))
+	fmt.Println("config:", cfg, err)
+
+	store := &MemoryStorage{}
+	_ = Process(store, "event-1")
+	_ = Process(store, "event-2")
+	fmt.Println("stored:", store.items)
+
+	mock := &MockSender{}
+	_ = Notify(mock, "ada@example.com")
+	fmt.Println("sent:", mock.Sent)
+}
+```
+
+**Expected output:**
+
+```text
+config: port=8080 <nil>
+stored: [event-1 event-2]
+sent: [ada@example.com:welcome]
+```
+
+**What to notice:** Call sites depend on tiny interfaces (`Storage`, `EmailSender`, `io.Reader`); implementations stay concrete structs you can construct and inspect in tests without a framework.
+
+**Try next:** Compose `type ReadSaver interface { io.Reader; Storage }` or inject a failing `EmailSender` that returns an error and handle it in `Notify`.

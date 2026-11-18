@@ -1,0 +1,51 @@
+# Python
+
+::: {.content-visible when-format="html"}
+![Updated for Python 3.14](https://img.shields.io/badge/Python-3.14-3776AB?style=flat&logo=python&logoColor=white)
+:::
+
+
+A comprehensive, self-contained engineering volume covering Python from scratch across the major domains of modern computing: **DevOps, Network Automation, Data Science, AI/GenAI, Robotics, Cybersecurity, and Distributed Web Systems**.
+
+**Part 1 (Python Foundations)** begins with modern toolchain setup using **`uv`** and **`ruff`**, moves through core syntax and OOP, and provides an **exhaustive deep dive into the Python Standard Library (`stdlib`)** before covering modern typing, testing, packaging, concurrency, and CPython internals in a direct topic progression. Dedicated parts follow for each primary engineering domain, concluding with cross-domain **Enterprise Production Capstones**.
+
+**Baseline:** Python **3.14** (free-threading enabled) · toolchain **`uv`** · linter/formatter **`ruff`**. Completely self-contained. No other title in this library is required.
+
+## Start here
+
+Open **Basics** in the sidebar. You need a computer, a terminal, and any text editor. Zero prior Python experience required.
+
+All examples are complete, runnable files:
+
+```bash
+uv run python hello.py
+```
+
+## Book Roadmap & Master Architecture
+
+| Part | Slug | Domain / Focus | Key Concepts & Technologies |
+|:---|:---|:---|:---|
+| **01** | `01-python-foundations` | Python Foundations | Modern setup (`uv`, `ruff`), syntax, memory, data types, loops, functions, OOP, dataclasses, **comprehensive Standard Library (`collections`, `itertools`, `re`, `pathlib`, `json`, `sqlite3`, `datetime`, `subprocess`, `logging`, `socket`)**, typing (`mypy`), testing (`pytest`), packaging, concurrency, CPython bytecode & free-threading |
+| **02** | `02-data-structures-and-algorithms` | Data Structures & Algorithms | Algorithmic complexity, stacks, queues, linked lists, binary search trees, heaps, tries, sorting algorithms, graph traversals, Dijkstra, string search & Bloom filters |
+| **03** | `03-long-term-engineering` | Long-Term Engineering | Runtime inspection & reflection, CTypes & native FFI, performance profiling, and designing for maintainability |
+| **04** | `02-devops-and-cloud-engineering` | DevOps, SRE & Cloud (In Development) | Terminal UIs (`rich`/`typer`), `docker-py`, Kubernetes client, Pulumi IaC, OpenTelemetry, Boto3 |
+| **05** | `03-network-automation` | NetDevOps & Telemetry (In Development) | `netmiko`, `scrapli`, `napalm`, `nornir`, NETCONF (`ncclient`), RESTCONF, gNMI, NetBox, pyATS |
+| **06** | `04-data-science-and-analytics` | Vector Engines & Analytics (In Development) | NumPy, Pandas 2, Polars (`LazyFrame`), DuckDB OLAP, Apache Arrow, SciPy, Plotly |
+| **07** | `05-artificial-intelligence` | ML, Deep Learning & GenAI (In Development) | Scikit-Learn, PyTorch 2.x, Transformers, RAG (Qdrant), Instructor, LangGraph agents |
+| **08** | `06-robotics-and-simulation` | Robotics & Physical Systems (In Development) | ROS 2 (`rclpy`), PyBullet physics, OpenCV vision, ArUco fiducials, A*/RRT, MicroPython |
+| **09** | `07-cybersecurity-and-automation` | Threat & Security Automation (In Development) | Raw sockets, Scapy packet crafting, `cryptography` (AES/RSA), `pefile`, SIEM triage |
+| **10** | `08-web-and-distributed-systems` | Web APIs & Distributed Systems (In Development) | ASGI, FastAPI, WebSockets, background queues (ARQ/Redis), OAuth2/JWT, SQLAlchemy 2.0 |
+| **11** | `09-capstone-systems` | Enterprise Capstones (In Development) | Autonomous SRE Agent, NetDevOps Intent Pipeline, Vision-Guided Robotic Telemetry |
+| **99** | `99-appendices` | Reference & Appendices | Glossary, syntax cheat sheet, and toolchain reference |
+
+## Architectural Conventions
+
+- **Modern Tooling Upfront**: Environment bootstrapping, runtime version pinning, and code hygiene are taught with `uv` and `ruff` on day one.
+- **Exhaustive Standard Library**: Complete coverage of Python's built-in batteries (`collections`, `itertools`, `pathlib`, `sqlite3`, `subprocess`, `socket`, etc.) without skipping to third-party dependencies prematurely.
+- **Original Prose & Complete Files**: Full runnable source files instead of truncated snippets.
+- **Progressive Typing**: Pure syntax in initial chapters; formal type annotations (`mypy`/`pyright`) introduced starting with modern craft chapters.
+- **Domain Autonomy**: Domain mathematics, protocol structures, and operating system mechanics are taught directly in-situ.
+
+## Formats
+
+Available in HTML, PDF, and EPUB via the library portal.

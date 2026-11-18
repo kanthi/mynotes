@@ -1,0 +1,167 @@
+---
+title: Build Caching Strategies
+---
+
+# Build Caching Strategies
+
+CI that recompiles llvm because someone edited `README.md` is not a pipeline, it is a heater. The boring default is: **substituters first, a persistent team cache second, GitHub's cache API only as a bump, and `src` filters so docs do not bust compiles**.
+
+## Mental model
+
+Nix does not cache "step 3 of a Dockerfile." It caches **store paths**. If the `.drv` hash is unchanged, the path is substituted. If `src` includes the whole git tree, every commit is a new `.drv`.
+
+Layers, cheapest first:
+
+| Layer | Lifetime | Who uses it |
+|---|---|---|
+| Local `/nix/store` | Until GC | This runner / laptop |
+| Team cache (Cachix / Attic) | Months | Every laptop + every CI job |
+| `magic-nix-cache` (GHA) | Days, per repo | GitHub-hosted runners only |
+
+Docker layer cache busts everything after a changed line. Nix rebuilds only the node whose inputs moved, plus dependents. A docs derivation and a Go derivation are siblings, not a stack.
+
+```
+README.md change
+   ├── hello-docs.drv   rebuilt
+   └── desk-api.drv     same hash → substitute
+```
+
+## Worked examples
+
+### Case 1: Team cache is the real cache
+
+The binary-cache chapter already added substituters. CI must **push** what it built:
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v27
+      - uses: cachix/cachix-action@v15
+        with:
+          name: desk-cache
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+      - run: nix build --print-build-logs
+```
+
+A laptop with the same `flake.lock` then substitutes. `magic-nix-cache` alone does **not** help the laptop.
+
+### Case 2: magic-nix-cache as a spare tyre
+
+```yaml
+# .github/workflows/ci-magic.yml
+name: CI
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@v16
+      - uses: DeterminateSystems/magic-nix-cache-action@v8
+      - run: nix build
+```
+
+Fine for a personal repo. Evicts. Does not sign NARs for other machines. Graduate to Cachix when a second human waits on CI.
+
+### Case 3: `lib.cleanSource` / gitignore
+
+Save as `package.nix`:
+
+```nix
+# package.nix
+{ pkgs ? import <nixpkgs> {} }:
+
+pkgs.stdenv.mkDerivation {
+  pname = "desk-banner";
+  version = "1.0.0";
+  src = pkgs.lib.cleanSource ./.;
+  buildPhase = "echo ok > $out";
+  installPhase = "true";
+}
+```
+
+`cleanSource` drops `.git`, `result`, and editor junk. Stricter:
+
+```nix
+src = pkgs.lib.cleanSourceWith {
+  src = ./.;
+  filter = path: type:
+    baseNameOf path != "README.md"
+    && baseNameOf path != "docs";
+};
+```
+
+Or `pkgs.nix-gitignore.gitignoreSource [ ] ./.` with a `.gitignore` you actually maintain.
+
+```bash
+nix-build package.nix
+echo "# note" >> README.md
+nix-build package.nix
+```
+
+If the second build is "checking paths" / a cache hit, the filter worked. If it rebuilds, `README.md` is still in `src`.
+
+### Case 4: Vendor once, compile often
+
+Save as `go.nix`:
+
+```nix
+# go.nix
+{ pkgs ? import <nixpkgs> {} }:
+
+pkgs.buildGoModule {
+  pname = "desk-api";
+  version = "1.0.0";
+  src = pkgs.lib.cleanSource ./.;
+  vendorHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+}
+```
+
+`vendorHash` is a FOD. Changing `main.go` does not re-fetch modules. Changing `go.mod` does. Probe the hash once; do not set `vendorHash = null` in CI "to make it work."
+
+### Case 5: See what would rebuild
+
+```bash
+nix build --dry-run
+nix path-info -Shr ./result | tail -1
+```
+
+`--dry-run` lists derivations that are not in the store or substituters. If that list includes `gcc` after a comment-only change, `src` is too wide or an input leaked (`currentTime`, impure env).
+
+```bash
+nix build .#desk-api --rebuild --dry-run 2>&1 | head
+```
+
+`--rebuild` pretends the path is missing. Use it to see the **graph**, not to heat the room. `nix why-depends` after a surprise rebuild tells you which input moved (often `flake.lock` or an unfiltered `src`).
+
+## The trap
+
+The trap is **`src = ./.`** on a monorepo root for a leaf package. A frontend CSS change rebuilds the Go API. Filter to `./cmd/desk-api` or `fileset` (`lib.fileset.gitTracked`).
+
+The other trap is treating GHA cache as the team cache. A new contributor's first `nix build` still compiles the world.
+
+## The boring rule
+
+- Push to a signed team cache from trusted CI. Laptops pull.
+- Filter `src`. Docs and `.git` are not compile inputs.
+- Language vendor hashes (Go, Cargo, npm) are FODs. Pin them.
+- `--dry-run` after a trivial edit. If gcc is in the list, stop and fix inputs.
+- magic-nix-cache is optional. Substituters are not.
+- `--dry-run` / `why-depends` before you blame the cache. Filtered `src` before you add another cache.
+
+## Try this
+
+1. `nix path-info -Shr ./result` before and after a README-only commit. The store path of the binary should be identical if `src` is filtered.
+2. `--dry-run` twice in a row with no edits. Second list should be empty (or only substitutes).
+3. Break `vendorHash` by one character, watch the FOD mismatch, restore it.
+4. Time `nix build` on a clean store with the team cache configured versus `nix build --option substituters ''`. The delta is the cache earning its keep.

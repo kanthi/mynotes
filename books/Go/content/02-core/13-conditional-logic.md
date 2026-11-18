@@ -1,0 +1,554 @@
+---
+title: Conditional Logic
+---
+
+# Conditional Logic
+
+## Overview
+
+Go provides `if/else` statements and `switch` statements for conditional logic. Both are straightforward but have unique features compared to other languages.
+
+## The `if` Statement
+
+### Basic Syntax
+
+```go
+if condition {
+    // code
+}
+```
+
+### With `else`
+
+```go
+if x > 0 {
+    fmt.Println("Positive")
+} else {
+    fmt.Println("Non-positive")
+}
+```
+
+### With `else if`
+
+```go
+if x > 0 {
+    fmt.Println("Positive")
+} else if x < 0 {
+    fmt.Println("Negative")
+} else {
+    fmt.Println("Zero")
+}
+```
+
+### Initialization Statement
+
+Go allows a statement before the condition:
+
+```go
+if err := doSomething(); err != nil {
+    // Handle error
+    // err is only visible in this if/else block
+    return err
+}
+// err is not accessible here
+```
+
+This is idiomatic for error handling:
+
+```go
+if file, err := os.Open("data.txt"); err != nil {
+    log.Fatal(err)
+} else {
+    defer file.Close()
+    // Use file
+}
+```
+
+### No Parentheses Required
+
+Unlike C-style languages, conditions don't need parentheses:
+
+```go
+// Go style
+if x > 0 {
+}
+
+// Not idiomatic (but valid)
+if (x > 0) {
+}
+```
+
+### Braces Required
+
+Braces are mandatory, even for single statements:
+
+```go
+// Error: missing braces
+if x > 0
+    fmt.Println("yes")
+
+// Correct
+if x > 0 {
+    fmt.Println("yes")
+}
+```
+
+## Boolean Expressions
+
+### Comparison Operators
+
+| Operator | Meaning |
+|----------|---------|
+| `==` | Equal |
+| `!=` | Not equal |
+| `<` | Less than |
+| `>` | Greater than |
+| `<=` | Less than or equal |
+| `>=` | Greater than or equal |
+
+### Logical Operators
+
+| Operator | Meaning |
+|----------|---------|
+| `&&` | AND (short-circuit) |
+| `||` | OR (short-circuit) |
+| `!` | NOT |
+
+```go
+// Short-circuit evaluation
+if x != 0 && y/x > 1 {
+    // y/x only evaluated if x != 0
+}
+
+if ptr != nil && ptr.Value > 0 {
+    // Ptr.Value only accessed if ptr != nil
+}
+```
+
+## The `switch` Statement
+
+### Basic Switch
+
+```go
+switch day {
+case "Monday":
+    fmt.Println("Start of week")
+case "Friday":
+    fmt.Println("Almost weekend!")
+case "Saturday", "Sunday":
+    fmt.Println("Weekend!")
+default:
+    fmt.Println("Midweek")
+}
+```
+
+### No Fall-Through by Default
+
+Unlike C, cases don't fall through:
+
+```go
+switch n {
+case 1:
+    fmt.Println("One")
+    // No break needed, stops here
+case 2:
+    fmt.Println("Two")
+}
+```
+
+### Explicit Fallthrough
+
+Use `fallthrough` keyword when needed:
+
+```go
+switch n {
+case 1:
+    fmt.Println("One")
+    fallthrough
+case 2:
+    fmt.Println("Two")
+}
+// Input: 1
+// Output:
+// One
+// Two
+```
+
+### Switch with Initialization
+
+```go
+switch os := runtime.GOOS; os {
+case "darwin":
+    fmt.Println("macOS")
+case "linux":
+    fmt.Println("Linux")
+default:
+    fmt.Println(os)
+}
+```
+
+### Expression-less Switch
+
+A `switch` without an expression is equivalent to `switch true`:
+
+```go
+t := time.Now()
+
+switch {
+case t.Hour() < 12:
+    fmt.Println("Good morning!")
+case t.Hour() < 17:
+    fmt.Println("Good afternoon!")
+default:
+    fmt.Println("Good evening!")
+}
+```
+
+This is often cleaner than chained `if/else if`:
+
+```go
+switch {
+case x < 0:
+    return "negative"
+case x == 0:
+    return "zero"
+case x > 0:
+    return "positive"
+}
+```
+
+### Type Switch
+
+Special form for interface type assertions:
+
+```go
+func describe(i interface{}) {
+    switch v := i.(type) {
+    case int:
+        fmt.Printf("Integer: %d\n", v)
+    case string:
+        fmt.Printf("String: %s\n", v)
+    case bool:
+        fmt.Printf("Boolean: %t\n", v)
+    default:
+        fmt.Printf("Unknown type: %T\n", v)
+    }
+}
+
+describe(42)        // Integer: 42
+describe("hello")   // String: hello
+describe(true)      // Boolean: true
+describe(3.14)      // Unknown type: float64
+```
+
+## Common Patterns
+
+### Error Checking
+
+```go
+result, err := someOperation()
+if err != nil {
+    return fmt.Errorf("operation failed: %w", err)
+}
+// Use result
+```
+
+### Boolean Assignment
+
+```go
+var status string
+if success {
+    status = "completed"
+} else {
+    status = "failed"
+}
+
+// Note: Go doesn't have a ternary operator
+// This doesn't work: status := success ? "completed" : "failed"
+```
+
+### Guard Clauses
+
+```go
+func processUser(user *User) error {
+    if user == nil {
+        return errors.New("user cannot be nil")
+    }
+    if user.Name == "" {
+        return errors.New("user name required")
+    }
+    if user.Age < 0 {
+        return errors.New("invalid age")
+    }
+
+    // Main logic here
+    return nil
+}
+```
+
+### ok-idiom
+
+```go
+// Map lookup
+if val, ok := myMap[key]; ok {
+    fmt.Println("Found:", val)
+} else {
+    fmt.Println("Not found")
+}
+
+// Type assertion
+if str, ok := value.(string); ok {
+    fmt.Println("String:", str)
+}
+
+// Channel receive
+if val, ok := <-ch; ok {
+    fmt.Println("Received:", val)
+} else {
+    fmt.Println("Channel closed")
+}
+```
+
+### Comma-ok Pattern
+
+```go
+// Check map existence
+if _, exists := users[id]; exists {
+    // User exists
+}
+
+// Check channel state
+if _, open := <-ch; !open {
+    // Channel is closed
+}
+```
+
+## Switch vs If/Else
+
+### Prefer Switch When:
+
+```go
+// Multiple discrete values
+switch status {
+case "pending", "processing":
+    queue()
+case "done":
+    complete()
+case "error":
+    retry()
+}
+```
+
+### Prefer If/Else When:
+
+```go
+// Complex conditions
+if x > 0 && y > 0 && x*y < 100 {
+    // ...
+} else if x < 0 || y < 0 {
+    // ...
+}
+```
+
+## Summary
+
+| Feature | Description |
+|---------|-------------|
+| `if` | Basic conditional |
+| `if x := val; condition` | If with initialization |
+| `switch expr` | Multi-way branching |
+| `switch { case cond: }` | Expression-less switch |
+| `switch v := x.(type)` | Type switch |
+| `fallthrough` | Explicit fall-through in switch |
+
+## Related Topics
+- [Loops and Iteration](14-loops-iteration.md)
+- [Errors as Values](../05-errors/33-errors-values.md)
+
+## More examples
+
+### Example: if / else if ladder
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func grade(score int) string {
+	if score >= 90 {
+		return "A"
+	} else if score >= 80 {
+		return "B"
+	} else if score >= 70 {
+		return "C"
+	}
+	return "F"
+}
+
+func main() {
+	fmt.Println(grade(95))
+	fmt.Println(grade(82))
+	fmt.Println(grade(60))
+}
+```
+
+Expected:
+
+```text
+A
+B
+F
+```
+
+### Example: switch on strings
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	for _, cmd := range []string{"start", "stop", "wat"} {
+		switch cmd {
+		case "start":
+			fmt.Println(cmd, "-> running")
+		case "stop":
+			fmt.Println(cmd, "-> halted")
+		default:
+			fmt.Println(cmd, "-> unknown")
+		}
+	}
+}
+```
+
+Expected:
+
+```text
+start -> running
+stop -> halted
+wat -> unknown
+```
+
+## Runnable example
+
+Save as `main.go`. From an empty directory:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"runtime"
+)
+
+func sign(x int) string {
+	switch {
+	case x < 0:
+		return "negative"
+	case x == 0:
+		return "zero"
+	default:
+		return "positive"
+	}
+}
+
+func describe(i any) {
+	switch v := i.(type) {
+	case int:
+		fmt.Printf("Integer: %d\n", v)
+	case string:
+		fmt.Printf("String: %s\n", v)
+	case bool:
+		fmt.Printf("Boolean: %t\n", v)
+	default:
+		fmt.Printf("Unknown type: %T value=%v\n", v, v)
+	}
+}
+
+func main() {
+	// if with short initialization (err scoped to if/else)
+	if n := 10; n > 0 {
+		fmt.Println("positive init:", n)
+	}
+
+	x := -3
+	if x > 0 {
+		fmt.Println("Positive")
+	} else if x < 0 {
+		fmt.Println("Negative")
+	} else {
+		fmt.Println("Zero")
+	}
+
+	// switch: no fall-through by default; multi-case lists
+	day := "Saturday"
+	switch day {
+	case "Monday":
+		fmt.Println("Start of week")
+	case "Saturday", "Sunday":
+		fmt.Println("Weekend!")
+	default:
+		fmt.Println("Weekday")
+	}
+
+	switch os := runtime.GOOS; os {
+	case "darwin":
+		fmt.Println("platform: macOS")
+	case "linux":
+		fmt.Println("platform: Linux")
+	default:
+		fmt.Println("platform:", os)
+	}
+
+	for _, v := range []int{-1, 0, 2} {
+		fmt.Printf("sign(%d)=%s\n", v, sign(v))
+	}
+
+	// ok-idiom on a map
+	m := map[string]int{"alice": 30}
+	if age, ok := m["alice"]; ok {
+		fmt.Println("found alice:", age)
+	}
+	if _, ok := m["bob"]; !ok {
+		fmt.Println("bob missing")
+	}
+
+	describe(42)
+	describe("hello")
+	describe(3.14)
+}
+```
+
+**Expected output** (illustrative; platform line varies):
+
+```text
+positive init: 10
+Negative
+Weekend!
+platform: macOS
+sign(-1)=negative
+sign(0)=zero
+sign(2)=positive
+found alice: 30
+bob missing
+Integer: 42
+String: hello
+Unknown type: float64 value=3.14
+```
+
+**What to notice:**
+- `if init; cond` limits temporary variables to the if statement.
+- Expression-less `switch` replaces long if/else chains.
+- Type switches branch on dynamic type of `any`.
+- Map lookup uses the comma-ok idiom, not sentinel ages alone.
+
+**Try next:** Add `fallthrough` under `case "Monday"` and switch `day` to `"Monday"` to see both cases print.

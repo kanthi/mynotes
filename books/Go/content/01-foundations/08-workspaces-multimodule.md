@@ -1,0 +1,495 @@
+---
+title: Workspaces and Multi-Module Development
+---
+
+# Workspaces and Multi-Module Development
+
+## Overview
+
+Go workspaces, introduced in Go 1.18, solve the challenge of developing multiple related modules simultaneously. With `go.work`, you can work on a main project and its dependencies together without modifying `go.mod` files.
+
+## The Problem Workspaces Solve
+
+### Without Workspaces
+
+When developing multiple modules together, you'd need `replace` directives:
+
+```
+// main-app/go.mod
+module github.com/company/main-app
+
+replace github.com/company/shared-lib => ../shared-lib
+```
+
+Problems:
+- Must edit `go.mod` (can accidentally commit)
+- Each developer has different paths
+- CI/CD requires cleanup
+
+### With Workspaces
+
+```bash
+$ go work init main-app shared-lib
+```
+
+```
+// go.work
+go 1.27
+
+use (
+    ./main-app
+    ./shared-lib
+)
+```
+
+Benefits:
+- No `go.mod` modifications
+- Works for entire team
+- Automatically ignored by Git
+
+## Creating a Workspace
+
+### Initial Setup
+
+```bash
+# Directory structure
+workspace/
+├── go.work           # Workspace file
+├── main-app/         # Main application
+│   ├── go.mod
+│   └── main.go
+└── shared-lib/       # Library module
+    ├── go.mod
+    └── lib.go
+```
+
+```bash
+# Create workspace
+$ cd workspace
+$ go work init ./main-app ./shared-lib
+```
+
+### The `go.work` File
+
+```
+go 1.27
+
+use (
+    ./main-app
+    ./shared-lib
+)
+```
+
+All commands (`go build`, `go test`, etc.) now use local modules.
+
+## Workspace Commands
+
+### `go work init`
+
+Create a new workspace:
+
+```bash
+# Initialize with modules
+$ go work init ./module1 ./module2
+
+# Initialize empty workspace
+$ go work init
+```
+
+### `go work use`
+
+Add modules to workspace:
+
+```bash
+# Add single module
+$ go work use ./new-module
+
+# Add multiple modules
+$ go work use ./mod1 ./mod2
+
+# Recursively find and add all modules
+$ go work use -r .
+```
+
+### `go work edit`
+
+Programmatically modify workspace:
+
+```bash
+# Add a use directive
+$ go work edit -use ./new-module
+
+# Remove a use directive
+$ go work edit -dropuse ./old-module
+
+# Set Go version
+$ go work edit -go 1.27
+```
+
+### `go work sync`
+
+Sync workspace modules with their dependencies:
+
+```bash
+$ go work sync
+```
+
+This updates each module's `go.mod` to match workspace requirements.
+
+## Multi-Module Development Workflow
+
+### Project Structure
+
+```
+company-workspace/
+├── go.work
+├── api/
+│   ├── go.mod          # module github.com/company/api
+│   ├── api.go
+│   └── api_test.go
+├── core/
+│   ├── go.mod          # module github.com/company/core
+│   └── core.go
+├── cli/
+│   ├── go.mod          # module github.com/company/cli
+│   └── main.go
+└── internal-tools/
+    ├── go.mod          # module github.com/company/tools
+    └── tools.go
+```
+
+### Setting Up
+
+```bash
+$ cd company-workspace
+$ go work init ./api ./core ./cli ./internal-tools
+```
+
+### Development Flow
+
+```bash
+# Changes in core/ are immediately available to cli/
+$ cd cli
+$ go build  # Uses local core package
+
+# Run tests across all modules
+$ cd ..
+$ go test ./...
+
+# Build all binaries
+$ go build ./cli/...
+```
+
+## Replace vs Workspace
+
+### When to Use `replace`
+
+| Use Case | Approach |
+|----------|----------|
+| Permanent fork | `replace` in `go.mod` |
+| CI workaround | `replace` in `go.mod` |
+| Single dev experiment | `replace` in `go.mod` |
+
+### When to Use Workspace
+
+| Use Case | Approach |
+|----------|----------|
+| Multi-module development | `go.work` |
+| Team development | `go.work` |
+| Monorepo-style work | `go.work` |
+
+## Workspace with Replace
+
+You can combine both. `go.work` supports `replace`:
+
+```
+go 1.27
+
+use (
+    ./main-app
+    ./shared-lib
+)
+
+replace github.com/external/dep => ./custom-fork
+```
+
+## Best Practices
+
+### 1. Git Ignore `go.work`
+
+```gitignore
+# .gitignore
+go.work
+go.work.sum
+```
+
+Each developer creates their own workspace.
+
+### 2. Document Setup
+
+Include setup instructions in README:
+
+```markdown
+## Development Setup
+
+1. Clone all repositories:
+   ```bash
+   git clone github.com/company/api
+   git clone github.com/company/core
+   git clone github.com/company/cli
+   ```
+
+2. Create workspace:
+   ```bash
+   go work init ./api ./core ./cli
+   ```
+```
+
+### 3. CI Without Workspaces
+
+In CI, build each module independently:
+
+```yaml
+# GitHub Actions
+jobs:
+  test:
+    strategy:
+      matrix:
+        module: [api, core, cli]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test
+        working-directory: ${{ matrix.module }}
+        run: go test ./...
+```
+
+### 4. Shared Workspace for Monorepos
+
+For monorepos, commit `go.work`:
+
+```
+monorepo/
+├── go.work           # Committed
+├── services/
+│   ├── api/
+│   ├── worker/
+│   └── gateway/
+└── packages/
+    ├── auth/
+    └── database/
+```
+
+## Common Patterns
+
+### Microservices Development
+
+```
+workspace/
+├── go.work
+├── services/
+│   ├── user-service/
+│   ├── order-service/
+│   └── payment-service/
+└── shared/
+    ├── proto/
+    ├── middleware/
+    └── database/
+```
+
+```bash
+$ go work init
+$ go work use -r .
+```
+
+### Library Development
+
+Testing a library change across consumers:
+
+```
+workspace/
+├── go.work
+├── my-library/          # The library
+├── app-using-library/   # Consumer 1
+└── another-consumer/    # Consumer 2
+```
+
+## Troubleshooting
+
+### Module Not Found in Workspace
+
+```bash
+# Verify workspace includes module
+$ cat go.work
+
+# Re-add module
+$ go work use ./missing-module
+```
+
+### Wrong Version Used
+
+Workspace modules take priority. To use published version:
+
+```bash
+# Temporarily disable workspace
+$ GOWORK=off go build
+```
+
+### Workspace Mode Detection
+
+Check if workspace is active:
+
+```bash
+$ go env GOWORK
+/path/to/go.work
+```
+
+## Summary
+
+| Command | Purpose |
+|---------|---------|
+| `go work init` | Create workspace |
+| `go work use` | Add modules |
+| `go work edit` | Modify workspace |
+| `go work sync` | Sync dependencies |
+| `GOWORK=off` | Disable workspace |
+
+## Exercises
+
+1. Create a workspace with two modules where one depends on the other
+2. Make changes to the dependency and verify the main module sees them
+3. Add a third module to an existing workspace
+
+## Related Topics
+- [How Go Code Is Organized](03-code-organization.md)
+- [Dependency Management](07-dependency-management.md)
+
+## More examples
+
+### Example: local “library” function in one module
+
+Save as `main.go` and `go run .` (with `go mod init example.com/app` if needed).
+
+```go
+package main
+
+import "fmt"
+
+// In a real workspace this would live in a sibling module;
+// here we simulate a library API in the same package for a quick run.
+func Greet(name string) string {
+	if name == "" {
+		return "hello, world"
+	}
+	return "hello, " + name
+}
+
+func main() {
+	fmt.Println(Greet(""))
+	fmt.Println(Greet("workspace"))
+}
+```
+
+Expected:
+
+```text
+hello, world
+hello, workspace
+```
+
+### Example: replace-path thinking with build info
+
+Save as `main.go` and `go run .` (with `go mod init example.com/consumer` if needed).
+
+```go
+package main
+
+import (
+	"fmt"
+	"runtime/debug"
+)
+
+func main() {
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		fmt.Println("no build info")
+		return
+	}
+	fmt.Println("this binary was built from module:", info.Main.Path)
+	// Workspace / replace: your local tree is what you just compiled.
+	fmt.Println("workspace tip: go work use ./lib makes local edits visible without publishing")
+	fmt.Println("escape hatch: GOWORK=off uses only go.mod require versions")
+}
+```
+
+Expected:
+
+```text
+this binary was built from module: example.com/consumer
+workspace tip: go work use ./lib makes local edits visible without publishing
+escape hatch: GOWORK=off uses only go.mod require versions
+```
+
+## Runnable example
+
+Single-module stand-in that prints whether workspace mode is active (`GOWORK`) and the main module path. Use it while experimenting with `go work init`.
+
+Save as `main.go`. From an empty directory:
+
+```bash
+go mod init example.com/app
+go run .
+# Optional workspace experiment (sibling modules not required for this printout):
+# go work init .
+# go env GOWORK
+# go run .
+# GOWORK=off go run .
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+	"runtime/debug"
+)
+
+func main() {
+	gowork := os.Getenv("GOWORK")
+	if gowork == "" {
+		// go env GOWORK reports the path when a go.work is discovered;
+		// the process env may be empty even in workspace mode.
+		fmt.Println("GOWORK env: (empty — use `go env GOWORK` for discovery path)")
+	} else {
+		fmt.Println("GOWORK env:", gowork)
+	}
+
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		fmt.Println("build info unavailable")
+		return
+	}
+	fmt.Println("main module:", info.Main.Path)
+	fmt.Println("go version:", info.GoVersion)
+
+	// Illustrate the replace/workspace idea: local code always wins in a workspace.
+	fmt.Println("local module builds use your tree; published versions need GOWORK=off")
+}
+```
+
+**Expected output** (illustrative):
+
+```text
+GOWORK env: (empty — use `go env GOWORK` for discovery path)
+main module: example.com/app
+go version: go1.22.5
+local module builds use your tree; published versions need GOWORK=off
+```
+
+**What to notice:**
+- Workspaces change how the toolchain resolves modules, not your program’s import syntax.
+- `go env GOWORK` is the reliable way to see if a `go.work` is active.
+- `GOWORK=off` forces published module versions for a single command.
+- Multi-module work is about directories + `use` directives; the binary still starts at `main`.
+
+**Try next:** Create two sibling dirs with their own `go.mod`, `go work init` both, import one from the other, change a function, and rebuild without publishing.

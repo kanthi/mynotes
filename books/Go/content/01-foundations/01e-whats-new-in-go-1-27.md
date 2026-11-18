@@ -1,0 +1,220 @@
+---
+title: What's New in Go 1.27
+---
+
+# What's New in Go 1.27
+
+Go **1.27** shipped in August 2026 ([release notes](https://go.dev/doc/go1.27)). The compatibility promise still holds: almost all existing programs compile and run. This chapter is the map of what actually changed—language, `go` command, runtime, and the standard library—so the rest of this book can assume **1.27** as the baseline.
+
+Pin new modules with `go 1.27` (and `toolchain go1.27.1` or later when you want a specific compiler). Go 1.25 is out of support as of this release.
+
+## Language
+
+### Generic methods
+
+A method may declare **its own** type parameters. That is different from a method on a generic type (`func (s *Stack[T]) Push(T)`), which has existed since 1.18.
+
+The standard library uses this on `math/rand/v2`: `(*Rand).N[Int intType](n Int) Int`.
+
+Save as `main.go`:
+
+```go
+package main
+
+import (
+	"fmt"
+	"math/rand/v2"
+)
+
+func main() {
+	r := rand.New(rand.NewPCG(1, 2))
+	fmt.Println(r.N(10))
+	fmt.Println(r.N(int64(1_000)))
+}
+```
+
+```bash
+go run .
+```
+
+Output is deterministic for this PCG seed:
+
+```
+7
+616
+```
+
+**Limits:** interface methods cannot declare type parameters, and a generic method cannot implement an interface method. Prefer a package-level generic function when the operation is not namespaced on a type. See [Methods and Receivers](../03-memory/21-methods-receivers.md) and [Why Generics Matter](../04-generics/29-generics-intro.md).
+
+### Promoted field keys in struct literals
+
+Stemming from proposal [#9859](https://github.com/golang/go/issues/9859) (open since 2015), Go 1.27 resolves a 16-year asymmetry between field access and struct literal initialization. Previously, you could read promoted fields on embedded structs with simple dot notation (`e.City`), but constructing the instance required wrapping every embedded type in explicit nested literals.
+
+In Go 1.27, any unambiguously promoted field from an anonymously embedded struct can serve directly as a key in composite literals:
+
+```go
+package main
+
+import "fmt"
+
+type Address struct {
+	City  string
+	State string
+}
+
+type Contact struct {
+	Email string
+}
+
+type Employee struct {
+	Address // anonymous embedding
+	Contact // anonymous embedding
+	Title   string
+}
+
+func main() {
+	// Go 1.27: clean, flattened composite literal
+	e := Employee{
+		City:  "Lisbon",
+		State: "PT",
+		Email: "dev@example.com",
+		Title: "Engineer",
+	}
+	fmt.Printf("%s (%s, %s): %s\n", e.Title, e.City, e.State, e.Email)
+}
+```
+
+```text
+Engineer (Lisbon, PT): dev@example.com
+```
+
+**Key rules to know:**
+- **Multi-level embedding**: Promoted fields flatten across arbitrary depths as long as the promotion is unambiguous.
+- **Ambiguity**: If two embedded structs define the same field at the same depth, the compiler refuses to guess (`unknown field ... in struct literal`) and requires the explicit nested form.
+- **No split initialization**: Mixing promoted fields and enclosing embedded struct literals for the same embedded type (e.g., `Employee{Address: Address{...}, City: ...}`) produces a compiler error (`cannot specify promoted field ... and enclosing embedded field ...`).
+- **Tooling migration**: Run `go fix -embedlit ./...` (or preview with `-diff`) to automatically simplify legacy composite literals across your packages.
+
+Full architectural rules, multi-level examples, and design tradeoffs: [Structs and Data Modeling](../02-core/18-structs.md#flattened-struct-literals-go-127).
+
+### Function type inference
+
+Inference now applies in every assignment-shaped context: composite literals, conversions, and channel sends, not only direct calls. See [Generic Functions](../04-generics/30-generic-functions.md).
+
+## `go` command and tools
+
+| Change | What you do |
+|--------|-------------|
+| `go test` runs the **`stdversion`** vet check by default | Using a stdlib symbol newer than your `go` directive is now a test failure |
+| `go test -json` | `"Action":"output"` events may include `"OutputType"` (`error`, `error-continue`, `frame`) |
+| `go doc pkg@version` | Docs for a specific module version |
+| `go doc -ex` | List executable examples; `go doc bytes.ExampleBuffer` prints the example source |
+| `go fix` modernizers | New: `atomictypes`, `embedlit`, `slicesbackward`, `unsafefuncs`. `waitgroup` is now `waitgroupgo`. `fmtappendf` was removed |
+| `go mod tidy` (`go 1.27+`) | Merges extra `require` blocks into the standard **direct** then **indirect** layout |
+| `bzr` | The `go` command no longer fetches Bazaar-hosted modules |
+| `GODEBUG` in `go.mod` / `//go:debug` | Removed settings are accepted only at their final default; an old value fails the build |
+| `go tool trace -http=:6060` | Listens on **localhost** only (same as `pprof`). Use `-http=0.0.0.0:6060` to bind all interfaces |
+| Response files (`@file`) | `compile`, `link`, `asm`, `cgo`, `cover`, `pack` accept GCC-compatible response files |
+
+```bash
+go test ./...                 # includes stdversion
+go doc encoding/json/v2
+go doc -ex bytes.Buffer
+go fix -modernize ./...
+go mod tidy
+```
+
+## Runtime
+
+- **Size-specialized malloc** for some objects under 80 bytes (up to ~30% cheaper those allocs, ~1% in allocation-heavy programs, ~60 KB extra binary). Opt out: `GOEXPERIMENT=nosizespecializedmalloc` (expected gone in 1.28).
+- **`goroutineleak` pprof profile** is generally available (`/debug/pprof/goroutineleak`). The `goroutineleakprofile` experiment flag is deleted. See [Goroutine leaks](../25-go-deep-dives/220-goroutine-leaks-diagnosis.md).
+- Tracebacks for `go 1.27` modules include **pprof goroutine labels** in the header. Disable with `GODEBUG=tracebacklabels=0`.
+- **`asynctimerchan` is gone.** Channels from package `time` are always unbuffered. See [Time](../02-core/18b-time.md).
+- Closures get simpler symbol names; do not compare function pointers for identity.
+
+## Standard library
+
+### `encoding/json/v2` (GA)
+
+`encoding/json` is now **backed by the v2 engine**. Behavior of the v1 API is preserved; error text may differ; unmarshal is faster. New code that wants stricter defaults (reject invalid UTF-8, reject duplicate names) should import `encoding/json/v2`. Emergency rollback: `GOEXPERIMENT=nojsonv2` (temporary). See [JSON](../07-stdlib/985-encoding-json-csv-xml.md).
+
+### `uuid`
+
+Stdlib `uuid` generates and parses UUIDs. Prefer it over `github.com/google/uuid` for new IDs.
+
+```go
+package main
+
+import (
+	"fmt"
+	"uuid"
+)
+
+func main() {
+	id := uuid.New()
+	fmt.Println(id)
+	parsed, err := uuid.Parse(id.String())
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(parsed == id)
+}
+```
+
+### `crypto/mldsa`
+
+Post-quantum ML-DSA (FIPS 204), with `crypto/x509` and `crypto/tls` (`MLDSA44` / `65` / `87`). Opt-in for new PKI, not a silent swap for existing ECDSA certs.
+
+### Experimental `simd` / `simd/archsimd`
+
+Portable vector types (`Int8s`, `Float32s`, …) plus architecture-specific ops (amd64, arm64 Neon, Wasm). Enable with `GOEXPERIMENT=simd`. Not production-stable.
+
+### Other library notes
+
+| Package | 1.27 |
+|---------|------|
+| `bytes` / `strings` | `CutLast` |
+| `testing/synctest` | `Sleep` (sleep + wait) |
+| `net/http/httptest` | `NewTestServer` (in-memory, synctest-safe) |
+| `net/url` | `URL.Clone`, `Values.Clone` |
+| `math/rand/v2` | `(*Rand).N` generic method |
+| `net/http` | HTTP/2 client priority (RFC 9218); `Server.MaxHeaderValueCount`; HTTP/1 body drain on close |
+| `crypto/tls` | ML-DSA; `MLKEM1024`; `ConnectionState.LocalCertificate`; several old `tls*` GODEBUGs removed |
+| `unicode` | Unicode 17 |
+| `compress/flate` | Faster; encoded bytes may differ (also zip/gzip/zlib/png) |
+
+```go
+package main
+
+import (
+	"fmt"
+	"strings"
+)
+
+func main() {
+	dir, file, ok := strings.CutLast("desk/shift/ticket.txt", "/")
+	fmt.Println(dir, file, ok)
+}
+```
+
+```
+desk/shift ticket.txt true
+```
+
+## Ports
+
+- **macOS:** 13 Ventura or later. Support for older releases is gone.
+- **linux/ppc64 (big-endian):** ELFv2 ABI; cgo, PIE, and external linking now work with an ELFv2 runtime.
+
+## Compiler / linker
+
+Relative `//line` filenames resolve against the file that contains the directive. On macOS the linker accepts `-macos` / `-macsdk` for `LC_BUILD_VERSION`.
+
+## What to do in this book next
+
+1. [Upgrading to Go 1.27: What Breaks, What to Adopt First](01f-upgrading-a-module-to-go-1-27.md) — upgrade flowchart, breaking changes, and migration checklist.
+2. [Learning path](01a-learning-path-2026.md) — module baseline.
+3. [Installing](02-installing-running-go.md) — 1.27.1 tarball / macOS 13.
+4. [Core commands](05-core-go-commands.md) and [vet/docs](06-formatting-vetting-docs.md).
+5. [JSON](../07-stdlib/985-encoding-json-csv-xml.md), [uuid/crypto](../07-stdlib/992-crypto-hash-rand-regexp.md).
+
+Official source: [Go 1.27 Release Notes](https://go.dev/doc/go1.27).

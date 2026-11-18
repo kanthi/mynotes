@@ -1,0 +1,67 @@
+---
+title: Introduction
+unnumbered: true
+---
+
+# VCS
+
+**Architectures, Platforms, Operations, and GitOps**
+
+A practical path from your first commit to running a forge and shipping with GitOps. You start as a Git user, then you install and compare hosting platforms, then you operate them, then you let Git drive the cluster.
+
+```text
+VCS
+├── Git foundations      mental model → install → first repository
+├── Everyday workflows   commits, branches, rebase, remotes, hooks
+├── Power skills         internals, reflog, bisect, repair
+├── Hosting platforms    GitHub lock-in, GitLab, Forgejo, Gerrit, …
+├── Operating a forge    identity, CI, storage, HA, air-gap
+├── GitHub Actions       workflows as a product
+└── GitOps               Flux, Argo CD, Argo Rollouts
+```
+
+The sidebar is the full TOC (chapters 1–66 plus appendices). **Every chapter starts with Theory** (invariants, a diagram, what can break). **Parts I–II** have prose for the original pages and for chapter 7 (reset, restore, and checkout). The other newer core sub-pages are still stubs. Later parts are stubs until a writing pass fills them, except chapter 25 (Gitea and Forgejo), which is prose. The overall map lives in `content/_planning/SYLLABUS.md`, and the hosting/operations track is specified in `content/_planning/SYLLABUS-ARCHITECTURES-PLATFORMS-AND-OPERATIONS-FOR-INDEPENDENT-CODE-HOSTING.md`.
+
+## Who this book is for
+
+Software engineers, DevOps, platform, and SRE readers on **Linux**. You can start with no Git. Terms are defined on first use. Depth ramps: user → installer → admin → operator → GitOps practitioner.
+
+Commands, paths, and package names assume a POSIX shell on Linux (`bash` is fine). Examples use `/home/…`, `~/.gitconfig`, and distro packages (`pacman`, `apt`, `dnf`). The Git commands themselves are the same on other Unix systems; this book does not walk macOS or Windows.
+
+## What you will master
+
+- Git’s object model, everyday commands, and recovery
+- How a Git hosting platform is built, and how GitLab, Forgejo, Bitbucket, Gerrit, SourceHut, and GitHub differ
+- Identity, CI, packages, supply-chain controls, backups, and air-gap
+- GitHub Actions as one CI product
+- GitOps with Flux and Argo CD, then progressive delivery with Argo Rollouts
+
+## How to read this so it sticks
+
+Work front to back in Part I. Type every command in a throwaway directory. Later parts assume you can commit, branch, and push. Platform labs reuse the same three desk repositories: `desk-web`, `desk-api`, `desk-infra`.
+
+## The companion kit
+
+**Required for Parts I–II:** Git 2.45 or newer on Linux (examples checked against 2.55), a terminal, and a text editor (`nvim` is the default in config examples).
+
+**Required from the GitOps parts onward:** Docker, kind or K3s, `kubectl`, and Helm. Install those when you reach Part VII. You do not need a cluster to finish Git foundations.
+
+## Conventions
+
+Commands are complete. Run them from the directory the page names. Output is representative; hashes and timestamps on your machine will differ.
+
+Heredocs create files without opening an editor:
+
+```bash
+cat > README.md <<'EOF'
+# desk-api
+EOF
+```
+
+The quoted `'EOF'` keeps `$variables` and backticks literal. Drop the quotes only when you want the shell to expand them.
+
+A **repository** (repo) is a directory Git is tracking. A **forge** is a Git hosting platform: the website and services around repositories (issues, pull requests, CI, packages). A **remote** is another copy of a repository you fetch from and push to.
+
+## Acknowledgements
+
+K19G. Built as part of the books library.

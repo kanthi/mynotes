@@ -1,0 +1,199 @@
+---
+title: '037 Project 37: Kubernetes HPA Simulator'
+---
+
+# 037 Build a Kubernetes HPA Simulator
+
+Simulate Horizontal Pod Autoscaler-style replica scaling from a CPU load time series. Learn the control loop (target utilization, min/max replicas, scale-up/down rules) without a cluster.
+
+```text
+cpu samples -> compare to target -> adjust replicas within [min,max] -> log
+```
+
+## Problem statement
+
+Model a simplified HPA:
+
+- Target average CPU percent (e.g. 60%)
+- Current replicas
+- Each tick: observe CPU, scale up if sustained high, scale down if sustained low
+- Enforce min/max replicas
+- Optional stabilization: require N consecutive ticks before scale down
+
+## Acceptance criteria
+
+- [ ] Replicas never leave [min, max]
+- [ ] High CPU increases replicas (until max)
+- [ ] Low CPU decreases replicas (until min) with optional hysteresis
+- [ ] Deterministic mode with fixed seed or fixed series
+- [ ] Unit tests for the pure step function
+
+## Setup
+
+```bash
+mkdir hpasim && cd hpasim
+go mod init example.com/hpasim
+# go 1.27
+```
+
+## Full `main.go`
+
+```go
+package main
+
+import (
+	"flag"
+	"fmt"
+	"math/rand"
+	"os"
+)
+
+type Config struct {
+	TargetCPU   float64
+	MinReplicas int
+	MaxReplicas int
+	UpBand      float64 // scale up if cpu > target+UpBand
+	DownBand    float64 // scale down if cpu < target-DownBand
+	DownStable  int     // consecutive low ticks required
+}
+
+type State struct {
+	Replicas int
+	LowStreak int
+}
+
+func step(cfg Config, s State, cpu float64) (State, string) {
+	if s.Replicas < cfg.MinReplicas {
+		s.Replicas = cfg.MinReplicas
+	}
+	action := "noop"
+
+	if cpu > cfg.TargetCPU+cfg.UpBand && s.Replicas < cfg.MaxReplicas {
+		s.Replicas++
+		s.LowStreak = 0
+		return s, "scale_up"
+	}
+	if cpu < cfg.TargetCPU-cfg.DownBand {
+		s.LowStreak++
+		if s.LowStreak >= cfg.DownStable && s.Replicas > cfg.MinReplicas {
+			s.Replicas--
+			s.LowStreak = 0
+			return s, "scale_down"
+		}
+		return s, "hold_low"
+	}
+	s.LowStreak = 0
+	return s, action
+}
+
+func main() {
+	ticks := flag.Int("ticks", 30, "simulation ticks")
+	target := flag.Float64("target", 60, "target CPU percent")
+	minR := flag.Int("min", 1, "min replicas")
+	maxR := flag.Int("max", 20, "max replicas")
+	seed := flag.Int64("seed", 42, "rng seed")
+	demo := flag.Bool("demo-series", false, "use fixed series instead of random")
+	flag.Parse()
+
+	if *minR < 1 || *maxR < *minR {
+		fmt.Fprintln(os.Stderr, "invalid min/max")
+		os.Exit(2)
+	}
+
+	cfg := Config{
+		TargetCPU:   *target,
+		MinReplicas: *minR,
+		MaxReplicas: *maxR,
+		UpBand:      10,
+		DownBand:    20,
+		DownStable:  2,
+	}
+	s := State{Replicas: *minR}
+	rng := rand.New(rand.NewSource(*seed))
+
+	fixed := []float64{70, 82, 90, 88, 91, 72, 55, 40, 38, 35, 60, 65}
+
+	for t := 1; t <= *ticks; t++ {
+		var cpu float64
+		if *demo {
+			cpu = fixed[(t-1)%len(fixed)]
+		} else {
+			cpu = 30 + rng.Float64()*70
+		}
+		var action string
+		s, action = step(cfg, s, cpu)
+		fmt.Printf("tick=%02d cpu=%5.1f%% replicas=%d action=%s\n", t, cpu, s.Replicas, action)
+	}
+}
+```
+
+## Run and verification
+
+```bash
+go run . -demo-series -ticks 12
+go run . -seed 1 -ticks 30
+```
+
+## Tests
+
+```go
+package main
+
+import "testing"
+
+func TestScaleUp(t *testing.T) {
+	cfg := Config{TargetCPU: 60, MinReplicas: 1, MaxReplicas: 5, UpBand: 10, DownBand: 20, DownStable: 2}
+	s := State{Replicas: 1}
+	s, a := step(cfg, s, 90)
+	if a != "scale_up" || s.Replicas != 2 {
+		t.Fatalf("%s %d", a, s.Replicas)
+	}
+}
+
+func TestRespectMax(t *testing.T) {
+	cfg := Config{TargetCPU: 60, MinReplicas: 1, MaxReplicas: 2, UpBand: 0, DownBand: 20, DownStable: 1}
+	s := State{Replicas: 2}
+	s, a := step(cfg, s, 99)
+	if a != "noop" || s.Replicas != 2 {
+		t.Fatalf("%s %d", a, s.Replicas)
+	}
+}
+
+func TestScaleDownNeedsStreak(t *testing.T) {
+	cfg := Config{TargetCPU: 60, MinReplicas: 1, MaxReplicas: 10, UpBand: 10, DownBand: 20, DownStable: 2}
+	s := State{Replicas: 3}
+	s, _ = step(cfg, s, 20)
+	if s.Replicas != 3 {
+		t.Fatal("scaled too early")
+	}
+	s, a := step(cfg, s, 20)
+	if a != "scale_down" || s.Replicas != 2 {
+		t.Fatalf("%s %d", a, s.Replicas)
+	}
+}
+```
+
+```bash
+go test ./...
+```
+
+## Stretch goals
+
+1. DesiredReplicas formula: `ceil(current * cpu/target)` like real HPA.
+2. Separate scale-up/scale-down cooldown timers.
+3. Multi-metric (CPU + RPS).
+4. Compare against recorded metrics CSV.
+
+## Pitfalls
+
+| Pitfall | Fix |
+|---------|-----|
+| Flapping replicas | hysteresis bands + down stable streak |
+| Ignoring min/max | clamp every step |
+| Random-only demos | fixed series for docs/tests |
+
+## Learning goals
+
+- HPA control-loop intuition
+- Stabilization windows
+- Pure step functions for simulations

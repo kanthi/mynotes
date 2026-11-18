@@ -1,0 +1,288 @@
+---
+title: Mutability and Data Sharing
+---
+
+# Mutability and Data Sharing
+
+## Overview
+
+Understanding when data is copied vs shared is crucial for avoiding bugs and writing efficient Go code.
+
+## Value vs Reference Semantics
+
+### Value Types (Copied)
+
+```go
+// Integers, floats, bools, strings, arrays, structs
+a := 1
+b := a
+b = 2
+fmt.Println(a)  // 1 (unchanged)
+
+arr := [3]int{1, 2, 3}
+arr2 := arr
+arr2[0] = 100
+fmt.Println(arr[0])  // 1 (unchanged)
+```
+
+### Reference Types (Shared)
+
+```go
+// Slices, maps, channels, pointers
+s := []int{1, 2, 3}
+s2 := s
+s2[0] = 100
+fmt.Println(s[0])  // 100 (changed!)
+
+m := map[string]int{"a": 1}
+m2 := m
+m2["a"] = 100
+fmt.Println(m["a"])  // 100 (changed!)
+```
+
+## Controlling Mutability
+
+### Immutable by Design
+
+```go
+// Return new instead of modifying
+func addItem(items []string, item string) []string {
+    return append(items, item)  // May return new slice
+}
+```
+
+### Defensive Copy
+
+```go
+func process(s []int) {
+    local := make([]int, len(s))
+    copy(local, s)  // Safe to modify local
+}
+```
+
+### Deep Copy
+
+```go
+type User struct {
+    Name    string
+    Friends []string
+}
+
+func (u User) Clone() User {
+    friends := make([]string, len(u.Friends))
+    copy(friends, u.Friends)
+    return User{Name: u.Name, Friends: friends}
+}
+```
+
+## Function Parameters
+
+```go
+// Value: caller's data safe
+func process(u User) {
+    u.Name = "modified"  // Doesn't affect caller
+}
+
+// Pointer: can modify caller's data
+func process(u *User) {
+    u.Name = "modified"  // Affects caller
+}
+```
+
+## Struct Field Mutability
+
+```go
+type Counter struct {
+    count int
+}
+
+// Value receiver: cannot modify
+func (c Counter) Increment() {
+    c.count++  // Modifies copy, original unchanged
+}
+
+// Pointer receiver: modifies original
+func (c *Counter) Increment() {
+    c.count++  // Original modified
+}
+```
+
+## Slice Gotchas
+
+```go
+// Append may or may not share backing array
+s := []int{1, 2, 3}
+s2 := s[:2]          // Shares backing array
+s2 = append(s2, 4)   // Might overwrite s[2]!
+
+// Safer: force new allocation
+s2 := append([]int(nil), s[:2]...)
+```
+
+## Summary
+
+| Type | Behavior | Copy When... |
+|------|----------|--------------|
+| int, bool, string | Value | Always copied |
+| struct | Value | Always copied |
+| array | Value | Always copied |
+| slice | Reference | Use `copy()` |
+| map | Reference | Rebuild manually |
+| pointer | Reference | - |
+
+## Related Topics
+- [Pointers Explained](23-pointers.md)
+- [Concurrency Design Guidelines](../11-concurrency-parallelism/44-concurrency-guidelines.md)
+
+## More examples
+
+### Example: slice header shares backing array
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	a := []int{1, 2, 3}
+	b := a
+	b[0] = 99
+	fmt.Println("a:", a)
+	fmt.Println("b:", b)
+}
+```
+
+Expected:
+
+```text
+a: [99 2 3]
+b: [99 2 3]
+```
+
+### Example: copy to isolate mutation
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	a := []int{1, 2, 3}
+	b := make([]int, len(a))
+	copy(b, a)
+	b[0] = 99
+	fmt.Println("a:", a)
+	fmt.Println("b:", b)
+}
+```
+
+Expected:
+
+```text
+a: [1 2 3]
+b: [99 2 3]
+```
+
+## Runnable example
+
+Save as `main.go`. Then:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import "fmt"
+
+type User struct {
+	Name    string
+	Friends []string
+}
+
+func (u User) Clone() User {
+	friends := make([]string, len(u.Friends))
+	copy(friends, u.Friends)
+	return User{Name: u.Name, Friends: friends}
+}
+
+type Counter struct{ count int }
+
+func (c Counter) IncValue() {
+	c.count++ // mutates a copy only
+}
+
+func (c *Counter) IncPointer() {
+	c.count++
+}
+
+func main() {
+	// Value types: assignment copies.
+	a := 1
+	b := a
+	b = 2
+	fmt.Println("ints a,b:", a, b)
+
+	arr := [3]int{1, 2, 3}
+	arr2 := arr
+	arr2[0] = 99
+	fmt.Println("arrays arr,arr2:", arr, arr2)
+
+	// Reference-like headers: slice assignment shares data.
+	s := []int{1, 2, 3}
+	s2 := s
+	s2[0] = 100
+	fmt.Println("shared slice s:", s)
+
+	// Defensive copy of the backing array.
+	safe := make([]int, len(s))
+	copy(safe, s)
+	safe[0] = 1
+	fmt.Println("after defensive copy, s still:", s, "safe:", safe)
+
+	// append may or may not reallocate — force a fresh backing array.
+	base := []int{1, 2, 3}
+	alias := base[:2]
+	alias = append(alias, 9) // often overwrites base[2]
+	fmt.Println("append into shared capacity base:", base)
+
+	fresh := append([]int(nil), base[:2]...)
+	fresh = append(fresh, 9)
+	fmt.Println("append into fresh copy base:", base, "fresh:", fresh)
+
+	u := User{Name: "Ada", Friends: []string{"Bob"}}
+	u2 := u.Clone()
+	u2.Friends[0] = "Carol"
+	fmt.Println("clone independent:", u.Friends, u2.Friends)
+
+	c := Counter{}
+	c.IncValue()
+	fmt.Println("after value Inc:", c.count)
+	c.IncPointer()
+	fmt.Println("after pointer Inc:", c.count)
+}
+```
+
+**Expected output:**
+
+```text
+ints a,b: 1 2
+arrays arr,arr2: [1 2 3] [99 2 3]
+shared slice s: [100 2 3]
+after defensive copy, s still: [100 2 3] safe: [1 2 3]
+append into shared capacity base: [1 2 9]
+append into fresh copy base: [1 2 9] fresh: [1 2 9]
+clone independent: [Bob] [Carol]
+after value Inc: 0
+after pointer Inc: 1
+```
+
+**What to notice:** Arrays and structs copy deeply for their own fields, but nested slices still share unless you `copy`. Value receivers never update the caller's `Counter`.
+
+**Try next:** Map the same experiment with `map[string]int` (assignment shares); fix the shared-`append` case by capping first: `base[:2:2]`.

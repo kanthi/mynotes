@@ -1,0 +1,143 @@
+# Every page address this book's website has had, kept by Octavo so that
+# links to moved chapters keep working. Commit this file with the book.
+# Each line: the page, a tab, then its chapter title, or "-> " and the page
+# its old address now forwards to.
+content/01-python-foundations/01-intro/01-what-is-python.html	What Is Python
+content/01-python-foundations/01-intro/02-modern-toolchain-uv.html	Modern Toolchain: uv
+content/01-python-foundations/01-intro/03-developer-environment-and-ruff.html	Code Hygiene: Ruff
+content/01-python-foundations/01-intro/04-editor-setup-vscode.html	Editor Setup: VS Code
+content/01-python-foundations/02-variables/01-names-and-binding.html	Names, Binding, and Object References
+content/01-python-foundations/02-variables/02-memory-model-and-identity.html	Identity, Equality, and Mutability
+content/01-python-foundations/02-variables/03-naming-conventions-and-unpacking.html	Naming Conventions, Constants, and Unpacking
+content/01-python-foundations/02-variables/04-scopes-and-lifetimes.html	Variable Scopes, LEGB, and Object Lifetimes
+content/01-python-foundations/03-data-types/01-integers-and-arbitrary-precision.html	Integers and Arbitrary Precision
+content/01-python-foundations/03-data-types/02-floating-point-numbers.html	Floating-Point Numbers and Decimal Precision
+content/01-python-foundations/03-data-types/03-booleans-and-truthiness.html	Booleans, Truthiness, and Short-Circuit Logic
+content/01-python-foundations/03-data-types/04-strings-and-text-representation.html	Strings, UTF-8 Encoding, and Slicing
+content/01-python-foundations/03-data-types/04b-utf-8-default-encoding.html	UTF-8 by Default: What PEP 686 Changes in Python 3.15
+content/01-python-foundations/03-data-types/05-type-conversions-and-inspection.html	Type Casting, Type Inspection, and Annotations
+content/01-python-foundations/03-data-types/06-template-strings.html	Template Strings (t-strings)
+content/01-python-foundations/03-data-types/07-none-aware-operators-pep823.html	None-aware operators (PEP 823 / 824) — draft for 3.16
+content/01-python-foundations/04-functions/01-defining-functions-and-returns.html	Defining Functions, Signatures, and Return Values
+content/01-python-foundations/04-functions/02-positional-keyword-and-defaults.html	Parameters, Keyword Arguments, and Defaults
+content/01-python-foundations/04-functions/02b-sentinel-values.html	sentinel(): Missing Is Not None (PEP 661)
+content/01-python-foundations/04-functions/03-variadic-args-and-kwargs.html	Variadic Arguments (*args and **kwargs)
+content/01-python-foundations/04-functions/04-first-class-functions-and-lambdas.html	First-Class Functions, Callables, and Lambdas
+content/01-python-foundations/04-functions/05-closures-and-lexical-scoping.html	Closures, Lexical Scopes, and Factory Functions
+content/01-python-foundations/04-functions/06-generator-functions-and-yield-from.html	Generator Functions and Subgenerator Delegation
+content/01-python-foundations/05-control-flow/01-if-elif-else.html	The if, elif, and else Statements
+content/01-python-foundations/05-control-flow/02-conditional-expressions.html	Conditional Expressions and the Walrus Operator
+content/01-python-foundations/05-control-flow/03-while-loops.html	The while Loop and State-Driven Execution
+content/01-python-foundations/05-control-flow/04-for-loops.html	The for Loop and Sequence Iteration
+content/01-python-foundations/05-control-flow/05-loop-controls-break-continue.html	Loop Control: break, continue, and Loop else
+content/01-python-foundations/05-control-flow/06-iteration-utilities.html	Iteration Utilities: enumerate and zip
+content/01-python-foundations/05-control-flow/07-pattern-matching.html	Structural Pattern Matching with match and case
+content/01-python-foundations/05-control-flow/08-comprehensions.html	List, Dict, and Set Comprehensions
+content/01-python-foundations/05-control-flow/09-generator-expressions.html	Generator Expressions
+content/01-python-foundations/06-data-structures/01-lists.html	Lists and Dynamic Array Mechanics
+content/01-python-foundations/06-data-structures/02-tuples.html	Tuples and Immutable Sequence Records
+content/01-python-foundations/06-data-structures/03-dictionaries.html	Dictionaries and Hash Table Mechanics
+content/01-python-foundations/06-data-structures/03b-frozendict.html	frozendict: the Immutable Mapping (PEP 814)
+content/01-python-foundations/06-data-structures/04-sets.html	Sets and Set Theory Operations
+content/01-python-foundations/06-data-structures/05-advanced-slicing-and-unpacking.html	Advanced Slicing and Pattern Unpacking
+content/01-python-foundations/06-data-structures/05b-pep798-unpacking-in-comprehensions.html	Unpacking in Comprehensions (PEP 798)
+content/01-python-foundations/06-data-structures/06-bisect-and-heapq-algorithms.html	Binary Search with Bisect and Priority Queues with Heapq
+content/01-python-foundations/06-data-structures/07-memory-views-and-bytearrays.html	Zero-Copy Binary Memory with memoryview and bytearray
+content/01-python-foundations/07-error-handling/01-exceptions-and-call-stack.html	Exceptions, Tracebacks, and Propagation
+content/01-python-foundations/07-error-handling/02-custom-exceptions.html	Custom Exceptions and Error Hierarchies
+content/01-python-foundations/07-error-handling/03-context-managers-and-raii.html	Context Managers and Resource Management
+content/01-python-foundations/07-error-handling/04-exception-groups-and-except-star.html	Exception Groups and the except* Operator
+content/01-python-foundations/08-objects-and-classes/01-classes-and-attributes.html	Classes, Instances, and Encapsulation
+content/01-python-foundations/08-objects-and-classes/02-the-python-data-model.html	The Python Data Model and Dunder Protocols
+content/01-python-foundations/08-objects-and-classes/03-inheritance-and-composition.html	Inheritance, MRO, and Composition
+content/01-python-foundations/08-objects-and-classes/04-dataclasses-and-declarative-models.html	Dataclasses and Declarative Models
+content/01-python-foundations/08-objects-and-classes/04b-dataclass-slots.html	Dataclass slots=True
+content/01-python-foundations/08-objects-and-classes/05-decorators-and-metaprogramming.html	Decorators and Metaprogramming
+content/01-python-foundations/08-objects-and-classes/06-descriptors-and-property-protocol.html	Descriptors and the Attribute Access Protocol
+content/01-python-foundations/08-objects-and-classes/07-metaclasses-and-class-creation.html	Metaclasses and Class Construction Mechanics
+content/01-python-foundations/08-objects-and-classes/08-abstract-base-classes-and-protocols.html	Abstract Base Classes and Structural Protocols
+content/01-python-foundations/09-modules-and-packages/01-modules-and-import-system.html	Modules and the Import System
+content/01-python-foundations/09-modules-and-packages/02-packages-and-namespaces.html	Packages, Namespaces, and Public APIs
+content/01-python-foundations/09-modules-and-packages/03-workspaces-and-dependencies.html	Workspaces, Virtual Environments, and Dependency Isolation
+content/01-python-foundations/09-modules-and-packages/04-import-hooks-and-sys-meta-path.html	Import Hooks, Finders, and ModuleSpec Mechanics
+content/01-python-foundations/09-modules-and-packages/05-lazy-imports.html	Lazy Imports (PEP 810)
+content/01-python-foundations/10-standard-library/01-specialized-collections.html	Specialized Collections, Enums, and Heaps
+content/01-python-foundations/10-standard-library/02-itertools-and-functools.html	High-Performance Iteration and Functional Tools
+content/01-python-foundations/10-standard-library/03-text-processing-and-regex.html	Text Processing, Unicode, and Regular Expressions
+content/01-python-foundations/10-standard-library/04-filesystem-and-pathlib.html	Filesystem and Modern Path Manipulation
+content/01-python-foundations/10-standard-library/04b-pathlib-path-walk.html	pathlib.Path.walk: directory trees without os.walk
+content/01-python-foundations/10-standard-library/05-data-serialization-json-csv-toml.html	Structured Data Serialization: JSON, CSV, and TOML
+content/01-python-foundations/10-standard-library/06-embedded-storage-sqlite3.html	Embedded Relational Storage with SQLite3
+content/01-python-foundations/10-standard-library/07-dates-times-and-zoneinfo.html	Dates, Times, and Timezones
+content/01-python-foundations/10-standard-library/08-math-random-and-cryptography.html	Math, Randomness, and Cryptography
+content/01-python-foundations/10-standard-library/08b-math-integer.html	math.integer (PEP 791): Exact Integer Functions Leave math
+content/01-python-foundations/10-standard-library/09-os-sys-and-subprocess.html	OS, System Environment, and Subprocess Management
+content/01-python-foundations/10-standard-library/10-cli-parsing-and-logging.html	CLI Parsing and Structured Application Logging
+content/01-python-foundations/10-standard-library/11-compression-and-archives.html	Compression, Tarballs, and Archive Management
+content/01-python-foundations/10-standard-library/12-networking-sockets-and-ipaddress.html	Networking, Low-Level Sockets, and IP Address Calculations
+content/01-python-foundations/10-standard-library/13-signal-and-process-lifecycle.html	Signal Handling and Process Lifecycle Management
+content/01-python-foundations/10-standard-library/14-http-servers-and-clients.html	Built-In HTTP Networking: Servers, Clients, and Request Handlers
+content/01-python-foundations/10-standard-library/15-memory-mapped-files-mmap.html	High-Performance File I/O with Memory-Mapped Files (mmap)
+content/01-python-foundations/10-standard-library/16-inspect-and-runtime-introspection.html	Runtime Introspection and Reflection with inspect
+content/01-python-foundations/10-standard-library/17-weak-references-and-garbage-collection.html	Weak References and Garbage Collection (weakref, gc)
+content/01-python-foundations/10-standard-library/18-mocking-and-test-doubles.html	Mocking and Test Doubles (unittest.mock)
+content/01-python-foundations/10-standard-library/19-binary-data-and-network-protocols-struct.html	Binary Data and Network Protocols (struct)
+content/01-python-foundations/10-standard-library/20-object-serialization-and-caching-pickle.html	Object Serialization and Persistent Storage (pickle, shelve)
+content/01-python-foundations/10-standard-library/21-functools-cache-vs-lru-cache.html	functools.cache vs lru_cache
+content/01-python-foundations/10-standard-library/22-base64-throughput-on-3-15.html	base64 Throughput on Python 3.15
+content/01-python-foundations/10-standard-library/23-tomllib-read-only-toml.html	Parsing TOML with tomllib
+content/01-python-foundations/10-standard-library/23b-ssl-trust-stores-certifi-and-ca-distrust.html	TLS Trust Stores in Python: ssl, certifi, pip and the 2026 emSign Distrust
+content/01-python-foundations/11-typing-and-testing/01-modern-typing-and-static-analysis.html	Modern Type Hints and Static Analysis
+content/01-python-foundations/11-typing-and-testing/02-unit-and-integration-testing-pytest.html	Unit and Integration Testing with Pytest
+content/01-python-foundations/11-typing-and-testing/03-packaging-wheels-and-publishing.html	Packaging, Wheel Distribution, and Publishing
+content/01-python-foundations/11-typing-and-testing/03b-wheel-variants.html	Wheel Variants (PEP 825 and PEP 850): Labels, variant.json, Providers and the Selection Order
+content/01-python-foundations/11-typing-and-testing/04-advanced-type-system-pep695-and-narrowing.html	Advanced Type System: PEP 695, ParamSpec, and Type Narrowing
+content/01-python-foundations/11-typing-and-testing/05-deferred-annotations.html	Deferred Annotations
+content/01-python-foundations/11-typing-and-testing/05b-typeddict-closed-and-extra-items.html	Closed TypedDicts and Typed Extra Items (PEP 728)
+content/01-python-foundations/11-typing-and-testing/05c-disjoint-bases-pep800.html	Disjoint Bases: Telling Checkers Which Classes Can't Mix (PEP 800)
+content/01-python-foundations/11-typing-and-testing/05d-typeform-pep747.html	TypeForm: Typing Functions That Take Types as Values (PEP 747)
+content/01-python-foundations/11-typing-and-testing/06-typevartuple-array-shapes.html	TypeVarTuple Array Shapes
+content/01-python-foundations/11-typing-and-testing/07-choosing-a-type-checker.html	Choosing a Type Checker: mypy, pyright, ty and Pyrefly
+content/01-python-foundations/12-concurrency-and-internals/01-cpython-vm-and-bytecode.html	CPython VM, Bytecode, and Code Execution
+content/01-python-foundations/12-concurrency-and-internals/02-memory-allocator-and-gc.html	Memory Allocator, PyObject, and Garbage Collection
+content/01-python-foundations/12-concurrency-and-internals/03-gil-and-free-threading.html	The Global Interpreter Lock and Python 3.14 Free-Threading
+content/01-python-foundations/12-concurrency-and-internals/03b-stable-abi-free-threaded.html	Stable ABI for Free-Threaded Builds (PEP 803 / abi3t)
+content/01-python-foundations/12-concurrency-and-internals/04-multithreading-and-multiprocessing.html	Multithreading, Multiprocessing, and Process Pools
+content/01-python-foundations/12-concurrency-and-internals/04b-subinterpreters.html	Subinterpreters
+content/01-python-foundations/12-concurrency-and-internals/04c-interpreter-pool-executor.html	InterpreterPoolExecutor
+content/01-python-foundations/12-concurrency-and-internals/04d-numpy-limited-api-heap-types.html	NumPy Limited API and heap types (toward subinterpreters)
+content/01-python-foundations/12-concurrency-and-internals/04e-thread-safe-iterators.html	Sharing Iterators Between Threads: serialize_iterator, synchronized_iterator and concurrent_tee
+content/01-python-foundations/12-concurrency-and-internals/05-asyncio-and-taskgroups.html	Asynchronous Programming and TaskGroups
+content/01-python-foundations/12-concurrency-and-internals/05b-asyncio-task-start-semantics.html	When Does an asyncio Task Start? Lazy Coroutines, Eager Tasks, and Task Lifetimes
+content/01-python-foundations/12-concurrency-and-internals/05c-blocking-the-event-loop.html	Blocking the Event Loop: Finding Sync Calls in Async Code and Moving Them Off the Loop
+content/01-python-foundations/12-concurrency-and-internals/05d-contextvars-request-scoped-state.html	ContextVar for Request-Scoped State
+content/01-python-foundations/12-concurrency-and-internals/05e-asyncio-taskgroup.html	TaskGroup Structured Concurrency
+content/01-python-foundations/12-concurrency-and-internals/05f-asyncio-call-graph-introspection.html	Async call graphs: asking asyncio who is awaiting whom
+content/01-python-foundations/12-concurrency-and-internals/06-profiling-and-native-interop.html	Profiling, Optimization, and Native C/Rust Interoperability
+content/01-python-foundations/12-concurrency-and-internals/06b-attach-to-a-live-process.html	Attaching to a Live Process
+content/01-python-foundations/12-concurrency-and-internals/06c-sampling-profiler-tachyon.html	Sampling Profiler: Tachyon (profiling.sampling)
+content/01-python-foundations/12-concurrency-and-internals/06d-frame-pointers-by-default.html	Frame Pointers by Default (PEP 831)
+content/01-python-foundations/12-concurrency-and-internals/06e-sys-monitoring.html	sys.monitoring: Low-Overhead Debuggers and Coverage (PEP 669)
+content/01-python-foundations/12-concurrency-and-internals/06f-experimental-jit-measure.html	The Experimental JIT: Measure Before You Flip PYTHON_JIT=1
+content/01-python-foundations/12-concurrency-and-internals/07-capstone-foundations-engine.html	Capstone Lab: High-Throughput Asynchronous Log Processing Engine
+content/01-python-foundations/12-concurrency-and-internals/08-tracing-numpy-add-dispatch.html	Tracing np.add: ufunc dispatch internals
+content/02-data-structures-and-algorithms/01-algorithmic-complexity.html	Algorithmic Complexity and Big-O
+content/02-data-structures-and-algorithms/02-stacks-queues-and-deques.html	Stacks, Queues, and Deques
+content/02-data-structures-and-algorithms/03-linked-lists.html	Linked Lists
+content/02-data-structures-and-algorithms/04-binary-search-trees.html	Binary Search Trees
+content/02-data-structures-and-algorithms/05-heaps-and-priority-queues.html	Heaps and Priority Queues
+content/02-data-structures-and-algorithms/06-tries-and-prefix-trees.html	Tries and Prefix Trees
+content/02-data-structures-and-algorithms/07-sorting-algorithms.html	Sorting Algorithms
+content/02-data-structures-and-algorithms/08-binary-search-and-bisect.html	Binary Search and the bisect Module
+content/02-data-structures-and-algorithms/09-graphs-and-traversals.html	Graphs and Traversals (BFS and DFS)
+content/02-data-structures-and-algorithms/09b-topological-sort.html	Topological sort: Kahn and DFS for build and dependency order
+content/02-data-structures-and-algorithms/10-shortest-paths-dijkstra.html	Shortest Paths (Dijkstra's Algorithm)
+content/02-data-structures-and-algorithms/11-string-search-and-bloom-filters.html	String Search and Bloom Filters
+content/02-data-structures-and-algorithms/12-union-find-disjoint-set.html	Union-find (disjoint set): path compression and union by rank
+content/03-long-term-engineering/01-inspect-and-reflection.html	inspect and Reflection
+content/03-long-term-engineering/02-ctypes-and-ffi.html	ctypes and FFI
+content/03-long-term-engineering/03-performance-tuning.html	Performance Tuning
+content/03-long-term-engineering/04-designing-for-the-long-term.html	Designing for the Long Term
+content/99-appendices/01-glossary.html	Glossary
+content/99-appendices/02-command-cheat-sheet.html	Command Cheat Sheet
+index.html	Python

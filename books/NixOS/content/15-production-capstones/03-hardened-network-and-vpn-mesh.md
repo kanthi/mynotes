@@ -1,0 +1,174 @@
+---
+title: Hardened Networking and WireGuard Mesh
+---
+
+# Hardened Networking and WireGuard Mesh
+
+Public IPs should not see Postgres. The boring default is: **WireGuard mesh `10.100.0.0/24`, keys via sops on `/run/secrets`, nftables so `5432` exists only on `wg0`**.
+
+## Mental model
+
+| Node | `wg0` |
+|---|---|
+| `gw-01` | `10.100.0.1` |
+| `app-01` / `app-02` | `10.100.0.11` / `.12` |
+| `db-01` | `10.100.0.21` |
+| `ops-01` | `10.100.0.30` |
+
+Public: UDP **51820** on every peer; TCP **80/443** only on `gw-01`. Everything else: `wg0` or drop.
+
+Private keys never enter `/nix/store`. `privateKeyFile` points at sops.
+
+`persistentKeepalive = 25` keeps NAT mappings alive toward cloud UDP.
+
+## Worked examples
+
+### Case 1: Shared mesh module
+
+Save as `modules/wireguard-mesh.nix`:
+
+```nix
+# modules/wireguard-mesh.nix
+{ config, lib, ... }:
+
+{
+  networking.firewall.allowedUDPPorts = [ 51820 ];
+
+  networking.wireguard.interfaces.wg0 = {
+    ips = [ config.cluster.nodeIp ];
+    listenPort = 51820;
+    privateKeyFile = config.sops.secrets."wireguard/private".path;
+    peers = [
+      {
+        publicKey = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+        allowedIPs = [ "10.100.0.1/32" ];
+        endpoint = "203.0.113.10:51820";
+        persistentKeepalive = 25;
+      }
+      {
+        publicKey = "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=";
+        allowedIPs = [ "10.100.0.11/32" ];
+        endpoint = "203.0.113.11:51820";
+        persistentKeepalive = 25;
+      }
+      {
+        publicKey = "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC=";
+        allowedIPs = [ "10.100.0.21/32" ];
+        endpoint = "203.0.113.21:51820";
+        persistentKeepalive = 25;
+      }
+    ];
+  };
+}
+```
+
+Replace `AAA…` with real **public** keys. Private keys stay in sops.
+
+Each peer must include **itself** in `ips` and every **other** node in `peers` with `/32` `allowedIPs`. A missing self IP is a silent blackhole. `endpoint` is the **public** UDP address; omit `endpoint` only for peers that only receive (roaming laptop) and then they need `persistentKeepalive` toward a fixed peer.
+
+```nix
+# cluster option (tiny)
+{ lib, ... }:
+{
+  options.cluster.nodeIp = lib.mkOption {
+    type = lib.types.str;
+    description = "This host's wg0 CIDR, e.g. 10.100.0.11/24";
+  };
+}
+```
+
+### Case 2: Database host — Postgres only on `wg0`
+
+Save as `hosts/db-01.nix`:
+
+```nix
+# hosts/db-01.nix
+{
+  imports = [
+    ../modules/base-system.nix
+    ../modules/wireguard-mesh.nix
+  ];
+
+  cluster.nodeIp = "10.100.0.21/24";
+
+  networking.firewall = {
+    enable = true;
+    interfaces.wg0.allowedTCPPorts = [ 5432 ];
+    interfaces.eth0.allowedTCPPorts = [ ];
+  };
+}
+```
+
+```bash
+nix eval .#nixosConfigurations.db-01.config.networking.firewall.interfaces.wg0.allowedTCPPorts
+```
+
+Output:
+
+```
+[ 5432 ]
+```
+
+### Case 3: Gateway — HTTP public, API only over mesh
+
+```nix
+# hosts/gw-01.nix fragment
+{
+  cluster.nodeIp = "10.100.0.1/24";
+  networking.firewall.allowedTCPPorts = [ 80 443 ];
+  networking.firewall.interfaces.wg0.allowedTCPPorts = [ ];
+}
+```
+
+Caddy binds `0.0.0.0:443`. It **proxies to** `10.100.0.11:8080`, which is not open on the public NIC of `app-01`.
+
+### Case 4: App node does not open 8080 publicly
+
+```nix
+{
+  cluster.nodeIp = "10.100.0.11/24";
+  networking.firewall.interfaces.wg0.allowedTCPPorts = [ 8080 ];
+}
+```
+
+Health checks from Caddy use `10.100.0.11`. A scanner on the cloud IP should not see 8080.
+
+### Case 5: Prove the path
+
+On `ops-01` (once deployed):
+
+```bash
+sudo wg show
+ping -c 1 10.100.0.21
+nc -zv 10.100.0.21 5432
+```
+
+From a laptop **not** on the mesh, `nc` to the public IP port 5432 should fail. That is the test, not a green `wg show` alone.
+
+```bash
+sudo wg show wg0 dump
+ip route get 10.100.0.21
+```
+
+Handshake age of minutes is NAT; `persistentKeepalive = 25`. Handshake never: wrong pubkey, UDP 51820 blocked, or `allowedIPs` does not contain that `/32`.
+
+## The trap
+
+The trap is **`privateKey = "…"` in Nix**. World-readable store. `privateKeyFile` + sops. Public keys in git are fine.
+
+The other trap is `allowedIPs = [ "0.0.0.0/0" ]` turning the mesh into a default route. Use `/32` per peer unless you **mean** to route the internet through `gw-01`.
+
+## The boring rule
+
+- Mesh IPs in git. Private keys in sops → `/run/secrets`.
+- `5432` / `8080` on `wg0` only.
+- Public: 80/443 on gateway, UDP 51820 on peers.
+- `/32` `allowedIPs` unless you are building a router.
+- `persistentKeepalive = 25` behind NAT.
+
+## Try this
+
+1. Eval Case 2; confirm `eth0` TCP list is empty.
+2. Generate a keypair with `wg genkey | tee priv | wg pubkey`; put **only** the pubkey in the module.
+3. Two VMs, one peer each; `ping` over `wg0`.
+4. `ss -lntp` on `db-01` — Postgres on `10.100.0.21:5432`, not `0.0.0.0`.

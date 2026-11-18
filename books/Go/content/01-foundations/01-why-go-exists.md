@@ -1,0 +1,270 @@
+---
+title: Why Go Exists
+---
+
+# Why Go Exists
+
+## Overview
+
+Go (also known as Golang) was created at Google in 2007 by Robert Griesemer, Rob Pike, and Ken Thompson. It was designed to address the challenges of building large-scale, concurrent software systems while maintaining simplicity and fast compilation times.
+
+## The Problems Go Was Designed to Solve
+
+### 1. Slow Compilation Times
+In large codebases (like those at Google), C++ compilation could take hours. Go was designed with fast compilation as a primary goal, enabling rapid development cycles even in massive projects.
+
+### 2. Complexity in Modern Languages
+Languages like C++ and Java had become increasingly complex with years of feature additions. Go aimed to be simple enough that a programmer could hold the entire language specification in their head.
+
+### 3. Difficulty with Concurrency
+As multi-core processors became standard, writing concurrent code with traditional threading models proved error-prone and difficult. Go introduced goroutines and channels as first-class citizens.
+
+### 4. Dependency Management Chaos
+"Dependency hell" plagued many ecosystems. Go's import system and later the module system were designed to solve versioning and dependency problems.
+
+## Go's Design Philosophy
+
+```go
+// Go favors clarity over cleverness
+func processItems(items []string) error {
+    for _, item := range items {
+        if err := process(item); err != nil {
+            return fmt.Errorf("processing %s: %w", item, err)
+        }
+    }
+    return nil
+}
+```
+
+### Key Principles
+
+| Principle | Description |
+|-----------|-------------|
+| **Simplicity** | Less is more—remove features rather than add them |
+| **Readability** | Code is read more often than written |
+| **Orthogonality** | Features should work well together without special cases |
+| **Composition** | Prefer composition over inheritance |
+| **Explicit over implicit** | Make behavior obvious rather than magical |
+
+## What Makes Go Different
+
+### Compiled, Statically Typed, Fast
+```go
+// Type safety caught at compile time, not runtime
+var count int = 42
+count = "hello"  // Compile error: cannot use "hello" as int
+```
+
+### Built-in Concurrency
+```go
+// Goroutines are lightweight and easy to use
+go func() {
+    // This runs concurrently
+    processData()
+}()
+```
+
+### Single Binary Output
+```bash
+# Go compiles to a single binary with no dependencies
+$ CGO_ENABLED=0 go build -o myapp main.go
+$ ./myapp  # Just works, no language runtime to install
+```
+
+On Linux that binary is typically **fully static**: it does not need libc on the target. The Go runtime issues system calls itself, so the same file runs on Debian, Alpine, NixOS, or a `scratch` container. (Darwin still links `libSystem`; the famous "no libc" story is Linux-specific.) See [Go as a Systems Language](../17-systems-programming/140a-go-as-systems-language.md) for `file` / `ldd`, glibc vs musl, and when cgo puts a C library back.
+
+### Standard Formatting
+```bash
+# One true style, enforced automatically
+$ gofmt -w main.go
+```
+
+## Who Uses Go
+
+Go powers critical infrastructure across the industry:
+
+- **Docker** - Container runtime
+- **Kubernetes** - Container orchestration
+- **Terraform** - Infrastructure as code
+- **CockroachDB** - Distributed database
+- **Hugo** - Static site generator
+- **Prometheus** - Monitoring system
+
+## When to Choose Go
+
+✅ **Good fit for:**
+- Microservices and APIs
+- CLI tools and DevOps tooling
+- Concurrent/parallel processing
+- Networked services
+- Cloud-native applications
+- Userspace systems software (supervisors, agents, portable Linux binaries)
+
+⚠️ **Consider alternatives for:**
+- GUI desktop applications
+- Mobile development
+- Kernel modules, drivers, firmware, and hard real-time (C or Rust)
+- Data science/ML (Python ecosystem is stronger)
+
+## Summary
+
+Go exists because the software industry needed a language that could:
+
+1. **Compile quickly** at any scale
+2. **Handle concurrency** naturally and safely
+3. **Remain simple** despite solving complex problems
+4. **Produce efficient binaries** that deploy easily — on Linux, without a libc dependency
+
+Understanding these origins helps you write more idiomatic Go code that embraces the language's philosophy.
+
+## Related Topics
+- [Learning Go in 2026](01a-learning-path-2026.md)
+- [Installing and Running Go](02-installing-running-go.md)
+- [How Go Code Is Organized](03-code-organization.md)
+- [Go as a Systems Language](../17-systems-programming/140a-go-as-systems-language.md)
+
+## More examples
+
+### Example: clarity over cleverness
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import (
+	"fmt"
+	"strings"
+)
+
+func process(item string) error {
+	if strings.TrimSpace(item) == "" {
+		return fmt.Errorf("empty item")
+	}
+	fmt.Println("ok:", item)
+	return nil
+}
+
+func processItems(items []string) error {
+	for _, item := range items {
+		if err := process(item); err != nil {
+			return fmt.Errorf("processing %q: %w", item, err)
+		}
+	}
+	return nil
+}
+
+func main() {
+	if err := processItems([]string{"docker", "k8s", "  "}); err != nil {
+		fmt.Println("stopped:", err)
+	}
+}
+```
+
+Expected:
+
+```text
+ok: docker
+ok: k8s
+stopped: processing "  ": empty item
+```
+
+### Example: static types catch mistakes early
+
+Save as `main.go` and `go run .` (with `go mod init example` if needed).
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	var count int = 42
+	// Uncommenting the next line fails at compile time:
+	// count = "hello"
+	fmt.Println("count:", count)
+
+	// Conversions are explicit when you need them.
+	label := fmt.Sprintf("n=%d", count)
+	fmt.Println(label)
+}
+```
+
+Expected:
+
+```text
+count: 42
+n=42
+```
+
+## Runnable example
+
+Save as `main.go`. From an empty directory:
+
+```bash
+go mod init example
+go run .
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+	"time"
+)
+
+// process is intentionally simple and explicit: no inheritance, no magic.
+func process(item string) error {
+	if item == "" {
+		return fmt.Errorf("empty item")
+	}
+	// Simulate a small unit of work.
+	time.Sleep(20 * time.Millisecond)
+	fmt.Printf("processed: %s\n", item)
+	return nil
+}
+
+func main() {
+	items := []string{"api", "worker", "cli", ""}
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	var failures int
+
+	// Goroutines are first-class: cheap concurrency without a thread pool API.
+	for _, item := range items {
+		wg.Add(1)
+		go func(item string) {
+			defer wg.Done()
+			if err := process(item); err != nil {
+				mu.Lock()
+				failures++
+				mu.Unlock()
+				fmt.Printf("error: %v\n", err)
+			}
+		}(item)
+	}
+
+	wg.Wait()
+	fmt.Printf("done; failures=%d\n", failures)
+}
+```
+
+**Expected output** (illustrative; order of lines may vary):
+
+```text
+processed: api
+processed: worker
+processed: cli
+error: empty item
+done; failures=1
+```
+
+**What to notice:**
+- Concurrency is a few lines: `go func()` plus `WaitGroup`—no framework.
+- Errors are values checked with `if err != nil`, not thrown exceptions.
+- Empty-item handling is visible in the control flow; nothing is “magical.”
+- The program still finishes cleanly after concurrent work.
+
+**Try next:** Change `time.Sleep` to zero and re-run a few times. Does line order stay the same?

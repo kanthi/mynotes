@@ -1,0 +1,194 @@
+---
+title: '008 Project 8: Build a cat Clone'
+---
+
+# 008 Build a `cat` Clone
+
+Create a streaming file printer with line numbers and optional end-of-line markers—stdlib only, Unix-friendly exit codes, and multi-file support like classic `cat`.
+
+```text
+stdin/files -> scanner -> transform lines -> stdout
+```
+
+## Problem statement
+
+Implement `gcat` that:
+
+- Reads **stdin** when no file args are given
+- Concatenates multiple files in order
+- Supports `-n` (number lines) and `-E` (show `$` at end of each line)
+- Continues after a missing file (stderr message) like many Unix tools
+- Streams line-by-line (does not load whole files)
+
+## Acceptance criteria
+
+- [ ] `go run . file.txt` prints file contents
+- [ ] No args → read stdin until EOF
+- [ ] `-n` numbers lines; numbering continues across files
+- [ ] `-E` appends `$` before newline semantics (end of logical line)
+- [ ] Missing file: error on stderr, non-zero if any failure (your policy: document it)
+- [ ] Works on empty files without hanging
+
+## Setup
+
+```bash
+mkdir gcat && cd gcat
+go mod init example.com/gcat
+# go 1.27
+```
+
+## Full `main.go`
+
+```go
+package main
+
+import (
+	"bufio"
+	"flag"
+	"fmt"
+	"io"
+	"os"
+)
+
+func cat(r io.Reader, number, showEnds bool, start int) (int, error) {
+	s := bufio.NewScanner(r)
+	// Increase token size for long lines (default 64K may be tight for logs).
+	buf := make([]byte, 0, 64*1024)
+	s.Buffer(buf, 1024*1024)
+
+	lineNo := start
+	for s.Scan() {
+		line := s.Text()
+		if showEnds {
+			line += "$"
+		}
+		if number {
+			fmt.Printf("%6d\t%s\n", lineNo, line)
+			lineNo++
+		} else {
+			fmt.Println(line)
+		}
+	}
+	return lineNo, s.Err()
+}
+
+func main() {
+	number := flag.Bool("n", false, "number output lines")
+	showEnds := flag.Bool("E", false, "show $ at end of line")
+	flag.Parse()
+
+	lineNo := 1
+	var hadErr bool
+
+	if flag.NArg() == 0 {
+		if _, err := cat(os.Stdin, *number, *showEnds, lineNo); err != nil {
+			fmt.Fprintln(os.Stderr, "stdin:", err)
+			os.Exit(1)
+		}
+		return
+	}
+
+	for _, path := range flag.Args() {
+		f, err := os.Open(path)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s: %v\n", path, err)
+			hadErr = true
+			continue
+		}
+		n, err := cat(f, *number, *showEnds, lineNo)
+		_ = f.Close()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s: %v\n", path, err)
+			hadErr = true
+			continue
+		}
+		lineNo = n
+	}
+
+	if hadErr {
+		os.Exit(1)
+	}
+}
+```
+
+## Step-by-step build path
+
+1. **Flags first** — `-n`, `-E`, then positional paths.
+2. **Core `cat(io.Reader, ...)`** — pure stream helper; easy to test with `strings.NewReader`.
+3. **Stdin path** when `flag.NArg() == 0`.
+4. **Multi-file loop** with continuous line numbers when `-n`.
+5. **Scanner buffer** for long log lines; surface `s.Err()`.
+
+## Run and verification
+
+```bash
+printf 'a\nb\nc\n' > sample.txt
+go run . sample.txt
+go run . -n -E sample.txt
+
+# multi-file numbering
+printf 'x\n' > a.txt; printf 'y\n' > b.txt
+go run . -n a.txt b.txt
+# expect line numbers 1 then 2
+
+# stdin
+echo hello | go run . -n
+```
+
+## Tests
+
+```go
+package main
+
+import (
+	"strings"
+	"testing"
+)
+
+func TestCatNumbers(t *testing.T) {
+	// Capture via redirect in integration tests, or refactor cat to write to io.Writer.
+	r := strings.NewReader("one\ntwo\n")
+	// Smoke: no error on scan
+	_, err := cat(r, false, false, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestCatEmpty(t *testing.T) {
+	_, err := cat(strings.NewReader(""), true, true, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+```
+
+Refactor tip for stronger tests: change signature to `cat(w io.Writer, r io.Reader, ...)`.
+
+```bash
+go test ./...
+```
+
+## Stretch goals
+
+1. `-b` number non-blank lines only.
+2. `-A` show tabs as `^I` and ends as `$`.
+3. Binary-safe mode using `io.Copy` when no transforms.
+4. Squeeze blank lines (`-s`).
+5. Read from `-` as stdin mixed with files.
+
+## Pitfalls
+
+| Pitfall | Fix |
+|---------|-----|
+| Loading whole file with `ReadFile` | Use scanner / streaming |
+| Default scanner max token 64K | `Scanner.Buffer` |
+| Resetting line numbers per file unintentionally | Pass / return `lineNo` |
+| Silent open errors | Always print to stderr |
+| Treating binary as lines | Document limitation or use raw copy |
+
+## Learning goals
+
+- Composable Unix-style CLIs with `io.Reader`
+- Flag ergonomics and multi-file edge cases
+- Streaming over buffering for large inputs

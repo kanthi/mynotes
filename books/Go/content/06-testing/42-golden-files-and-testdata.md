@@ -1,0 +1,75 @@
+---
+title: Golden Files and testdata
+---
+
+# Golden Files and testdata
+
+## Overview
+
+**Golden files** store expected output (JSON, text, CLI stdout). Update deliberately when format changes.
+
+## Layout
+
+```text
+mypkg/
+  format.go
+  format_test.go
+  testdata/
+    report.golden
+    cases/
+      in.json
+```
+
+## Pattern
+
+```go
+func TestReport(t *testing.T) {
+	got := RenderReport(sample)
+	path := filepath.Join("testdata", "report.golden")
+	if os.Getenv("UPDATE_GOLDEN") == "1" {
+		if err := os.WriteFile(path, got, 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	want, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(got, want) {
+		t.Fatalf("mismatch (-want +got)\n%s", diff(want, got))
+	}
+}
+```
+
+```bash
+UPDATE_GOLDEN=1 go test ./...
+go test ./...
+```
+
+## Tips
+
+- Normalize time/randomness (inject clock)
+- Prefer stable JSON key order (`json.Encoder` in v1, or `jsonv2.Deterministic(true)` in `encoding/json/v2` where maps are unsorted by default)
+- **Go 1.27 `compress/flate`:** The encoder was overhauled in Go 1.27. Outputs from `archive/zip`, `compress/gzip`, `compress/zlib`, and `image/png` can differ byte-for-byte from Go 1.26 while decoding identically. When upgrading to 1.27, regenerate compressed fixtures (`UPDATE_GOLDEN=1`) instead of pinning old bytes.
+- Review golden diffs in PRs carefully
+
+## embed for fixtures
+
+```go
+//go:embed testdata/*.json
+var fixtures embed.FS
+```
+
+## Rules of thumb
+
+| Do | Don't |
+|----|--------|
+| Commit goldens | Regenerate without reading diff |
+| Keep fixtures small | 50MB binaries in git |
+| Document UPDATE_GOLDEN | Hidden magic env names only in CI lore |
+
+## Try next
+
+1. Golden-test a CLI help string.
+2. Golden-test pretty JSON error envelope.
+3. Break format; see test fail; update consciously.
