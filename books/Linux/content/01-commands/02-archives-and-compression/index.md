@@ -4,7 +4,7 @@ title: Intro
 
 # Intro
 
-Pack, compress, and inspect archives for backup, distribution, and log history. Prefer `tar` with modern compressors (`zstd`, `xz`) for Linux trees; use zip when exchanging with non-Unix tools.
+Pack, compress, and inspect archives for backup, distribution, and log history. Prefer `tar` with modern compressors (`zstd`, `pigz`, `xz`) for Linux trees; use `zip` or `7z` when exchanging with non-Unix tools.
 
 ## Commands in this part
 
@@ -19,13 +19,24 @@ Pack, compress, and inspect archives for backup, distribution, and log history. 
 | `unzip` | unzip lists, tests, and extracts ZIP archives. |
 | `zcat` | zcat writes gzip-compressed files to stdout as if they were uncompressed (equivalent to gzip -dc). |
 | `zgrep` | zgrep runs grep over gzip-compressed files without manual decompression. |
+| `7z` | 7z creates and extracts high-ratio `.7z`, `.zip`, and `.iso` archives with optional AES-256 header encryption. |
+| `pigz` | pigz is a multi-core parallel implementation of gzip for fast `.gz` backups. |
 
+## Which tool should I use?
+
+| Need | Best Choice | Why |
+|------|-------------|-----|
+| Fast Linux backups (best speed/ratio) | `tar -I zstd -cf out.tar.zst dir/` | Multi-threaded, preserves Unix permissions |
+| Multi-core `.gz` compatibility | `tar -I pigz -cf out.tar.gz dir/` | Readable by every `gzip`/`gunzip` |
+| Maximum ratio for static distribution | `tar -cJf out.tar.xz dir/` | Smallest tarball; slower to compress |
+| Windows/macOS sharing | `zip` / `unzip` (or `7z`) | Built into desktop OSes |
+| Search/read rotated `.gz` logs in place | `zgrep` / `zcat` | No temp files on disk |
 
 ## Suggested starting points
 
-1. Create/extract trees: `tar` (+ `zstd`/`gzip`/`xz`).
-2. Single-file compressors: `gzip`, `xz`, `bzip2`, `zstd`.
-3. Interchange with Windows/macOS users: `zip` / `unzip`.
+1. Create/extract trees: `tar` (+ `zstd`/`pigz`/`gzip`/`xz`).
+2. Single-file compressors: `zstd`, `pigz`, `gzip`, `xz`, `bzip2`.
+3. Interchange with Windows/macOS users: `zip` / `unzip` / `7z`.
 4. Search rotated logs without unpacking: `zgrep`, `zcat`.
 
 ## Related parts
