@@ -47,6 +47,10 @@ The hero figure `diagram-dist-switch-multihome.svg` (+ `-dark`) is the **first p
 | `diagram-lab-triangle.svg` | Containerlab, statics | yes |
 | `diagram-leaf-spine.svg` | Clos leaf-spine | yes |
 | `diagram-tailscale-vxlan-sites.svg` | Head office / branch, Tailscale + VXLAN | yes |
-| `diagram-encapsulation.svg` etc. (mono) | Models / habits | n/a |
+| `diagram-k8s-packet-path.svg` | Kubernetes Pod-to-Service-to-Pod packet path | yes |
+| `diagram-xdp-packet-path.svg` | Linux NIC → XDP → TC-BPF → Netfilter → Socket | yes |
+| `diagram-l4-dsr-vs-l7.svg` | L4 Direct Server Return vs L7 reverse proxy | yes |
+| `diagram-forensics-pipeline.svg` | TAP/SPAN → tcpdump → Zeek/Suricata → SIEM | yes |
+| `diagram-encapsulation.svg` + 12 mono/concept SVGs | Models / habits | yes |
 
 When adding illustrated figures: dual files + reference tokens + theme-swap (already in `styles/reader-mode-body.html`). Embed light path only.

@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 420" role="img" aria-label="Side-by-side comparison of L4 Direct Server Return where responses bypass the load balancer directly to the client, versus L7 Reverse Proxy where both requests and responses terminate at and traverse the proxy" color-scheme="dark">
+  <defs>
+    <pattern id="grid-lb" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M20 0H0V20" fill="none" stroke="#2c3440" stroke-width="0.8"/>
+    </pattern>
+    <marker id="arr-req" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#60a5fa"/>
+    </marker>
+    <marker id="arr-res" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#4ade80"/>
+    </marker>
+    <style>
+      .title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13.5px; font-weight: 700; fill: #e8eef5; }
+      .sub { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 12px; font-weight: 700; fill: #e8eef5; }
+      .label { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 11px; font-weight: 700; fill: #e8eef5; }
+      .muted { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.6px; fill: #9aa8b8; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9.1px; fill: #c5d0dc; }
+      .req { fill: none; stroke: #60a5fa; stroke-width: 2; marker-end: url(#arr-req); }
+      .res { fill: none; stroke: #4ade80; stroke-width: 2; stroke-dasharray: 5 4; marker-end: url(#arr-res); }
+    </style>
+  </defs>
+
+  <rect width="840" height="420" rx="16" fill="#1c2129"/>
+  <rect width="840" height="420" rx="16" fill="url(#grid-lb)"/>
+  <rect x="8" y="8" width="824" height="404" rx="12" fill="none" stroke="#3a4452"/>
+
+  <text x="420" y="30" text-anchor="middle" class="title">L4 Direct Server Return (DSR) vs L7 Reverse Proxy</text>
+  <text x="420" y="46" text-anchor="middle" class="muted">Asymmetric response bypass for massive egress throughput vs full TCP/TLS termination for L7 routing</text>
+
+  <!-- LEFT PANEL: L4 DSR -->
+  <rect x="24" y="64" width="386" height="310" rx="12" fill="#232a35" stroke="#6b7c90" stroke-width="1.4"/>
+  <text x="217" y="86" text-anchor="middle" class="sub">L4 Direct Server Return (DSR)</text>
+  <text x="217" y="101" text-anchor="middle" class="muted">Single TCP connection: Client &lt;-&gt; Backend (VIP on lo)</text>
+
+  <!-- Client L -->
+  <rect x="142" y="114" width="150" height="44" rx="8" fill="#2a3140" stroke="#6b7c90" stroke-width="1.4"/>
+  <text x="217" y="133" text-anchor="middle" class="label">Client</text>
+  <text x="217" y="148" text-anchor="middle" class="mono">198.51.100.10</text>
+
+  <!-- L4 LB -->
+  <rect x="44" y="206" width="142" height="62" rx="8" fill="#1e3a5f" stroke="#60a5fa" stroke-width="1.5"/>
+  <text x="115" y="226" text-anchor="middle" class="label">L4 LB (IPVS/Katran)</text>
+  <text x="115" y="242" text-anchor="middle" class="mono">VIP 203.0.113.5</text>
+  <text x="115" y="257" text-anchor="middle" class="muted">L2 MAC rewrite or IPIP</text>
+
+  <!-- Backend L -->
+  <rect x="132" y="304" width="256" height="54" rx="8" fill="#1b3a2d" stroke="#4ade80" stroke-width="1.5"/>
+  <text x="260" y="324" text-anchor="middle" class="label">Backend Server</text>
+  <text x="260" y="339" text-anchor="middle" class="mono">lo: 203.0.113.5/32 (arp_ignore=1)</text>
+  <text x="260" y="352" text-anchor="middle" class="muted">Replies directly from VIP to Client</text>
+
+  <!-- DSR Arrows -->
+  <path class="req" d="M162,158 C130,174 115,184 115,204"/>
+  <text x="82" y="182" text-anchor="middle" class="mono">Req -&gt; VIP</text>
+
+  <path class="req" d="M115,268 C115,292 140,304 162,304"/>
+  <text x="82" y="294" text-anchor="middle" class="mono">Fwd (src kept)</text>
+
+  <path class="res" d="M312,304 C346,246 334,174 294,142"/>
+  <text x="348" y="222" text-anchor="middle" class="mono">Direct reply</text>
+  <text x="348" y="235" text-anchor="middle" class="muted">(bypasses LB)</text>
+
+  <!-- RIGHT PANEL: L7 Reverse Proxy -->
+  <rect x="430" y="64" width="386" height="310" rx="12" fill="#232a35" stroke="#6b7c90" stroke-width="1.4"/>
+  <text x="623" y="86" text-anchor="middle" class="sub">L7 Reverse Proxy (Envoy / HAProxy / Nginx)</text>
+  <text x="623" y="101" text-anchor="middle" class="muted">Two TCP/TLS legs: Client &lt;-&gt; Proxy and Proxy &lt;-&gt; Backend</text>
+
+  <!-- Client R -->
+  <rect x="548" y="114" width="150" height="44" rx="8" fill="#2a3140" stroke="#6b7c90" stroke-width="1.4"/>
+  <text x="623" y="133" text-anchor="middle" class="label">Client</text>
+  <text x="623" y="148" text-anchor="middle" class="mono">198.51.100.10</text>
+
+  <!-- L7 Proxy -->
+  <rect x="518" y="202" width="210" height="68" rx="8" fill="#332a42" stroke="#8b7aa8" stroke-width="1.5"/>
+  <text x="623" y="222" text-anchor="middle" class="label">L7 Reverse Proxy</text>
+  <text x="623" y="238" text-anchor="middle" class="mono">TLS term · HTTP/2 · Path/Host</text>
+  <text x="623" y="253" text-anchor="middle" class="muted">Adds X-Forwarded-For · Retries</text>
+
+  <!-- Backend R -->
+  <rect x="538" y="306" width="170" height="52" rx="8" fill="#2a3140" stroke="#6b7c90" stroke-width="1.4"/>
+  <text x="623" y="326" text-anchor="middle" class="label">Backend Server</text>
+  <text x="623" y="342" text-anchor="middle" class="mono">10.0.2.21:8080</text>
+  <text x="623" y="354" text-anchor="middle" class="muted">Sees Proxy IP as TCP src</text>
+
+  <!-- L7 Arrows -->
+  <path class="req" d="M598,158 V200"/>
+  <text x="562" y="182" text-anchor="middle" class="mono">TLS Req</text>
+  <path class="res" d="M648,202 V160"/>
+  <text x="688" y="182" text-anchor="middle" class="mono">TLS Res</text>
+
+  <path class="req" d="M598,270 V304"/>
+  <text x="556" y="291" text-anchor="middle" class="mono">Pool Req</text>
+  <path class="res" d="M648,306 V272"/>
+  <text x="692" y="291" text-anchor="middle" class="mono">Pool Res</text>
+
+  <!-- Footer legend -->
+  <line x1="210" y1="395" x2="244" y2="395" stroke="#60a5fa" stroke-width="2" marker-end="url(#arr-req)"/>
+  <text x="252" y="398" class="muted">Request path</text>
+  <line x1="450" y1="395" x2="484" y2="395" stroke="#4ade80" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arr-res)"/>
+  <text x="492" y="398" class="muted">Response path</text>
+</svg>
