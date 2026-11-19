@@ -31,6 +31,7 @@ The opening inspection examples can be studied before building the lab VM. Repea
 | Kubernetes on Linux | 01–19, then 21–22 and 23–28 |
 | Kernel investigation | Relevant foundations, then 23–24 and 29–30; select a depth track in 33–37 |
 | Ubuntu-specific integration | Relevant foundations, then the selected desktop/cloud branches in 31 and release-specific cases in 38 |
+| Practical Linux networking | Relevant foundations, then the hands-on Linux networking depth track in 39 |
 
 Choose the services and technology branches relevant to your lab. The ordinary server route does not require Kubernetes, specialized hardware, every filesystem or every database. Later chapters explain their prerequisites; a branch can be studied when those prerequisites are satisfied.
 
@@ -40,7 +41,7 @@ Attempt the Part 32 projects as you progress: a recoverable server after 11, a s
 
 Parts 01–05 have complete chapter sequences. Part 06 contains nine chapters, through service cgroups, resource boundaries and an initial sandbox. Its next chapters cover reload/restart and graceful shutdown, user services, and failure diagnosis and recovery.
 
-Parts 07–32 are planned and are not yet in the sidebar. Parts 33–38 already contain optional depth-track material; they are being reviewed for prerequisites, overlap and technical accuracy. Their presence is not a substitute for the unwritten core parts. The sidebar lists the chapters currently available.
+Parts 07–32 are planned and are not yet in the sidebar. Parts 33–39 already contain optional depth-track material; they are being reviewed for prerequisites, overlap and technical accuracy. Their presence is not a substitute for the unwritten core parts. The sidebar lists the chapters currently available.
 
 The map below covers the whole curriculum, including planned parts. Part numbers are stable references; they do not require a reader to complete every optional track.
 
@@ -86,5 +87,6 @@ The map below covers the whole curriculum, including planned parts. Part numbers
 | 36 | The ext4 Filesystem: Architecture, Internals, and Implementation |
 | 37 | A Complete Guide to Virtual Memory, Allocators, Paging, and Performance in the Modern Linux Kernel |
 | 38 | Ubuntu 26.04 LTS: From Desktop to Enterprise Cloud |
+| 39 | Networking in Linux |
 
-Parts 29–32 provide investigation, specialist branches and integrated projects. Parts 33–38 provide optional depth in multiple-kernel architectures, benchmarking, security, ext4, memory management and Ubuntu-specific integration. Each track has prerequisites and a distinct practical outcome; choose it when it answers a question about the systems you operate.
+Parts 29–32 provide investigation, specialist branches and integrated projects. Parts 33–39 provide optional depth in multiple-kernel architectures, benchmarking, security, ext4, memory management, Ubuntu-specific integration and hands-on Linux networking. Each track has prerequisites and a distinct practical outcome; choose it when it answers a question about the systems you operate.

@@ -263,6 +263,26 @@ book:
     - content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/13-customization-and-flavors.md
     - content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/14-enterprise-deployment-and-management.md
     - content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/15-conclusion-the-road-ahead.md
+  - part: Networking in Linux
+    contents:
+    - content/39-networking-in-linux/index.md
+    - content/39-networking-in-linux/00-introduction-networking-with-linux.md
+    - content/39-networking-in-linux/01-network-interfaces-drivers-and-link-layer-control.md
+    - content/39-networking-in-linux/02-ip-addressing-ipv4-ipv6-and-host-models.md
+    - content/39-networking-in-linux/03-layer-2-networking-ethernet-arp-and-ndp.md
+    - content/39-networking-in-linux/04-layer-3-packet-forwarding-and-ip-stack-internals.md
+    - content/39-networking-in-linux/05-vlans-8021q-qinq-and-vlan-aware-switching.md
+    - content/39-networking-in-linux/06-linux-bridges-and-software-switching.md
+    - content/39-networking-in-linux/07-bonding-teaming-and-link-aggregation.md
+    - content/39-networking-in-linux/08-routing-policy-routing-vrfs-and-dynamic-routing.md
+    - content/39-networking-in-linux/09-dhcp-clients-servers-and-relays.md
+    - content/39-networking-in-linux/10-dns-resolution-caching-and-authoritative-services.md
+    - content/39-networking-in-linux/11-firewalling-netfilter-and-nftables.md
+    - content/39-networking-in-linux/12-nat-connection-tracking-and-address-translation.md
+    - content/39-networking-in-linux/13-vpns-wireguard-ipsec-and-encrypted-tunnels.md
+    - content/39-networking-in-linux/14-virtual-networking-overlays-containers-and-tc-ebpf.md
+    - content/39-networking-in-linux/15-network-troubleshooting-packet-forensics-and-observability.md
+    - content/39-networking-in-linux/16-capstone-hands-on-enterprise-linux-network-lab.md
 format:
   html:
     theme: auto
