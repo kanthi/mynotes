@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 440" role="img" color-scheme="dark" aria-label="Stateful Linux firewall HA pair showing Keepalived VRRP MASTER and BACKUP firewalls replicating kernel nf_conntrack state via conntrackd FTFW over a dedicated sync link">
+  <defs>
+    <pattern id="grid-ha" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M20 0H0V20" fill="none" stroke="#2c3440" stroke-width="0.8"/>
+    </pattern>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#60a5fa"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#4ade80"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#fbbf24"/>
+    </marker>
+    <style>
+      .title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13.5px; font-weight: 700; fill: #e8eef5; }
+      .label { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 10.5px; font-weight: 700; fill: #e8eef5; }
+      .muted { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.4px; fill: #9aa8b8; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 8.9px; fill: #c5d0dc; }
+      .badge-green { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9px; font-weight: 700; fill: #4ade80; }
+      .badge-amber { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9px; font-weight: 700; fill: #fbbf24; }
+      .flow-active { fill: none; stroke: #4ade80; stroke-width: 2.2; marker-end: url(#arr-green); }
+      .flow-standby { fill: none; stroke: #fbbf24; stroke-width: 1.5; stroke-dasharray: 5 4; marker-end: url(#arr-amber); }
+      .flow-sync { fill: none; stroke: #60a5fa; stroke-width: 2; marker-end: url(#arr-blue); }
+    </style>
+  </defs>
+
+  <rect width="840" height="440" rx="16" fill="#1c2129"/>
+  <rect width="840" height="440" rx="16" fill="url(#grid-ha)"/>
+  <rect x="8" y="8" width="824" height="424" rx="12" fill="none" stroke="#3a4452"/>
+
+  <text x="420" y="30" text-anchor="middle" class="title">Stateful Linux Firewall HA: Keepalived (VRRP) + conntrackd (FTFW)</text>
+  <text x="420" y="46" text-anchor="middle" class="muted">Live connection state replicates over a dedicated sync link so failover preserves TCP flows without INVALID drops</text>
+
+  <!-- WAN Box -->
+  <rect x="280" y="60" width="280" height="44" rx="8" fill="#2a3140" stroke="#6b7c90" stroke-width="1.4"/>
+  <text x="420" y="79" text-anchor="middle" class="label">Upstream WAN Router / Internet</text>
+  <text x="420" y="95" text-anchor="middle" class="mono">WAN VIP 198.51.100.1/24 (VRRP ID 51)</text>
+
+  <!-- Firewall 1 (MASTER) -->
+  <rect x="28" y="134" width="320" height="178" rx="12" fill="#232a35" stroke="#4ade80" stroke-width="1.6"/>
+  <text x="44" y="154" class="label">Firewall 1 — MASTER</text>
+  <text x="332" y="154" text-anchor="end" class="badge-green">Pri 150 · Active VIPs</text>
+
+  <rect x="44" y="166" width="288" height="58" rx="8" fill="#2a3140" stroke="#6b7c90" stroke-width="1.3"/>
+  <text x="56" y="183" class="label">Kernel nf_conntrack + nftables</text>
+  <text x="56" y="198" class="mono">ESTAB 10.10.1.5:51234 -&gt; 93.184.216.34:443</text>
+  <text x="56" y="213" class="muted">Active NAT + stateful forward; emits GARP</text>
+
+  <rect x="44" y="236" width="288" height="62" rx="8" fill="#1e3a5f" stroke="#60a5fa" stroke-width="1.3"/>
+  <text x="56" y="254" class="label">conntrackd (Internal Cache)</text>
+  <text x="56" y="269" class="mono">Netlink CT events -&gt; FTFW UDP/3780</text>
+  <text x="56" y="285" class="muted">Replicates live flows over eth2 (172.16.255.1)</text>
+
+  <!-- Firewall 2 (BACKUP) -->
+  <rect x="492" y="134" width="320" height="178" rx="12" fill="#232a35" stroke="#fbbf24" stroke-width="1.6"/>
+  <text x="508" y="154" class="label">Firewall 2 — BACKUP</text>
+  <text x="796" y="154" text-anchor="end" class="badge-amber">Pri 100 · Warm Standby</text>
+
+  <rect x="508" y="166" width="288" height="58" rx="8" fill="#2a3140" stroke="#6b7c90" stroke-width="1.3"/>
+  <text x="520" y="183" class="label">Kernel nf_conntrack + nftables</text>
+  <text x="520" y="198" class="mono">Populated via conntrackd -c on failover</text>
+  <text x="520" y="213" class="muted">Zero INVALID drops for existing TCP streams</text>
+
+  <rect x="508" y="236" width="288" height="62" rx="8" fill="#3f3119" stroke="#fbbf24" stroke-width="1.3"/>
+  <text x="520" y="254" class="label">conntrackd (External Cache)</text>
+  <text x="520" y="269" class="mono">Stores peer flows in user-space cache</text>
+  <text x="520" y="285" class="muted">primary-backup.sh commits cache on MASTER</text>
+
+  <!-- Sync & VRRP Arrows between FW1 and FW2 -->
+  <path class="flow-sync" d="M348,188 H490"/>
+  <rect x="364" y="166" width="112" height="18" rx="5" fill="#2a3140" stroke="#6b7c90" stroke-width="1"/>
+  <text x="420" y="178" text-anchor="middle" class="mono">VRRP (Proto 112)</text>
+
+  <path class="flow-sync" d="M348,267 H490"/>
+  <rect x="360" y="242" width="120" height="20" rx="5" fill="#1e3a5f" stroke="#60a5fa" stroke-width="1"/>
+  <text x="420" y="255" text-anchor="middle" class="mono">FTFW Sync (eth2)</text>
+  <text x="420" y="283" text-anchor="middle" class="muted">172.16.255.0/30</text>
+
+  <!-- Commit arrow inside FW2 -->
+  <path class="flow-standby" d="M652,236 V226"/>
+
+  <!-- LAN Box -->
+  <rect x="280" y="344" width="280" height="44" rx="8" fill="#2a3140" stroke="#6b7c90" stroke-width="1.4"/>
+  <text x="420" y="363" text-anchor="middle" class="label">Internal LAN / Production Subnets</text>
+  <text x="420" y="379" text-anchor="middle" class="mono">LAN VIP 10.10.1.1/24 (VRRP ID 52 · Sync Group)</text>
+
+  <!-- Data path arrows -->
+  <path class="flow-active" d="M340,104 L210,132"/>
+  <path class="flow-active" d="M210,312 L340,342"/>
+  <path class="flow-standby" d="M500,104 L630,132"/>
+  <path class="flow-standby" d="M630,312 L500,342"/>
+
+  <!-- Footer Legend -->
+  <line x1="36" y1="412" x2="66" y2="412" stroke="#4ade80" stroke-width="2.2" marker-end="url(#arr-green)"/>
+  <text x="74" y="415" class="muted">Active data path (MASTER)</text>
+  <line x1="256" y1="412" x2="286" y2="412" stroke="#60a5fa" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <text x="294" y="415" class="muted">VRRP &amp; conntrackd FTFW state sync</text>
+  <line x1="518" y1="412" x2="548" y2="412" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arr-amber)"/>
+  <text x="556" y="415" class="muted">Failover path (commits external cache)</text>
+</svg>

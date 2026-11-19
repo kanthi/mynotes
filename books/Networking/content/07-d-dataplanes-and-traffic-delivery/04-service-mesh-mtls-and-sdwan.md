@@ -20,6 +20,8 @@ By the end of this chapter you can:
 
 A **service mesh** decouples cross-cutting network concerns—mutual TLS (mTLS), L7 telemetry, retries, circuit breaking, and traffic splitting—from application code.
 
+![Side-by-side comparison of Sidecar Service Mesh with per-Pod Envoy proxies versus Ambient Sidecarless Mesh with shared node ztunnel L4 mTLS and optional L7 Waypoint proxy](../../images/diagram-service-mesh-sidecar-vs-ambient.svg)
+
 ### 1. Classic Sidecar Mesh (Istio Sidecar, Linkerd)
 
 Every application Pod gets an injected proxy container (typically **Envoy** or **linkerd2-proxy**). An init container configures `iptables` or eBPF socket redirection so all inbound and outbound TCP traffic from the app container transparently passes through the local sidecar.

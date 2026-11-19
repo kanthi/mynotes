@@ -47,6 +47,8 @@ If a global CDN has 200 edge PoPs and a popular object's cache TTL expires, all 
 
 **Tiered caching (Origin Shielding)** introduces an intermediate **mid-tier / shield PoP** (or regional shield cluster) close to the origin:
 
+![Global CDN request path from clients over BGP Anycast to Edge PoPs with L1 cache, Regional Origin Shield L2 cache collapsing, and Origin Server comparing L1 HIT, L2 HIT, and MISS latency](../../images/diagram-cdn-anycast-origin-shield.svg)
+
 ```text
 User -> Edge PoP (L1 cache miss) -> Shield PoP (L2 cache hit/coalesce) -> Origin
 ```

@@ -6,6 +6,8 @@ title: 'Source of Truth, Config Templating, and Drift Detection'
 
 Every manual CLI session leaves behind a tiny fork between what the network *is* and what the team *thinks* it is. Multiply that by ten engineers, two hundred switches, and three years of midnight incident fixes, and the only reliable documentation left is `show running-config` on live gear. Moving from artisanal CLI edits to repeatable network automation starts with inverting that relationship: **intended state** lives in a structured Source of Truth (SoT), device configurations are rendered deterministically from templates, deployments are idempotent diffs, and **drift detection** continuously catches any out-of-band change.
 
+![NetOps Source of Truth CI/CD pipeline from NetBox and Git through Jinja2 rendering, Containerlab and Batfish pre-change validation, gNMI or NETCONF push, and closed-loop drift detection](../../images/diagram-netops-sot-ci-pipeline.svg)
+
 ## Learning goals
 
 By the end of this chapter you can:

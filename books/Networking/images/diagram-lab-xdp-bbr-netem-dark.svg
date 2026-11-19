@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 440" role="img" color-scheme="dark" aria-label="Lab 67 Linux dataplane topology showing sender with fq pacing and TCP CUBIC or BBR, wan-em router with tc netem delay and loss plus tbf 50 Mbps and pfifo or fq_codel queue, and receiver with eBPF XDP_DROP on UDP port 9999 and XDP_PASS to iperf3">
+  <defs>
+    <pattern id="grid-l67-d" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M20 0H0V20" fill="none" stroke="#2c3440" stroke-width="0.8"/>
+    </pattern>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#60a5fa"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#4ade80"/>
+    </marker>
+    <marker id="arr-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#f87171"/>
+    </marker>
+    <style>
+      .title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13.5px; font-weight: 700; fill: #e8eef5; }
+      .label { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 11px; font-weight: 700; fill: #e8eef5; }
+      .muted { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.8px; fill: #9aa8b8; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9.2px; fill: #c5d0dc; }
+      .flow-tcp { fill: none; stroke: #60a5fa; stroke-width: 2; marker-end: url(#arr-blue); }
+      .flow-pass { fill: none; stroke: #4ade80; stroke-width: 2; marker-end: url(#arr-green); }
+      .flow-drop { fill: none; stroke: #f87171; stroke-width: 2; stroke-dasharray: 5 3; marker-end: url(#arr-red); }
+    </style>
+  </defs>
+
+  <rect width="840" height="440" rx="16" fill="#1c2129"/>
+  <rect width="840" height="440" rx="16" fill="url(#grid-l67-d)"/>
+  <rect x="8" y="8" width="824" height="424" rx="12" fill="none" stroke="#3a4452"/>
+
+  <text x="420" y="30" text-anchor="middle" class="title">Lab 67: eBPF XDP Drop, TCP BBR Pacing, and fq_codel WAN Emulation</text>
+  <text x="420" y="46" text-anchor="middle" class="muted">Compare CUBIC vs BBR over 50ms/1% loss, pfifo vs fq_codel bufferbloat, and driver-level XDP_DROP vs nftables</text>
+
+  <!-- Sender -->
+  <rect x="24" y="76" width="212" height="290" rx="12" fill="#232a35" stroke="#6b7c90" stroke-width="1.5"/>
+  <text x="130" y="98" text-anchor="middle" class="label">sender</text>
+  <text x="130" y="114" text-anchor="middle" class="mono">eth1: 10.1.0.10/24</text>
+
+  <rect x="40" y="130" width="180" height="66" rx="8" fill="#2a3140" stroke="#60a5fa" stroke-width="1.4"/>
+  <text x="130" y="150" text-anchor="middle" class="label">TCP Flow (iperf3)</text>
+  <text x="130" y="166" text-anchor="middle" class="mono">-C cubic vs -C bbr</text>
+  <text x="130" y="182" text-anchor="middle" class="muted">Inspect with ss -tin</text>
+
+  <rect x="40" y="210" width="180" height="58" rx="8" fill="#1e3a5f" stroke="#60a5fa" stroke-width="1.3"/>
+  <text x="130" y="230" text-anchor="middle" class="label">Root qdisc: fq</text>
+  <text x="130" y="246" text-anchor="middle" class="mono">Per-flow BBR pacing</text>
+  <text x="130" y="260" text-anchor="middle" class="muted">Prevents micro-bursts</text>
+
+  <rect x="40" y="282" width="180" height="66" rx="8" fill="#3b1d22" stroke="#f87171" stroke-width="1.4"/>
+  <text x="130" y="302" text-anchor="middle" class="label">UDP Flood Generator</text>
+  <text x="130" y="318" text-anchor="middle" class="mono">iperf3 -u -p 9999 -b 0</text>
+  <text x="130" y="334" text-anchor="middle" class="muted">64B frames for XDP test</text>
+
+  <!-- WAN Emulator -->
+  <rect x="292" y="76" width="234" height="290" rx="12" fill="#3f3119" stroke="#fbbf24" stroke-width="1.6"/>
+  <text x="409" y="98" text-anchor="middle" class="label">wan-em (Linux Router)</text>
+  <text x="409" y="114" text-anchor="middle" class="mono">eth1: 10.1.0.1 | eth2: 10.2.0.1</text>
+
+  <rect x="308" y="130" width="202" height="62" rx="8" fill="#2a3140" stroke="#fbbf24" stroke-width="1.3"/>
+  <text x="409" y="150" text-anchor="middle" class="label">tc netem (WAN Link)</text>
+  <text x="409" y="166" text-anchor="middle" class="mono">delay 25ms x2 (50ms RTT)</text>
+  <text x="409" y="181" text-anchor="middle" class="mono">random loss 1%</text>
+
+  <rect x="308" y="206" width="202" height="62" rx="8" fill="#2a3140" stroke="#fbbf24" stroke-width="1.3"/>
+  <text x="409" y="226" text-anchor="middle" class="label">tc tbf (Bottleneck)</text>
+  <text x="409" y="242" text-anchor="middle" class="mono">rate 50mbit burst 64kbit</text>
+  <text x="409" y="257" text-anchor="middle" class="muted">Shapes egress on eth2</text>
+
+  <rect x="308" y="282" width="202" height="66" rx="8" fill="#2a3140" stroke="#6b7c90" stroke-width="1.3"/>
+  <text x="409" y="302" text-anchor="middle" class="label">Queue Discipline (AQM)</text>
+  <text x="409" y="318" text-anchor="middle" class="mono">pfifo 1000 (&gt;250ms bloat)</text>
+  <text x="409" y="334" text-anchor="middle" class="mono">vs fq_codel (~26ms RTT)</text>
+
+  <!-- Receiver -->
+  <rect x="582" y="76" width="234" height="290" rx="12" fill="#232a35" stroke="#6b7c90" stroke-width="1.5"/>
+  <text x="699" y="98" text-anchor="middle" class="label">receiver</text>
+  <text x="699" y="114" text-anchor="middle" class="mono">eth1: 10.2.0.10/24</text>
+
+  <rect x="598" y="130" width="202" height="72" rx="8" fill="#1b3a2d" stroke="#4ade80" stroke-width="1.5"/>
+  <text x="699" y="150" text-anchor="middle" class="label">Kernel Stack + iperf3 -s</text>
+  <text x="699" y="166" text-anchor="middle" class="mono">sk_buff -&gt; nftables -&gt; TCP</text>
+  <text x="699" y="182" text-anchor="middle" class="muted">Normal TCP/ICMP via XDP_PASS</text>
+
+  <rect x="598" y="224" width="202" height="64" rx="8" fill="#1e3a5f" stroke="#60a5fa" stroke-width="1.6"/>
+  <text x="699" y="244" text-anchor="middle" class="label">eBPF XDP Hook (eth1 RX)</text>
+  <text x="699" y="260" text-anchor="middle" class="mono">xdp_drop_udp9999.o</text>
+  <text x="699" y="275" text-anchor="middle" class="muted">Runs before sk_buff alloc</text>
+
+  <rect x="598" y="306" width="202" height="42" rx="8" fill="#3b1d22" stroke="#f87171" stroke-width="1.5"/>
+  <text x="699" y="324" text-anchor="middle" class="label">XDP_DROP (UDP:9999)</text>
+  <text x="699" y="339" text-anchor="middle" class="mono">Discarded at driver RX ring</text>
+
+  <!-- Flows -->
+  <path class="flow-tcp" d="M236,164 H290"/>
+  <path class="flow-tcp" d="M526,256 H596"/>
+  <path class="flow-drop" d="M236,315 H290"/>
+  <path class="flow-pass" d="M699,224 V204"/>
+  <path class="flow-drop" d="M699,288 V304"/>
+
+  <!-- Legend -->
+  <line x1="36" y1="406" x2="68" y2="406" stroke="#60a5fa" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <text x="76" y="409" class="muted">TCP/ICMP traffic (CUBIC / BBR + fq_codel)</text>
+  <line x1="342" y1="406" x2="374" y2="406" stroke="#4ade80" stroke-width="2" marker-end="url(#arr-green)"/>
+  <text x="382" y="409" class="muted">XDP_PASS to kernel stack</text>
+  <line x1="564" y1="406" x2="596" y2="406" stroke="#f87171" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arr-red)"/>
+  <text x="604" y="409" class="muted">UDP:9999 flood -&gt; XDP_DROP</text>
+</svg>

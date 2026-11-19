@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 440" role="img" color-scheme="light" aria-label="Linux Netfilter nf_conntrack table anatomy showing raw table NOTRACK bypass, 5-tuple hash buckets storing ORIGINAL and REPLY tuples, state timeouts, and silent packet drop on nf_conntrack_max overflow">
+  <defs>
+    <pattern id="grid-ct" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M20 0H0V20" fill="none" stroke="#d9e2ec" stroke-width="0.8"/>
+    </pattern>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#3b82c4"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#15803d"/>
+    </marker>
+    <marker id="arr-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#b91c1c"/>
+    </marker>
+    <style>
+      .title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13.5px; font-weight: 700; fill: #2f3b4a; }
+      .sub { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.8px; fill: #5c6b7a; }
+      .label { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 11px; font-weight: 700; fill: #2f3b4a; }
+      .small { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.2px; fill: #5c6b7a; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9px; fill: #3d4f5f; }
+      .flow-blue { fill: none; stroke: #3b82c4; stroke-width: 1.9; marker-end: url(#arr-blue); }
+      .flow-green { fill: none; stroke: #15803d; stroke-width: 1.9; stroke-dasharray: 5 3; marker-end: url(#arr-green); }
+      .flow-red { fill: none; stroke: #b91c1c; stroke-width: 1.9; marker-end: url(#arr-red); }
+    </style>
+  </defs>
+
+  <rect width="840" height="440" rx="16" fill="#f4f7fb"/>
+  <rect width="840" height="440" rx="16" fill="url(#grid-ct)"/>
+  <rect x="8" y="8" width="824" height="424" rx="12" fill="none" stroke="#e2e8f0"/>
+
+  <text x="420" y="30" text-anchor="middle" class="title">Linux Netfilter nf_conntrack Table Anatomy &amp; Exhaustion Path</text>
+  <text x="420" y="46" text-anchor="middle" class="sub">Every tracked flow hashes both ORIGINAL and REPLY 5-tuples; hitting nf_conntrack_max drops new flows while existing flows survive</text>
+
+  <!-- Top Row: Packet -> raw PREROUTING -> NOTRACK Bypass -->
+  <rect x="26" y="64" width="186" height="62" rx="9" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.4"/>
+  <text x="40" y="84" class="label">Incoming Packet</text>
+  <text x="40" y="100" class="mono">TCP 10.1.0.5:51422</text>
+  <text x="40" y="114" class="mono">-&gt; 93.184.216.34:443</text>
+
+  <rect x="248" y="64" width="222" height="62" rx="9" fill="#eef3f9" stroke="#3b82c4" stroke-width="1.4"/>
+  <text x="262" y="84" class="label">raw table · PREROUTING</text>
+  <text x="262" y="100" class="mono">nft: notrack / iptables -j NOTRACK</text>
+  <text x="262" y="115" class="small">Runs BEFORE conntrack lookup</text>
+
+  <rect x="546" y="64" width="268" height="62" rx="9" fill="#dcfce7" stroke="#15803d" stroke-width="1.4"/>
+  <text x="560" y="84" class="label">Conntrack Bypass (NOTRACK)</text>
+  <text x="560" y="100" class="small">Skips hash table completely (0 slots used)</text>
+  <text x="560" y="115" class="mono">Ideal for high-PPS DNS, BGP, stateless VIPs</text>
+
+  <!-- Top arrows -->
+  <path class="flow-blue" d="M212,95 H246"/>
+  <path class="flow-green" d="M470,95 H544"/>
+  <text x="507" y="87" text-anchor="middle" class="mono">NOTRACK</text>
+
+  <!-- Down into Conntrack Table -->
+  <path class="flow-blue" d="M359,126 V158"/>
+  <text x="424" y="146" class="small">Tracked flow (default)</text>
+
+  <!-- Left Main Panel: Hash Buckets & Tuples -->
+  <rect x="26" y="160" width="444" height="226" rx="12" fill="#eef3f9" stroke="#8b9bb0" stroke-width="1.4"/>
+  <text x="42" y="180" class="label">nf_conntrack Hash Table</text>
+  <text x="454" y="180" text-anchor="end" class="mono">nf_conntrack_buckets (default = max)</text>
+
+  <!-- Bucket Column -->
+  <rect x="42" y="194" width="94" height="28" rx="6" fill="#ffffff" stroke="#8b9bb0"/>
+  <text x="89" y="212" text-anchor="middle" class="mono">Bucket [0]</text>
+
+  <rect x="42" y="232" width="94" height="36" rx="6" fill="#dbeafe" stroke="#3b82c4" stroke-width="1.4"/>
+  <text x="89" y="248" text-anchor="middle" class="mono">Bucket [k]</text>
+  <text x="89" y="261" text-anchor="middle" class="small">hash(orig)</text>
+
+  <rect x="42" y="278" width="94" height="36" rx="6" fill="#dcfce7" stroke="#15803d" stroke-width="1.4"/>
+  <text x="89" y="294" text-anchor="middle" class="mono">Bucket [m]</text>
+  <text x="89" y="307" text-anchor="middle" class="small">hash(reply)</text>
+
+  <rect x="42" y="324" width="94" height="24" rx="6" fill="#ffffff" stroke="#8b9bb0"/>
+  <text x="89" y="340" text-anchor="middle" class="mono">Bucket [N-1]</text>
+
+  <!-- Tuple Entries -->
+  <rect x="164" y="198" width="290" height="64" rx="8" fill="#ffffff" stroke="#3b82c4" stroke-width="1.4"/>
+  <text x="176" y="216" class="label">ORIGINAL 5-Tuple (Client -&gt; Server)</text>
+  <text x="176" y="232" class="mono">src=10.1.0.5:51422  dst=93.184.216.34:443</text>
+  <text x="176" y="249" class="small">proto=TCP · state=ESTABLISHED · timeout=432000s</text>
+
+  <rect x="164" y="274" width="290" height="64" rx="8" fill="#ffffff" stroke="#15803d" stroke-width="1.4"/>
+  <text x="176" y="292" class="label">REPLY 5-Tuple (Expected Return + NAT)</text>
+  <text x="176" y="308" class="mono">src=93.184.216.34:443  dst=203.0.113.9:51422</text>
+  <text x="176" y="325" class="small">Stores SNAT/DNAT reversal; shares same nf_conn entry</text>
+
+  <!-- Bucket pointers -->
+  <path class="flow-blue" d="M136,248 H162"/>
+  <path class="flow-green" d="M136,296 H162"/>
+
+  <!-- Bottom note inside Hash Table -->
+  <text x="248" y="370" text-anchor="middle" class="small">2 hash entries per flow -&gt; with max == buckets, full table averages chain length ~2</text>
+
+  <!-- Right Panel Top: State Timeouts -->
+  <rect x="494" y="160" width="320" height="118" rx="12" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.4"/>
+  <text x="510" y="180" class="label">State Timeouts (Capacity Levers)</text>
+  <text x="798" y="180" text-anchor="end" class="mono">Linux defaults</text>
+
+  <rect x="510" y="192" width="138" height="34" rx="6" fill="#fef3c7" stroke="#fcd34d"/>
+  <text x="520" y="207" class="mono">TCP SYN_RECV</text>
+  <text x="520" y="220" class="label">60 s</text>
+
+  <rect x="660" y="192" width="138" height="34" rx="6" fill="#dbeafe" stroke="#93c5fd"/>
+  <text x="670" y="207" class="mono">TCP ESTABLISHED</text>
+  <text x="670" y="220" class="label">432,000 s (5d)</text>
+
+  <rect x="510" y="234" width="138" height="34" rx="6" fill="#fef3c7" stroke="#fcd34d"/>
+  <text x="520" y="249" class="mono">TCP TIME_WAIT</text>
+  <text x="520" y="262" class="label">120 s</text>
+
+  <rect x="660" y="234" width="138" height="34" rx="6" fill="#eef3f9" stroke="#8b9bb0"/>
+  <text x="670" y="249" class="mono">UDP / Stream</text>
+  <text x="670" y="262" class="label">30 s / 120 s</text>
+
+  <!-- Right Panel Bottom: Table Full Overflow -->
+  <rect x="494" y="292" width="320" height="94" rx="12" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.6"/>
+  <text x="510" y="313" class="label">Overflow: count &gt;= nf_conntrack_max</text>
+  <text x="510" y="332" class="mono">NEW flow -&gt; SILENT PACKET DROP</text>
+  <text x="510" y="350" class="mono">dmesg: nf_conntrack: table full, dropping</text>
+  <text x="510" y="370" class="small">Existing ESTABLISHED flows are NOT evicted (SSH stays up)</text>
+
+  <!-- Overflow arrow from table -->
+  <path class="flow-red" d="M470,338 H492"/>
+
+  <!-- Footer Legend -->
+  <text x="28" y="416" class="sub">Key sysctls: net.netfilter.nf_conntrack_count / nf_conntrack_max / nf_conntrack_buckets  |  Fix: scale max+buckets, tune timeouts, or NOTRACK</text>
+</svg>

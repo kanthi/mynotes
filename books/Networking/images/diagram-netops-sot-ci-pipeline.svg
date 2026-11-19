@@ -1,0 +1,160 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 440" role="img" color-scheme="light" aria-label="NetOps Source of Truth CI/CD pipeline from NetBox and Git through Jinja2 intent rendering, Containerlab and Batfish pre-change validation, gNMI or NETCONF push to live fleet, and continuous drift detection loop with Suzieq and telemetry">
+  <defs>
+    <pattern id="grid-sot" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M20 0H0V20" fill="none" stroke="#d9e2ec" stroke-width="0.8"/>
+    </pattern>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#3b82c4"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#15803d"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#b45309"/>
+    </marker>
+    <marker id="arr-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#b91c1c"/>
+    </marker>
+    <style>
+      .title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13.5px; font-weight: 700; fill: #2f3b4a; }
+      .label { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 11px; font-weight: 700; fill: #2f3b4a; }
+      .muted { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.6px; fill: #5c6b7a; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9px; fill: #3d4f5f; }
+      .step { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.5px; font-weight: 700; fill: #ffffff; }
+      .flow-blue { fill: none; stroke: #3b82c4; stroke-width: 2; marker-end: url(#arr-blue); }
+      .flow-green { fill: none; stroke: #15803d; stroke-width: 2; marker-end: url(#arr-green); }
+      .flow-amber { fill: none; stroke: #b45309; stroke-width: 1.9; stroke-dasharray: 5 3; marker-end: url(#arr-amber); }
+      .flow-red { fill: none; stroke: #b91c1c; stroke-width: 1.6; stroke-dasharray: 4 3; marker-end: url(#arr-red); }
+    </style>
+  </defs>
+
+  <rect width="840" height="440" rx="16" fill="#f4f7fb"/>
+  <rect width="840" height="440" rx="16" fill="url(#grid-sot)"/>
+  <rect x="8" y="8" width="824" height="424" rx="12" fill="none" stroke="#e2e8f0"/>
+
+  <text x="420" y="30" text-anchor="middle" class="title">NetOps Source-of-Truth CI/CD &amp; Drift Detection Pipeline</text>
+  <text x="420" y="46" text-anchor="middle" class="muted">Intended state in NetBox/Git is rendered deterministically, gated by digital-twin tests, pushed via API, and continuously reconciled</text>
+
+  <!-- Stage 1: Source of Truth -->
+  <rect x="28" y="68" width="174" height="124" rx="10" fill="#ffffff" stroke="#3b82c4" stroke-width="1.6"/>
+  <rect x="28" y="68" width="174" height="24" rx="10" fill="#dbeafe"/>
+  <rect x="28" y="82" width="174" height="10" fill="#dbeafe"/>
+  <circle cx="44" cy="80" r="8" fill="#3b82c4"/><text x="44" y="83" text-anchor="middle" class="step">1</text>
+  <text x="58" y="84" class="label">Source of Truth</text>
+  <text x="40" y="110" class="mono">NetBox / Nautobot</text>
+  <text x="40" y="124" class="muted">IPAM, DCIM, cables, ASNs</text>
+  <line x1="40" y1="134" x2="190" y2="134" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="40" y="150" class="mono">Git Policy Repo (PR)</text>
+  <text x="40" y="164" class="muted">Route-maps, ACLs, review</text>
+  <text x="40" y="182" class="mono">GraphQL + YAML intent</text>
+
+  <!-- Stage 2: Intent Renderer -->
+  <rect x="232" y="68" width="174" height="124" rx="10" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.5"/>
+  <rect x="232" y="68" width="174" height="24" rx="10" fill="#eef3f9"/>
+  <rect x="232" y="82" width="174" height="10" fill="#eef3f9"/>
+  <circle cx="248" cy="80" r="8" fill="#3b82c4"/><text x="248" y="83" text-anchor="middle" class="step">2</text>
+  <text x="262" y="84" class="label">Intent Renderer</text>
+  <text x="244" y="110" class="mono">Jinja2 / Nornir Engine</text>
+  <text x="244" y="124" class="muted">Merges SoT + Git context</text>
+  <line x1="244" y1="134" x2="394" y2="134" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="244" y="150" class="mono">Deterministic Artifacts</text>
+  <text x="244" y="164" class="muted">FRR / EOS / SR Linux cfg</text>
+  <text x="244" y="182" class="mono">Schema + syntax lint</text>
+
+  <!-- Stage 3: Pre-Change Validation -->
+  <rect x="436" y="68" width="174" height="124" rx="10" fill="#ffffff" stroke="#b45309" stroke-width="1.6"/>
+  <rect x="436" y="68" width="174" height="24" rx="10" fill="#fef3c7"/>
+  <rect x="436" y="82" width="174" height="10" fill="#fef3c7"/>
+  <circle cx="452" cy="80" r="8" fill="#b45309"/><text x="452" y="83" text-anchor="middle" class="step">3</text>
+  <text x="466" y="84" class="label">Pre-Change Gate</text>
+  <text x="448" y="110" class="mono">Containerlab Twin</text>
+  <text x="448" y="124" class="muted">Boots exact fabric topology</text>
+  <line x1="448" y1="134" x2="598" y2="134" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="448" y="150" class="mono">Batfish Static Analysis</text>
+  <text x="448" y="164" class="muted">BGP sessions, loops, ACLs</text>
+  <text x="448" y="182" class="mono">Pass -&gt; approve merge</text>
+
+  <!-- Stage 4: Idempotent Push -->
+  <rect x="640" y="68" width="172" height="124" rx="10" fill="#ffffff" stroke="#15803d" stroke-width="1.6"/>
+  <rect x="640" y="68" width="172" height="24" rx="10" fill="#dcfce7"/>
+  <rect x="640" y="82" width="172" height="10" fill="#dcfce7"/>
+  <circle cx="656" cy="80" r="8" fill="#15803d"/><text x="656" y="83" text-anchor="middle" class="step">4</text>
+  <text x="670" y="84" class="label">Idempotent Push</text>
+  <text x="652" y="110" class="mono">gNMI / NETCONF / Ansible</text>
+  <text x="652" y="124" class="muted">Config replace + diff view</text>
+  <line x1="652" y1="134" x2="800" y2="134" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="652" y="150" class="mono">Atomic Commit-Confirm</text>
+  <text x="652" y="164" class="muted">Canary leaf -&gt; full wave</text>
+  <text x="652" y="182" class="mono">Auto-rollback on error</text>
+
+  <!-- Forward pipeline arrows -->
+  <path class="flow-blue" d="M202,130 H230"/>
+  <path class="flow-blue" d="M406,130 H434"/>
+  <path class="flow-green" d="M610,130 H638"/>
+
+  <!-- Gate fail feedback arrow -->
+  <path class="flow-red" d="M523,192 V220 H158 V194"/>
+  <rect x="278" y="209" width="136" height="20" rx="10" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.1"/>
+  <text x="346" y="222" text-anchor="middle" class="mono" fill="#b91c1c">Test fail: block PR</text>
+
+  <!-- Push to Live Fleet arrow -->
+  <path class="flow-green" d="M726,192 V244"/>
+  <rect x="668" y="209" width="116" height="20" rx="10" fill="#dcfce7" stroke="#15803d" stroke-width="1.1"/>
+  <text x="726" y="222" text-anchor="middle" class="mono">Deploy configs</text>
+
+  <!-- Live Network Fleet -->
+  <rect x="556" y="246" width="256" height="114" rx="10" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.5"/>
+  <rect x="556" y="246" width="256" height="24" rx="10" fill="#eef3f9"/>
+  <rect x="556" y="260" width="256" height="10" fill="#eef3f9"/>
+  <text x="570" y="262" class="label">Production Network Fleet</text>
+  <text x="798" y="262" text-anchor="end" class="mono">Running State</text>
+  <rect x="570" y="280" width="70" height="32" rx="6" fill="#f4f7fb" stroke="#8b9bb0" stroke-width="1.1"/>
+  <text x="605" y="295" text-anchor="middle" class="mono">Spine 01-02</text>
+  <text x="605" y="306" text-anchor="middle" class="muted">EOS / FRR</text>
+  <rect x="649" y="280" width="70" height="32" rx="6" fill="#f4f7fb" stroke="#8b9bb0" stroke-width="1.1"/>
+  <text x="684" y="295" text-anchor="middle" class="mono">Leaf 01-16</text>
+  <text x="684" y="306" text-anchor="middle" class="muted">EVPN-VXLAN</text>
+  <rect x="728" y="280" width="70" height="32" rx="6" fill="#f4f7fb" stroke="#8b9bb0" stroke-width="1.1"/>
+  <text x="763" y="295" text-anchor="middle" class="mono">Border GW</text>
+  <text x="763" y="306" text-anchor="middle" class="muted">eBGP / NAT</text>
+  <rect x="570" y="322" width="228" height="26" rx="6" fill="#fee2e2" stroke="#b91c1c" stroke-width="1"/>
+  <text x="684" y="338" text-anchor="middle" class="muted">Out-of-band CLI edits create config drift</text>
+
+  <!-- Stage 5: Drift Detection Loop -->
+  <rect x="238" y="246" width="282" height="114" rx="10" fill="#ffffff" stroke="#b45309" stroke-width="1.6"/>
+  <rect x="238" y="246" width="282" height="24" rx="10" fill="#fef3c7"/>
+  <rect x="238" y="260" width="282" height="10" fill="#fef3c7"/>
+  <circle cx="254" cy="258" r="8" fill="#b45309"/><text x="254" y="261" text-anchor="middle" class="step">5</text>
+  <text x="268" y="262" class="label">Drift Detection &amp; Telemetry</text>
+  <text x="252" y="288" class="mono">Suzieq · gNMI Streaming · NAPALM Diff</text>
+  <text x="252" y="304" class="muted">Polls operational tables + running-config snapshots</text>
+  <line x1="252" y1="314" x2="506" y2="314" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="252" y="330" class="mono">Diff: Intended (SoT) != Actual (Device)</text>
+  <text x="252" y="346" class="muted">Flags manual CLI changes, missing peers, MTU drift</text>
+
+  <!-- Reconciliation Box -->
+  <rect x="28" y="246" width="174" height="114" rx="10" fill="#ffffff" stroke="#3b82c4" stroke-width="1.5"/>
+  <rect x="28" y="246" width="174" height="24" rx="10" fill="#dbeafe"/>
+  <rect x="28" y="260" width="174" height="10" fill="#dbeafe"/>
+  <text x="42" y="262" class="label">Reconcile / Remediate</text>
+  <text x="40" y="288" class="mono">1. Alert &amp; Audit Ticket</text>
+  <text x="40" y="304" class="muted">2. Valid emergency fix?</text>
+  <text x="40" y="318" class="mono">   -&gt; Backport PR to SoT</text>
+  <text x="40" y="334" class="muted">3. Unapproved drift?</text>
+  <text x="40" y="348" class="mono">   -&gt; Re-run CI overwrite</text>
+
+  <!-- Drift Loop Arrows -->
+  <path class="flow-amber" d="M556,303 H522"/>
+  <path class="flow-amber" d="M238,303 H204"/>
+  <path class="flow-amber" d="M115,246 V194"/>
+
+  <!-- Legend footer -->
+  <line x1="36" y1="398" x2="66" y2="398" stroke="#3b82c4" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <text x="74" y="401" class="muted">Intent &amp; render</text>
+  <line x1="184" y1="398" x2="214" y2="398" stroke="#15803d" stroke-width="2" marker-end="url(#arr-green)"/>
+  <text x="222" y="401" class="muted">Validated push</text>
+  <line x1="336" y1="398" x2="366" y2="398" stroke="#b91c1c" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arr-red)"/>
+  <text x="374" y="401" class="muted">CI gate rejection</text>
+  <line x1="496" y1="398" x2="526" y2="398" stroke="#b45309" stroke-width="1.9" stroke-dasharray="5 3" marker-end="url(#arr-amber)"/>
+  <text x="534" y="401" class="muted">Closed-loop telemetry &amp; drift reconciliation</text>
+</svg>

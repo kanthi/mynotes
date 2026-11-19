@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 440" role="img" color-scheme="light" aria-label="Lab 61 Anycast DNS with BGP ECMP and health-checked route withdrawal across client1, client2, edge1 router, and anycast servers dns1 and dns2">
+  <defs>
+    <pattern id="grid-61" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M20 0H0V20" fill="none" stroke="#d9e2ec" stroke-width="0.8"/>
+    </pattern>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#3b82c4"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#15803d"/>
+    </marker>
+    <marker id="arr-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#b91c1c"/>
+    </marker>
+    <style>
+      .title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13.5px; font-weight: 700; fill: #2f3b4a; }
+      .label { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 11px; font-weight: 700; fill: #2f3b4a; }
+      .muted { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.8px; fill: #5c6b7a; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9.2px; fill: #3d4f5f; }
+      .tag-blue { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9px; font-weight: 700; fill: #3b82c4; }
+      .tag-green { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9px; font-weight: 700; fill: #15803d; }
+      .tag-amber { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9px; font-weight: 700; fill: #b45309; }
+      .tag-red { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9px; font-weight: 700; fill: #b91c1c; }
+      .flow { fill: none; stroke: #3b82c4; stroke-width: 2; marker-end: url(#arr-blue); }
+      .bgp { fill: none; stroke: #15803d; stroke-width: 1.8; stroke-dasharray: 5 4; marker-end: url(#arr-green); }
+      .withdraw { fill: none; stroke: #b91c1c; stroke-width: 1.6; stroke-dasharray: 3 3; marker-end: url(#arr-red); }
+    </style>
+  </defs>
+
+  <rect width="840" height="440" rx="16" fill="#f4f7fb"/>
+  <rect width="840" height="440" rx="16" fill="url(#grid-61)"/>
+  <rect x="8" y="8" width="824" height="424" rx="12" fill="none" stroke="#e2e8f0"/>
+
+  <text x="420" y="30" text-anchor="middle" class="title">Lab 61: Anycast DNS with BGP ECMP and Health-Checked Withdrawal</text>
+  <text x="420" y="46" text-anchor="middle" class="muted">Both dns1 and dns2 announce 198.51.100.53/32 · edge1 hashes client flows across ECMP · failed health check withdraws /32</text>
+
+  <!-- Clients -->
+  <rect x="34" y="92" width="166" height="82" rx="10" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.5"/>
+  <text x="48" y="112" class="label">client1</text>
+  <text x="48" y="130" class="mono">eth1: 10.10.1.10/24</text>
+  <text x="48" y="146" class="mono">dig @198.51.100.53</text>
+  <text x="48" y="162" class="muted">Hashes -&gt; dns1 (TXT "dns1")</text>
+
+  <rect x="34" y="246" width="166" height="82" rx="10" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.5"/>
+  <text x="48" y="266" class="label">client2</text>
+  <text x="48" y="284" class="mono">eth1: 10.10.2.10/24</text>
+  <text x="48" y="300" class="mono">dig @198.51.100.53</text>
+  <text x="48" y="316" class="muted">Hashes -&gt; dns2 (TXT "dns2")</text>
+
+  <!-- Edge Router -->
+  <rect x="274" y="138" width="214" height="148" rx="12" fill="#eef3f9" stroke="#3b82c4" stroke-width="1.6"/>
+  <text x="290" y="160" class="label">edge1 (FRR + BFD)</text>
+  <text x="472" y="160" text-anchor="end" class="tag-blue">AS 65000</text>
+  <text x="290" y="179" class="mono">eth1: 10.10.1.1/24</text>
+  <text x="290" y="194" class="mono">eth2: 10.10.2.1/24</text>
+  <text x="290" y="209" class="mono">eth3: 10.0.1.1/30 (BFD)</text>
+  <text x="290" y="224" class="mono">eth4: 10.0.2.1/30 (BFD)</text>
+  <rect x="288" y="236" width="186" height="38" rx="6" fill="#ffffff" stroke="#8b9bb0"/>
+  <text x="381" y="252" text-anchor="middle" class="mono">198.51.100.53/32 ECMP</text>
+  <text x="381" y="266" text-anchor="middle" class="muted">via 10.0.1.2 &amp; 10.0.2.2</text>
+
+  <!-- Anycast DNS 1 -->
+  <rect x="564" y="78" width="242" height="122" rx="10" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.5"/>
+  <text x="580" y="98" class="label">dns1 (FRR + dnsmasq)</text>
+  <text x="790" y="98" text-anchor="end" class="tag-green">AS 65101</text>
+  <text x="580" y="116" class="mono">eth1: 10.0.1.2/30</text>
+  <text x="580" y="131" class="mono">lo VIP: 198.51.100.53/32</text>
+  <rect x="578" y="142" width="214" height="46" rx="6" fill="#fef3c7" stroke="#b45309"/>
+  <text x="588" y="158" class="tag-amber">Health Check Daemon</text>
+  <text x="588" y="172" class="mono">dig @127.0.0.1 -&gt; vtysh announce</text>
+  <text x="588" y="183" class="muted">Fail -&gt; no network 198.51.100.53/32</text>
+
+  <!-- Anycast DNS 2 -->
+  <rect x="564" y="228" width="242" height="122" rx="10" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.5"/>
+  <text x="580" y="248" class="label">dns2 (FRR + dnsmasq)</text>
+  <text x="790" y="248" text-anchor="end" class="tag-green">AS 65102</text>
+  <text x="580" y="266" class="mono">eth1: 10.0.2.2/30</text>
+  <text x="580" y="281" class="mono">lo VIP: 198.51.100.53/32</text>
+  <rect x="578" y="292" width="214" height="46" rx="6" fill="#dcfce7" stroke="#15803d"/>
+  <text x="588" y="308" class="tag-green">Health Check Daemon</text>
+  <text x="588" y="322" class="mono">dig @127.0.0.1 -&gt; OK (ACTIVE)</text>
+  <text x="588" y="333" class="muted">Absorbs 100% traffic on dns1 drain</text>
+
+  <!-- Client to edge flows -->
+  <path class="flow" d="M200,133 L272,184"/>
+  <path class="flow" d="M200,287 L272,238"/>
+
+  <!-- Edge to DNS ECMP flows -->
+  <path class="flow" d="M488,188 L562,134"/>
+  <path class="flow" d="M488,234 L562,284"/>
+
+  <!-- BGP Announcements -->
+  <path class="bgp" d="M564,116 L490,170"/>
+  <path class="bgp" d="M564,268 L490,218"/>
+
+  <!-- Link annotations -->
+  <text x="524" y="118" text-anchor="middle" class="tag-green">eBGP /32</text>
+  <text x="524" y="296" text-anchor="middle" class="tag-green">eBGP /32</text>
+
+  <!-- Footer legend -->
+  <line x1="48" y1="392" x2="78" y2="392" stroke="#3b82c4" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <text x="86" y="395" class="muted">DNS UDP/53 queries to Anycast VIP 198.51.100.53</text>
+  <line x1="390" y1="392" x2="420" y2="392" stroke="#15803d" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#arr-green)"/>
+  <text x="428" y="395" class="muted">eBGP + BFD /32 VIP advertisement (multipath-relax)</text>
+  <text x="48" y="416" class="muted">Zombie failure mode: if health-check stops while dnsmasq is dead, BGP keeps announcing /32 -&gt; 50% black-hole</text>
+</svg>

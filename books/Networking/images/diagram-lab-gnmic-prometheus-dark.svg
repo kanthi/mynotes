@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 440" role="img" color-scheme="dark" aria-label="Lab 66 streaming telemetry architecture showing Nokia SR Linux leaf1 and leaf2 streaming gNMI SAMPLE interface statistics and ON_CHANGE BGP and oper-state events to gnmic collector, which transforms and exports Prometheus metrics scraped by Prometheus">
+  <defs>
+    <pattern id="grid-l66-d" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M20 0H0V20" fill="none" stroke="#2c3440" stroke-width="0.8"/>
+    </pattern>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#60a5fa"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#fbbf24"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#4ade80"/>
+    </marker>
+    <style>
+      .title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13.5px; font-weight: 700; fill: #e8eef5; }
+      .label { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 11px; font-weight: 700; fill: #e8eef5; }
+      .muted { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.8px; fill: #9aa8b8; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9.2px; fill: #c5d0dc; }
+      .pill { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9px; font-weight: 700; fill: #0f172a; }
+      .gnmi-sample { fill: none; stroke: #60a5fa; stroke-width: 2; marker-end: url(#arr-blue); }
+      .gnmi-change { fill: none; stroke: #fbbf24; stroke-width: 2; stroke-dasharray: 5 3; marker-end: url(#arr-amber); }
+      .scrape { fill: none; stroke: #4ade80; stroke-width: 2; marker-end: url(#arr-green); }
+      .ebgp { fill: none; stroke: #9aa8b8; stroke-width: 1.8; }
+    </style>
+  </defs>
+
+  <rect width="840" height="440" rx="16" fill="#1c2129"/>
+  <rect width="840" height="440" rx="16" fill="url(#grid-l66-d)"/>
+  <rect x="8" y="8" width="824" height="424" rx="12" fill="none" stroke="#3a4452"/>
+
+  <text x="420" y="30" text-anchor="middle" class="title">Lab 66: Model-Driven Streaming Telemetry (SR Linux -&gt; gNMIc -&gt; Prometheus)</text>
+  <text x="420" y="46" text-anchor="middle" class="muted">gNMI gRPC push (:57400) combining 5s SAMPLE counters and sub-second ON_CHANGE state transitions</text>
+
+  <!-- Data Plane Box -->
+  <rect x="28" y="68" width="232" height="306" rx="12" fill="#232a35" stroke="#6b7c90" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="144" y="86" text-anchor="middle" class="muted">Nokia SR Linux Fabric (gNMI :57400)</text>
+
+  <!-- leaf1 -->
+  <rect x="44" y="100" width="200" height="106" rx="10" fill="#2a3140" stroke="#60a5fa" stroke-width="1.6"/>
+  <text x="144" y="121" text-anchor="middle" class="label">leaf1 (AS 65001)</text>
+  <text x="144" y="138" text-anchor="middle" class="mono">mgmt: 172.20.20.11:57400</text>
+  <text x="144" y="154" text-anchor="middle" class="mono">e1-1: 10.0.12.1/30</text>
+  <text x="144" y="170" text-anchor="middle" class="mono">lo0:  10.255.0.1/32</text>
+  <text x="144" y="190" text-anchor="middle" class="muted">YANG: /interface, /bgp</text>
+
+  <!-- eBGP link between leaf1 and leaf2 -->
+  <path class="ebgp" d="M144,206 V250"/>
+  <rect x="94" y="218" width="100" height="20" rx="10" fill="#1e3a5f" stroke="#60a5fa"/>
+  <text x="144" y="231" text-anchor="middle" class="mono">eBGP 10.0.12/30</text>
+
+  <!-- leaf2 -->
+  <rect x="44" y="250" width="200" height="106" rx="10" fill="#2a3140" stroke="#60a5fa" stroke-width="1.6"/>
+  <text x="144" y="271" text-anchor="middle" class="label">leaf2 (AS 65002)</text>
+  <text x="144" y="288" text-anchor="middle" class="mono">mgmt: 172.20.20.12:57400</text>
+  <text x="144" y="304" text-anchor="middle" class="mono">e1-1: 10.0.12.2/30</text>
+  <text x="144" y="320" text-anchor="middle" class="mono">lo0:  10.255.0.2/32</text>
+  <text x="144" y="340" text-anchor="middle" class="muted">YANG: /interface, /bgp</text>
+
+  <!-- gNMIc Collector -->
+  <rect x="342" y="114" width="208" height="218" rx="12" fill="#3f3119" stroke="#fbbf24" stroke-width="1.6"/>
+  <text x="446" y="137" text-anchor="middle" class="label">gnmic Collector</text>
+  <text x="446" y="153" text-anchor="middle" class="mono">172.20.20.21</text>
+
+  <rect x="358" y="168" width="176" height="44" rx="7" fill="#2a3140" stroke="#6b7c90" stroke-width="1.2"/>
+  <text x="446" y="185" text-anchor="middle" class="label">Subscriptions</text>
+  <text x="446" y="201" text-anchor="middle" class="mono">SAMPLE (5s) + ON_CHANGE</text>
+
+  <rect x="358" y="222" width="176" height="46" rx="7" fill="#2a3140" stroke="#6b7c90" stroke-width="1.2"/>
+  <text x="446" y="239" text-anchor="middle" class="label">Event Processors</text>
+  <text x="446" y="255" text-anchor="middle" class="mono">up/estab -&gt; 1, down -&gt; 0</text>
+
+  <rect x="358" y="278" width="176" height="40" rx="7" fill="#1b3a2d" stroke="#4ade80" stroke-width="1.2"/>
+  <text x="446" y="295" text-anchor="middle" class="label">Prometheus Output</text>
+  <text x="446" y="310" text-anchor="middle" class="mono">HTTP :9804/metrics</text>
+
+  <!-- Prometheus -->
+  <rect x="626" y="128" width="186" height="190" rx="12" fill="#1b3a2d" stroke="#4ade80" stroke-width="1.6"/>
+  <text x="719" y="152" text-anchor="middle" class="label">Prometheus TSDB</text>
+  <text x="719" y="169" text-anchor="middle" class="mono">172.20.20.22:9090</text>
+  <text x="719" y="189" text-anchor="middle" class="muted">scrape_interval: 5s</text>
+
+  <rect x="640" y="204" width="158" height="46" rx="7" fill="#2a3140" stroke="#4ade80" stroke-width="1.2"/>
+  <text x="719" y="222" text-anchor="middle" class="label">PromQL Alert Query</text>
+  <text x="719" y="238" text-anchor="middle" class="mono">srl_bgp_session_state != 1</text>
+
+  <rect x="640" y="260" width="158" height="42" rx="7" fill="#2a3140" stroke="#6b7c90" stroke-width="1.2"/>
+  <text x="719" y="277" text-anchor="middle" class="label">Counter Rates</text>
+  <text x="719" y="292" text-anchor="middle" class="mono">rate(srl_in_octets[1m])</text>
+
+  <!-- gNMI arrows -->
+  <path class="gnmi-sample" d="M244,140 L340,178"/>
+  <path class="gnmi-change" d="M244,162 L340,196"/>
+  <path class="gnmi-sample" d="M244,290 L340,240"/>
+  <path class="gnmi-change" d="M244,312 L340,258"/>
+
+  <!-- Scrape arrow -->
+  <path class="scrape" d="M626,223 H552"/>
+  <rect x="556" y="196" width="66" height="20" rx="10" fill="#4ade80"/>
+  <text x="589" y="209" text-anchor="middle" class="pill">GET /metrics</text>
+
+  <!-- Legend -->
+  <line x1="36" y1="406" x2="68" y2="406" stroke="#60a5fa" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <text x="76" y="409" class="muted">gNMI SAMPLE (5s interface counters)</text>
+  <line x1="312" y1="406" x2="344" y2="406" stroke="#fbbf24" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arr-amber)"/>
+  <text x="352" y="409" class="muted">gNMI ON_CHANGE (&lt;1s oper/BGP state)</text>
+  <line x1="600" y1="406" x2="632" y2="406" stroke="#4ade80" stroke-width="2" marker-end="url(#arr-green)"/>
+  <text x="640" y="409" class="muted">Prometheus HTTP scrape</text>
+</svg>

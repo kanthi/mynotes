@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 440" role="img" color-scheme="light" aria-label="Global CDN request path from clients via BGP Anycast to Edge PoPs with TLS termination and L1 cache, Regional Origin Shield with L2 cache collapsing and request coalescing, and Origin Server, comparing L1 HIT, L2 Shield HIT, and Origin MISS latency">
+  <defs>
+    <pattern id="grid-cdn" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M20 0H0V20" fill="none" stroke="#d9e2ec" stroke-width="0.8"/>
+    </pattern>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#3b82c4"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#15803d"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#b45309"/>
+    </marker>
+    <marker id="arr-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#b91c1c"/>
+    </marker>
+    <style>
+      .title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13.5px; font-weight: 700; fill: #2f3b4a; }
+      .label { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 11px; font-weight: 700; fill: #2f3b4a; }
+      .muted { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.5px; fill: #5c6b7a; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 8.9px; fill: #3d4f5f; }
+      .pill { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 8.8px; font-weight: 700; fill: #ffffff; }
+      .flow-blue { fill: none; stroke: #3b82c4; stroke-width: 2; marker-end: url(#arr-blue); }
+      .flow-green { fill: none; stroke: #15803d; stroke-width: 1.8; stroke-dasharray: 5 3; marker-end: url(#arr-green); }
+      .flow-amber { fill: none; stroke: #b45309; stroke-width: 2; marker-end: url(#arr-amber); }
+      .flow-red { fill: none; stroke: #b91c1c; stroke-width: 2; marker-end: url(#arr-red); }
+    </style>
+  </defs>
+
+  <rect width="840" height="440" rx="16" fill="#f4f7fb"/>
+  <rect width="840" height="440" rx="16" fill="url(#grid-cdn)"/>
+  <rect x="8" y="8" width="824" height="424" rx="12" fill="none" stroke="#e2e8f0"/>
+
+  <text x="420" y="28" text-anchor="middle" class="title">Global CDN Request Path: BGP Anycast Edge &amp; Origin Shielding</text>
+  <text x="420" y="44" text-anchor="middle" class="muted">Edge PoPs terminate TLS/QUIC near users for fast L1 HITs; Origin Shield collapses regional L1 MISSes before reaching Origin</text>
+
+  <!-- Client 1: Tokyo -->
+  <rect x="24" y="72" width="142" height="82" rx="10" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.5"/>
+  <text x="36" y="92" class="label">Client (Tokyo)</text>
+  <text x="36" y="109" class="mono">GET /img/hero.webp</text>
+  <text x="36" y="124" class="mono">Anycast 203.0.113.50</text>
+  <text x="36" y="141" class="muted">BGP -&gt; nearest NRT PoP</text>
+
+  <!-- Client 2: London -->
+  <rect x="24" y="182" width="142" height="82" rx="10" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.5"/>
+  <text x="36" y="202" class="label">Client (London)</text>
+  <text x="36" y="219" class="mono">GET /img/hero.webp</text>
+  <text x="36" y="234" class="mono">Anycast 203.0.113.50</text>
+  <text x="36" y="251" class="muted">BGP -&gt; nearest LHR PoP</text>
+
+  <!-- Edge PoP 1: NRT (L1 HIT) -->
+  <rect x="210" y="68" width="188" height="90" rx="10" fill="#ffffff" stroke="#15803d" stroke-width="1.6"/>
+  <rect x="210" y="68" width="188" height="22" rx="10" fill="#dcfce7"/>
+  <rect x="210" y="80" width="188" height="10" fill="#dcfce7"/>
+  <text x="222" y="83" class="label">Edge PoP — NRT</text>
+  <rect x="338" y="72" width="50" height="15" rx="7" fill="#15803d"/>
+  <text x="363" y="83" text-anchor="middle" class="pill">L1 HIT</text>
+  <text x="222" y="107" class="mono">TLS 1.3 / QUIC edge term</text>
+  <text x="222" y="123" class="mono">L1 RAM/NVMe Cache: HIT</text>
+  <text x="222" y="139" class="muted">Served locally (~12 ms TTFB)</text>
+  <text x="222" y="151" class="muted">Zero upstream / origin traffic</text>
+
+  <!-- Edge PoP 2: LHR (L1 MISS) -->
+  <rect x="210" y="178" width="188" height="90" rx="10" fill="#ffffff" stroke="#b45309" stroke-width="1.6"/>
+  <rect x="210" y="178" width="188" height="22" rx="10" fill="#fef3c7"/>
+  <rect x="210" y="190" width="188" height="10" fill="#fef3c7"/>
+  <text x="222" y="193" class="label">Edge PoP — LHR</text>
+  <rect x="332" y="182" width="56" height="15" rx="7" fill="#b45309"/>
+  <text x="360" y="193" text-anchor="middle" class="pill">L1 MISS</text>
+  <text x="222" y="217" class="mono">TLS 1.3 / QUIC edge term</text>
+  <text x="222" y="233" class="mono">L1 Cache: MISS / expired</text>
+  <text x="222" y="249" class="muted">Forwards over warm backbone</text>
+  <text x="222" y="261" class="muted">Caches response on return</text>
+
+  <!-- Regional Origin Shield (L2) -->
+  <rect x="446" y="86" width="186" height="164" rx="10" fill="#ffffff" stroke="#3b82c4" stroke-width="1.7"/>
+  <rect x="446" y="86" width="186" height="24" rx="10" fill="#dbeafe"/>
+  <rect x="446" y="100" width="186" height="10" fill="#dbeafe"/>
+  <text x="458" y="102" class="label">Regional Origin Shield</text>
+  <rect x="594" y="90" width="28" height="15" rx="7" fill="#3b82c4"/>
+  <text x="608" y="101" text-anchor="middle" class="pill">L2</text>
+  <text x="458" y="128" class="mono">Mid-Tier Shared Cache</text>
+  <text x="458" y="143" class="muted">Collapses 200+ edge PoPs</text>
+  <line x1="458" y1="153" x2="620" y2="153" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="458" y="169" class="mono">Request Coalescing</text>
+  <text x="458" y="184" class="muted">Prevents cache stampedes</text>
+  <line x1="458" y1="194" x2="620" y2="194" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="458" y="210" class="mono">L2 HIT (~45 ms) -&gt; Edge</text>
+  <text x="458" y="226" class="mono">L2 MISS -&gt; 1x Origin pull</text>
+  <text x="458" y="241" class="muted">Warm persistent mTLS pool</text>
+
+  <!-- Origin Server -->
+  <rect x="678" y="104" width="138" height="128" rx="10" fill="#ffffff" stroke="#b91c1c" stroke-width="1.6"/>
+  <rect x="678" y="104" width="138" height="22" rx="10" fill="#fee2e2"/>
+  <rect x="678" y="116" width="138" height="10" fill="#fee2e2"/>
+  <text x="747" y="119" text-anchor="middle" class="label">Origin Server</text>
+  <text x="690" y="145" class="mono">App / Object Store</text>
+  <text x="690" y="161" class="muted">FW allow: Shield IPs</text>
+  <text x="690" y="177" class="muted">mTLS client auth</text>
+  <text x="690" y="193" class="mono">ETag -&gt; 304 check</text>
+  <text x="690" y="209" class="mono">s-maxage / SWR</text>
+  <text x="690" y="223" class="muted">Cold MISS (~180 ms)</text>
+
+  <!-- Flow Arrows -->
+  <!-- Tokyo <-> NRT -->
+  <path class="flow-blue" d="M166,102 H208"/>
+  <path class="flow-green" d="M210,126 H168"/>
+  <text x="188" y="96" text-anchor="middle" class="mono">REQ</text>
+  <text x="188" y="139" text-anchor="middle" class="mono">12ms</text>
+
+  <!-- London <-> LHR -->
+  <path class="flow-blue" d="M166,212 H208"/>
+  <path class="flow-green" d="M210,236 H168"/>
+  <text x="188" y="206" text-anchor="middle" class="mono">REQ</text>
+  <text x="188" y="249" text-anchor="middle" class="mono">HIT/F</text>
+
+  <!-- LHR <-> Shield -->
+  <path class="flow-amber" d="M398,210 H444"/>
+  <path class="flow-green" d="M446,232 H400"/>
+  <text x="422" y="203" text-anchor="middle" class="mono">MISS</text>
+  <text x="422" y="245" text-anchor="middle" class="mono">L2</text>
+
+  <!-- Shield <-> Origin -->
+  <path class="flow-red" d="M632,154 H676"/>
+  <path class="flow-green" d="M678,180 H634"/>
+  <text x="655" y="147" text-anchor="middle" class="mono">MISS</text>
+  <text x="655" y="194" text-anchor="middle" class="mono">Fill</text>
+
+  <!-- Latency & Cache-Tier Comparison Card -->
+  <rect x="24" y="284" width="792" height="106" rx="10" fill="#eef3f9" stroke="#8b9bb0" stroke-width="1.3"/>
+  <text x="40" y="303" class="label">Cache-Tier Latency &amp; Origin Load Comparison (Time to First Byte)</text>
+
+  <!-- Bar 1: L1 HIT -->
+  <text x="40" y="326" class="mono">L1 Edge HIT (NRT)</text>
+  <rect x="192" y="314" width="60" height="16" rx="4" fill="#15803d"/>
+  <text x="222" y="325" text-anchor="middle" class="pill">~12 ms</text>
+  <text x="262" y="326" class="muted">Terminated at nearest Anycast PoP; zero origin bandwidth or CPU cost</text>
+
+  <!-- Bar 2: L2 Shield HIT -->
+  <text x="40" y="352" class="mono">L2 Shield HIT</text>
+  <rect x="192" y="340" width="144" height="16" rx="4" fill="#3b82c4"/>
+  <text x="264" y="351" text-anchor="middle" class="pill">~45 ms</text>
+  <text x="346" y="352" class="muted">Missed edge L1, hit regional Shield L2; collapses fan-out and warms L1</text>
+
+  <!-- Bar 3: Origin MISS -->
+  <text x="40" y="378" class="mono">Origin Fetch (MISS)</text>
+  <rect x="192" y="366" width="268" height="16" rx="4" fill="#b91c1c"/>
+  <text x="326" y="377" text-anchor="middle" class="pill">~180 ms</text>
+  <text x="470" y="378" class="muted">Single coalesced pull from Origin (or 304 ETag); populates L2 + L1</text>
+
+  <!-- Legend footer -->
+  <line x1="30" y1="414" x2="60" y2="414" stroke="#3b82c4" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <text x="68" y="417" class="muted">Anycast client request</text>
+  <line x1="202" y1="414" x2="232" y2="414" stroke="#b45309" stroke-width="2" marker-end="url(#arr-amber)"/>
+  <text x="240" y="417" class="muted">L1 MISS to Shield</text>
+  <line x1="352" y1="414" x2="382" y2="414" stroke="#b91c1c" stroke-width="2" marker-end="url(#arr-red)"/>
+  <text x="390" y="417" class="muted">L2 MISS to Origin</text>
+  <line x1="504" y1="414" x2="534" y2="414" stroke="#15803d" stroke-width="1.8" stroke-dasharray="5 3" marker-end="url(#arr-green)"/>
+  <text x="542" y="417" class="muted">Cached response / fill path</text>
+</svg>

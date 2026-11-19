@@ -4,40 +4,138 @@ title: Multicast Membership and Distribution Trees
 
 # Multicast Membership and Distribution Trees
 
-A multicast sender sends one IP packet to a group address; the network replicates it where receiver paths diverge. This saves upstream bandwidth, but creates state in switches and routers. Multicast does not provide reliable delivery: loss and recovery remain the application's responsibility.
+A multicast sender transmits a single IP packet to a group address; routers and switches replicate that packet only where receiver paths diverge. Multicast conserves upstream bandwidth for market data, live video, and cluster discovery, but introduces control-plane state (`(*,G)` and `(S,G)`) in every hop along the path. Because IP multicast runs over UDP without transport-layer acknowledgments, loss detection and recovery remain the application's responsibility.
 
-## Addresses and LAN membership
+## Addressing and Ethernet MAC mapping
 
-IPv4 multicast uses `224.0.0.0/4`; the `224.0.0.0/24` local network control block is not forwarded by multicast routers. Administratively scoped `239.0.0.0/8` addresses require boundary enforcement. IPv4 source-specific multicast (SSM) uses `232.0.0.0/8`. IPv6 multicast begins with `ff`, with scope encoded in the address; IPv6 uses MLD rather than IGMP for membership.
+IPv4 multicast occupies `224.0.0.0/4`, divided into operational blocks:
 
-Ethernet maps the low 23 bits of an IPv4 multicast group into `01:00:5e:00:00:00/25`. Because a group has 28 variable bits, 32 groups map to each Ethernet address. For example, `239.1.1.1` and `239.129.1.1` both map to `01:00:5e:01:01:01`. An Ethernet address alone does not identify a unique IP group.
+| Prefix | Scope / Purpose | Routed? |
+|---|---|---|
+| `224.0.0.0/24` | Link-local control protocols (OSPF `224.0.0.5/6`, PIM `224.0.0.13`, VRRP `224.0.0.18`) | Never (TTL = 1) |
+| `232.0.0.0/8` | Source-Specific Multicast (SSM) — requires `(S,G)` join, no RP | Yes |
+| `239.0.0.0/8` | Administratively scoped (private enterprise multicast, RFC 2365) | Within local domain |
+| `ff00::/8` | IPv6 multicast (4-bit scope field: `ff02::` link-local, `ff05::` site, `ff0e::` global) | Per scope |
 
-IGMP connects IPv4 hosts to local multicast routers. An application joins a group through its operating system; routers query and hosts report reception state. IGMPv3 supports INCLUDE (accept listed sources) and EXCLUDE (accept sources except those listed). Router state aggregates interest on a LAN: one host leaving must not interrupt another. Query and last-member timers affect how quickly state disappears.
+At Layer 2, Ethernet maps the **low 23 bits** of an IPv4 multicast address into the OUI prefix `01:00:5e:00:00:00/25`. Because an IPv4 multicast address has 28 variable bits (excluding the fixed `1110` top nibble), the top 5 variable bits are discarded—meaning **32 distinct IPv4 groups collide onto the exact same Ethernet MAC address**. For example, `239.1.1.1` and `239.129.1.1` both map to `01:00:5e:01:01:01`. An L2 switch filtering solely by destination MAC cannot separate colliding groups; avoid allocating groups that share the same low 23 bits in the same VLAN.
 
-An IGMP-snooping switch observes control traffic and maintains VLAN-scoped entries toward receiver ports and multicast-router ports. It does not replace multicast routing. A querier refreshes membership; a switch's snooping querier may provide queries without routing. Unknown multicast and fast-leave behavior vary by platform. Fast leave can interrupt other receivers when a port serves multiple hosts. IGMP reports do not authenticate receivers.
+## Host membership: IGMPv2/v3, MLDv2, and IGMP snooping
 
-## Distribution trees and RPF
+Hosts signal group interest to their local multicast router using **IGMP** (IPv4) or **MLD** (IPv6, carried inside ICMPv6):
 
-PIM uses routing information to build multicast distribution state. It is independent of the particular unicast routing protocol but needs a usable unicast or multicast-specific routing table. In PIM sparse mode, a receiver-side router sends a `(*,G)` join toward the rendezvous point (RP) for group G. The source-side router initially registers source traffic with the RP, allowing delivery down the shared tree. A receiver-side router may then join an `(S,G)` shortest-path tree toward source S and prune that source from the shared tree. Switchover policy varies. Any-source multicast (ASM) requires consistent group-to-RP mapping and RP reachability.
+- **IGMPv2:** Supports Any-Source Multicast (`(*,G)`) joins via Membership Reports and explicit `Leave Group` (`224.0.0.2`) messages. When a router receives a Leave, it sends a Group-Specific Query before pruning the group so other receivers on the same LAN are not cut off.
+- **IGMPv3 / MLDv2:** Adds source filtering via **INCLUDE** (accept only listed sources—required for SSM) and **EXCLUDE** (accept all sources except listed; `EXCLUDE {}` equals an ASM `(*,G)` join). Hosts send reports to `224.0.0.22` (IPv4) or `ff02::16` (IPv6), and report suppression is removed so switches see every host's state accurately.
 
-With SSM, the receiver specifies both source and group. Routers build an `(S,G)` tree toward the source, without an RP or shared tree. Source-aware host membership, such as IGMPv3, is required. SSM does not authenticate the source address.
+### IGMP snooping and querier election
 
-A router checks whether a packet arrived on the expected upstream interface toward its source, or toward the RP while using the shared tree. This **reverse-path forwarding** (RPF) check prevents loops and duplicates. Traffic arriving on the wrong interface is normally discarded even when the receiver is reachable. Inspect the incoming interface (IIF), outgoing interface list (OIL), upstream neighbor, and counters. An empty OIL means no downstream forwarding. On shared LANs, PIM assert mechanisms select a forwarder. Equal-cost routing and multicast RIB overrides affect RPF selection, so inspect the actual selected state.
+Without IGMP snooping, an Ethernet switch floods multicast frames out every port in the VLAN like broadcast traffic. With **IGMP snooping** enabled, the switch inspects IGMP Membership Reports and programs hardware multicast forwarding entries only toward ports with active receivers plus learned **mrouter ports** (ports where PIM Hellos or IGMP Queries are heard).
 
-| Observation | Investigate |
-|---|---|
-| No membership report | Application join, interface, IGMP version, filtering |
-| Membership but no switch egress | VLAN, snooping entries, router port, querier and timers |
-| PIM neighbors but no join | Membership, group policy, source or RP mapping |
-| Wrong-IIF counter rises | RPF route, multicast RIB, asymmetry or stale state |
-| Correct IIF and OIL but loss | TTL, MTU, ACL, congestion, hardware or receiver |
+> [!WARNING]
+> IGMP snooping **requires an active IGMP Querier** in the VLAN. If a VLAN is pure Layer 2 (no multicast router SVI), enable a switch **IGMP snooping querier**. Without periodic General Queries (default every 125 seconds), switches time out snooping entries after ~260 seconds and silently drop or flood the stream. When multiple routers share a LAN, the router with the **lowest IP address** wins the IGMP Querier election.
 
-TTL decreases across routers; a sender's TTL of 1 typically prevents routed delivery. Capture at successive interfaces and compare timestamps. Hardware-forwarded traffic may not appear in a switch CPU capture; use a suitable mirror or port counters.
+Use **Fast Leave / Immediate Leave** only on single-host access ports; enabling it on a trunk or multi-host port cuts off remaining receivers the instant one host sends a Leave.
 
-For packet captures and a routed PIM lab, continue with [Multicast Essentials](../07-a-overlays-tunnels/07-multicast-essentials.md); use the [multicast failure exercises](../09-lab-workbook/39-multicast-failure-exercises.md) to practice diagnosing the tree.
+## PIM-SM distribution trees and SPT switchover
 
-## Review and sources
+**Protocol Independent Multicast — Sparse Mode (PIM-SM, RFC 7761)** builds loop-free distribution trees using whatever unicast routing table (OSPF, IS-IS, BGP, static) is already present.
 
-Explain why IP groups can share an Ethernet address; distinguish a membership report from a PIM join; and explain why unicast reachability can coexist with RPF drops. What additional information does an SSM receiver supply?
+![PIM-SM shared tree to shortest-path tree switchover and RPF check](../../images/diagram-multicast-pim-rpf.svg)
 
-Further reading: [IGMPv3, RFC 9776](https://www.rfc-editor.org/rfc/rfc9776.html), [PIM sparse mode, RFC 7761](https://www.rfc-editor.org/rfc/rfc7761.html), [snooping considerations, RFC 4541](https://www.rfc-editor.org/rfc/rfc4541.html), and [SSM architecture, RFC 4607](https://www.rfc-editor.org/rfc/rfc4607.html).
+Follow the four-stage lifecycle illustrated above:
+
+1. **Receiver Join & Shared Tree (`(*,G)` RPT):** Receiver R sends an IGMP Membership Report for `239.1.1.1`. Its Last-Hop Router (LHR) creates `(*, 239.1.1.1)` state and sends a PIM `(*,G)` Join hop-by-hop toward the **Rendezvous Point (RP)** (`192.0.2.100`), building the **RP Tree (RPT)**.
+2. **Source Registration:** When Source S (`10.10.1.10`) starts transmitting to `239.1.1.1`, its First-Hop Router (FHR, the LAN's PIM Designated Router) encapsulates the initial packets in unicast **PIM Register** messages sent directly to the RP.
+3. **RP Decapsulation & Delivery:** If the RP has downstream `(*,G)` receivers, it decapsulates the stream, forwards it down the RPT toward LHR, and sends an `(S,G)` Join back toward S. Once native multicast arrives at the RP, the RP sends a **Register-Stop** to FHR to halt unicast encapsulation.
+4. **SPT Switchover (`(S,G)`):** Once LHR receives the first data packet from the RP and discovers Source S's IP (`10.10.1.10`), LHR triggers **SPT switchover** (default threshold `0 kbps` on most platforms): it sends a PIM `(S,G)` Join directly toward S along the shortest unicast path. When traffic arrives on the direct `(S,G)` tree, LHR sends an `(S,G,rpt)` Prune toward the RP to stop duplicate delivery.
+
+### Source-Specific Multicast (SSM)
+
+In **SSM (`232.0.0.0/8`, RFC 4607)**, the application already knows the sender's unicast IP and issues an IGMPv3 `INCLUDE (S, G)` report. LHR immediately sends a PIM `(S,G)` Join directly toward S—completely eliminating the RP, shared tree, Register encapsulation, and SPT switchover. SSM simplifies operations and avoids RP single-point-of-failure complexity whenever receivers can discover source IPs out-of-band.
+
+## Reverse-Path Forwarding (RPF) check mechanics
+
+Multicast routers never forward solely on destination group address. On every arriving multicast packet, the router performs a **Reverse-Path Forwarding (RPF) check**:
+
+1. Look up the **Source IP `S`** (for `(S,G)` state) or the **RP IP** (for `(*,G)` state) in the unicast RIB (or dedicated Multicast RIB / MRIB if configured).
+2. Identify the outgoing interface toward that address—this is the expected **Incoming Interface (IIF / RPF interface)**.
+3. If the packet arrived on `IIF == RPF interface`, the check **passes** and the packet is replicated to every interface in the **Outgoing Interface List (OIL)**.
+4. If `IIF != RPF interface`, the packet is **dropped immediately** and the `wrong-iif` counter increments.
+
+> [!IMPORTANT]
+> Unicast reachability does **not** guarantee multicast delivery. Asymmetric routing, missing PIM adjacencies on the shortest unicast link, or an ECMP hash mismatch causes traffic to arrive on a non-RPF interface—resulting in 100% multicast loss even though `ping` between Source and Receiver works cleanly.
+
+## FRR `pimd` configuration and verification
+
+The configuration and outputs below are **illustrative example outputs** for FRRouting (`pimd`) on a Linux router acting as the LHR in the topology above.
+
+### Sample FRR configuration (`frr.conf`)
+
+```cfg
+router pim
+ rp 192.0.2.100 239.0.0.0/8
+ spt-switchover infinity-and-beyond
+!
+interface eth1
+ description Uplink to RP
+ ip pim
+!
+interface eth2
+ description Direct link to FHR
+ ip pim
+!
+interface eth3
+ description Receiver LAN
+ ip igmp
+ ip igmp version 3
+ ip pim
+```
+
+### Verification commands
+
+```bash
+vtysh -c "show ip pim rp-info"
+vtysh -c "show ip rpf 10.10.1.10"
+vtysh -c "show ip mroute"
+vtysh -c "show ip igmp groups"
+```
+
+Illustrative example output from `show ip pim rp-info` and `show ip rpf 10.10.1.10`:
+
+```text
+RP address       group/prefix-list   OIF    I am RP  Source  Group-Type
+192.0.2.100      239.0.0.0/8         eth1   no       Static  ASM
+
+Routing entry for 10.10.1.10/32 (ospf)
+  Known via "ospf", distance 110, metric 20
+  RPF Interface: eth2
+  RPF Nexthop:   10.0.12.1 (PIM neighbor up)
+```
+
+Illustrative example output from `show ip mroute`:
+
+```text
+Source          Group           Proto  Input   Output  TTL  Uptime
+*               239.1.1.1       IGMP   eth1    eth3    1    00:05:12
+10.10.1.10      239.1.1.1       PIM    eth2    eth3    1    00:04:58
+```
+
+## Multicast fault triage table
+
+| Observation | Root-Cause Candidates | First Verification Step |
+|---|---|---|
+| No IGMP group on LHR | Host firewall, wrong interface, IGMPv2/v3 mismatch | `show ip igmp groups` & `tcpdump 'igmp'` on receiver LAN |
+| Group learned, no switch egress | Missing IGMP snooping querier, wrong VLAN, no mrouter port | Inspect switch IGMP snooping table and active querier IP |
+| `(*,G)` present, no `(S,G)` | RP unreachable, RP group-range mismatch, FHR not DR | `show ip pim rp-info` and `show ip pim neighbor` on FHR/RP/LHR |
+| `wrong-iif` counter rising | Asymmetric routing, PIM missing on RPF link, bad static mroute | `show ip rpf <source-ip>` and compare with actual arrival interface |
+| Correct IIF and OIL, zero delivery | Sender `TTL = 1`, ACL blocking UDP/group, MTU/fragmentation | Check packet TTL in `tcpdump -v` at FHR ingress |
+
+For hands-on packet captures and a full routed PIM lab, continue with [Multicast Essentials](../07-a-overlays-tunnels/07-multicast-essentials.md), and practice diagnosing broken trees in the [multicast failure exercises](../09-lab-workbook/39-multicast-failure-exercises.md).
+
+## Review
+
+1. Why do `239.1.1.1` and `239.129.1.1` collide at Layer 2 on an Ethernet switch, and how many total IPv4 multicast groups share any single multicast MAC?
+2. What happens to an IGMP-snooping VLAN if no router or switch is acting as the IGMP Querier?
+3. Trace how PIM-SM transitions a flow from `(*,G)` on the shared tree to `(S,G)` on the shortest-path tree, and explain why SSM skips the RP entirely.
+4. Why can unicast `ping` between Source S and Receiver R succeed while multicast packets from S are dropped at LHR with `wrong-iif`?
+
+Further reading: [IGMPv3, RFC 9776](https://www.rfc-editor.org/rfc/rfc9776.html), [PIM-SM, RFC 7761](https://www.rfc-editor.org/rfc/rfc7761.html), [IGMP/MLD snooping, RFC 4541](https://www.rfc-editor.org/rfc/rfc4541.html), and [SSM architecture, RFC 4607](https://www.rfc-editor.org/rfc/rfc4607.html).

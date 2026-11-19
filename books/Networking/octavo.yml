@@ -112,6 +112,8 @@ book:
     - content/05-dynamic-routing/12-bgp-path-exploration-and-mrai.md
     - content/05-dynamic-routing/13-bgp-graceful-restart-llgr-gshut.md
     - content/05-dynamic-routing/14-bgp-error-handling-rfc7606.md
+    - content/05-dynamic-routing/15-bgp-large-communities-and-add-path.md
+    - content/05-dynamic-routing/16-igp-maintenance-and-graceful-drain.md
   - part: Policy, QoS, and Hardening
     contents:
     - content/06-policy-qos-hardening/index.md
@@ -128,6 +130,7 @@ book:
     - content/06-policy-qos-hardening/06b-ecn-and-l4s.md
     - content/06-policy-qos-hardening/07-nftables-fundamentals.md
     - content/06-policy-qos-hardening/08-conntrack-exhaustion.md
+    - content/06-policy-qos-hardening/08b-stateful-firewall-ha-and-conntrack-sync.md
     - content/06-policy-qos-hardening/09-macsec-and-mka.md
     - content/06-policy-qos-hardening/10-rtbh-and-flowspec.md
     - content/06-policy-qos-hardening/11-ipv6-first-hop-security.md
@@ -161,9 +164,11 @@ book:
     - content/07-a-overlays-tunnels/02e-wireguard-mtu-and-fragmentation.md
     - content/07-a-overlays-tunnels/02f-ipsec-esp-xfrm-and-ikev2.md
     - content/07-a-overlays-tunnels/02g-dhcp-option-121-vpn-route-leaks.md
+    - content/07-a-overlays-tunnels/02h-route-based-ipsec-vti-xfrm-with-bgp.md
     - content/07-a-overlays-tunnels/03-vxlan-data-plane.md
     - content/07-a-overlays-tunnels/04-evpn-control-plane-intro.md
     - content/07-a-overlays-tunnels/04b-evpn-multihoming-esi-df-election.md
+    - content/07-a-overlays-tunnels/04c-evpn-symmetric-irb-and-type5-routes.md
     - content/07-a-overlays-tunnels/05-overlay-lab.md
     - content/07-a-overlays-tunnels/06-tailscale-vxlan-sites.md
     - content/07-a-overlays-tunnels/06b-shared-address-space-overlay-collisions.md
@@ -191,6 +196,7 @@ book:
     - content/07-c-cloud-kubernetes-networking/02-container-and-cni-primitives.md
     - content/07-c-cloud-kubernetes-networking/03-kubernetes-services-and-dataplanes.md
     - content/07-c-cloud-kubernetes-networking/04-ingress-gateway-api-and-network-policy.md
+    - content/07-c-cloud-kubernetes-networking/05-kubernetes-bgp-egress-and-multicluster.md
   - part: Programmable Dataplanes and Traffic Delivery
     contents:
     - content/07-d-dataplanes-and-traffic-delivery/index.md
@@ -358,6 +364,18 @@ book:
     - content/09-lab-workbook/53-lacp-member-failure.md
     - content/09-lab-workbook/54-ebgp-gobgp-namespaces.md
     - content/09-lab-workbook/55-ebgp-import-policy.md
+    - content/09-lab-workbook/56-bgp-dual-isp-graceful-shutdown.md
+    - content/09-lab-workbook/57-ospf-max-metric-zero-loss-drain.md
+    - content/09-lab-workbook/58-bgp-add-path-route-reflector.md
+    - content/09-lab-workbook/59-evpn-symmetric-irb-type5-fabric.md
+    - content/09-lab-workbook/60-bgp-unnumbered-clos-rfc8950.md
+    - content/09-lab-workbook/61-anycast-dns-ecmp-healthcheck.md
+    - content/09-lab-workbook/62-l4-dsr-ipvs-bgp-load-balancer.md
+    - content/09-lab-workbook/63-stateful-ha-keepalived-conntrackd.md
+    - content/09-lab-workbook/64-ipsec-xfrm-bgp-hybrid-wan.md
+    - content/09-lab-workbook/65-rtbh-and-bgp-flowspec-mitigation.md
+    - content/09-lab-workbook/66-streaming-telemetry-gnmic-prometheus.md
+    - content/09-lab-workbook/67-ebpf-xdp-drop-and-tcp-bbr-netem.md
   - part: Projects
     contents:
     - content/09-projects/index.md

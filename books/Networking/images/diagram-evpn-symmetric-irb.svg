@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 440" role="img" aria-label="EVPN-VXLAN Symmetric IRB inter-subnet packet walkthrough showing Leaf 1 routing from VLAN 10 into Transit VRF L3VNI 50000 with Leaf 2 Router MAC, VXLAN transport across the underlay, and Leaf 2 routing out to VLAN 20" color-scheme="light">
+  <defs>
+    <pattern id="grid-irb" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M20 0H0V20" fill="none" stroke="#d9e2ec" stroke-width="0.8"/>
+    </pattern>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#3b82c4"/>
+    </marker>
+    <marker id="arr-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#7c3aed"/>
+    </marker>
+    <style>
+      .title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13.5px; font-weight: 700; fill: #2f3b4a; }
+      .label { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 11px; font-weight: 700; fill: #2f3b4a; }
+      .muted { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.6px; fill: #5c6b7a; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9px; fill: #3d4f5f; }
+      .step { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.5px; font-weight: 700; fill: #ffffff; }
+      .flow { fill: none; stroke: #3b82c4; stroke-width: 2; marker-end: url(#arr-blue); }
+      .ctrl { fill: none; stroke: #7c3aed; stroke-width: 1.6; stroke-dasharray: 5 4; marker-end: url(#arr-purple); }
+    </style>
+  </defs>
+
+  <rect width="860" height="440" rx="16" fill="#f4f7fb"/>
+  <rect width="860" height="440" rx="16" fill="url(#grid-irb)"/>
+  <rect x="8" y="8" width="844" height="424" rx="12" fill="none" stroke="#e2e8f0"/>
+
+  <text x="430" y="30" text-anchor="middle" class="title">EVPN-VXLAN Symmetric IRB: Route-Bridge-Route via L3VNI</text>
+  <text x="430" y="46" text-anchor="middle" class="muted">Both ingress and egress VTEPs route inside Tenant VRF (L3VNI 50000); Leaf 1 does not need VLAN 20 configured</text>
+
+  <!-- Leaf 1 -->
+  <rect x="24" y="64" width="320" height="296" rx="12" fill="#eef3f9" stroke="#8b9bb0" stroke-width="1.5"/>
+  <text x="40" y="84" class="label">Leaf 1 (Ingress VTEP)</text>
+  <text x="328" y="84" text-anchor="end" class="mono">VTEP 192.0.2.1</text>
+
+  <!-- Host A -->
+  <rect x="40" y="96" width="288" height="52" rx="8" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.4"/>
+  <text x="52" y="114" class="label">Host A (VLAN 10 / L2VNI 10010)</text>
+  <text x="316" y="114" text-anchor="end" class="mono">10.10.10.10</text>
+  <text x="52" y="132" class="mono">Dst IP: 10.10.20.20  |  Dst MAC: Anycast GW</text>
+
+  <!-- SVI 10 -->
+  <rect x="40" y="164" width="288" height="44" rx="8" fill="#dbeafe" stroke="#93c5fd" stroke-width="1.2"/>
+  <text x="52" y="182" class="label">Anycast GW SVI 10 (10.10.10.1/24)</text>
+  <text x="52" y="198" class="mono">MAC: 00:1c:73:00:00:99  -&gt;  Terminates L2</text>
+
+  <!-- VRF-RED on Leaf 1 -->
+  <rect x="40" y="224" width="288" height="62" rx="8" fill="#efe6f6" stroke="#c4b0d8" stroke-width="1.4"/>
+  <text x="52" y="242" class="label">Transit VRF-RED (L3VNI 50000)</text>
+  <text x="52" y="258" class="mono">Route: 10.10.20.0/24 via 192.0.2.2</text>
+  <text x="52" y="273" class="mono">Type-2 or Type-5 | ExtComm RMAC: aa:bb:cc:00:02</text>
+
+  <!-- VXLAN Encap -->
+  <rect x="40" y="302" width="288" height="44" rx="8" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.4"/>
+  <text x="52" y="320" class="label">VXLAN Encap (RMAC Rewrite)</text>
+  <text x="52" y="336" class="mono">Inner Src: Leaf1-RMAC -&gt; Dst: Leaf2-RMAC</text>
+
+  <!-- Leaf 2 -->
+  <rect x="516" y="64" width="320" height="296" rx="12" fill="#eef3f9" stroke="#8b9bb0" stroke-width="1.5"/>
+  <text x="532" y="84" class="label">Leaf 2 (Egress VTEP)</text>
+  <text x="820" y="84" text-anchor="end" class="mono">VTEP 192.0.2.2</text>
+
+  <!-- Host B -->
+  <rect x="532" y="96" width="288" height="52" rx="8" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.4"/>
+  <text x="544" y="114" class="label">Host B (VLAN 20 / L2VNI 10020)</text>
+  <text x="808" y="114" text-anchor="end" class="mono">10.10.20.20</text>
+  <text x="544" y="132" class="mono">Src IP: 10.10.10.10  |  Src MAC: Anycast GW</text>
+
+  <!-- SVI 20 -->
+  <rect x="532" y="164" width="288" height="44" rx="8" fill="#dcfce7" stroke="#86efac" stroke-width="1.2"/>
+  <text x="544" y="182" class="label">Anycast GW SVI 20 (10.10.20.1/24)</text>
+  <text x="544" y="198" class="mono">ARP lookup -&gt; Rewrites Dst MAC to Host B</text>
+
+  <!-- VRF-RED on Leaf 2 -->
+  <rect x="532" y="224" width="288" height="62" rx="8" fill="#efe6f6" stroke="#c4b0d8" stroke-width="1.4"/>
+  <text x="544" y="242" class="label">Transit VRF-RED (L3VNI 50000)</text>
+  <text x="544" y="258" class="mono">IP Lookup: 10.10.20.20 -&gt; Connected SVI 20</text>
+  <text x="544" y="273" class="mono">TTL decremented on both Leaf 1 &amp; Leaf 2</text>
+
+  <!-- VXLAN Decap -->
+  <rect x="532" y="302" width="288" height="44" rx="8" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.4"/>
+  <text x="544" y="320" class="label">VXLAN Decap (Matches L3VNI 50000)</text>
+  <text x="544" y="336" class="mono">Inner Dst MAC == Leaf2-RMAC -&gt; Route in VRF</text>
+
+  <!-- Underlay / Spine center -->
+  <rect x="366" y="272" width="128" height="74" rx="10" fill="#fef3c7" stroke="#fcd34d" stroke-width="1.4"/>
+  <text x="430" y="292" text-anchor="middle" class="label">IP Underlay</text>
+  <text x="430" y="308" text-anchor="middle" class="mono">Outer: .2.1 -&gt; .2.2</text>
+  <text x="430" y="322" text-anchor="middle" class="mono">UDP 4789</text>
+  <text x="430" y="336" text-anchor="middle" class="mono">VNI: 50000</text>
+
+  <!-- EVPN Control plane box -->
+  <rect x="366" y="120" width="128" height="80" rx="10" fill="#ffffff" stroke="#c4b0d8" stroke-width="1.4"/>
+  <text x="430" y="140" text-anchor="middle" class="label">BGP EVPN RR</text>
+  <text x="430" y="156" text-anchor="middle" class="mono">Type-2: /32 + MAC</text>
+  <text x="430" y="170" text-anchor="middle" class="mono">Type-5: /24 Prefix</text>
+  <text x="430" y="186" text-anchor="middle" class="muted">L3VNI + RMAC EC</text>
+
+  <!-- Control plane arrows -->
+  <path class="ctrl" d="M532,240 L496,170"/>
+  <path class="ctrl" d="M366,170 L328,240"/>
+
+  <!-- Data path arrows -->
+  <path class="flow" d="M184,148 V162"/>
+  <path class="flow" d="M184,208 V222"/>
+  <path class="flow" d="M184,286 V300"/>
+  <path class="flow" d="M328,324 H364"/>
+  <path class="flow" d="M494,324 H530"/>
+  <path class="flow" d="M676,302 V288"/>
+  <path class="flow" d="M676,224 V210"/>
+  <path class="flow" d="M676,164 V150"/>
+
+  <!-- Step badges -->
+  <circle cx="164" cy="156" r="8" fill="#3b82c4"/><text x="164" y="159" text-anchor="middle" class="step">1</text>
+  <circle cx="164" cy="216" r="8" fill="#3b82c4"/><text x="164" y="219" text-anchor="middle" class="step">2</text>
+  <circle cx="346" cy="312" r="8" fill="#3b82c4"/><text x="346" y="315" text-anchor="middle" class="step">3</text>
+  <circle cx="512" cy="312" r="8" fill="#3b82c4"/><text x="512" y="315" text-anchor="middle" class="step">4</text>
+  <circle cx="696" cy="216" r="8" fill="#3b82c4"/><text x="696" y="219" text-anchor="middle" class="step">5</text>
+
+  <!-- Footer legend -->
+  <line x1="40" y1="398" x2="74" y2="398" stroke="#3b82c4" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <text x="82" y="401" class="muted">Data plane: Route (Leaf 1) -&gt; VXLAN L3VNI 50000 -&gt; Route (Leaf 2)</text>
+  <line x1="480" y1="398" x2="514" y2="398" stroke="#7c3aed" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#arr-purple)"/>
+  <text x="522" y="401" class="muted">Control plane: EVPN Type-2/Type-5 with L3VNI + RMAC</text>
+</svg>

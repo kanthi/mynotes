@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 440" role="img" color-scheme="dark" aria-label="802.1X EAPOL and RADIUS authentication sequence between Supplicant, Authenticator switch, and RADIUS authentication server showing controlled port opening and VLAN assignment">
+  <defs>
+    <pattern id="grid-dot1x" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M20 0H0V20" fill="none" stroke="#2c3440" stroke-width="0.8"/>
+    </pattern>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#60a5fa"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#4ade80"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#fbbf24"/>
+    </marker>
+    <style>
+      .title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13.5px; font-weight: 700; fill: #e8eef5; }
+      .label { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 11px; font-weight: 700; fill: #e8eef5; }
+      .muted { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.4px; fill: #9aa8b8; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9px; fill: #c5d0dc; }
+      .msg { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.6px; font-weight: 600; fill: #e8eef5; }
+      .lifeline { stroke: #6b7c90; stroke-width: 1.4; stroke-dasharray: 5 4; }
+      .flow-blue { fill: none; stroke: #60a5fa; stroke-width: 1.8; marker-end: url(#arr-blue); }
+      .flow-green { fill: none; stroke: #4ade80; stroke-width: 1.9; marker-end: url(#arr-green); }
+      .flow-bi { fill: none; stroke: #4ade80; stroke-width: 2; marker-start: url(#arr-green); marker-end: url(#arr-green); }
+      .flow-coa { fill: none; stroke: #fbbf24; stroke-width: 1.6; stroke-dasharray: 4 3; marker-end: url(#arr-amber); }
+    </style>
+  </defs>
+
+  <rect width="840" height="440" rx="16" fill="#1c2129"/>
+  <rect width="840" height="440" rx="16" fill="url(#grid-dot1x)"/>
+  <rect x="8" y="8" width="824" height="424" rx="12" fill="none" stroke="#3a4452"/>
+
+  <text x="420" y="30" text-anchor="middle" class="title">IEEE 802.1X / EAPOL Authentication and Authorization Flow</text>
+  <text x="420" y="46" text-anchor="middle" class="muted">Uncontrolled port passes only EAPOL frames until RADIUS Access-Accept opens the Controlled port</text>
+
+  <!-- Lifelines -->
+  <line x1="129" y1="108" x2="129" y2="386" class="lifeline"/>
+  <line x1="420" y1="108" x2="420" y2="386" class="lifeline"/>
+  <line x1="711" y1="108" x2="711" y2="386" class="lifeline"/>
+
+  <!-- Actor Boxes -->
+  <rect x="34" y="62" width="190" height="46" rx="8" fill="#2a3140" stroke="#6b7c90" stroke-width="1.5"/>
+  <text x="129" y="82" text-anchor="middle" class="label">Supplicant (Endpoint)</text>
+  <text x="129" y="98" text-anchor="middle" class="mono">wpa_supplicant / OS NIC</text>
+
+  <rect x="325" y="62" width="190" height="46" rx="8" fill="#2a3140" stroke="#60a5fa" stroke-width="1.6"/>
+  <text x="420" y="82" text-anchor="middle" class="label">Authenticator (Switch / AP)</text>
+  <text x="420" y="98" text-anchor="middle" class="mono">Port PAE + RADIUS client</text>
+
+  <rect x="616" y="62" width="190" height="46" rx="8" fill="#2a3140" stroke="#6b7c90" stroke-width="1.5"/>
+  <text x="711" y="82" text-anchor="middle" class="label">Auth Server (RADIUS)</text>
+  <text x="711" y="98" text-anchor="middle" class="mono">FreeRADIUS / ISE / ClearPass</text>
+
+  <!-- Transport Domain Pills -->
+  <rect x="176" y="116" width="196" height="20" rx="10" fill="#1e3a5f" stroke="#60a5fa" stroke-width="1"/>
+  <text x="274" y="129" text-anchor="middle" class="mono">EAPOL (L2 EtherType 0x888E)</text>
+
+  <rect x="466" y="116" width="198" height="20" rx="10" fill="#3f3119" stroke="#fbbf24" stroke-width="1"/>
+  <text x="565" y="129" text-anchor="middle" class="mono">RADIUS / EAP (UDP 1812 / RadSec)</text>
+
+  <!-- Port State Badge: Uncontrolled -->
+  <rect x="352" y="142" width="136" height="18" rx="4" fill="#442428" stroke="#f87171" stroke-width="1"/>
+  <text x="420" y="154" text-anchor="middle" class="mono">Controlled Port: BLOCKED</text>
+
+  <!-- Step 1 -->
+  <path class="flow-blue" d="M129,174 H418"/>
+  <text x="274" y="170" text-anchor="middle" class="msg">1. EAPOL-Start (or link-up trigger)</text>
+
+  <!-- Step 2 -->
+  <path class="flow-blue" d="M420,198 H131"/>
+  <text x="274" y="194" text-anchor="middle" class="msg">2. EAP-Request / Identity</text>
+
+  <!-- Step 3 -->
+  <path class="flow-blue" d="M129,222 H418"/>
+  <text x="274" y="218" text-anchor="middle" class="msg">3. EAP-Response / Identity (outer ID)</text>
+
+  <!-- Step 4 -->
+  <path class="flow-blue" d="M420,234 H709"/>
+  <text x="565" y="230" text-anchor="middle" class="msg">4. RADIUS Access-Request (EAP-Message)</text>
+
+  <!-- Step 5: EAP Method Tunnel Band -->
+  <rect x="116" y="246" width="608" height="38" rx="8" fill="#3f3119" stroke="#fbbf24" stroke-width="1.3"/>
+  <text x="420" y="262" text-anchor="middle" class="label">5. EAP Method Exchange (Access-Challenge &lt;-&gt; Access-Request)</text>
+  <text x="420" y="276" text-anchor="middle" class="muted">EAP-TLS: mutual X.509 certificate verification | PEAP: TLS server cert + inner MSCHAPv2</text>
+
+  <!-- Step 6 -->
+  <path class="flow-green" d="M711,304 H422"/>
+  <text x="565" y="299" text-anchor="middle" class="msg">6. Access-Accept (VLAN, dACL, Session-Timeout)</text>
+
+  <!-- Port State Badge: Authorized -->
+  <rect x="348" y="311" width="144" height="18" rx="4" fill="#1b3a2d" stroke="#4ade80" stroke-width="1.1"/>
+  <text x="420" y="323" text-anchor="middle" class="mono">Controlled Port: AUTHORIZED</text>
+
+  <!-- Step 7 -->
+  <path class="flow-green" d="M420,342 H131"/>
+  <text x="274" y="338" text-anchor="middle" class="msg">7. EAP-Success (port unblocked)</text>
+
+  <!-- Step 8 -->
+  <path class="flow-bi" d="M133,368 H416"/>
+  <text x="274" y="363" text-anchor="middle" class="msg">8. DHCP + Production Traffic (Assigned VLAN)</text>
+
+  <!-- Optional CoA -->
+  <path class="flow-coa" d="M711,368 H422"/>
+  <text x="565" y="363" text-anchor="middle" class="muted">Optional: RFC 5176 CoA (UDP 3799) re-auth / bounce</text>
+
+  <!-- Legend Footer -->
+  <line x1="36" y1="408" x2="66" y2="408" stroke="#60a5fa" stroke-width="1.8" marker-end="url(#arr-blue)"/>
+  <text x="74" y="411" class="muted">EAPOL / RADIUS auth exchange</text>
+  <line x1="256" y1="408" x2="286" y2="408" stroke="#4ade80" stroke-width="1.9" marker-end="url(#arr-green)"/>
+  <text x="294" y="411" class="muted">Authorization &amp; data plane</text>
+  <rect x="466" y="397" width="340" height="22" rx="6" fill="#2a3140" stroke="#6b7c90" stroke-width="1"/>
+  <text x="636" y="411" text-anchor="middle" class="muted">No EAPOL reply? Fallback to MAB (MAC as User-Name) if enabled</text>
+</svg>

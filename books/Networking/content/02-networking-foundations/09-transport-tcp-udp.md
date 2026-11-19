@@ -6,6 +6,8 @@ title: 'Transport: TCP and UDP'
 
 The **transport layer** delivers data to the correct **process** on a host using **ports**, with different reliability and connection models.
 
+![TCP connection lifecycle showing three-way handshake, ESTABLISHED data transfer, four-way FIN close with TIME_WAIT, and RST abort compared with stateless UDP datagrams](../../images/diagram-tcp-state-machine.svg)
+
 ## Learning goals
 
 - Explain 5-tuples and port roles

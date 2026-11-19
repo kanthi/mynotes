@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 440" role="img" color-scheme="dark" aria-label="Lab 63 stateful firewall high availability topology showing client1 connected via sw-in to fw1 MASTER and fw2 BACKUP running nftables, Keepalived VRRP inside and outside VIPs, dedicated eth3 conntrackd FTFW state sync link, and sw-out to server1">
+  <defs>
+    <pattern id="grid-l63-d" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M20 0H0V20" fill="none" stroke="#2c3440" stroke-width="0.8"/>
+    </pattern>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#60a5fa"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#fbbf24"/>
+    </marker>
+    <style>
+      .title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13.5px; font-weight: 700; fill: #e8eef5; }
+      .label { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 11px; font-weight: 700; fill: #e8eef5; }
+      .muted { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.8px; fill: #9aa8b8; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9.2px; fill: #c5d0dc; }
+      .pill { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9px; font-weight: 700; fill: #0f172a; }
+      .pill-lt { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9px; font-weight: 700; fill: #e8eef5; }
+      .data { fill: none; stroke: #60a5fa; stroke-width: 2; marker-end: url(#arr-blue); }
+      .standby { fill: none; stroke: #6b7c90; stroke-width: 1.5; stroke-dasharray: 5 4; }
+      .sync { fill: none; stroke: #fbbf24; stroke-width: 2; marker-start: url(#arr-amber); marker-end: url(#arr-amber); }
+    </style>
+  </defs>
+
+  <rect width="840" height="440" rx="16" fill="#1c2129"/>
+  <rect width="840" height="440" rx="16" fill="url(#grid-l63-d)"/>
+  <rect x="8" y="8" width="824" height="424" rx="12" fill="none" stroke="#3a4452"/>
+
+  <text x="420" y="30" text-anchor="middle" class="title">Lab 63: Stateful Firewall HA (Keepalived VRRP + conntrackd FTFW)</text>
+  <text x="420" y="46" text-anchor="middle" class="muted">Active/Standby nftables firewalls with atomic VRRP VIP failover and dedicated eth3 conntrack state replication</text>
+
+  <!-- client1 -->
+  <rect x="24" y="170" width="118" height="82" rx="10" fill="#2a3140" stroke="#6b7c90" stroke-width="1.5"/>
+  <text x="83" y="193" text-anchor="middle" class="label">client1</text>
+  <text x="83" y="210" text-anchor="middle" class="mono">10.10.1.10/24</text>
+  <text x="83" y="226" text-anchor="middle" class="muted">gw: 10.10.1.1</text>
+  <text x="83" y="241" text-anchor="middle" class="mono">TCP -&gt; :9000</text>
+
+  <!-- sw-in -->
+  <rect x="172" y="158" width="94" height="106" rx="9" fill="#232a35" stroke="#6b7c90" stroke-width="1.4"/>
+  <text x="219" y="182" text-anchor="middle" class="label">sw-in</text>
+  <text x="219" y="198" text-anchor="middle" class="mono">10.10.1.0/24</text>
+  <rect x="180" y="210" width="78" height="22" rx="11" fill="#60a5fa"/>
+  <text x="219" y="224" text-anchor="middle" class="pill">VIP .1.1</text>
+  <text x="219" y="250" text-anchor="middle" class="muted">VRID 51</text>
+
+  <!-- fw1 MASTER -->
+  <rect x="306" y="72" width="228" height="114" rx="10" fill="#1b3a2d" stroke="#4ade80" stroke-width="1.8"/>
+  <rect x="462" y="81" width="62" height="18" rx="9" fill="#4ade80"/>
+  <text x="493" y="93" text-anchor="middle" class="pill">MASTER</text>
+  <text x="320" y="94" class="label">fw1 (Priority 110)</text>
+  <text x="320" y="113" class="mono">eth1: 10.10.1.2 (+ VIP 10.10.1.1)</text>
+  <text x="320" y="129" class="mono">eth2: 198.51.100.2 (+ VIP .100.1)</text>
+  <text x="320" y="145" class="mono">eth3: 10.255.0.1/30 (sync)</text>
+  <text x="320" y="164" class="muted">nftables + kernel conntrack table</text>
+  <text x="320" y="177" class="mono">tcp_loose=0 | conntrackd FTFW</text>
+
+  <!-- Sync link box -->
+  <rect x="342" y="205" width="156" height="32" rx="8" fill="#3f3119" stroke="#fbbf24" stroke-width="1.4"/>
+  <text x="420" y="220" text-anchor="middle" class="label">conntrackd FTFW Sync</text>
+  <text x="420" y="232" text-anchor="middle" class="mono">eth3 UDP/3780 (10.255.0.0/30)</text>
+
+  <!-- fw2 BACKUP -->
+  <rect x="306" y="256" width="228" height="114" rx="10" fill="#2a3140" stroke="#6b7c90" stroke-width="1.6"/>
+  <rect x="462" y="265" width="62" height="18" rx="9" fill="#3a4452"/>
+  <text x="493" y="277" text-anchor="middle" class="pill-lt">BACKUP</text>
+  <text x="320" y="278" class="label">fw2 (Priority 90)</text>
+  <text x="320" y="297" class="mono">eth1: 10.10.1.3/24 (standby)</text>
+  <text x="320" y="313" class="mono">eth2: 198.51.100.3/24 (standby)</text>
+  <text x="320" y="329" class="mono">eth3: 10.255.0.2/30 (sync)</text>
+  <text x="320" y="348" class="muted">External cache -&gt; conntrackd -c</text>
+  <text x="320" y="361" class="mono">Commits state on MASTER event</text>
+
+  <!-- sw-out -->
+  <rect x="574" y="158" width="94" height="106" rx="9" fill="#232a35" stroke="#6b7c90" stroke-width="1.4"/>
+  <text x="621" y="182" text-anchor="middle" class="label">sw-out</text>
+  <text x="621" y="198" text-anchor="middle" class="mono">198.51.100/24</text>
+  <rect x="582" y="210" width="78" height="22" rx="11" fill="#60a5fa"/>
+  <text x="621" y="224" text-anchor="middle" class="pill">VIP .100.1</text>
+  <text x="621" y="250" text-anchor="middle" class="muted">VRID 52</text>
+
+  <!-- server1 -->
+  <rect x="698" y="170" width="118" height="82" rx="10" fill="#2a3140" stroke="#6b7c90" stroke-width="1.5"/>
+  <text x="757" y="193" text-anchor="middle" class="label">server1</text>
+  <text x="757" y="210" text-anchor="middle" class="mono">198.51.100.10</text>
+  <text x="757" y="226" text-anchor="middle" class="muted">gw: 198.51.100.1</text>
+  <text x="757" y="241" text-anchor="middle" class="mono">ncat -lk :9000</text>
+
+  <!-- Links -->
+  <path class="data" d="M142,211 H170"/>
+  <path class="data" d="M266,184 L304,132"/>
+  <path class="standby" d="M266,238 L306,306"/>
+  <path class="data" d="M534,132 L572,184"/>
+  <path class="standby" d="M534,306 L574,238"/>
+  <path class="data" d="M668,211 H696"/>
+
+  <!-- Sync arrows -->
+  <path class="sync" d="M420,188 V203"/>
+  <path class="sync" d="M420,239 V254"/>
+
+  <!-- Legend -->
+  <line x1="36" y1="406" x2="68" y2="406" stroke="#60a5fa" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <text x="76" y="409" class="muted">Active TCP flow via fw1 (MASTER)</text>
+  <line x1="292" y1="406" x2="324" y2="406" stroke="#fbbf24" stroke-width="2" marker-end="url(#arr-amber)"/>
+  <text x="332" y="409" class="muted">conntrackd FTFW state sync (eth3)</text>
+  <line x1="560" y1="406" x2="592" y2="406" stroke="#6b7c90" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="600" y="409" class="muted">Standby failover path (fw2)</text>
+</svg>

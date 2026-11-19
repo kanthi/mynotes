@@ -4,7 +4,7 @@ title: Intro
 
 # Intro
 
-**Lab Workbook** — Practice every core concept with 55+ structured, multi-NOS Containerlab exercises spanning FRR, Arista cEOS, Nokia SR Linux, and Linux hosts.
+**Lab Workbook** — Practice every core concept with 65+ structured, multi-NOS Containerlab and Linux production exercises spanning FRR, Arista cEOS, Nokia SR Linux, and Linux hosts.
 
 ## How to use this part
 
@@ -70,3 +70,15 @@ Start with [Workbook Guide](00-workbook-guide.md) to pick a learning path based 
 | [LACP Bond: Member Failure and Recovery](53-lacp-member-failure.md) | `53-lacp-member-failure.md` |
 | [eBGP Without Containers: Advertise and Withdraw a Route](54-ebgp-gobgp-namespaces.md) | `54-ebgp-gobgp-namespaces.md` |
 | [eBGP Import Policy: Exact Prefixes and More-Specifics](55-ebgp-import-policy.md) | `55-ebgp-import-policy.md` |
+| [Lab 56: Dual-ISP eBGP Graceful Shutdown (RFC 8326) and Prefix Circuit Breaker](56-bgp-dual-isp-graceful-shutdown.md) | `56-bgp-dual-isp-graceful-shutdown.md` |
+| [Lab 57: OSPF Max-Metric (RFC 6987) Zero-Loss Maintenance Drain](57-ospf-max-metric-zero-loss-drain.md) | `57-ospf-max-metric-zero-loss-drain.md` |
+| [Lab 58: BGP ADD-PATH (RFC 7911) on an iBGP Route Reflector](58-bgp-add-path-route-reflector.md) | `58-bgp-add-path-route-reflector.md` |
+| [Lab 59: EVPN-VXLAN Symmetric IRB (L3VNI 10099) and Border-Leaf Type-5 Fabric](59-evpn-symmetric-irb-type5-fabric.md) | `59-evpn-symmetric-irb-type5-fabric.md` |
+| [Lab 60: BGP Unnumbered Clos Fabric (RFC 8950)](60-bgp-unnumbered-clos-rfc8950.md) | `60-bgp-unnumbered-clos-rfc8950.md` |
+| [Lab 61: Anycast DNS with BGP ECMP and Health-Checked Withdrawal](61-anycast-dns-ecmp-healthcheck.md) | `61-anycast-dns-ecmp-healthcheck.md` |
+| [Lab 62: L4 Direct Server Return (DSR) Load Balancer with IPVS and BGP](62-l4-dsr-ipvs-bgp-load-balancer.md) | `62-l4-dsr-ipvs-bgp-load-balancer.md` |
+| [Lab 63: Stateful Firewall HA with Keepalived (VRRP) and conntrackd](63-stateful-ha-keepalived-conntrackd.md) | `63-stateful-ha-keepalived-conntrackd.md` |
+| [Lab 64: Route-Based IPsec (XFRM) Hybrid WAN with eBGP and MSS Clamping](64-ipsec-xfrm-bgp-hybrid-wan.md) | `64-ipsec-xfrm-bgp-hybrid-wan.md` |
+| [Lab 65: Destination RTBH and BGP FlowSpec DDoS Mitigation](65-rtbh-and-bgp-flowspec-mitigation.md) | `65-rtbh-and-bgp-flowspec-mitigation.md` |
+| [Lab 66: Streaming Telemetry with Nokia SR Linux, gNMIc, and Prometheus](66-streaming-telemetry-gnmic-prometheus.md) | `66-streaming-telemetry-gnmic-prometheus.md` |
+| [Lab 67: eBPF XDP Packet Drop, TCP BBR, and fq_codel Bufferbloat Tuning](67-ebpf-xdp-drop-and-tcp-bbr-netem.md) | `67-ebpf-xdp-drop-and-tcp-bbr-netem.md` |

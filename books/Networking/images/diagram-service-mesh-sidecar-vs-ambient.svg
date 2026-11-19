@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 440" role="img" color-scheme="light" aria-label="Side-by-side comparison of Sidecar Service Mesh where App traffic passes through per-Pod Envoy sidecars with mTLS versus Ambient Sidecarless Service Mesh where traffic flows from App through a shared node ztunnel for L4 mTLS and an optional Waypoint proxy for L7 policies">
+  <defs>
+    <pattern id="grid-mesh" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M20 0H0V20" fill="none" stroke="#d9e2ec" stroke-width="0.8"/>
+    </pattern>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#3b82c4"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#15803d"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#b45309"/>
+    </marker>
+    <style>
+      .title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13.5px; font-weight: 700; fill: #2f3b4a; }
+      .label { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 11px; font-weight: 700; fill: #2f3b4a; }
+      .muted { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.4px; fill: #5c6b7a; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 8.8px; fill: #3d4f5f; }
+      .flow-blue { fill: none; stroke: #3b82c4; stroke-width: 1.9; marker-end: url(#arr-blue); }
+      .flow-green { fill: none; stroke: #15803d; stroke-width: 2; marker-end: url(#arr-green); }
+      .flow-amber { fill: none; stroke: #b45309; stroke-width: 1.8; stroke-dasharray: 4 3; marker-end: url(#arr-amber); }
+    </style>
+  </defs>
+
+  <rect width="840" height="440" rx="16" fill="#f4f7fb"/>
+  <rect width="840" height="440" rx="16" fill="url(#grid-mesh)"/>
+  <rect x="8" y="8" width="824" height="424" rx="12" fill="none" stroke="#e2e8f0"/>
+
+  <text x="420" y="28" text-anchor="middle" class="title">Service Mesh Architectures: Sidecar vs Ambient (Sidecarless)</text>
+  <text x="420" y="44" text-anchor="middle" class="muted">Sidecar meshes inject an L4/L7 proxy into every Pod; Ambient splits node-level L4 mTLS (ztunnel) from optional L7 Waypoint proxies</text>
+
+  <!-- LEFT PANEL: Classic Sidecar Mesh -->
+  <rect x="24" y="62" width="384" height="326" rx="12" fill="#eef3f9" stroke="#8b9bb0" stroke-width="1.5"/>
+  <text x="40" y="82" class="label">1. Classic Sidecar Mesh (Istio Sidecar / Linkerd)</text>
+
+  <!-- Pod A -->
+  <rect x="40" y="94" width="352" height="82" rx="10" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.4"/>
+  <text x="52" y="111" class="label">Client Pod A (2 containers)</text>
+  <rect x="52" y="119" width="126" height="46" rx="7" fill="#f4f7fb" stroke="#8b9bb0" stroke-width="1.2"/>
+  <text x="115" y="137" text-anchor="middle" class="label">App A</text>
+  <text x="115" y="153" text-anchor="middle" class="mono">plaintext TCP</text>
+  <rect x="234" y="119" width="146" height="46" rx="7" fill="#dbeafe" stroke="#3b82c4" stroke-width="1.3"/>
+  <text x="307" y="137" text-anchor="middle" class="label">Envoy Sidecar</text>
+  <text x="307" y="153" text-anchor="middle" class="mono">L4 mTLS + L7 HTTP</text>
+  <path class="flow-blue" d="M178,142 H232"/>
+  <text x="205" y="135" text-anchor="middle" class="muted">lo / eBPF</text>
+
+  <!-- mTLS tunnel between sidecars -->
+  <path class="flow-green" d="M307,176 V224"/>
+  <rect x="232" y="191" width="150" height="20" rx="10" fill="#dcfce7" stroke="#15803d" stroke-width="1.1"/>
+  <text x="307" y="204" text-anchor="middle" class="mono">mTLS 1.3 (SPIFFE SVID)</text>
+  <text x="130" y="204" text-anchor="middle" class="muted">L7 parsed on every hop</text>
+
+  <!-- Pod B -->
+  <rect x="40" y="226" width="352" height="82" rx="10" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.4"/>
+  <text x="52" y="243" class="label">Backend Pod B (2 containers)</text>
+  <rect x="52" y="251" width="126" height="46" rx="7" fill="#f4f7fb" stroke="#8b9bb0" stroke-width="1.2"/>
+  <text x="115" y="269" text-anchor="middle" class="label">App B</text>
+  <text x="115" y="285" text-anchor="middle" class="mono">plaintext TCP</text>
+  <rect x="234" y="251" width="146" height="46" rx="7" fill="#dbeafe" stroke="#3b82c4" stroke-width="1.3"/>
+  <text x="307" y="269" text-anchor="middle" class="label">Envoy Sidecar</text>
+  <text x="307" y="285" text-anchor="middle" class="mono">L4 mTLS + L7 AuthZ</text>
+  <path class="flow-blue" d="M234,274 H180"/>
+  <text x="207" y="267" text-anchor="middle" class="muted">lo / eBPF</text>
+
+  <!-- Sidecar Tradeoffs -->
+  <rect x="40" y="324" width="352" height="52" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <text x="52" y="341" class="mono">+ Strong per-Pod isolation (1 key per proxy)</text>
+  <text x="52" y="356" class="muted">- High RAM/CPU tax (50-100 MB x N Pods)</text>
+  <text x="52" y="369" class="muted">- Proxy upgrades require restarting app Pods</text>
+
+  <!-- RIGHT PANEL: Ambient / Sidecarless Mesh -->
+  <rect x="432" y="62" width="384" height="326" rx="12" fill="#eef3f9" stroke="#3b82c4" stroke-width="1.6"/>
+  <text x="448" y="82" class="label">2. Ambient / Sidecarless Mesh (Istio Ambient)</text>
+
+  <!-- Node A -->
+  <rect x="448" y="94" width="352" height="66" rx="10" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.4"/>
+  <text x="460" y="109" class="muted">Worker Node A</text>
+  <rect x="460" y="115" width="114" height="36" rx="7" fill="#f4f7fb" stroke="#8b9bb0" stroke-width="1.2"/>
+  <text x="517" y="131" text-anchor="middle" class="label">Pod A (App)</text>
+  <text x="517" y="144" text-anchor="middle" class="mono">No sidecar</text>
+  <rect x="614" y="115" width="174" height="36" rx="7" fill="#dcfce7" stroke="#15803d" stroke-width="1.3"/>
+  <text x="701" y="131" text-anchor="middle" class="label">Node ztunnel (L4)</text>
+  <text x="701" y="144" text-anchor="middle" class="mono">Shared Rust mTLS proxy</text>
+  <path class="flow-blue" d="M574,133 H612"/>
+
+  <!-- Optional L7 Waypoint Proxy -->
+  <rect x="448" y="182" width="246" height="50" rx="9" fill="#fef3c7" stroke="#b45309" stroke-width="1.4" stroke-dasharray="5 3"/>
+  <text x="460" y="200" class="label">Optional Waypoint Proxy (L7)</text>
+  <text x="460" y="215" class="mono">Envoy per-namespace / service</text>
+  <text x="460" y="226" class="muted">Only if HTTP routing / retries / L7 AuthZ</text>
+
+  <!-- Direct L4 path (bypassing Waypoint) -->
+  <path class="flow-green" d="M750,151 V275"/>
+  <rect x="702" y="196" width="96" height="22" rx="10" fill="#dcfce7" stroke="#15803d" stroke-width="1.1"/>
+  <text x="750" y="210" text-anchor="middle" class="mono">L4 HBONE mTLS</text>
+
+  <!-- Optional L7 path through Waypoint -->
+  <path class="flow-amber" d="M648,151 V180"/>
+  <path class="flow-amber" d="M648,232 V275"/>
+  <text x="640" y="172" text-anchor="end" class="muted">opt. L7</text>
+
+  <!-- Node B -->
+  <rect x="448" y="256" width="352" height="66" rx="10" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.4"/>
+  <text x="460" y="271" class="muted">Worker Node B</text>
+  <rect x="460" y="277" width="114" height="36" rx="7" fill="#f4f7fb" stroke="#8b9bb0" stroke-width="1.2"/>
+  <text x="517" y="293" text-anchor="middle" class="label">Pod B (App)</text>
+  <text x="517" y="306" text-anchor="middle" class="mono">No sidecar</text>
+  <rect x="614" y="277" width="174" height="36" rx="7" fill="#dcfce7" stroke="#15803d" stroke-width="1.3"/>
+  <text x="701" y="293" text-anchor="middle" class="label">Node ztunnel (L4)</text>
+  <text x="701" y="306" text-anchor="middle" class="mono">mTLS decrypt + L4 AuthZ</text>
+  <path class="flow-blue" d="M614,295 H576"/>
+
+  <!-- Ambient Tradeoffs -->
+  <rect x="448" y="330" width="352" height="46" rx="8" fill="#dcfce7" stroke="#15803d" stroke-width="1.2"/>
+  <text x="460" y="347" class="mono">+ Minimal per-Pod RAM; zero Pod restart to upgrade</text>
+  <text x="460" y="362" class="muted">+ Pay L7 parsing cost only where Waypoint is attached</text>
+
+  <!-- Legend footer -->
+  <line x1="30" y1="414" x2="60" y2="414" stroke="#3b82c4" stroke-width="1.9" marker-end="url(#arr-blue)"/>
+  <text x="68" y="417" class="muted">Local Pod/Node redirect (plaintext)</text>
+  <line x1="274" y1="414" x2="304" y2="414" stroke="#15803d" stroke-width="2" marker-end="url(#arr-green)"/>
+  <text x="312" y="417" class="muted">Encrypted mTLS (SPIFFE identity)</text>
+  <line x1="518" y1="414" x2="548" y2="414" stroke="#b45309" stroke-width="1.8" stroke-dasharray="4 3" marker-end="url(#arr-amber)"/>
+  <text x="556" y="417" class="muted">Optional L7 Waypoint path (Ambient)</text>
+</svg>

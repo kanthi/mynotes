@@ -51,6 +51,39 @@ The hero figure `diagram-dist-switch-multihome.svg` (+ `-dark`) is the **first p
 | `diagram-xdp-packet-path.svg` | Linux NIC → XDP → TC-BPF → Netfilter → Socket | yes |
 | `diagram-l4-dsr-vs-l7.svg` | L4 Direct Server Return vs L7 reverse proxy | yes |
 | `diagram-forensics-pipeline.svg` | TAP/SPAN → tcpdump → Zeek/Suricata → SIEM | yes |
+| `diagram-tcp-state-machine.svg` | TCP lifecycle and UDP comparison | yes |
+| `diagram-dns-recursive-resolution.svg` | DNS iterative resolution chain | yes |
+| `diagram-multicast-pim-rpf.svg` | PIM-SM shared/source tree & RPF check | yes |
+| `diagram-ospf-fsm-stuck-states.svg` | OSPF neighbor FSM & stuck-state diagnostics | yes |
+| `diagram-bgp-decision-process.svg` | BGP best-path selection pipeline | yes |
+| `diagram-bgp-add-path-vs-rr.svg` | BGP ADD-PATH vs Route Reflector path-hiding | yes |
+| `diagram-igp-bgp-graceful-drain.svg` | Coordinated OSPF/IS-IS & BGP graceful drain | yes |
+| `diagram-8021x-eapol-flow.svg` | 802.1X EAPOL & RADIUS authentication flow | yes |
+| `diagram-qos-token-bucket-shaping.svg` | srTCM/trTCM token buckets, policing vs shaping | yes |
+| `diagram-conntrack-nat-table.svg` | Linux nf_conntrack table & overflow drops | yes |
+| `diagram-stateful-ha-conntrackd.svg` | Keepalived VRRP + conntrackd stateful HA | yes |
+| `diagram-netops-sot-ci-pipeline.svg` | Source-of-Truth CI/CD & drift detection loop | yes |
+| `diagram-ipsec-xfrm-bgp-ha.svg` | Route-based IPsec XFRM + active/active eBGP | yes |
+| `diagram-evpn-symmetric-irb.svg` | EVPN Symmetric IRB L3VNI & Type-5 routing | yes |
+| `diagram-cloud-vpc-tgw-peering.svg` | Multi-VPC Transit Gateway & Inspection VPC | yes |
+| `diagram-k8s-bgp-cilium-ecmp.svg` | Kubernetes Cilium/MetalLB BGP ECMP & Egress GW | yes |
+| `diagram-cdn-anycast-origin-shield.svg` | CDN Anycast Edge PoP & Origin Shield | yes |
+| `diagram-service-mesh-sidecar-vs-ambient.svg` | Sidecar Envoy vs Ambient ztunnel/Waypoint mesh | yes |
+| `diagram-bgp-forged-origin-hijack.svg` | Forged-origin BGP hijack bypassing RPKI ROV | yes |
+| `diagram-bgp-otc-route-leak.svg` | RFC 9234 BGP Roles & OTC route-leak prevention | yes |
+| `diagram-workbook-multicast-rpf.svg` | Lab 39: Multicast PIM-SM & RPF failure drills | yes |
+| `diagram-lab-bgp-gshut-dual-isp.svg` | Lab 56: Dual-ISP BGP GSHUT & prefix limit | yes |
+| `diagram-lab-ospf-max-metric-drain.svg` | Lab 57: OSPF max-metric zero-loss drain | yes |
+| `diagram-lab-bgp-add-path.svg` | Lab 58: BGP ADD-PATH on iBGP Route Reflector | yes |
+| `diagram-lab-evpn-symmetric-irb.svg` | Lab 59: EVPN Symmetric IRB & Type-5 fabric | yes |
+| `diagram-lab-bgp-unnumbered-clos.svg` | Lab 60: BGP Unnumbered Clos (RFC 8950) | yes |
+| `diagram-lab-anycast-ecmp-bgp.svg` | Lab 61: Anycast DNS with BGP ECMP health check | yes |
+| `diagram-lab-l4-dsr-ipvs.svg` | Lab 62: L4 DSR load balancer with IPVS & BGP | yes |
+| `diagram-lab-keepalived-conntrackd.svg` | Lab 63: Stateful firewall HA (VRRP + conntrackd) | yes |
+| `diagram-lab-ipsec-xfrm-bgp.svg` | Lab 64: Route-based IPsec XFRM + eBGP WAN | yes |
+| `diagram-lab-rtbh-flowspec.svg` | Lab 65: RTBH & BGP FlowSpec DDoS mitigation | yes |
+| `diagram-lab-gnmic-prometheus.svg` | Lab 66: SR Linux gNMIc + Prometheus telemetry | yes |
+| `diagram-lab-xdp-bbr-netem.svg` | Lab 67: eBPF XDP drop, TCP BBR & fq_codel | yes |
 | `diagram-encapsulation.svg` + 12 mono/concept SVGs | Models / habits | yes |
 
 When adding illustrated figures: dual files + reference tokens + theme-swap (already in `styles/reader-mode-body.html`). Embed light path only.

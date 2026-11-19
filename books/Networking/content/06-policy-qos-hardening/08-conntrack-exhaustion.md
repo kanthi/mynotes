@@ -8,6 +8,8 @@ Netfilter connection tracking (`nf_conntrack`) is a table of *flows*, not of soc
 
 A system-level nftables chapter (in review, or already in this part) is where tables, chains, and `ct` matchers live. This chapter is the table underneath: how big it is, how long an entry lives, why it fills, and what to change without guessing.
 
+![Linux Netfilter nf_conntrack table anatomy showing raw NOTRACK bypass, 5-tuple hash buckets with ORIGINAL and REPLY tuples, state timeouts, and drop on table full](../../images/diagram-conntrack-nat-table.svg)
+
 ## Learning goals
 
 - Read `nf_conntrack_max`, `nf_conntrack_count`, and `nf_conntrack_buckets`, and interpret the “table full” log line

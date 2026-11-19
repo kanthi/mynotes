@@ -27,6 +27,8 @@ By the end of this chapter you can:
 
 Mixing roles on one daemon is possible (classic BIND “do everything”) but **lab clarity** comes from splitting: one box owns `lab.example`, another recurses for clients.
 
+![DNS recursive resolution and iterative referral chain from Stub Resolver to Recursive Resolver through Root, TLD, and Authoritative servers with TTL caching](../../images/diagram-dns-recursive-resolution.svg)
+
 ```text
 Application
   → stub (/etc/resolv.conf)

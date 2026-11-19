@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 440" role="img" color-scheme="light" aria-label="Lab 57 four-router OSPF and BFD diamond topology showing r1, r2, r3, r4 with hosts h1 and h2 where r2 is drained using max-metric router-lsa cost 65535 so traffic shifts cleanly through r3">
+  <defs>
+    <pattern id="grid-57" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M20 0H0V20" fill="none" stroke="#d9e2ec" stroke-width="0.8"/>
+    </pattern>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#15803d"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#b45309"/>
+    </marker>
+    <style>
+      .title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13.5px; font-weight: 700; fill: #2f3b4a; }
+      .label { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 11px; font-weight: 700; fill: #2f3b4a; }
+      .muted { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.8px; fill: #5c6b7a; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9.2px; fill: #3d4f5f; }
+      .badge-amber { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9px; font-weight: 700; fill: #b45309; }
+      .badge-green { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9px; font-weight: 700; fill: #15803d; }
+      .link-lan { fill: none; stroke: #3b82c4; stroke-width: 2; }
+      .link-drain { fill: none; stroke: #b45309; stroke-width: 2; stroke-dasharray: 6 4; }
+      .link-active { fill: none; stroke: #15803d; stroke-width: 2.4; marker-end: url(#arr-green); }
+    </style>
+  </defs>
+
+  <rect width="840" height="440" rx="16" fill="#f4f7fb"/>
+  <rect width="840" height="440" rx="16" fill="url(#grid-57)"/>
+  <rect x="8" y="8" width="824" height="424" rx="12" fill="none" stroke="#e2e8f0"/>
+
+  <text x="420" y="30" text-anchor="middle" class="title">Lab 57: OSPF Max-Metric (RFC 6987) Zero-Loss Maintenance Drain</text>
+  <text x="420" y="46" text-anchor="middle" class="muted">OSPF Area 0 + BFD (100ms x 3) diamond: r2 advertises transit link cost 65535 so h1 &lt;-&gt; h2 shifts cleanly to r3</text>
+
+  <!-- OSPF Area 0 frame -->
+  <rect x="164" y="66" width="512" height="306" rx="12" fill="#eef3f9" stroke="#8b9bb0" stroke-width="1.3"/>
+  <text x="180" y="85" class="label">OSPF Area 0 + BFD Transit Core</text>
+  <text x="660" y="85" text-anchor="end" class="mono">network point-to-point</text>
+
+  <!-- h1 -->
+  <rect x="24" y="182" width="112" height="76" rx="8" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.5"/>
+  <text x="80" y="204" text-anchor="middle" class="label">h1 (Client)</text>
+  <text x="80" y="220" text-anchor="middle" class="mono">10.10.1.10/24</text>
+  <text x="80" y="236" text-anchor="middle" class="mono">gw 10.10.1.1</text>
+  <text x="80" y="250" text-anchor="middle" class="muted">ping / iperf3</text>
+
+  <!-- r1 -->
+  <rect x="184" y="182" width="118" height="76" rx="8" fill="#ffffff" stroke="#3b82c4" stroke-width="1.6"/>
+  <text x="243" y="204" text-anchor="middle" class="label">r1 (Ingress)</text>
+  <text x="243" y="220" text-anchor="middle" class="mono">Lo0 10.255.0.1</text>
+  <text x="243" y="236" text-anchor="middle" class="mono">eth3 .1.1/24</text>
+  <text x="243" y="250" text-anchor="middle" class="muted">SPF -&gt; via r3</text>
+
+  <!-- r2 (Drained) -->
+  <rect x="348" y="96" width="144" height="86" rx="8" fill="#ffffff" stroke="#b45309" stroke-width="1.8"/>
+  <text x="420" y="116" text-anchor="middle" class="label">r2 (Drained Transit)</text>
+  <text x="420" y="131" text-anchor="middle" class="mono">Lo0 10.255.0.2/32</text>
+  <rect x="358" y="140" width="124" height="34" rx="5" fill="#fef3c7" stroke="#b45309" stroke-width="1"/>
+  <text x="420" y="154" text-anchor="middle" class="badge-amber">max-metric 65535</text>
+  <text x="420" y="167" text-anchor="middle" class="mono">administrative</text>
+
+  <!-- r3 (Active) -->
+  <rect x="348" y="266" width="144" height="86" rx="8" fill="#ffffff" stroke="#15803d" stroke-width="1.8"/>
+  <text x="420" y="286" text-anchor="middle" class="label">r3 (Active Transit)</text>
+  <text x="420" y="301" text-anchor="middle" class="mono">Lo0 10.255.0.3/32</text>
+  <rect x="358" y="310" width="124" height="34" rx="5" fill="#dcfce7" stroke="#15803d" stroke-width="1"/>
+  <text x="420" y="324" text-anchor="middle" class="badge-green">Path Cost: 20</text>
+  <text x="420" y="337" text-anchor="middle" class="mono">Zero-loss forwarding</text>
+
+  <!-- r4 -->
+  <rect x="538" y="182" width="118" height="76" rx="8" fill="#ffffff" stroke="#3b82c4" stroke-width="1.6"/>
+  <text x="597" y="204" text-anchor="middle" class="label">r4 (Egress)</text>
+  <text x="597" y="220" text-anchor="middle" class="mono">Lo0 10.255.0.4</text>
+  <text x="597" y="236" text-anchor="middle" class="mono">eth3 .4.1/24</text>
+  <text x="597" y="250" text-anchor="middle" class="muted">SPF -&gt; via r3</text>
+
+  <!-- h2 -->
+  <rect x="704" y="182" width="112" height="76" rx="8" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.5"/>
+  <text x="760" y="204" text-anchor="middle" class="label">h2 (Server)</text>
+  <text x="760" y="220" text-anchor="middle" class="mono">10.10.4.10/24</text>
+  <text x="760" y="236" text-anchor="middle" class="mono">gw 10.10.4.1</text>
+  <text x="760" y="250" text-anchor="middle" class="muted">iperf3 -s</text>
+
+  <!-- Host links -->
+  <path class="link-lan" d="M136,220 H184"/>
+  <path class="link-lan" d="M656,220 H704"/>
+
+  <!-- Top drained links -->
+  <path class="link-drain" d="M272,182 L348,142"/>
+  <path class="link-drain" d="M492,142 L568,182"/>
+  <text x="292" y="148" text-anchor="middle" class="mono">10.0.12.0/30</text>
+  <text x="292" y="160" text-anchor="middle" class="badge-amber">cost 10 / 65535</text>
+  <text x="548" y="148" text-anchor="middle" class="mono">10.0.24.0/30</text>
+  <text x="548" y="160" text-anchor="middle" class="badge-amber">cost 65535 / 10</text>
+
+  <!-- Bottom active links -->
+  <path class="link-active" d="M272,258 L346,298"/>
+  <path class="link-active" d="M492,298 L566,258"/>
+  <text x="290" y="295" text-anchor="middle" class="mono">10.0.13.0/30</text>
+  <text x="290" y="308" text-anchor="middle" class="badge-green">cost 10 · BFD</text>
+  <text x="550" y="295" text-anchor="middle" class="mono">10.0.34.0/30</text>
+  <text x="550" y="308" text-anchor="middle" class="badge-green">cost 10 · BFD</text>
+
+  <!-- Center callout -->
+  <rect x="358" y="202" width="124" height="44" rx="8" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.1"/>
+  <text x="420" y="220" text-anchor="middle" class="mono">Control plane UP</text>
+  <text x="420" y="235" text-anchor="middle" class="muted">Transit bypassed</text>
+
+  <!-- Legend footer -->
+  <line x1="34" y1="402" x2="66" y2="402" stroke="#15803d" stroke-width="2.4"/>
+  <text x="74" y="405" class="muted">Active ECMP/failover transit path (cost 20)</text>
+  <line x1="340" y1="402" x2="372" y2="402" stroke="#b45309" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="380" y="405" class="muted">Drained via RFC 6987 (Router-LSA metric 65535)</text>
+  <line x1="654" y1="402" x2="686" y2="402" stroke="#3b82c4" stroke-width="2"/>
+  <text x="694" y="405" class="muted">Access subnet</text>
+</svg>

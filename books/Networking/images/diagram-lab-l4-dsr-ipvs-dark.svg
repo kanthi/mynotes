@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 440" role="img" color-scheme="dark" aria-label="Lab 62 L4 Direct Server Return architecture showing client1 to r1 eBGP ECMP to lb1 and lb2 running IPVS Direct Routing to web1 and web2 via sw1, with asymmetric return traffic bypassing the load balancers directly to r1">
+  <defs>
+    <pattern id="grid-l62-d" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M20 0H0V20" fill="none" stroke="#2c3440" stroke-width="0.8"/>
+    </pattern>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#60a5fa"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#4ade80"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#fbbf24"/>
+    </marker>
+    <style>
+      .title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13.5px; font-weight: 700; fill: #e8eef5; }
+      .label { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 11px; font-weight: 700; fill: #e8eef5; }
+      .muted { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.8px; fill: #9aa8b8; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9.2px; fill: #c5d0dc; }
+      .badge { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9px; font-weight: 700; fill: #0f172a; }
+      .flow-in { fill: none; stroke: #60a5fa; stroke-width: 2; marker-end: url(#arr-blue); }
+      .flow-ret { fill: none; stroke: #4ade80; stroke-width: 2; stroke-dasharray: 6 4; marker-end: url(#arr-green); }
+      .bgp-line { fill: none; stroke: #fbbf24; stroke-width: 1.4; stroke-dasharray: 3 3; }
+    </style>
+  </defs>
+
+  <rect width="840" height="440" rx="16" fill="#1c2129"/>
+  <rect width="840" height="440" rx="16" fill="url(#grid-l62-d)"/>
+  <rect x="8" y="8" width="824" height="424" rx="12" fill="none" stroke="#3a4452"/>
+
+  <text x="420" y="30" text-anchor="middle" class="title">Lab 62: L4 Direct Server Return (DSR) with IPVS + eBGP ECMP</text>
+  <text x="420" y="46" text-anchor="middle" class="muted">Ingress: client1 -&gt; r1 (ECMP) -&gt; lb1/lb2 (MAC rewrite) -&gt; web1/web2 | Egress: web1/web2 -&gt; r1 -&gt; client1</text>
+
+  <!-- Client -->
+  <rect x="28" y="155" width="128" height="84" rx="10" fill="#2a3140" stroke="#6b7c90" stroke-width="1.5"/>
+  <text x="92" y="177" text-anchor="middle" class="label">client1</text>
+  <text x="92" y="194" text-anchor="middle" class="mono">10.10.1.10/24</text>
+  <text x="92" y="210" text-anchor="middle" class="muted">HTTP Client</text>
+  <text x="92" y="226" text-anchor="middle" class="mono">dst 203.0.113.80:80</text>
+
+  <!-- Router r1 -->
+  <rect x="200" y="138" width="144" height="118" rx="10" fill="#1e3a5f" stroke="#60a5fa" stroke-width="1.6"/>
+  <text x="272" y="160" text-anchor="middle" class="label">r1 (AS 65000)</text>
+  <text x="272" y="177" text-anchor="middle" class="mono">eth1: 10.10.1.1/24</text>
+  <text x="272" y="193" text-anchor="middle" class="mono">eth2/3: 10.0.{1,2}.1/30</text>
+  <text x="272" y="209" text-anchor="middle" class="mono">eth4: 10.20.0.1/24</text>
+  <text x="272" y="227" text-anchor="middle" class="muted">ECMP L4 hash + rp_filter=0</text>
+  <text x="272" y="242" text-anchor="middle" class="mono">VIP -&gt; lb1, lb2</text>
+
+  <!-- LB Tier Box -->
+  <rect x="394" y="68" width="174" height="218" rx="12" fill="#232a35" stroke="#6b7c90" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="481" y="85" text-anchor="middle" class="muted">Stateless L4 IPVS Tier (-g)</text>
+
+  <!-- lb1 -->
+  <rect x="410" y="96" width="142" height="82" rx="9" fill="#2a3140" stroke="#60a5fa" stroke-width="1.5"/>
+  <text x="481" y="116" text-anchor="middle" class="label">lb1 (AS 65101)</text>
+  <text x="481" y="132" text-anchor="middle" class="mono">eth1: 10.0.1.2/30</text>
+  <text x="481" y="147" text-anchor="middle" class="mono">eth2: 10.20.0.11/24</text>
+  <text x="481" y="164" text-anchor="middle" class="mono">lo: 203.0.113.80/32</text>
+
+  <!-- lb2 -->
+  <rect x="410" y="192" width="142" height="82" rx="9" fill="#2a3140" stroke="#60a5fa" stroke-width="1.5"/>
+  <text x="481" y="212" text-anchor="middle" class="label">lb2 (AS 65102)</text>
+  <text x="481" y="228" text-anchor="middle" class="mono">eth1: 10.0.2.2/30</text>
+  <text x="481" y="243" text-anchor="middle" class="mono">eth2: 10.20.0.12/24</text>
+  <text x="481" y="260" text-anchor="middle" class="mono">lo: 203.0.113.80/32</text>
+
+  <!-- L2 Switch sw1 -->
+  <rect x="410" y="310" width="142" height="58" rx="9" fill="#3f3119" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="481" y="331" text-anchor="middle" class="label">sw1 (L2 Bridge)</text>
+  <text x="481" y="348" text-anchor="middle" class="mono">10.20.0.0/24 VLAN</text>
+  <text x="481" y="361" text-anchor="middle" class="muted">r1, lb1, lb2, web1, web2</text>
+
+  <!-- Backends -->
+  <rect x="634" y="88" width="178" height="106" rx="10" fill="#1b3a2d" stroke="#4ade80" stroke-width="1.5"/>
+  <text x="723" y="108" text-anchor="middle" class="label">web1 (Real Server)</text>
+  <text x="723" y="125" text-anchor="middle" class="mono">eth1: 10.20.0.21/24</text>
+  <text x="723" y="141" text-anchor="middle" class="mono">lo: 203.0.113.80/32</text>
+  <text x="723" y="158" text-anchor="middle" class="mono">arp_ignore=1, announce=2</text>
+  <text x="723" y="176" text-anchor="middle" class="muted">gw: 10.20.0.1 (r1:eth4)</text>
+
+  <rect x="634" y="220" width="178" height="106" rx="10" fill="#1b3a2d" stroke="#4ade80" stroke-width="1.5"/>
+  <text x="723" y="240" text-anchor="middle" class="label">web2 (Real Server)</text>
+  <text x="723" y="257" text-anchor="middle" class="mono">eth1: 10.20.0.22/24</text>
+  <text x="723" y="273" text-anchor="middle" class="mono">lo: 203.0.113.80/32</text>
+  <text x="723" y="290" text-anchor="middle" class="mono">arp_ignore=1, announce=2</text>
+  <text x="723" y="308" text-anchor="middle" class="muted">gw: 10.20.0.1 (r1:eth4)</text>
+
+  <!-- Ingress arrows -->
+  <path class="flow-in" d="M156,190 H198"/>
+  <path class="flow-in" d="M344,172 L408,137"/>
+  <path class="flow-in" d="M344,212 L408,233"/>
+  <!-- LB to Web via L2 MAC rewrite -->
+  <path class="flow-in" d="M552,137 H632"/>
+  <path class="flow-in" d="M552,233 L632,265"/>
+
+  <!-- Return DSR asymmetric arrows -->
+  <path class="flow-ret" d="M723,326 V342 H554"/>
+  <path class="flow-ret" d="M410,339 H272 V258"/>
+  <path class="flow-ret" d="M200,206 H158"/>
+
+  <!-- Step badges -->
+  <circle cx="177" cy="177" r="8" fill="#60a5fa"/><text x="177" y="180" text-anchor="middle" class="badge">1</text>
+  <circle cx="376" cy="144" r="8" fill="#60a5fa"/><text x="376" y="147" text-anchor="middle" class="badge">2</text>
+  <circle cx="592" cy="124" r="8" fill="#60a5fa"/><text x="592" y="127" text-anchor="middle" class="badge">3</text>
+  <circle cx="332" cy="339" r="8" fill="#4ade80"/><text x="332" y="342" text-anchor="middle" class="badge">4</text>
+
+  <!-- Legend -->
+  <line x1="36" y1="408" x2="68" y2="408" stroke="#60a5fa" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <text x="76" y="411" class="muted">Ingress: src 10.10.1.10 -&gt; dst 203.0.113.80 (MAC rewrite at LB)</text>
+  <line x1="450" y1="408" x2="482" y2="408" stroke="#4ade80" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arr-green)"/>
+  <text x="490" y="411" class="muted">DSR Return: src 203.0.113.80 -&gt; dst 10.10.1.10 (bypasses LBs)</text>
+</svg>

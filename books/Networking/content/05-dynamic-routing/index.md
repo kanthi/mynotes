@@ -33,3 +33,5 @@ Start with `00`–`03` for core OSPF/BGP/policy mechanics, then explore BFD (`04
 | [BGP Path Exploration and MRAI: Why Withdrawals Converge Slowly](12-bgp-path-exploration-and-mrai.md) | `12-bgp-path-exploration-and-mrai.md` |
 | [BGP Graceful Restart, Long-Lived Graceful Restart and Graceful Shutdown](13-bgp-graceful-restart-llgr-gshut.md) | `13-bgp-graceful-restart-llgr-gshut.md` |
 | [BGP Error Handling: RFC 7606, Treat-as-Withdraw and Session-Killing UPDATEs](14-bgp-error-handling-rfc7606.md) | `14-bgp-error-handling-rfc7606.md` |
+| [BGP Large Communities and ADD-PATH](15-bgp-large-communities-and-add-path.md) | `15-bgp-large-communities-and-add-path.md` |
+| [IGP Maintenance and Graceful Drain](16-igp-maintenance-and-graceful-drain.md) | `16-igp-maintenance-and-graceful-drain.md` |

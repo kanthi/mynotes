@@ -22,9 +22,11 @@ Start with `01-why-encapsulate.md`, then choose your tunnel family: WireGuard/IP
 | [WireGuard and MTU: Where the 1420 Comes From, Padding, and Silent Fragmentation](02e-wireguard-mtu-and-fragmentation.md) | `02e-wireguard-mtu-and-fragmentation.md` |
 | [IPsec by Hand: ESP with ip xfrm, and What IKEv2 Automates](02f-ipsec-esp-xfrm-and-ikev2.md) | `02f-ipsec-esp-xfrm-and-ikev2.md` |
 | [DHCP Option 121 and VPN Route Leaks (TunnelVision)](02g-dhcp-option-121-vpn-route-leaks.md) | `02g-dhcp-option-121-vpn-route-leaks.md` |
+| [Route-Based IPsec: XFRM Interfaces, VTI and eBGP Failover](02h-route-based-ipsec-vti-xfrm-with-bgp.md) | `02h-route-based-ipsec-vti-xfrm-with-bgp.md` |
 | [VXLAN Data Plane](03-vxlan-data-plane.md) | `03-vxlan-data-plane.md` |
 | [EVPN Control-Plane Intro](04-evpn-control-plane-intro.md) | `04-evpn-control-plane-intro.md` |
 | [EVPN Multihoming: Ethernet Segments, DF Election, Split Horizon and Aliasing](04b-evpn-multihoming-esi-df-election.md) | `04b-evpn-multihoming-esi-df-election.md` |
+| [EVPN Symmetric IRB and Type-5 IP Prefix Routes](04c-evpn-symmetric-irb-and-type5-routes.md) | `04c-evpn-symmetric-irb-and-type5-routes.md` |
 | [Overlay Lab](05-overlay-lab.md) | `05-overlay-lab.md` |
 | [Head Office and Branch Office](06-tailscale-vxlan-sites.md) | `06-tailscale-vxlan-sites.md` |
 | [Shared Address Space (100.64.0.0/10), CGNAT and Overlay Address Collisions](06b-shared-address-space-overlay-collisions.md) | `06b-shared-address-space-overlay-collisions.md` |

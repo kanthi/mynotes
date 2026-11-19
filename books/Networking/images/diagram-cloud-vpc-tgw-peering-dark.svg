@@ -1,0 +1,166 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 440" role="img" color-scheme="dark" aria-label="Cloud multi-VPC hub-and-spoke architecture with App and Data Spoke VPCs connected to a Transit Gateway or Virtual WAN hub with separate route tables, routing through an Inspection VPC with Firewall and NAT Gateway to Internet Egress and Direct Connect or ExpressRoute, contrasted with non-transitive VPC peering">
+  <defs>
+    <pattern id="grid-vpc" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M20 0H0V20" fill="none" stroke="#2c3440" stroke-width="0.8"/>
+    </pattern>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#60a5fa"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#4ade80"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#fbbf24"/>
+    </marker>
+    <style>
+      .title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13.5px; font-weight: 700; fill: #e8eef5; }
+      .label { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 11px; font-weight: 700; fill: #e8eef5; }
+      .muted { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.5px; fill: #9aa8b8; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 8.9px; fill: #c5d0dc; }
+      .step { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.2px; font-weight: 700; fill: #0f172a; }
+      .flow-blue { fill: none; stroke: #60a5fa; stroke-width: 2; marker-end: url(#arr-blue); }
+      .flow-green { fill: none; stroke: #4ade80; stroke-width: 1.8; stroke-dasharray: 5 3; marker-end: url(#arr-green); }
+      .flow-amber { fill: none; stroke: #fbbf24; stroke-width: 2; marker-end: url(#arr-amber); }
+    </style>
+  </defs>
+
+  <rect width="840" height="440" rx="16" fill="#1c2129"/>
+  <rect width="840" height="440" rx="16" fill="url(#grid-vpc)"/>
+  <rect x="8" y="8" width="824" height="424" rx="12" fill="none" stroke="#3a4452"/>
+
+  <text x="420" y="28" text-anchor="middle" class="title">Cloud Multi-VPC Hub-and-Spoke (Transit Gateway vs VPC Peering)</text>
+  <text x="420" y="44" text-anchor="middle" class="muted">Transit Gateway route tables enable transitive east-west inspection and centralized egress; VPC peering is strictly non-transitive</text>
+
+  <!-- Spoke VPC A: App -->
+  <rect x="24" y="64" width="194" height="96" rx="10" fill="#2a3140" stroke="#60a5fa" stroke-width="1.5"/>
+  <rect x="24" y="64" width="194" height="22" rx="10" fill="#1e3a5f"/>
+  <rect x="24" y="76" width="194" height="10" fill="#1e3a5f"/>
+  <text x="36" y="79" class="label">Spoke VPC A (App)</text>
+  <text x="208" y="79" text-anchor="end" class="mono">10.10.0.0/16</text>
+  <text x="36" y="103" class="muted">App Subnets (AZ-a / AZ-b)</text>
+  <text x="36" y="121" class="mono">10.0.0.0/8 -&gt; tgw-hub</text>
+  <text x="36" y="136" class="mono">0.0.0.0/0  -&gt; tgw-hub</text>
+  <text x="36" y="151" class="muted">No local IGW or NAT GW</text>
+
+  <!-- Spoke VPC B: Data -->
+  <rect x="24" y="180" width="194" height="96" rx="10" fill="#2a3140" stroke="#60a5fa" stroke-width="1.5"/>
+  <rect x="24" y="180" width="194" height="22" rx="10" fill="#1e3a5f"/>
+  <rect x="24" y="192" width="194" height="10" fill="#1e3a5f"/>
+  <text x="36" y="195" class="label">Spoke VPC B (Data)</text>
+  <text x="208" y="195" text-anchor="end" class="mono">10.20.0.0/16</text>
+  <text x="36" y="219" class="muted">Private DB Subnets</text>
+  <text x="36" y="237" class="mono">10.0.0.0/8 -&gt; tgw-hub</text>
+  <text x="36" y="252" class="mono">192.168/16 -&gt; tgw-hub</text>
+  <text x="36" y="267" class="muted">Isolated via TGW route table</text>
+
+  <!-- Non-transitivity contrast callout -->
+  <rect x="24" y="294" width="194" height="94" rx="10" fill="#451f24" stroke="#f87171" stroke-width="1.4"/>
+  <text x="36" y="313" class="label" fill="#f87171">VPC Peering (Non-Transitive)</text>
+  <rect x="38" y="324" width="32" height="20" rx="4" fill="#2a3140" stroke="#6b7c90"/>
+  <text x="54" y="337" text-anchor="middle" class="mono">A</text>
+  <rect x="105" y="324" width="32" height="20" rx="4" fill="#2a3140" stroke="#6b7c90"/>
+  <text x="121" y="337" text-anchor="middle" class="mono">B</text>
+  <rect x="172" y="324" width="32" height="20" rx="4" fill="#2a3140" stroke="#6b7c90"/>
+  <text x="188" y="337" text-anchor="middle" class="mono">C</text>
+  <line x1="70" y1="334" x2="105" y2="334" stroke="#60a5fa" stroke-width="1.6"/>
+  <line x1="137" y1="334" x2="172" y2="334" stroke="#60a5fa" stroke-width="1.6"/>
+  <path d="M54,344 Q121,366 188,344" fill="none" stroke="#f87171" stroke-width="1.4" stroke-dasharray="3 3"/>
+  <text x="121" y="362" text-anchor="middle" class="mono" fill="#f87171">X blocked</text>
+  <text x="36" y="379" class="muted">Full mesh needs N(N-1)/2 links</text>
+
+  <!-- Center: Transit Gateway / Virtual WAN Hub -->
+  <rect x="264" y="64" width="218" height="324" rx="12" fill="#232a35" stroke="#60a5fa" stroke-width="1.8"/>
+  <text x="373" y="85" text-anchor="middle" class="label">Transit Gateway / vWAN Hub</text>
+  <text x="373" y="100" text-anchor="middle" class="muted">Managed Regional L3 Hub Router</text>
+
+  <!-- TGW Route Table 1 -->
+  <rect x="278" y="114" width="190" height="82" rx="8" fill="#2a3140" stroke="#6b7c90" stroke-width="1.3"/>
+  <text x="290" y="131" class="label">Spoke Route Table</text>
+  <text x="290" y="147" class="mono">0.0.0.0/0  -&gt; Inspection VPC</text>
+  <text x="290" y="162" class="mono">10.0.0.0/8 -&gt; Inspection VPC</text>
+  <text x="290" y="177" class="mono">192.168/16 -&gt; Inspection VPC</text>
+  <text x="290" y="190" class="muted">Steers all spoke flows to FW</text>
+
+  <!-- TGW Route Table 2 -->
+  <rect x="278" y="208" width="190" height="82" rx="8" fill="#2a3140" stroke="#6b7c90" stroke-width="1.3"/>
+  <text x="290" y="225" class="label">Inspection Route Table</text>
+  <text x="290" y="241" class="mono">10.10.0.0/16 -&gt; Spoke A</text>
+  <text x="290" y="256" class="mono">10.20.0.0/16 -&gt; Spoke B</text>
+  <text x="290" y="271" class="mono">192.168/16   -&gt; DX / ER GW</text>
+  <text x="290" y="284" class="muted">Forwards post-inspection flows</text>
+
+  <!-- TGW Features Badge -->
+  <rect x="278" y="302" width="190" height="72" rx="8" fill="#1e3a5f" stroke="#60a5fa" stroke-width="1.2"/>
+  <text x="290" y="320" class="label">Transitive &amp; Policy-Driven</text>
+  <text x="290" y="336" class="muted">Hub connects N spokes in O(N)</text>
+  <text x="290" y="350" class="muted">Separate route domains per env</text>
+  <text x="290" y="364" class="mono">Appliance Mode: AZ symmetry</text>
+
+  <!-- Right Top: Inspection & Egress VPC -->
+  <rect x="528" y="64" width="288" height="148" rx="10" fill="#2a3140" stroke="#fbbf24" stroke-width="1.6"/>
+  <rect x="528" y="64" width="288" height="22" rx="10" fill="#3f3119"/>
+  <rect x="528" y="76" width="288" height="10" fill="#3f3119"/>
+  <text x="540" y="79" class="label">Inspection &amp; Egress VPC</text>
+  <text x="804" y="79" text-anchor="end" class="mono">10.250.0.0/22</text>
+
+  <!-- Firewall box -->
+  <rect x="542" y="100" width="122" height="62" rx="8" fill="#3f3119" stroke="#fbbf24" stroke-width="1.2"/>
+  <text x="603" y="118" text-anchor="middle" class="label">Stateful Firewall</text>
+  <text x="603" y="133" text-anchor="middle" class="mono">GWLB / NGFW ENI</text>
+  <text x="603" y="148" text-anchor="middle" class="muted">Src/Dst check OFF</text>
+
+  <!-- NAT GW box -->
+  <rect x="682" y="100" width="120" height="62" rx="8" fill="#1b3a2d" stroke="#4ade80" stroke-width="1.2"/>
+  <text x="742" y="118" text-anchor="middle" class="label">NAT GW + IGW</text>
+  <text x="742" y="133" text-anchor="middle" class="mono">AZ-local SNAT</text>
+  <text x="742" y="148" text-anchor="middle" class="muted">Fixed egress IPs</text>
+
+  <!-- Arrow FW -> NAT -->
+  <path class="flow-amber" d="M664,131 H680"/>
+  <text x="542" y="182" class="muted">East-West: inspected -&gt; returned to TGW</text>
+  <text x="542" y="198" class="muted">Internet: inspected -&gt; NAT GW -&gt; IGW</text>
+
+  <!-- Right Middle: Internet Egress -->
+  <rect x="666" y="232" width="150" height="44" rx="10" fill="#1b3a2d" stroke="#4ade80" stroke-width="1.5"/>
+  <text x="741" y="250" text-anchor="middle" class="label">Internet Egress</text>
+  <text x="741" y="266" text-anchor="middle" class="mono">0.0.0.0/0 (Public)</text>
+  <path class="flow-amber" d="M742,212 V230"/>
+
+  <!-- Right Bottom: Hybrid On-Premises -->
+  <rect x="528" y="294" width="288" height="94" rx="10" fill="#2a3140" stroke="#4ade80" stroke-width="1.6"/>
+  <rect x="528" y="294" width="288" height="22" rx="10" fill="#1b3a2d"/>
+  <rect x="528" y="306" width="288" height="10" fill="#1b3a2d"/>
+  <text x="540" y="309" class="label">Hybrid: Direct Connect / ExpressRoute</text>
+  <text x="542" y="334" class="mono">eBGP + BFD over private fiber (10G/100G)</text>
+  <text x="542" y="350" class="muted">On-Premises DC (192.168.0.0/16) &amp; branch WAN</text>
+  <text x="542" y="366" class="muted">Dual colocation + MACsec / IPSec backup tunnel</text>
+  <text x="542" y="380" class="mono">AS-Path / Local-Pref symmetric failover</text>
+
+  <!-- Connecting arrows between columns -->
+  <!-- Spoke A <-> TGW -->
+  <path class="flow-blue" d="M218,104 H262"/>
+  <path class="flow-green" d="M264,124 H220"/>
+
+  <!-- Spoke B <-> TGW -->
+  <path class="flow-blue" d="M218,220 H262"/>
+  <path class="flow-green" d="M264,240 H220"/>
+
+  <!-- TGW <-> Inspection VPC -->
+  <path class="flow-amber" d="M482,126 H526"/>
+  <path class="flow-green" d="M528,154 H484"/>
+  <circle cx="504" cy="112" r="8" fill="#fbbf24"/><text x="504" y="115" text-anchor="middle" class="step">1</text>
+  <circle cx="504" cy="168" r="8" fill="#4ade80"/><text x="504" y="171" text-anchor="middle" class="step">2</text>
+
+  <!-- TGW <-> Direct Connect -->
+  <path class="flow-blue" d="M482,332 H526"/>
+  <path class="flow-green" d="M528,350 H484"/>
+  <text x="505" y="325" text-anchor="middle" class="mono">eBGP</text>
+
+  <!-- Legend footer -->
+  <line x1="30" y1="412" x2="60" y2="412" stroke="#60a5fa" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <text x="68" y="415" class="muted">Spoke / hybrid attachment</text>
+  <line x1="214" y1="412" x2="244" y2="412" stroke="#fbbf24" stroke-width="2" marker-end="url(#arr-amber)"/>
+  <text x="252" y="415" class="muted">Steered to Inspection / NAT egress</text>
+  <line x1="450" y1="412" x2="480" y2="412" stroke="#4ade80" stroke-width="1.8" stroke-dasharray="5 3" marker-end="url(#arr-green)"/>
+  <text x="488" y="415" class="muted">Post-inspection delivery &amp; return path</text>
+</svg>

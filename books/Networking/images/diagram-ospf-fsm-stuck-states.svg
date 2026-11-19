@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 440" role="img" color-scheme="light" aria-label="OSPF neighbor finite state machine from Down to Full with diagnostic branches for common stuck states including Down, Init, 2-Way, ExStart, Exchange, Loading, and post-Full route failures">
+  <defs>
+    <pattern id="grid-ospf" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M20 0H0V20" fill="none" stroke="#d9e2ec" stroke-width="0.8"/>
+    </pattern>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#3b82c4"/>
+    </marker>
+    <marker id="arr-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#b91c1c"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#b45309"/>
+    </marker>
+    <style>
+      .title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13.5px; font-weight: 700; fill: #2f3b4a; }
+      .label { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 11px; font-weight: 700; fill: #2f3b4a; }
+      .card-hdr { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 10.5px; font-weight: 700; fill: #2f3b4a; }
+      .muted { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.4px; fill: #5c6b7a; }
+      .item { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.4px; fill: #2f3b4a; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 8.8px; fill: #3d4f5f; }
+      .flow { fill: none; stroke: #3b82c4; stroke-width: 1.9; marker-end: url(#arr-blue); }
+      .diag-red { fill: none; stroke: #b91c1c; stroke-width: 1.5; stroke-dasharray: 4 3; marker-end: url(#arr-red); }
+      .diag-amber { fill: none; stroke: #b45309; stroke-width: 1.5; stroke-dasharray: 4 3; marker-end: url(#arr-amber); }
+    </style>
+  </defs>
+
+  <rect width="840" height="440" rx="16" fill="#f4f7fb"/>
+  <rect width="840" height="440" rx="16" fill="url(#grid-ospf)"/>
+  <rect x="8" y="8" width="824" height="424" rx="12" fill="none" stroke="#e2e8f0"/>
+
+  <text x="420" y="30" text-anchor="middle" class="title">OSPF Neighbor State Machine (FSM) and Common Stuck States</text>
+  <text x="420" y="46" text-anchor="middle" class="muted">Healthy progression moves Down -&gt; Full; a stuck state isolates which OSPF packet or check is failing</text>
+
+  <!-- FSM State Boxes -->
+  <rect x="26" y="74" width="92" height="50" rx="8" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.5"/>
+  <text x="72" y="96" text-anchor="middle" class="label">Down</text>
+  <text x="72" y="112" text-anchor="middle" class="muted">No Hello</text>
+
+  <rect x="142" y="74" width="92" height="50" rx="8" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.5"/>
+  <text x="188" y="96" text-anchor="middle" class="label">Init</text>
+  <text x="188" y="112" text-anchor="middle" class="muted">1-Way Hello</text>
+
+  <rect x="258" y="74" width="92" height="50" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+  <text x="304" y="96" text-anchor="middle" class="label">2-Way</text>
+  <text x="304" y="112" text-anchor="middle" class="muted">Bi-dir / DR</text>
+
+  <rect x="374" y="74" width="92" height="50" rx="8" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.5"/>
+  <text x="420" y="96" text-anchor="middle" class="label">ExStart</text>
+  <text x="420" y="112" text-anchor="middle" class="muted">DD Primary</text>
+
+  <rect x="490" y="74" width="92" height="50" rx="8" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.5"/>
+  <text x="536" y="96" text-anchor="middle" class="label">Exchange</text>
+  <text x="536" y="112" text-anchor="middle" class="muted">DD Summary</text>
+
+  <rect x="606" y="74" width="92" height="50" rx="8" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.5"/>
+  <text x="652" y="96" text-anchor="middle" class="label">Loading</text>
+  <text x="652" y="112" text-anchor="middle" class="muted">LSR / LSU</text>
+
+  <rect x="722" y="74" width="92" height="50" rx="8" fill="#dcfce7" stroke="#15803d" stroke-width="1.6"/>
+  <text x="768" y="96" text-anchor="middle" class="label">Full</text>
+  <text x="768" y="112" text-anchor="middle" class="muted">LSDB Synced</text>
+
+  <!-- FSM Forward Arrows -->
+  <path class="flow" d="M118,99 H140"/>
+  <path class="flow" d="M234,99 H256"/>
+  <path class="flow" d="M350,99 H372"/>
+  <path class="flow" d="M466,99 H488"/>
+  <path class="flow" d="M582,99 H604"/>
+  <path class="flow" d="M698,99 H720"/>
+
+  <!-- Diagnostic Arrows down to Stuck-State Cards -->
+  <path class="diag-red" d="M72,124 V168"/>
+  <path class="diag-red" d="M188,124 V168"/>
+  <path class="diag-amber" d="M304,124 V168"/>
+  <path class="diag-red" d="M448,124 V168"/>
+  <path class="diag-red" d="M536,124 V168"/>
+  <path class="diag-amber" d="M662,124 V168"/>
+  <path class="diag-amber" d="M768,124 V168"/>
+
+  <!-- Card 1: Down / Init -->
+  <rect x="26" y="170" width="185" height="206" rx="10" fill="#ffffff" stroke="#b91c1c" stroke-width="1.4"/>
+  <rect x="26" y="170" width="185" height="28" rx="10" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.2"/>
+  <text x="118" y="188" text-anchor="middle" class="card-hdr">Stuck: Down / Init</text>
+  <text x="36" y="216" class="item">- Area ID or mask mismatch</text>
+  <text x="36" y="234" class="item">- Hello / Dead timer mismatch</text>
+  <text x="36" y="252" class="item">- Auth type or key mismatch</text>
+  <text x="36" y="270" class="item">- ACL drops IP protocol 89</text>
+  <text x="36" y="288" class="item">- Multicast 224.0.0.5 blocked</text>
+  <text x="36" y="306" class="item">- Passive interface enabled</text>
+  <text x="36" y="324" class="item">- One-way L1/L2 link fault</text>
+  <rect x="36" y="340" width="165" height="24" rx="5" fill="#f4f7fb" stroke="#d9e2ec"/>
+  <text x="118" y="355" text-anchor="middle" class="mono">debug ospf packet hello</text>
+
+  <!-- Card 2: 2-Way -->
+  <rect x="227" y="170" width="185" height="206" rx="10" fill="#ffffff" stroke="#b45309" stroke-width="1.4"/>
+  <rect x="227" y="170" width="185" height="28" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <text x="319" y="188" text-anchor="middle" class="card-hdr">Stuck: 2-Way</text>
+  <text x="237" y="216" class="item">- Normal: DROTHER to DROTHER</text>
+  <text x="245" y="232" class="muted">(both Full with DR and BDR)</text>
+  <text x="237" y="252" class="item">- Fault: all peers priority 0</text>
+  <text x="245" y="268" class="muted">(no DR/BDR can be elected)</text>
+  <text x="237" y="288" class="item">- Network-type mismatch</text>
+  <text x="245" y="304" class="muted">(broadcast vs point-to-point)</text>
+  <text x="237" y="324" class="item">- Wait timer still active</text>
+  <rect x="237" y="340" width="165" height="24" rx="5" fill="#f4f7fb" stroke="#d9e2ec"/>
+  <text x="319" y="355" text-anchor="middle" class="mono">show ip ospf interface</text>
+
+  <!-- Card 3: ExStart / Exchange -->
+  <rect x="428" y="170" width="185" height="206" rx="10" fill="#ffffff" stroke="#b91c1c" stroke-width="1.4"/>
+  <rect x="428" y="170" width="185" height="28" rx="10" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.2"/>
+  <text x="520" y="188" text-anchor="middle" class="card-hdr">Stuck: ExStart / Exchange</text>
+  <text x="438" y="216" class="item">- Interface IP MTU mismatch</text>
+  <text x="446" y="232" class="muted">(DD packet rejected on RX)</text>
+  <text x="438" y="252" class="item">- Duplicate Router-ID on link</text>
+  <text x="438" y="270" class="item">- Unicast DD dropped by ACL</text>
+  <text x="438" y="288" class="item">- Tunnel MTU / fragmentation</text>
+  <text x="438" y="306" class="item">- High DD retransmit count</text>
+  <text x="438" y="324" class="item">- Seq-num mismatch / flapping</text>
+  <rect x="438" y="340" width="165" height="24" rx="5" fill="#f4f7fb" stroke="#d9e2ec"/>
+  <text x="520" y="355" text-anchor="middle" class="mono">show ip ospf neighbor det</text>
+
+  <!-- Card 4: Loading / Full -->
+  <rect x="629" y="170" width="185" height="206" rx="10" fill="#ffffff" stroke="#b45309" stroke-width="1.4"/>
+  <rect x="629" y="170" width="185" height="28" rx="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <text x="721" y="188" text-anchor="middle" class="card-hdr">Loading / Full (No Route)</text>
+  <text x="639" y="216" class="item">- LSR / LSU / LSAck loss</text>
+  <text x="639" y="234" class="item">- Corrupted LSA checksum</text>
+  <text x="639" y="252" class="item">- Max-LSA / LSDB limit hit</text>
+  <text x="639" y="272" class="item">- Full != installed FIB route:</text>
+  <text x="647" y="288" class="muted">Unreachable Forwarding Addr</text>
+  <text x="647" y="304" class="muted">Lower AD (BGP/static) wins</text>
+  <text x="647" y="320" class="muted">Stub / NSSA / route filter</text>
+  <rect x="639" y="340" width="165" height="24" rx="5" fill="#f4f7fb" stroke="#d9e2ec"/>
+  <text x="721" y="355" text-anchor="middle" class="mono">show ip ospf database</text>
+
+  <!-- Legend Footer -->
+  <line x1="36" y1="406" x2="68" y2="406" stroke="#3b82c4" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <text x="76" y="409" class="muted">Normal FSM progression (IP proto 89)</text>
+  <line x1="304" y1="406" x2="336" y2="406" stroke="#b91c1c" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arr-red)"/>
+  <text x="344" y="409" class="muted">Hard adjacency failure</text>
+  <line x1="504" y1="406" x2="536" y2="406" stroke="#b45309" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arr-amber)"/>
+  <text x="544" y="409" class="muted">Role-dependent or post-sync route check</text>
+</svg>

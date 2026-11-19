@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 440" role="img" color-scheme="light" aria-label="PIM Sparse Mode multicast distribution showing IGMP membership join, shared tree RPT via Rendezvous Point, switchover to shortest-path tree SPT, and RPF check pass versus fail logic">
+  <defs>
+    <pattern id="grid-pim" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M20 0H0V20" fill="none" stroke="#d9e2ec" stroke-width="0.8"/>
+    </pattern>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#3b82c4"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#15803d"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#b45309"/>
+    </marker>
+    <style>
+      .title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13.5px; font-weight: 700; fill: #2f3b4a; }
+      .label { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 11px; font-weight: 700; fill: #2f3b4a; }
+      .muted { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.8px; fill: #5c6b7a; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9.2px; fill: #3d4f5f; }
+      .pass { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 10.5px; font-weight: 700; fill: #15803d; }
+      .fail { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 10.5px; font-weight: 700; fill: #b91c1c; }
+      .step { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.5px; font-weight: 700; fill: #ffffff; }
+      .flow-rpt { fill: none; stroke: #3b82c4; stroke-width: 2; marker-end: url(#arr-blue); }
+      .flow-spt { fill: none; stroke: #15803d; stroke-width: 2.2; marker-end: url(#arr-green); }
+      .flow-igmp { fill: none; stroke: #b45309; stroke-width: 1.8; stroke-dasharray: 5 3; marker-end: url(#arr-amber); }
+    </style>
+  </defs>
+
+  <rect width="840" height="440" rx="16" fill="#f4f7fb"/>
+  <rect width="840" height="440" rx="16" fill="url(#grid-pim)"/>
+  <rect x="8" y="8" width="824" height="424" rx="12" fill="none" stroke="#e2e8f0"/>
+
+  <text x="420" y="30" text-anchor="middle" class="title">PIM-SM Shared Tree (*,G) to Shortest-Path Tree (S,G) Switchover &amp; RPF Check</text>
+  <text x="420" y="46" text-anchor="middle" class="muted">Initial delivery follows the RP shared tree; once LHR learns S, it builds a direct (S,G) SPT and verifies RPF</text>
+
+  <!-- RP Node -->
+  <rect x="330" y="64" width="180" height="58" rx="8" fill="#dbeafe" stroke="#3b82c4" stroke-width="1.5"/>
+  <text x="420" y="83" text-anchor="middle" class="label">RP (Rendezvous Point)</text>
+  <text x="420" y="99" text-anchor="middle" class="mono">192.0.2.100 (Loopback0)</text>
+  <text x="420" y="113" text-anchor="middle" class="muted">Root of (*,G) Shared Tree</text>
+
+  <!-- Source S -->
+  <rect x="24" y="166" width="128" height="66" rx="8" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.4"/>
+  <text x="88" y="186" text-anchor="middle" class="label">Source S</text>
+  <text x="88" y="203" text-anchor="middle" class="mono">10.10.1.10</text>
+  <text x="88" y="219" text-anchor="middle" class="muted">Dst: 239.1.1.1</text>
+
+  <!-- FHR -->
+  <rect x="184" y="166" width="144" height="66" rx="8" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.5"/>
+  <text x="256" y="186" text-anchor="middle" class="label">FHR (Source DR)</text>
+  <text x="256" y="203" text-anchor="middle" class="mono">10.10.1.1</text>
+  <text x="256" y="219" text-anchor="middle" class="mono">eth1:RP | eth2:LHR</text>
+
+  <!-- LHR -->
+  <rect x="512" y="166" width="144" height="66" rx="8" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.5"/>
+  <text x="584" y="186" text-anchor="middle" class="label">LHR (Receiver DR)</text>
+  <text x="584" y="203" text-anchor="middle" class="mono">10.20.2.1</text>
+  <text x="584" y="219" text-anchor="middle" class="mono">eth1:RP | eth2:FHR</text>
+
+  <!-- Receiver R -->
+  <rect x="688" y="166" width="128" height="66" rx="8" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.4"/>
+  <text x="752" y="186" text-anchor="middle" class="label">Receiver R</text>
+  <text x="752" y="203" text-anchor="middle" class="mono">10.20.2.50</text>
+  <text x="752" y="219" text-anchor="middle" class="muted">Group: 239.1.1.1</text>
+
+  <!-- Source -> FHR -->
+  <path class="flow-spt" d="M152,199 H182"/>
+
+  <!-- Receiver -> LHR (IGMP Join) -->
+  <path class="flow-igmp" d="M688,188 H658"/>
+  <text x="673" y="159" text-anchor="middle" class="muted">IGMP Join</text>
+  <!-- LHR -> Receiver (Data) -->
+  <path class="flow-spt" d="M656,212 H686"/>
+
+  <!-- FHR -> RP (PIM Register / Source path) -->
+  <path class="flow-rpt" d="M268,166 L352,123"/>
+  <text x="242" y="140" text-anchor="middle" class="mono">PIM Register</text>
+  <text x="242" y="153" text-anchor="middle" class="muted">(unicast to RP)</text>
+
+  <!-- RP -> LHR (Shared Tree RPT) -->
+  <path class="flow-rpt" d="M488,123 L572,166"/>
+  <text x="598" y="140" text-anchor="middle" class="mono">(*,G) RPT Data</text>
+  <text x="598" y="153" text-anchor="middle" class="muted">(after LHR Join)</text>
+
+  <!-- FHR -> LHR (Direct SPT) -->
+  <path class="flow-spt" d="M328,199 H510"/>
+  <rect x="352" y="168" width="136" height="22" rx="11" fill="#dcfce7" stroke="#15803d" stroke-width="1.2"/>
+  <text x="420" y="182" text-anchor="middle" class="mono">(S,G) SPT Switchover</text>
+  <text x="420" y="217" text-anchor="middle" class="muted">LHR joins (S,G) directly &amp; prunes RP</text>
+
+  <!-- Step Badges -->
+  <circle cx="673" cy="176" r="8" fill="#b45309"/><text x="673" y="179" text-anchor="middle" class="step">1</text>
+  <circle cx="310" cy="144" r="8" fill="#3b82c4"/><text x="310" y="147" text-anchor="middle" class="step">2</text>
+  <circle cx="530" cy="144" r="8" fill="#3b82c4"/><text x="530" y="147" text-anchor="middle" class="step">3</text>
+  <circle cx="420" cy="199" r="8" fill="#15803d"/><text x="420" y="202" text-anchor="middle" class="step">4</text>
+
+  <!-- RPF Check Panel: PASS -->
+  <rect x="24" y="254" width="386" height="128" rx="10" fill="#dcfce7" stroke="#15803d" stroke-width="1.4"/>
+  <text x="40" y="276" class="pass">RPF Check PASS (LHR receives on eth2)</text>
+  <text x="40" y="296" class="mono">Packet:  S=10.10.1.10, G=239.1.1.1  IIF=eth2</text>
+  <text x="40" y="314" class="mono">RIB:     10.10.1.10/32 via eth2 (FHR 10.10.1.1)</text>
+  <text x="40" y="332" class="mono">Verify:  IIF (eth2) == RPF Interface (eth2)</text>
+  <rect x="40" y="346" width="354" height="24" rx="6" fill="#ffffff" stroke="#15803d" stroke-width="1"/>
+  <text x="217" y="362" text-anchor="middle" class="pass">FORWARD -&gt; Replicate to OIL [eth3 -&gt; Receiver R]</text>
+
+  <!-- RPF Check Panel: FAIL -->
+  <rect x="430" y="254" width="386" height="128" rx="10" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.4"/>
+  <text x="446" y="276" class="fail">RPF Check FAIL (LHR receives on eth1)</text>
+  <text x="446" y="296" class="mono">Packet:  S=10.10.1.10, G=239.1.1.1  IIF=eth1</text>
+  <text x="446" y="314" class="mono">RIB:     10.10.1.10/32 via eth2 (not eth1)</text>
+  <text x="446" y="332" class="mono">Verify:  IIF (eth1) != RPF Interface (eth2)</text>
+  <rect x="446" y="346" width="354" height="24" rx="6" fill="#ffffff" stroke="#b91c1c" stroke-width="1"/>
+  <text x="623" y="362" text-anchor="middle" class="fail">DROP -&gt; Increment wrong-iif counter (prevents loop)</text>
+
+  <!-- Legend Footer -->
+  <line x1="36" y1="408" x2="66" y2="408" stroke="#3b82c4" stroke-width="2" marker-end="url(#arr-blue)"/>
+  <text x="74" y="411" class="muted">(*,G) RPT &amp; Register</text>
+
+  <line x1="216" y1="408" x2="246" y2="408" stroke="#15803d" stroke-width="2.2" marker-end="url(#arr-green)"/>
+  <text x="254" y="411" class="muted">(S,G) SPT Direct Path</text>
+
+  <line x1="406" y1="408" x2="436" y2="408" stroke="#b45309" stroke-width="1.8" stroke-dasharray="5 3" marker-end="url(#arr-amber)"/>
+  <text x="444" y="411" class="muted">IGMPv2/v3 Membership</text>
+
+  <circle cx="608" cy="408" r="5" fill="#b91c1c"/>
+  <text x="620" y="411" class="muted">RPF Failure -&gt; Immediate Drop</text>
+</svg>

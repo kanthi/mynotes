@@ -4,74 +4,158 @@ title: Redistribution Design and Route Provenance
 
 # Redistribution Design and Route Provenance
 
-Redistribution creates a new routing advertisement from a route learned through another source. It is useful during migrations and at boundaries between routing domains, but a second boundary can feed the advertisement back into the domain where it began. The result may be a misleading path, persistent black hole, or forwarding loop even while all routing adjacencies are healthy.
+Redistribution translates routes learned from one routing protocol (or static/connected source) into advertisements for another. At a single boundary router, redistribution is straightforward. At **two or more redundant boundary routers** performing mutual redistribution, a route exported from Domain A into Domain B can re-enter Domain A at the second boundary, lose its original loop-prevention metadata, and trigger suboptimal routing, black holes, or persistent forwarding loops — even while every OSPF and BGP session looks completely healthy.
 
-Start with the [redistribution and route-tag workbook lab](../09-lab-workbook/28-redistribute-and-tag.md), which shows a single OSPF–BGP boundary. This chapter examines what changes when boundaries are redundant. Commands, redistribution eligibility and default administrative distances differ across implementations; inspect the actual platform rather than assuming a universal behavior.
+Start with the [redistribution and route-tag workbook lab](../09-lab-workbook/28-redistribute-and-tag.md) for a single OSPF–BGP boundary, then apply the dual-ASBR design patterns in this chapter.
 
 ![Route feedback across redundant boundaries](../../images/diagram-concept-redistribution-feedback.svg)
 
-## Follow a route across boundaries
+## Why mutual redistribution loops happen
 
-Imagine domain A and domain B connected by two boundary routers, X and Y. A originates prefix P. X imports P from A into B. Y learns that B advertisement and could import it back into A. A path can return with a new protocol identity and attributes even though its destination prefix is unchanged. Protocol-local loop prevention, such as BGP AS-path checks, cannot by itself prevent every loop involving a different routing protocol. Multiple redistribution points also create transient risks while a failure is converging.
+Imagine an enterprise OSPF core (Domain A) connected to a WAN/partner eBGP domain (Domain B) through two redundant ASBRs: **ASBR-1** and **ASBR-2**.
 
-Before configuring anything, draw each permitted crossing and write its direction, eligible sources, exact prefixes, metric, provenance marker and return filter. Prefer one-way exchange or a controlled default route where the requirements permit. If both directions are required, use explicit prefix allowlists and provenance controls at **every** boundary. Define what happens if the preferred boundary fails; do not assume that changing a route preference fixes route feedback.
+1. OSPF originates `10.10.0.0/24` inside Domain A.
+2. **ASBR-1** redistributes `10.10.0.0/24` from OSPF into eBGP toward Domain B.
+3. Domain B advertises `10.10.0.0/24` over eBGP to **ASBR-2**.
+4. **ASBR-2** now holds two candidates for `10.10.0.0/24`: the native OSPF route (AD 110) and the newly learned eBGP route (AD 20).
 
-## Route selection has separate stages
+### Administrative Distance inversion
 
-1. A routing protocol computes or selects its own candidate. OSPF, for example, compares OSPF path types and costs; BGP selects among its eligible paths using its own decision process.
-2. The device's route manager chooses among candidates for the **same prefix and prefix length**, commonly using a local protocol preference or administrative distance. Defaults and tie-breaking are implementation-specific.
-3. The forwarding table performs longest-prefix matching on the packet destination. A `/25` wins over a `/24` for addresses it covers, even when the `/24` has a more preferred protocol source.
-4. Redistribution exports only routes eligible under the implementation's rules and policy. A route in a protocol database is not necessarily selected in the main RIB, installed in the forwarding table, or eligible for export. Verify all three and the advertisement at the next router.
+Each router selects its best route in the main RIB by **Administrative Distance (AD)** (also called route preference) *before* deciding what to redistribute:
 
-For example, A has native `198.51.100.0/24` and also receives a copy from B. If a boundary chooses the B-derived candidate and forwards back toward a neighbor whose next hop points to that boundary, traffic can loop. The exact outcome depends on the topology, next-hop resolution and platform selection rules; redistribution does not inevitably cause a loop.
+| Protocol / Route Source | FRR Default AD | Arista EOS Default AD | Loop Risk at Mutual Boundary |
+|---|---:|---:|---|
+| Connected | 0 | 0 | None (local link) |
+| Static | 1 | 1 | High if redistributed without tags |
+| **eBGP** | **20** | **20** | **Severe:** beats OSPF (110), causing AD inversion |
+| **OSPF** (Intra/Inter/Ext) | **110** | **110** | Loses to eBGP (20), beats iBGP (200) |
+| **iBGP** | **200** | **200** | Lower risk than eBGP, but still loops if OSPF fails or splits |
 
-## Metrics and OSPF external routes
+Because eBGP (AD 20) beats OSPF (AD 110), **ASBR-2** replaces its internal OSPF route to `10.10.0.0/24` with the eBGP path pointing *out* toward Domain B. Worse, if ASBR-2 is configured to redistribute BGP back into OSPF, it injects `10.10.0.0/24` as a new OSPF Type 5 external LSA back into Domain A. Packets from Domain A can now bounce between ASBR-2, Domain B, and ASBR-1 in a forwarding loop, or blackhole when the original link in Domain A flaps.
 
-Metrics from different protocols do not have a universal exchange rate. A hop count of 3, an OSPF cost of 3 and a BGP MED of 3 are not equivalent measurements. Set an intentional seed metric and route type at the target boundary; test the result from multiple locations. Changing the metric can influence which exit a domain uses but does not prove a route is safe to re-export.
+> [!WARNING]
+> Protocol-native loop prevention cannot save you across a protocol boundary. OSPF does not carry BGP `AS_PATH`, and BGP does not understand OSPF LSAs. Raising or lowering metrics alone will not stop AD inversion — you must control **provenance** with route tags/communities and explicit prefix filters at **every** boundary router.
 
-For OSPFv2 external routes to the same destination, intra-area and inter-area paths are preferred over external paths; type 1 external paths are preferred over type 2. Within type 1, compare the sum of internal cost to the ASBR or forwarding address and external cost. For type 2, the external metric is the primary cost; internal cost is considered when the relevant higher-priority criteria tie. Other selection details, including ASBR path preference and compatibility settings, can matter. These comparisons are **within OSPF**, before a platform compares a selected OSPF route with candidates from other protocols.
+## OSPF external route types: E1 versus E2 traps
 
-Consider two otherwise comparable external advertisements for the same prefix:
+Metrics do not translate across protocols (a BGP MED of 50 is meaningless as an OSPF cost). When redistributing into OSPF, you must choose between **External Type 1 (E1)** and **External Type 2 (E2)** and set an explicit seed metric.
 
-| Exit | Internal cost X | External metric Y | E1 total X+Y | E2 primary Y |
+Within OSPF path selection (before AD comparison in the main RIB), the strict preference order is:
+`Intra-area (O) > Inter-area (O IA) > External Type 1 (O E1) > External Type 2 (O E2)`.
+
+- **E2 (default on most NOSes):** Compares **only** the external seed metric first. Internal OSPF cost to reach the ASBR is only used as a tie-breaker when two ASBRs advertise the exact same external metric.
+- **E1:** Adds the internal OSPF cost to the ASBR plus the external seed metric (`total = internal + external`), ensuring routers choose the closest exit point.
+
+Consider a router inside Domain A evaluating two exits for `198.51.100.0/24`:
+
+| Exit ASBR | Internal OSPF Cost | External Seed Metric | E1 Total (`Int + Ext`) | E2 Primary (`Ext` only) |
 |---|---:|---:|---:|---:|
-| X | 10 | 20 | 30 | 20 |
-| Y | 30 | 10 | 40 | 10 |
+| ASBR-1 | 10 | 20 | **30** | 20 |
+| ASBR-2 | 50 | 10 | 60 | **10** |
 
-If both are E1, X wins on total cost. If both are E2, Y wins on the lower external metric. If X advertises E1 and Y E2, X wins by path type despite Y's lower displayed number. This example assumes all other applicable selection conditions are equal and the forwarding addresses are reachable.
+- If both advertise **E1**, ASBR-1 wins (`30 < 60`).
+- If both advertise **E2**, ASBR-2 wins (`10 < 20`) even though it is five times farther away inside the campus!
+- If ASBR-1 advertises **E1 (total 30)** and ASBR-2 advertises **E2 (metric 10)**, **ASBR-1 still wins** because E1 always beats E2 regardless of metric values.
 
-An OSPF external LSA may specify a forwarding address. When it is nonzero, the router resolves that address through an eligible intra-area or inter-area path; it does not simply forward toward the advertising ASBR. An unreachable forwarding address can leave an LSA visible in the database without an installed usable external route. A zero forwarding address instead directs traffic toward the ASBR. Inspect the LSA, reachability, selected route and forwarding entry separately.
+> [!TIP]
+> Prefer **E1** when multiple ASBRs advertise the same external prefixes into a single OSPF domain so internal routers naturally exit via the topologically closest ASBR. Also verify the Type 5 LSA **Forwarding Address**: if nonzero and unreachable via an intra/inter-area OSPF route, the LSA stays in the LSDB but never installs into the RIB.
 
-## Mark provenance and deny the return trip
+## Route-tag loop prevention contract
 
-A route tag can record where an external route came from. It is policy metadata, not an automatic loop-prevention mechanism: every relevant boundary must match it and deny the inappropriate return crossing. OSPF external tags are carried in external LSAs, but a tag is not automatically an equivalent BGP community or a universally preserved end-to-end label. Check whether each platform can match, set, copy or translate the metadata at each protocol boundary. A device may discard it on export or summarization; a native route may not have the same tag field as an external route.
+Before touching CLI, write a strict two-way provenance contract and apply it symmetrically on **both** ASBR-1 and ASBR-2:
 
-Example policy contract, expressed as intent rather than vendor syntax:
+| Direction | Deny First (Return Filter) | Permit & Stamp Provenance |
+|---|---|---|
+| **OSPF → BGP** | Deny OSPF routes tagged `65002` (originated from BGP) | Permit approved OSPF prefixes; set BGP community `65001:100` |
+| **BGP → OSPF** | Deny BGP routes with community `65001:100` (originated from OSPF) | Permit approved BGP prefixes; set OSPF external tag `65002` and metric-type `1` |
 
-| Crossing | Permit | Mark in destination | Deny before permit |
-|---|---|---|---|
-| A → B | Approved A-origin prefixes | provenance A, if B supports it | anything marked B |
-| B → A | Approved B-origin prefixes | provenance B, if A supports it | anything marked A |
+Notice why both **OSPF tags** and **BGP communities** are used: OSPF external LSAs carry a 32-bit numeric tag, while BGP carries communities. Translating and denying the peer domain's marker at every boundary guarantees that no route ever completes a round trip.
 
-Apply the contract at X **and** Y, in both directions. Match exact prefix and length ranges, and include explicit default-deny behavior according to the platform's policy semantics. Test a permitted prefix, a more-specific not intended for export, a route with a return marker, an unmarked route, and the default route. If markers cannot survive a boundary, use other enforceable controls such as disjoint prefix ownership and explicit filtering; do not claim tagging alone protects the design. Allocate tags centrally and document reserved values.
+### FRR (`vtysh`) mutual redistribution with tags and communities
 
-Summarization complicates provenance: an aggregate may cover prefixes from different origins or remain advertised when a component disappears. Test partial and total component failure, discard routes, and whether the aggregate accurately reflects reachability. Never assume a summary's tag represents all of its components without checking the platform's behavior.
+```cfg
+ip prefix-list PL-OSPF-OWNED seq 10 permit 10.10.0.0/16 le 24
+ip prefix-list PL-BGP-ALLOWED seq 10 permit 198.51.100.0/24 le 24
 
-## Failure exercises
+bgp community-list standard CL-FROM-OSPF permit 65001:100
 
-Use the workbook topology as a baseline, then add a second independently configured boundary with separate transit links and equivalent policy. Keep both source domains isolated from production. Use your lab platform's route database, RIB, FIB, policy counters and packet capture tools to gather evidence:
+! --- OSPF -> BGP: block routes that originally came from BGP ---
+route-map RM-OSPF-TO-BGP deny 10
+ match tag 65002
+!
+route-map RM-OSPF-TO-BGP permit 20
+ match ip address prefix-list PL-OSPF-OWNED
+ set community 65001:100 additive
+!
+! --- BGP -> OSPF: block routes that originally came from OSPF ---
+route-map RM-BGP-TO-OSPF deny 10
+ match community CL-FROM-OSPF
+!
+route-map RM-BGP-TO-OSPF permit 20
+ match ip address prefix-list PL-BGP-ALLOWED
+ set metric 20
+ set metric-type type-1
+ set tag 65002
+!
+router ospf
+ redistribute bgp route-map RM-BGP-TO-OSPF
+!
+router bgp 65001
+ address-family ipv4 unicast
+  redistribute ospf route-map RM-OSPF-TO-BGP
+ exit-address-family
+```
 
-1. Originate an approved test prefix in A and confirm that both boundaries may advertise it into B with the intended metric and provenance. Verify the selected and alternate paths in B; multiple LSAs do not necessarily imply multiple installed next hops.
-2. Verify that both B → A policies reject the returning A-origin route. Inspect the actual tag or translated attribute and the matching policy counter at each boundary; an absent returning route alone does not prove which control stopped it.
-3. Withdraw A's original prefix. Observe withdrawals in each protocol and verify that no stale or unmarked return copy sustains reachability. Record convergence times and loss, and restore the prefix.
-4. Fail X's transit link. Verify that traffic reaches the destination through Y and that the reverse path works. Restore X, observe reconvergence, and compare forwarding with the pre-failure baseline.
-5. In the isolated lab only, remove Y's return filter. Introduce a controlled route that would be eligible for return, inspect the resulting advertisements and next hops, then restore the filter. Whether a loop actually forms depends on route preference and platform export behavior; do not infer a loop solely from duplicate advertisements.
-6. Test an unapproved more-specific and a default route. Neither should cross unless the written policy permits it. Check policy counters and advertisements on the receiving side, then remove the test routes.
+### Arista cEOS / EOS equivalent
 
-For each test capture the prefix, source protocol, best path, next hop, route type, metric, tag, export decision, forwarding entry and return path. State the observed outcome rather than assuming a feature is working because the configuration is present.
+```cfg
+ip prefix-list PL-OSPF-OWNED
+   seq 10 permit 10.10.0.0/16 le 24
+!
+ip community-list CL-FROM-OSPF permit 65001:100
+!
+route-map RM-OSPF-TO-BGP deny 10
+   match tag 65002
+!
+route-map RM-OSPF-TO-BGP permit 20
+   match ip address prefix-list PL-OSPF-OWNED
+   set community 65001:100 additive
+!
+route-map RM-BGP-TO-OSPF deny 10
+   match community CL-FROM-OSPF
+!
+route-map RM-BGP-TO-OSPF permit 20
+   set metric 20
+   set metric-type type-1
+   set tag 65002
+!
+router ospf 1
+   redistribute bgp route-map RM-BGP-TO-OSPF
+!
+router bgp 65001
+   redistribute ospf route-map RM-OSPF-TO-BGP
+```
 
-## Review and references
+> [!IMPORTANT]
+> If the remote eBGP neighbor strips standard communities (common with third-party ISPs), communities alone cannot protect the return path. Pair tags with **disjoint prefix-list allowlists** (Domain A only exports Domain A's space; Domain B only exports Domain B's space) and raise eBGP distance or filter locally originated prefixes inbound on eBGP sessions.
 
-Why can a route exist in an OSPF database but not in the RIB? Why does a route tag need a corresponding deny rule? What changes if an aggregate remains present after the last reachable component fails? Explain why E1 versus E2 cannot be compared by looking only at their external metric numbers.
+## External route summarization hazards
 
-References: [OSPFv2, RFC 2328](https://www.rfc-editor.org/rfc/rfc2328.html), particularly external route calculation and external LSAs; [FRR OSPF redistribution](https://docs.frrouting.org/en/stable-8.0/ospfd.html); and [FRR BGP redistribution](https://docs.frrouting.org/en/latest/bgp.html). Consult the exact version and platform used in your lab for commands and defaults.
+Summarization at an ASBR (`summary-address` in OSPF, `aggregate-address` in BGP) reduces LSDB/RIB churn, but introduces two subtle redistribution risks:
+
+1. **Provenance loss:** An aggregate route is newly originated by the ASBR and typically **does not inherit** the tags or communities of its component routes unless explicitly stamped. If ASBR-1 summarizes `10.10.0.0/16` without a tag, ASBR-2's deny-by-tag rule will miss it and re-inject the `/16`.
+2. **Blackhole persistence:** If all component prefixes behind ASBR-1 fail, the summary must be withdrawn immediately (and the local discard/Null0 route must prevent looping packets back to a default route). Never advertise a static summary that outlives its components.
+
+## Step-by-step verification checklist
+
+Run these checks on **both** ASBR-1 and ASBR-2 and on one interior router in each domain after every redistribution change:
+
+1. **Inspect RIB and AD ownership:** Confirm Domain A's native prefixes are installed as `O` (AD 110) — not `B` (AD 20) — on both ASBR-1 and ASBR-2 (`show ip route 10.10.0.0/24`).
+2. **Verify provenance tags in OSPF LSDB:** Run `show ip ospf database external 198.51.100.0` and confirm `External Route Tag: 65002` and `Metric Type: 1` (illustrative field names).
+3. **Verify BGP communities on exported routes:** Run `show bgp ipv4 unicast 10.10.0.0/24` on the peer and confirm `Community: 65001:100`.
+4. **Prove the deny clause actually matched:** Check route-map hit counters (`show route-map`) on ASBR-2 to verify the deny sequence incremented — an absent route alone does not prove your tag filter stopped it.
+5. **Test prefix withdrawal:** Withdraw `10.10.0.0/24` inside Domain A. Verify it disappears from both OSPF and BGP within seconds and does **not** stay alive via a stale return copy from ASBR-2.
+6. **Test single-ASBR failover:** Shut down ASBR-1's eBGP uplink, confirm traffic shifts cleanly to ASBR-2 in both directions, then restore ASBR-1 and confirm symmetric reconvergence.
+7. **Test unapproved routes:** Inject a test `/25` outside `PL-OSPF-OWNED` and a `0.0.0.0/0` default route in lab; verify neither leaks across the boundary.
+
+**References:** [OSPFv2 External Route Calculation, RFC 2328](https://www.rfc-editor.org/rfc/rfc2328.html), [FRR OSPF Redistribution](https://docs.frrouting.org/en/stable-8.0/ospfd.html), and [FRR BGP Redistribution](https://docs.frrouting.org/en/latest/bgp.html).

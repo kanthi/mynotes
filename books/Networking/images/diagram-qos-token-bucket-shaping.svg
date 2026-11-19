@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 440" role="img" color-scheme="light" aria-label="Comparison of single-rate and two-rate three-color token bucket policing versus traffic shaping with a finite egress queue and smoothed rate profile">
+  <defs>
+    <pattern id="grid-qos" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M20 0H0V20" fill="none" stroke="#d9e2ec" stroke-width="0.8"/>
+    </pattern>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#3b82c4"/>
+    </marker>
+    <marker id="arr-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#b91c1c"/>
+    </marker>
+    <style>
+      .title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13.5px; font-weight: 700; fill: #2f3b4a; }
+      .label { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 11px; font-weight: 700; fill: #2f3b4a; }
+      .sub { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.8px; font-weight: 700; fill: #2f3b4a; }
+      .muted { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.3px; fill: #5c6b7a; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 8.8px; fill: #3d4f5f; }
+      .flow { fill: none; stroke: #3b82c4; stroke-width: 1.8; marker-end: url(#arr-blue); }
+      .drop-line { fill: none; stroke: #b91c1c; stroke-width: 1.6; stroke-dasharray: 4 3; marker-end: url(#arr-red); }
+    </style>
+  </defs>
+
+  <rect width="840" height="440" rx="16" fill="#f4f7fb"/>
+  <rect width="840" height="440" rx="16" fill="url(#grid-qos)"/>
+  <rect x="8" y="8" width="824" height="424" rx="12" fill="none" stroke="#e2e8f0"/>
+
+  <text x="420" y="30" text-anchor="middle" class="title">Token Bucket Metering: Policing (srTCM / trTCM) vs. Traffic Shaping</text>
+  <text x="420" y="46" text-anchor="middle" class="muted">Policing drops or re-marks excess immediately; shaping buffers bursts in a finite queue to smooth egress</text>
+
+  <!-- LEFT PANEL: POLICING -->
+  <rect x="24" y="62" width="388" height="320" rx="12" fill="#eef3f9" stroke="#8b9bb0" stroke-width="1.5"/>
+  <text x="40" y="82" class="label">Policer (srTCM RFC 2697 / trTCM RFC 2698)</text>
+
+  <!-- Offered Traffic -->
+  <rect x="38" y="96" width="104" height="54" rx="8" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.4"/>
+  <text x="90" y="118" text-anchor="middle" class="sub">Offered Flow</text>
+  <text x="90" y="135" text-anchor="middle" class="mono">Burst &gt; CIR</text>
+
+  <!-- C-Bucket -->
+  <rect x="164" y="96" width="106" height="72" rx="8" fill="#ffffff" stroke="#15803d" stroke-width="1.5"/>
+  <rect x="166" y="138" width="102" height="28" rx="6" fill="#dcfce7"/>
+  <text x="217" y="114" text-anchor="middle" class="sub">C-Bucket (Bc)</text>
+  <text x="217" y="129" text-anchor="middle" class="mono">Refill: CIR</text>
+  <text x="217" y="156" text-anchor="middle" class="mono">Committed</text>
+
+  <!-- E/P-Bucket -->
+  <rect x="284" y="96" width="114" height="72" rx="8" fill="#ffffff" stroke="#b45309" stroke-width="1.5"/>
+  <rect x="286" y="138" width="110" height="28" rx="6" fill="#fef3c7"/>
+  <text x="341" y="114" text-anchor="middle" class="sub">E/P-Bucket</text>
+  <text x="341" y="128" text-anchor="middle" class="mono">srTCM: overflow</text>
+  <text x="341" y="156" text-anchor="middle" class="mono">trTCM: PIR (Bp)</text>
+
+  <path class="flow" d="M142,123 H162"/>
+  <path class="flow" d="M270,123 H282"/>
+  <path class="flow" d="M217,168 V196"/>
+
+  <!-- 3-Color Outcomes -->
+  <rect x="38" y="198" width="360" height="44" rx="8" fill="#dcfce7" stroke="#15803d" stroke-width="1.3"/>
+  <text x="50" y="216" class="sub">Green (Conform): C-Bucket has tokens</text>
+  <text x="50" y="232" class="mono">Action: Transmit as-is (preserve DSCP)</text>
+
+  <rect x="38" y="252" width="360" height="44" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.3"/>
+  <text x="50" y="270" class="sub">Yellow (Exceed): C empty, E/P has tokens</text>
+  <text x="50" y="286" class="mono">Action: Transmit + re-mark lower DSCP (AFx2/AFx3)</text>
+
+  <rect x="38" y="306" width="360" height="44" rx="8" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.3"/>
+  <text x="50" y="324" class="sub">Red (Violate): both buckets empty</text>
+  <text x="50" y="340" class="mono">Action: Drop immediately (zero queue delay)</text>
+
+  <text x="218" y="370" text-anchor="middle" class="muted">Zero buffering delay | Hard drops trigger TCP sawtooth</text>
+
+  <!-- RIGHT PANEL: SHAPING -->
+  <rect x="428" y="62" width="388" height="320" rx="12" fill="#eef3f9" stroke="#8b9bb0" stroke-width="1.5"/>
+  <text x="444" y="82" class="label">Shaper (TBF / HTB + Egress Queue)</text>
+
+  <!-- Bursty Input -->
+  <rect x="442" y="96" width="96" height="52" rx="8" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.4"/>
+  <text x="490" y="118" text-anchor="middle" class="sub">Bursty Input</text>
+  <text x="490" y="134" text-anchor="middle" class="mono">Peaks &gt; CIR</text>
+
+  <!-- Egress Queue -->
+  <rect x="558" y="96" width="116" height="52" rx="8" fill="#dbeafe" stroke="#3b82c4" stroke-width="1.5"/>
+  <text x="616" y="116" text-anchor="middle" class="sub">Egress Queue</text>
+  <text x="616" y="132" text-anchor="middle" class="mono">FIFO / FQ-CoDel</text>
+
+  <!-- Shaper Token Bucket -->
+  <rect x="694" y="96" width="108" height="62" rx="8" fill="#ffffff" stroke="#15803d" stroke-width="1.5"/>
+  <rect x="696" y="132" width="104" height="24" rx="6" fill="#dcfce7"/>
+  <text x="748" y="114" text-anchor="middle" class="sub">Token Gate</text>
+  <text x="748" y="128" text-anchor="middle" class="mono">Rate: CIR</text>
+  <text x="748" y="148" text-anchor="middle" class="mono">Burst: Bc</text>
+
+  <path class="flow" d="M538,122 H556"/>
+  <path class="flow" d="M674,122 H692"/>
+
+  <!-- Queue Overflow Drop -->
+  <path class="drop-line" d="M616,148 V174"/>
+  <rect x="536" y="176" width="160" height="24" rx="6" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.2"/>
+  <text x="616" y="191" text-anchor="middle" class="mono">Tail / AQM Drop (Queue Full)</text>
+
+  <!-- Rate vs Time Chart -->
+  <rect x="442" y="216" width="360" height="134" rx="8" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.3"/>
+  <text x="456" y="234" class="sub">Rate vs. Time: Burst Smoothed to CIR</text>
+
+  <!-- Axes -->
+  <line x1="464" y1="326" x2="786" y2="326" stroke="#8b9bb0" stroke-width="1.2"/>
+  <line x1="464" y1="244" x2="464" y2="326" stroke="#8b9bb0" stroke-width="1.2"/>
+
+  <!-- CIR Threshold Line -->
+  <line x1="464" y1="286" x2="784" y2="286" stroke="#15803d" stroke-width="1.3" stroke-dasharray="5 3"/>
+  <text x="782" y="281" text-anchor="end" class="mono">CIR ceiling</text>
+
+  <!-- Offered burst polyline (red) -->
+  <polyline fill="none" stroke="#b91c1c" stroke-width="1.8" points="468,324 494,324 510,250 538,250 554,324 590,324 606,256 632,256 648,324 776,324"/>
+  <!-- Shaped egress polyline (blue) -->
+  <polyline fill="none" stroke="#3b82c4" stroke-width="2.2" points="468,322 496,322 508,286 584,286 594,322 604,286 678,286 690,322 776,322"/>
+
+  <!-- Mini Chart Legend -->
+  <line x1="468" y1="340" x2="490" y2="340" stroke="#b91c1c" stroke-width="1.8"/>
+  <text x="496" y="343" class="muted">Offered microburst (&gt; CIR)</text>
+  <line x1="630" y1="340" x2="652" y2="340" stroke="#3b82c4" stroke-width="2.2"/>
+  <text x="658" y="343" class="muted">Shaped egress (buffered)</text>
+
+  <text x="622" y="370" text-anchor="middle" class="muted">Smooths bursts, TCP-friendly | Adds bounded queue delay</text>
+
+  <!-- Footer -->
+  <text x="420" y="410" text-anchor="middle" class="muted">Placement rule: Police on ingress at untrusted edges; Shape on egress toward slower sub-rate WAN links</text>
+</svg>

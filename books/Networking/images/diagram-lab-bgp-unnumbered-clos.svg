@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 440" role="img" color-scheme="light" aria-label="Lab 60 BGP Unnumbered 2-spine 2-leaf Clos fabric topology using IPv6 link-local Router Advertisements and RFC 8950 extended next-hop for IPv4 prefixes">
+  <defs>
+    <pattern id="grid-60" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M20 0H0V20" fill="none" stroke="#d9e2ec" stroke-width="0.8"/>
+    </pattern>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#3b82c4"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#15803d"/>
+    </marker>
+    <style>
+      .title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13.5px; font-weight: 700; fill: #2f3b4a; }
+      .label { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 11px; font-weight: 700; fill: #2f3b4a; }
+      .muted { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.8px; fill: #5c6b7a; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9.2px; fill: #3d4f5f; }
+      .tag-blue { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9px; font-weight: 700; fill: #3b82c4; }
+      .tag-green { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9px; font-weight: 700; fill: #15803d; }
+      .tag-amber { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9px; font-weight: 700; fill: #b45309; }
+      .link { fill: none; stroke: #3b82c4; stroke-width: 2; }
+      .ecmp { fill: none; stroke: #15803d; stroke-width: 1.8; stroke-dasharray: 5 4; marker-end: url(#arr-green); }
+    </style>
+  </defs>
+
+  <rect width="840" height="440" rx="16" fill="#f4f7fb"/>
+  <rect width="840" height="440" rx="16" fill="url(#grid-60)"/>
+  <rect x="8" y="8" width="824" height="424" rx="12" fill="none" stroke="#e2e8f0"/>
+
+  <text x="420" y="30" text-anchor="middle" class="title">Lab 60: BGP Unnumbered Clos Fabric (RFC 8950)</text>
+  <text x="420" y="46" text-anchor="middle" class="muted">Zero transit IPv4 addresses · IPv6 Link-Local RAs auto-discover eBGP peers and advertise IPv4 prefixes via IPv6 next-hops</text>
+
+  <!-- Tier zone boxes -->
+  <rect x="34" y="64" width="772" height="106" rx="12" fill="#eef3f9" stroke="#e2e8f0" stroke-width="1.2"/>
+  <text x="50" y="82" class="muted">SPINE LAYER (AS 65000)</text>
+
+  <rect x="34" y="250" width="772" height="114" rx="12" fill="#eef3f9" stroke="#e2e8f0" stroke-width="1.2"/>
+  <text x="50" y="268" class="muted">LEAF LAYER (UNIQUE AS PER LEAF)</text>
+
+  <!-- Clos full-mesh links -->
+  <path class="link" d="M210,160 L210,276"/>
+  <path class="link" d="M300,160 L540,276"/>
+  <path class="link" d="M540,160 L300,276"/>
+  <path class="link" d="M630,160 L630,276"/>
+
+  <!-- ECMP sample data path highlight -->
+  <path class="ecmp" d="M196,276 L196,164"/>
+  <path class="ecmp" d="M312,164 L550,274"/>
+
+  <!-- Port badges on links -->
+  <rect x="184" y="170" width="52" height="18" rx="4" fill="#ffffff" stroke="#8b9bb0"/>
+  <text x="210" y="182" text-anchor="middle" class="mono">eth1</text>
+  <rect x="292" y="170" width="52" height="18" rx="4" fill="#ffffff" stroke="#8b9bb0"/>
+  <text x="318" y="182" text-anchor="middle" class="mono">eth2</text>
+  <rect x="496" y="170" width="52" height="18" rx="4" fill="#ffffff" stroke="#8b9bb0"/>
+  <text x="522" y="182" text-anchor="middle" class="mono">eth1</text>
+  <rect x="604" y="170" width="52" height="18" rx="4" fill="#ffffff" stroke="#8b9bb0"/>
+  <text x="630" y="182" text-anchor="middle" class="mono">eth2</text>
+
+  <rect x="184" y="226" width="52" height="18" rx="4" fill="#ffffff" stroke="#8b9bb0"/>
+  <text x="210" y="238" text-anchor="middle" class="mono">eth1</text>
+  <rect x="292" y="226" width="52" height="18" rx="4" fill="#ffffff" stroke="#8b9bb0"/>
+  <text x="318" y="238" text-anchor="middle" class="mono">eth2</text>
+  <rect x="496" y="226" width="52" height="18" rx="4" fill="#ffffff" stroke="#8b9bb0"/>
+  <text x="522" y="238" text-anchor="middle" class="mono">eth1</text>
+  <rect x="604" y="226" width="52" height="18" rx="4" fill="#ffffff" stroke="#8b9bb0"/>
+  <text x="630" y="238" text-anchor="middle" class="mono">eth2</text>
+
+  <!-- Center protocol pill -->
+  <rect x="294" y="196" width="252" height="24" rx="12" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <text x="420" y="211" text-anchor="middle" class="tag-amber">IPv6 RA (fe80::) · RFC 8950 Extended Nexthop</text>
+
+  <!-- spine1 -->
+  <rect x="130" y="88" width="240" height="72" rx="10" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.5"/>
+  <text x="146" y="108" class="label">spine1 (FRR 10.3.1)</text>
+  <text x="354" y="108" text-anchor="end" class="tag-blue">AS 65000</text>
+  <text x="146" y="126" class="mono">lo: 10.255.0.1/32</text>
+  <text x="146" y="142" class="muted">eth1, eth2: no IPv4 · RA interval 5s</text>
+
+  <!-- spine2 -->
+  <rect x="470" y="88" width="240" height="72" rx="10" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.5"/>
+  <text x="486" y="108" class="label">spine2 (FRR 10.3.1)</text>
+  <text x="694" y="108" text-anchor="end" class="tag-blue">AS 65000</text>
+  <text x="486" y="126" class="mono">lo: 10.255.0.2/32</text>
+  <text x="486" y="142" class="muted">eth1, eth2: no IPv4 · RA interval 5s</text>
+
+  <!-- leaf1 -->
+  <rect x="130" y="276" width="240" height="78" rx="10" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.5"/>
+  <text x="146" y="296" class="label">leaf1 (FRR 10.3.1)</text>
+  <text x="354" y="296" text-anchor="end" class="tag-green">AS 65001</text>
+  <text x="146" y="314" class="mono">lo: 10.255.1.1/32 · dum0: 10.10.1.1/24</text>
+  <text x="146" y="330" class="mono">10.10.2.0/24 via inet6 fe80::... (ECMP)</text>
+  <text x="146" y="344" class="muted">capability extended-nexthop</text>
+
+  <!-- leaf2 -->
+  <rect x="470" y="276" width="240" height="78" rx="10" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.5"/>
+  <text x="486" y="296" class="label">leaf2 (FRR 10.3.1)</text>
+  <text x="694" y="296" text-anchor="end" class="tag-green">AS 65002</text>
+  <text x="486" y="314" class="mono">lo: 10.255.1.2/32 · dum0: 10.10.2.1/24</text>
+  <text x="486" y="330" class="mono">10.10.1.0/24 via inet6 fe80::... (ECMP)</text>
+  <text x="486" y="344" class="muted">capability extended-nexthop</text>
+
+  <!-- Footer legend -->
+  <line x1="48" y1="398" x2="78" y2="398" stroke="#3b82c4" stroke-width="2"/>
+  <text x="86" y="401" class="muted">Unnumbered eBGP link (IPv6 LL only, zero /31 IPv4)</text>
+  <line x1="365" y1="398" x2="395" y2="398" stroke="#15803d" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#arr-green)"/>
+  <text x="403" y="401" class="muted">IPv4 packet forwarded via IPv6 fe80:: next-hop</text>
+  <text x="48" y="418" class="muted">Cable-swap resilient: swapping eth1 and eth2 preserves eBGP convergence without IP re-addressing</text>
+</svg>

@@ -27,6 +27,7 @@ Use `04-hardening-checklists.md` as a baseline audit and dive into `05`–`08` f
 | [ECN and L4S: Marking Instead of Dropping](06b-ecn-and-l4s.md) | `06b-ecn-and-l4s.md` |
 | [nftables Fundamentals: Tables, Chains, Sets and NAT](07-nftables-fundamentals.md) | `07-nftables-fundamentals.md` |
 | [Conntrack Exhaustion: Limits, Timeouts and the Table-Full Drop](08-conntrack-exhaustion.md) | `08-conntrack-exhaustion.md` |
+| [Stateful Firewall HA and Conntrack Sync](08b-stateful-firewall-ha-and-conntrack-sync.md) | `08b-stateful-firewall-ha-and-conntrack-sync.md` |
 | [MACsec (IEEE 802.1AE) and MKA: Hop-by-Hop Ethernet Encryption](09-macsec-and-mka.md) | `09-macsec-and-mka.md` |
 | [Dropping Attack Traffic with Routing: RTBH, Source-Based RTBH and BGP FlowSpec](10-rtbh-and-flowspec.md) | `10-rtbh-and-flowspec.md` |
 | [IPv6 First-Hop Security and Binding Validation](11-ipv6-first-hop-security.md) | `11-ipv6-first-hop-security.md` |

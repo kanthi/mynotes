@@ -54,6 +54,8 @@ BGP is policy-heavy. Simplified order of preference ideas:
 
 You will not memorize every tie-breaker today—**know that policy beats pure shortest path**.
 
+![BGP best-path selection pipeline from Weight and LOCAL_PREF through AS_PATH length, Origin, MED, eBGP over iBGP, IGP metric, and Router ID](../../images/diagram-bgp-decision-process.svg)
+
 ### NLRI and attributes
 
 Routes carry attributes (AS_PATH, NEXT_HOP, LOCAL_PREF, MED, communities…). Filters rewrite attributes; that is policy.

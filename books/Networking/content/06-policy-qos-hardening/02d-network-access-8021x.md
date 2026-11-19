@@ -4,58 +4,137 @@ title: 'Network Access Control: 802.1X, EAP and Authorization'
 
 # Network Access Control: 802.1X, EAP and Authorization
 
-A link can be electrically up and still deny ordinary traffic until an endpoint is authenticated and authorized. Network access control connects identity to an access decision, but the access decision must also produce a usable VLAN, role or policy. Diagnose the endpoint, authenticator, authentication service and forwarding path independently.
+A switch port can be electrically up (`up/up`) and still block every user frame until the attached endpoint proves its identity and receives an authorization policy. IEEE 802.1X couples link-layer port control with centralized identity verification, turning every campus access port into an enforcement boundary.
+
+![802.1X EAPOL authentication flow between supplicant, authenticator switch, and RADIUS server](../../images/diagram-8021x-eapol-flow.svg)
+
+## Roles and the Controlled vs. Uncontrolled port
+
+Every 802.1X deployment separates responsibilities across three components:
+
+- **Supplicant:** Software on the endpoint (`wpa_supplicant` on Linux, native 802.1X clients on Windows/macOS) that answers identity challenges using credentials or X.509 certificates.
+- **Authenticator:** The access switch or wireless controller/AP. It enforces port state locally and relays EAP frames inside RADIUS packets (UDP 1812, or RadSec over TLS/TCP 2083).
+- **Authentication Server:** A RADIUS/AAA policy engine (FreeRADIUS, Cisco ISE, Aruba ClearPass) that validates credentials against PKI/AD/LDAP and returns an `Access-Accept` or `Access-Reject` with authorization attributes.
+
+Logically, the authenticator splits each physical port into two virtual paths:
+
+- **Uncontrolled Port:** Always open, but permits **only** EAPOL frames (`EtherType 0x888E`, destination multicast `01:80:C2:00:00:03`) plus any explicitly allowed pre-auth traffic (such as PXE/DHCP if configured in Low-Impact/Monitor mode).
+- **Controlled Port:** Blocked (`Unauthorized`) until the authentication server returns `Access-Accept`. Once `Authorized`, normal production traffic enters the assigned VLAN and ACL.
 
 ![Common 802.1X authentication path](../../images/diagram-concept-network-access.svg)
 
-## Roles and message path
+> [!NOTE]
+> 802.1X authenticates the port; it does **not** encrypt wired Ethernet frames. To protect confidentiality and integrity on the wire after authentication, pair 802.1X with MACsec key agreement (MKA). See [MACsec and MKA](09-macsec-and-mka.md) and [Wireless LAN Fundamentals](../03-layer-2/06-wireless-lan-fundamentals.md).
 
-In a common deployment the endpoint runs a **supplicant**, the switch or access point is the **authenticator**, and an authentication server verifies credentials and returns a decision. The client and authenticator exchange EAP over LAN (EAPOL); the authenticator commonly relays EAP within RADIUS messages to a backend server. An authenticator can implement EAP methods locally, so a separate server is common rather than mandatory. EAP is a framework, not one authentication method or a synonym for RADIUS.
+## EAP-TLS versus PEAP-MSCHAPv2
 
-The authenticator controls access at the port or session according to its policy. The controlled port may initially permit only the traffic needed for authentication; the exact treatment of other link-local protocols depends on implementation and configuration. Wired access and wireless association have different link-layer stages. In particular, a wireless client can associate to a BSS without having completed enterprise authentication or obtained IP connectivity.
+EAP (RFC 3748) is an extensible transport framework, not a single authentication method. In enterprise networks, two methods dominate:
 
-A simplified successful sequence is: link or association; EAP identity and method exchange; backend decision; authorization applied by the authenticator; address configuration and data forwarding. EAP-TLS typically uses certificates, but a deployment must specify its authentication policy rather than assume every EAP method uses certificates. The unauthenticated outer EAP identity can help route an authentication request; it is not by itself proof of the user's identity.
+| Criterion | EAP-TLS (RFC 5216 / RFC 9190) | PEAP-MSCHAPv2 |
+|---|---|---|
+| **Authentication basis** | Mutual X.509 certificates (server + client) | Server certificate + inner username/password |
+| **Phishing / evil-twin resistance** | **Strong** (when client validates server CA + SAN) | Moderate; vulnerable if client skips server cert validation |
+| **Credential rotation** | Automated via SCEP / ACME / MDM | Tied to user password lifecycle (lockouts on password change) |
+| **Operational dependency** | Internal PKI, CRL/OCSP reachability, NTP clock sync | AD/NTLM backend (`ntlm_auth` / Samba / NPS) |
+| **Production recommendation** | **Preferred standard** for corporate managed endpoints | Legacy fallback only; migrate off MSCHAPv2 where possible |
 
-## Authentication versus authorization
+> [!WARNING]
+> Never "fix" an EAP-TLS or PEAP failure by disabling server certificate validation on the supplicant. Without pinning the trusted CA and expected RADIUS server DNS name (`altsubject_match`), an attacker with a rogue switch or AP can intercept credentials or impersonate the network.
 
-**Authentication** establishes a claimed identity according to the chosen method. **Authorization** decides what access that authenticated identity receives. An Access-Accept may carry policy such as a VLAN, role, access list or session attributes; actual support and precedence are platform-specific. The RADIUS VLAN convention in RFC 3580 uses Tunnel-Type VLAN, Tunnel-Medium-Type 802 and a VLAN identifier encoded in Tunnel-Private-Group-ID. A server sending these attributes does not ensure that the authenticator accepts them, that the VLAN exists, or that its uplinks and DHCP service are correct.
+## MAB fallback for headless devices
 
-For example, a user may authenticate successfully and be assigned VLAN 20, but receive no address because VLAN 20 is absent from the upstream trunk. Conversely, a client may receive a restricted fallback role after authentication fails: an IP address alone does not prove it passed the intended policy. Check the applied session authorization on the access device and test both permitted and denied destinations.
+Printers, badge readers, IP cameras, and medical/OT sensors rarely run an 802.1X supplicant. **MAC Authentication Bypass (MAB)** lets the switch wait for EAPOL to time out, then read the device's first source MAC address and send it to RADIUS as both `User-Name` and `User-Password`.
 
-## EAP-TLS and trust
+Because a MAC address is printed on the chassis and trivial to spoof (`ip link set dev eth0 address ...`), treat MAB as **weak classification**, never strong authentication:
 
-With certificate-based EAP-TLS, the client must validate the server certificate chain and expected server identity; trusting a broad CA without restricting the server name can accept an unintended server. The server validates the client credential according to deployment policy, including its chain, identity, validity and revocation requirements. RFC 9190 specifies EAP-TLS with TLS 1.3 and updates EAP-TLS guidance; verify the actual client, server and negotiated version. Time synchronization, certificate renewal and revocation availability are operational dependencies. Do not “fix” a certificate error by disabling validation.
+- Place MAB endpoints in a dedicated, tightly firewalled VLAN with a downloadable ACL (dACL) permitting only required ports (for example, IPP/9100 to the print server).
+- Combine MAB with **device profiling** (DHCP fingerprint, LLDP/CDP, OUI) and port-security MAC limits (`max 1` or `max 2` for IP phone + PC).
+- Maintain an explicit exception lifecycle so unused MAB entries are pruned.
 
-Authentication does not automatically encrypt all wired user data. MACsec can provide link-layer protection where the devices and key-management design support it; it is distinct from simply enabling 802.1X. Wireless security has its own key establishment and protection rules. See [MACsec and MKA](09-macsec-and-mka.md) and [Wireless LAN Fundamentals](../03-layer-2/06-wireless-lan-fundamentals.md).
+## Dynamic VLAN assignment and RFC 5176 CoA
 
-## Non-supplicant devices and failure modes
+Authentication answers *who are you?*; authorization answers *what can you touch?* Using RFC 3580 RADIUS attributes inside `Access-Accept`, the AAA server dynamically assigns the endpoint's VLAN:
 
-Some devices cannot run an 802.1X supplicant. A deployment may classify them using a MAC-address-based fallback, pre-provisioned port or restricted network. A MAC address is observable and spoofable; such a fallback is a weaker identity signal and should be paired with narrowly scoped access, monitoring and an explicit exception lifecycle. Do not mistake it for certificate-based mutual authentication.
+- `Tunnel-Type = VLAN` (`13`)
+- `Tunnel-Medium-Type = IEEE-802` (`6`)
+- `Tunnel-Private-Group-Id = "20"` (VLAN ID or name)
+- Optional: `Filter-Id` or vendor-specific dACL, plus `Session-Timeout` for periodic reauthentication.
 
-Decide in advance how the authenticator behaves when the AAA service is unreachable, rejects a credential, returns an invalid policy, or stops responding during reauthentication. Failure-open, failure-closed and restricted fallback have different availability and security effects; defaults differ. Distinguish a server timeout from an explicit reject. Account for multi-host ports, phones with downstream workstations, virtual machines, session limits, reauthentication and device movement. Test whether a fallback policy can be abused to bypass stronger authentication.
+### Change of Authorization (CoA — RFC 5176)
 
-## Validation exercise
+Standard RADIUS is pull-only (the switch asks the server). **CoA (UDP 3799)** lets the RADIUS server push mid-session changes *to* the switch:
 
-Use an isolated access switch or AP that supports 802.1X, a test supplicant, an EAP/RADIUS server and a test CA. A server and authenticator were not available on the writing host, so this is a vendor-neutral test plan, not an executed configuration. Supply platform-specific commands from the actual device documentation and use disposable credentials. Establish a separate recovery path before changing access policy.
+- **Quarantine / Re-auth:** If an EDR/SIEM flags a compromised laptop, the AAA server sends a `CoA-Request` to move the port into a quarantine VLAN or apply a restrictive dACL immediately.
+- **Port Bounce:** Because changing a wired port's VLAN does not automatically trigger a Windows/Linux DHCP renew, a CoA `Bounce-Host-Port` briefly flaps the link so the client requests a new IP on the new VLAN.
 
-| Test | Expected evidence |
-|---|---|
-| Valid client and trusted server | EAP success in client/server logs; authorized session and expected role/VLAN on access device; intended connectivity |
-| Wrong expected server name or untrusted CA | Client rejects server authentication; no ordinary access under the intended fail-closed policy |
-| Revoked, expired or unauthorized test client credential | Server's policy and revocation handling produce the documented denial; access device applies intended outcome |
-| Valid credentials, deliberately wrong VLAN assignment | Authentication succeeds, but assigned role/VLAN or upstream path explains addressing or reachability failure |
-| AAA server unavailable | Timeout and configured fallback behavior are visible; distinguish from an explicit reject |
-| Unsupported endpoint using approved fallback | Restricted policy applies; verify both allowed and denied traffic and record the weaker identity basis |
-| Reauthentication and port move | Session and authorization follow the documented design without stale access or unexpected outage |
+## Rollout strategy: Monitor Mode to Closed Mode
 
-For each case record timestamps, client EAP state, authenticator session/port state, server decision and reason, returned and applied authorization, VLAN/trunk membership, DHCP result, and tests to allowed and denied endpoints. Use test certificates with the correct names and validity, then remove them and restore the access policy. Packet captures and logs can contain identities and security-sensitive metadata; handle them according to the lab's data rules.
+Enabling strict 802.1X across a live campus overnight will cause an outage. Roll out in three controlled phases:
+
+1. **Monitor Mode (Open Authentication):** Switch runs 802.1X and MAB and logs every `Access-Accept`/`Access-Reject` to RADIUS, but permits traffic even on failure (`authentication open`). Use this phase to inventory headless devices, fix broken supplicants, and verify RADIUS redundancy.
+2. **Low-Impact Mode:** Apply a pre-authentication ACL permitting only DHCP, DNS, and remediation/PKI servers before authentication succeeds; once authorized, full VLAN/dACL applies.
+3. **Closed Mode:** Remove the open bypass. Unauthenticated ports drop all non-EAPOL traffic (or fall back to a strictly isolated guest/remediation VLAN). Configure **Critical Auth (AAA Fail-Open/Fail-VLAN)** so a total RADIUS outage does not lock out active workstations.
+
+## Concrete configuration snippets
+
+### Linux Supplicant (`wpa_supplicant` wired EAP-TLS)
+
+```cfg
+# /etc/wpa_supplicant/wpa_supplicant-wired-eth0.conf
+ctrl_interface=/run/wpa_supplicant
+ap_scan=0
+
+network={
+    key_mgmt=IEEE8021X
+    eap=TLS
+    identity="host/ws-042.corp.example"
+    ca_cert="/etc/ssl/certs/corp-root-ca.pem"
+    client_cert="/etc/ssl/certs/ws-042.pem"
+    private_key="/etc/ssl/private/ws-042.key"
+    altsubject_match="DNS:radius.corp.example"
+    eapol_flags=0
+}
+```
+
+### FreeRADIUS dynamic VLAN policy (`users` / `authorize` snippet)
+
+```text
+# Illustrative FreeRADIUS policy returning RFC 3580 VLAN 20 for corporate hosts
+"host/ws-042.corp.example"
+    Tunnel-Type := VLAN,
+    Tunnel-Medium-Type := IEEE-802,
+    Tunnel-Private-Group-Id := "20",
+    Session-Timeout := 28800,
+    Termination-Action := RADIUS-Request
+```
+
+### Switch access port (Cisco IOS-XE style, Closed Mode + MAB + Critical VLAN)
+
+```cfg
+interface GigabitEthernet1/0/12
+ switchport mode access
+ switchport access vlan 999
+ authentication host-mode multi-domain
+ authentication order dot1x mab
+ authentication priority dot1x mab
+ authentication port-control auto
+ authentication event fail action next-method
+ authentication event server dead action authorize vlan 20
+ authentication periodic
+ authentication timer reauthenticate server
+ mab
+ dot1x pae authenticator
+ spanning-tree portfast
+```
 
 ## Troubleshooting sequence
 
-1. **No EAP exchange:** verify link, SSID/port, supplicant, 802.1X enablement and EAPOL counters. On wireless, separate association failure from EAP failure.
-2. **EAP starts but times out:** trace authenticator-to-server reachability, RADIUS configuration, shared-secret or transport settings, firewall policy and server health. Large certificate exchanges can encounter packet-size or fragmentation issues; inspect actual captures and server logs.
-3. **Explicit reject or TLS failure:** compare server reason with client trust, expected server name, certificate chain, expiry, revocation and credential policy. The visible outer identity alone is not proof of authenticated identity.
-4. **Accept but no service:** inspect applied authorization and VLAN, port/trunk and DHCP behavior, gateway, DNS and ACL counters. A backend accept is not end-to-end proof.
-5. **Intermittent loss after successful access:** correlate reauthentication, session timeout, roaming, address renewal, AAA availability and policy changes with timestamps. Validate recovery, not merely a new initial login.
+When a user reports "link is up, no network," isolate the failure layer by layer:
 
-**References:** [EAP, RFC 3748](https://www.rfc-editor.org/rfc/rfc3748.html), [802.1X RADIUS usage, RFC 3580](https://www.rfc-editor.org/rfc/rfc3580.html), and [EAP-TLS 1.3, RFC 9190](https://www.rfc-editor.org/rfc/rfc9190.html).
+1. **No EAP exchange:** Verify `dot1x pae authenticator`, link state, and `show dot1x interface` EAPOL counters. On wireless, separate 802.11 association from 802.1X EAP.
+2. **EAP starts, then times out:** Check switch-to-RADIUS reachability, shared secret, UDP 1812 firewall rules, and EAP-TLS certificate fragmentation (reduce `framed-mtu` to `1300` if certificates exceed path MTU).
+3. **Explicit `Access-Reject` or TLS error:** Compare FreeRADIUS logs (`radiusd -X` in lab) against client trust store, server SAN, certificate expiry, CRL/OCSP reachability, and NTP clock skew.
+4. **`Access-Accept` received, but no IP/connectivity:** Confirm the assigned VLAN actually exists on the switch, is permitted on the upstream trunk, and has a working DHCP relay (`ip helper-address`).
+5. **Drops after hours of working:** Check `Session-Timeout` reauthentication, AAA server availability during re-auth, and whether CoA UDP 3799 is blocked by a firewall.
+
+**References:** [EAP, RFC 3748](https://www.rfc-editor.org/rfc/rfc3748.html), [802.1X RADIUS Usage, RFC 3580](https://www.rfc-editor.org/rfc/rfc3580.html), [RADIUS CoA Extensions, RFC 5176](https://www.rfc-editor.org/rfc/rfc5176.html), and [EAP-TLS 1.3, RFC 9190](https://www.rfc-editor.org/rfc/rfc9190.html).

@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 440" role="img" color-scheme="light" aria-label="Hybrid WAN IPsec XFRM lab topology showing onprem AS 65100 connected via untrusted WAN router to cloud-gw1 and cloud-gw2 AS 65200 over dual route-based IPsec XFRM tunnels xfrm1 if_id 10 and xfrm2 if_id 20 carrying eBGP and BFD with TCP MSS clamping">
+  <defs>
+    <pattern id="grid-64" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M20 0H0V20" fill="none" stroke="#d9e2ec" stroke-width="0.8"/>
+    </pattern>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#3b82c4"/>
+    </marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#15803d"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#b45309"/>
+    </marker>
+    <style>
+      .title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13.5px; font-weight: 700; fill: #2f3b4a; }
+      .label { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 11px; font-weight: 700; fill: #2f3b4a; }
+      .muted { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.8px; fill: #5c6b7a; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 9.2px; fill: #3d4f5f; }
+      .badge { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 9.2px; font-weight: 700; fill: #ffffff; }
+      .underlay { fill: none; stroke: #8b9bb0; stroke-width: 2; }
+      .tun1 { fill: none; stroke: #3b82c4; stroke-width: 2.2; stroke-dasharray: 6 3; marker-start: url(#arr-blue); marker-end: url(#arr-blue); }
+      .tun2 { fill: none; stroke: #15803d; stroke-width: 2.2; stroke-dasharray: 6 3; marker-start: url(#arr-green); marker-end: url(#arr-green); }
+    </style>
+  </defs>
+
+  <rect width="840" height="440" rx="16" fill="#f4f7fb"/>
+  <rect width="840" height="440" rx="16" fill="url(#grid-64)"/>
+  <rect x="8" y="8" width="824" height="424" rx="12" fill="none" stroke="#e2e8f0"/>
+
+  <text x="420" y="30" text-anchor="middle" class="title">Lab 64: Route-Based IPsec (XFRM) Hybrid WAN with eBGP &amp; MSS Clamping</text>
+  <text x="420" y="46" text-anchor="middle" class="muted">Dual IKEv2/ESP tunnels (if_id 10 &amp; 20) over untrusted WAN underlay · FRR eBGP + BFD failover · nftables MSS 1360</text>
+
+  <!-- On-Premises Box -->
+  <rect x="28" y="72" width="236" height="292" rx="12" fill="#eef3f9" stroke="#8b9bb0" stroke-width="1.5"/>
+  <text x="44" y="92" class="label">On-Premises Edge</text>
+  <text x="248" y="92" text-anchor="end" class="mono">AS 65100</text>
+
+  <rect x="44" y="106" width="204" height="106" rx="8" fill="#ffffff" stroke="#8b9bb0" stroke-width="1.4"/>
+  <text x="56" y="124" class="label">onprem (FRR + strongSwan)</text>
+  <text x="56" y="141" class="mono">lo:    10.10.0.1/32 (LAN /24)</text>
+  <text x="56" y="156" class="mono">eth1:  198.51.100.2/30</text>
+  <text x="56" y="171" class="mono">xfrm1: 169.254.10.2/30 (id 10)</text>
+  <text x="56" y="186" class="mono">xfrm2: 169.254.20.2/30 (id 20)</text>
+  <text x="56" y="202" class="muted">MTU 1400 · BFD 300ms · DPD 5s</text>
+
+  <rect x="44" y="226" width="204" height="58" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.2"/>
+  <text x="56" y="244" class="label">nftables MSS Clamping</text>
+  <text x="56" y="260" class="mono">oifname "xfrm*" tcp syn</text>
+  <text x="56" y="274" class="mono">maxseg size set 1360</text>
+
+  <rect x="44" y="298" width="204" height="50" rx="8" fill="#dbeafe" stroke="#3b82c4" stroke-width="1.2"/>
+  <text x="56" y="316" class="label">eBGP Policy</text>
+  <text x="56" y="331" class="mono">Primary: xfrm1 (LP 200)</text>
+  <text x="56" y="343" class="mono">Backup:  xfrm2 (LP 100)</text>
+
+  <!-- Untrusted WAN Router -->
+  <rect x="334" y="166" width="172" height="114" rx="10" fill="#ffffff" stroke="#b91c1c" stroke-width="1.6"/>
+  <text x="420" y="186" text-anchor="middle" class="label">wan (Untrusted ISP)</text>
+  <text x="420" y="202" text-anchor="middle" class="muted">Underlay L3 Transit Only</text>
+  <text x="348" y="222" class="mono">eth1: 198.51.100.1/30</text>
+  <text x="348" y="237" class="mono">eth2: 203.0.113.1/30</text>
+  <text x="348" y="252" class="mono">eth3: 203.0.113.5/30</text>
+  <text x="420" y="270" text-anchor="middle" class="muted">Sees only UDP 500/4500 &amp; ESP</text>
+
+  <!-- Cloud VPC Box -->
+  <rect x="576" y="72" width="236" height="292" rx="12" fill="#eef3f9" stroke="#8b9bb0" stroke-width="1.5"/>
+  <text x="592" y="92" class="label">Cloud VPC Gateways</text>
+  <text x="796" y="92" text-anchor="end" class="mono">AS 65200</text>
+
+  <rect x="592" y="108" width="204" height="112" rx="8" fill="#ffffff" stroke="#3b82c4" stroke-width="1.5"/>
+  <text x="604" y="126" class="label">cloud-gw1 (Primary)</text>
+  <text x="604" y="143" class="mono">eth1:  203.0.113.2/30</text>
+  <text x="604" y="158" class="mono">xfrm1: 169.254.10.1/30 (id 10)</text>
+  <text x="604" y="173" class="mono">lo:    10.20.0.1/32 (VPC /24)</text>
+  <text x="604" y="191" class="muted">MED 10 · Active Tunnel 1</text>
+  <text x="604" y="206" class="muted">strongSwan + FRR eBGP/BFD</text>
+
+  <rect x="592" y="238" width="204" height="112" rx="8" fill="#ffffff" stroke="#15803d" stroke-width="1.5"/>
+  <text x="604" y="256" class="label">cloud-gw2 (Secondary)</text>
+  <text x="604" y="273" class="mono">eth1:  203.0.113.6/30</text>
+  <text x="604" y="288" class="mono">xfrm2: 169.254.20.1/30 (id 20)</text>
+  <text x="604" y="303" class="mono">lo:    10.20.0.2/32 (VPC /24)</text>
+  <text x="604" y="321" class="muted">MED 50 · Standby Tunnel 2</text>
+  <text x="604" y="336" class="muted">strongSwan + FRR eBGP/BFD</text>
+
+  <!-- Underlay Physical Links -->
+  <path class="underlay" d="M248,164 H300 V222 H334"/>
+  <path class="underlay" d="M506,204 H546 V152 H592"/>
+  <path class="underlay" d="M506,242 H546 V288 H592"/>
+
+  <!-- Overlay IPsec XFRM Tunnels -->
+  <path class="tun1" d="M248,136 C360,84 480,84 590,136"/>
+  <path class="tun2" d="M248,196 C326,316 504,332 590,298"/>
+
+  <!-- Tunnel Pills -->
+  <rect x="348" y="84" width="144" height="22" rx="11" fill="#3b82c4"/>
+  <text x="420" y="98" text-anchor="middle" class="badge">xfrm1 · ESP if_id 10 · eBGP</text>
+
+  <rect x="348" y="312" width="144" height="22" rx="11" fill="#15803d"/>
+  <text x="420" y="326" text-anchor="middle" class="badge">xfrm2 · ESP if_id 20 · eBGP</text>
+
+  <!-- Legend Footer -->
+  <line x1="40" y1="396" x2="72" y2="396" stroke="#8b9bb0" stroke-width="2"/>
+  <text x="80" y="399" class="muted">Underlay L3 link (untrusted)</text>
+  <line x1="252" y1="396" x2="284" y2="396" stroke="#3b82c4" stroke-width="2.2" stroke-dasharray="6 3"/>
+  <text x="292" y="399" class="muted">Tunnel 1: xfrm1 (if_id 10, Primary)</text>
+  <line x1="504" y1="396" x2="536" y2="396" stroke="#15803d" stroke-width="2.2" stroke-dasharray="6 3"/>
+  <text x="544" y="399" class="muted">Tunnel 2: xfrm2 (if_id 20, Failover)</text>
+</svg>

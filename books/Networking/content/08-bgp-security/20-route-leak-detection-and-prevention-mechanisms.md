@@ -4,66 +4,129 @@ title: Route Leak Detection and Prevention Mechanisms
 
 # Route Leak Detection and Prevention Mechanisms
 
-Route leaks remain one of the most volatile disruptions on the global Internet. Because traditional RPKI ROV does not detect route leaks, the industry has developed architectural standards, automated telemetry systems, and industry self-regulation frameworks to systematically detect and prevent them.
+A route leak occurs when a BGP speaker propagates a routing announcement beyond its intended commercial scope—most commonly re-advertising routes learned from one transit provider or lateral peer to another transit provider or peer. Because the leaked route retains its original, legitimate origin ASN, RPKI Route Origin Validation (ROV) evaluates it as `Valid`. Preventing and containing route leaks therefore requires dedicated role-aware signaling, path-valley verification, and strict session hygiene.
 
-## Community-Based Leak Prevention and RFC 9234
+![RFC 9234 BGP Roles and Only-to-Customer attribute preventing a valley route leak](../../images/diagram-bgp-otc-route-leak.svg)
 
-Operators have long relied on proprietary BGP communities to tag routes. However, proprietary communities do not cross organizational boundaries: upstream ISP $A$ strips or ignores customer $B$'s internal communities.
+## RFC 7908 Route Leak Taxonomy (Types 1–6)
 
-To standardize leak prevention across administrative domains, the IETF published **RFC 9234: Route Leak Prevention and Detection Using BGP Roles**:
+RFC 7908 classifies route leaks into six canonical types based on the commercial relationships (Provider, Customer, Peer) involved. Under the **Gao-Rexford valley-free model**, a valid interdomain path may travel uphill (Customer $\to$ Provider), cross at most one lateral Peer link, and then travel downhill (Provider $\to$ Customer)—never downhill and back uphill again.
 
+| RFC 7908 Type | Name | Propagation Pattern | Typical Root Cause |
+|:---:|:---|:---|:---|
+| **Type 1** | Hairpin Turn with Full Prefix | Provider A $\to$ Customer B $\to$ Provider C | Missing outbound filter on a multi-homed customer |
+| **Type 2** | Lateral ISP-ISP-ISP Leak | Peer A $\to$ AS B $\to$ Peer C | Re-advertising lateral peer routes to another lateral peer |
+| **Type 3** | Transit-Provider Route to Peer | Provider A $\to$ AS B $\to$ Peer C | Exporting full transit table over a settlement-free IXP/PNI |
+| **Type 4** | Peer Route to Transit Provider | Peer A $\to$ AS B $\to$ Provider C | Exporting IXP/peer-learned routes upstream to a transit provider |
+| **Type 5** | Prefix Re-Origination with Data Path to Legitimate Origin | Provider A $\to$ AS B (re-originates) $\to$ Provider C | Redistribution from IGP/static into BGP (also triggers ROV Invalid if ROA exists) |
+| **Type 6** | Accidental Leak of Internal Prefixes | Internal router $\to$ External eBGP peer | Missing `no-export` community or broken route-map during maintenance |
+
+> [!NOTE]
+> Types 1 through 4 are the hardest to stop with origin-only checks because the `AS_PATH` still ends in the legitimate origin ASN. RFC 9234 and ASPA specifically target these valley violations.
+
+## RFC 9234: BGP Roles and the Only-to-Customer (OTC) Attribute
+
+Proprietary BGP communities (such as `no-export` or ISP-specific tags) fail to stop cross-domain leaks because operators strip or ignore foreign communities. **RFC 9234** solves this at the protocol layer by introducing two interoperable mechanisms:
+
+1. **BGP Role Capability (Capability Code 9)**: During BGP `OPEN` negotiation, each router declares its local commercial role on the session: `Provider`, `Customer`, `Peer`, `RS` (Route Server), or `RS-Client`. If the two sides declare incompatible roles (for example, both claim to be `Customer`), the session refuses to establish with a `NOTIFICATION` (`Role Mismatch`), preventing silent misconfiguration.
+2. **Only-to-Customer (OTC) Path Attribute (Attribute Type 35)**: An optional, transitive 4-byte ASN attribute carried inside BGP `UPDATE` messages.
+
+### Egress Marking and Ingress Rejection Rules
+
+RFC 9234 enforces leak prevention with two deterministic rules:
+
+- **Egress Marking**: When a router advertises a route on a session where its local role is `Provider`, `Peer`, or `RS`, it **must** attach `OTC = local_ASN` if the OTC attribute is not already present.
+- **Ingress Rejection**:
+  - When a router receives a route on a session where its local role is `Provider` (from a Customer) or `RS` (from an RS-Client), and the route **already contains an OTC attribute**, the route is an illegal valley leak and **must be rejected**.
+  - When a router receives a route from a `Peer` and the route contains an `OTC` whose value does not equal the peer's ASN, it **must be rejected**.
+  - When a router with local role `Customer` receives a route from a `Provider` without an OTC attribute, it adds `OTC = remote_ASN` on ingress so downstream hops remain protected even if the provider did not stamp it.
+
+> [!IMPORTANT]
+> Because `OTC` is an **optional transitive** attribute, intermediate routers that do not yet implement RFC 9234 still pass it intact. That means Provider A and Provider C can neutralize a Type-1 leak even if Customer B runs legacy software that ignores OTC.
+
+## ASPA: Cryptographic Valley-Free Verification
+
+While RFC 9234 relies on cooperative signaling (a malicious or misconfigured router could strip OTC), **ASPA (Autonomous System Provider Authorization)** brings cryptographic verification to the RPKI.
+
+- Each participating AS publishes a signed **ASPA object** in the RPKI listing the set of all its authorized **upstream transit providers** (its Customer-to-Provider, or C2P, attestations).
+- When a border router receives an `AS_PATH`, it verifies each adjacent ASN pair `(AS_i, AS_{i+1})` against the validated ASPA table to determine whether the path contains an **up-ramp** (Customer $\to$ Provider) followed by a **down-ramp** (Provider $\to$ Customer), or an unauthorized valley.
+- If a path received from a customer or peer contains a Provider $\to$ Customer transition (a valley), or if an attacker forges an origin `AS_V` that has published an ASPA not listing the attacker as a provider, ASPA marks the path **`Invalid`** and drops it.
+
+ASPA therefore defends against **both** Types 1–4 route leaks **and** forged-origin (Type-1) hijacks without requiring online cryptographic signing of every BGP `UPDATE` (unlike BGPsec).
+
+## Peerlock and Peerlock-Lite AS-Path Filters
+
+Before RFC 9234 and ASPA matured, major Tier-1 operators developed **Peerlock** to stop large-scale route leaks from smaller networks.
+
+- **Core Principle**: A Tier-1 transit-free network (such as AS174, AS2914, AS3356, AS1299) never purchases transit from a smaller customer. Therefore, if a Tier-1 ASN appears anywhere inside an `AS_PATH` received from a non-Tier-1 customer or peer, that route is guaranteed to be a **route leak**.
+- **Peerlock-Lite**: Even non-Tier-1 networks deploy lightweight AS-path regex filters on customer and IXP peer sessions that reject any route containing well-known Tier-1 ASNs in the middle of the `AS_PATH`.
+
+## Concrete Router Configurations (FRR and BIRD 2)
+
+### FRR: RFC 9234 BGP Roles + `maximum-prefix` + Peerlock-Lite
+
+```cfg
+! Illustrative FRR configuration for Provider C (AS64503) facing Customer B (AS64502)
+bgp as-path access-list TIER1-LEAK-GUARD seq 10 deny _(174|209|286|701|1239|1299|2914|3257|3320|3356|5511|6453|6762|7018)_
+bgp as-path access-list TIER1-LEAK-GUARD seq 20 permit .*
+!
+route-map CUST-IN permit 10
+ match as-path TIER1-LEAK-GUARD
+ match rpki valid
+!
+route-map CUST-IN permit 20
+ match as-path TIER1-LEAK-GUARD
+ match rpki notfound
+!
+router bgp 64503
+ neighbor 198.51.100.2 remote-as 64502
+ neighbor 198.51.100.2 local-role provider strict
+ !
+ address-family ipv4 unicast
+  neighbor 198.51.100.2 maximum-prefix 500 80 restart 15
+  neighbor 198.51.100.2 route-map CUST-IN in
+ exit-address-family
 ```
-+-----------------------------------------------------------+
-|               BGP Role Negotiation (RFC 9234)             |
-|                                                           |
-|  Provider AS                                  Customer AS |
-|     Role: Provider <=========================> Role: Customer
-|                                                           |
-|  - When Provider advertises route to Customer:            |
-|    Attaches "Only to Customer" (OTC) Attribute: OTC=Provider_ASN
-|                                                           |
-|  - When Customer advertises route to another Provider:    |
-|    Second Provider inspects OTC attribute:                |
-|    "Wait! This route has an OTC set, but I received it    |
-|     from a Customer/Peer! This is an illegal leak!"       |
-|    --> ROUTE REJECTED AT BORDER!                          |
-+-----------------------------------------------------------+
+
+> [!TIP]
+> The `strict` keyword in FRR's `local-role provider strict` requires the neighbor to negotiate Capability 9 with the matching `customer` role. Omit `strict` during gradual migration if the customer router does not yet support RFC 9234—FRR will still enforce local OTC ingress/egress checks.
+
+### BIRD 2: RFC 9234 Roles and Automatic OTC Enforcement
+
+```cfg
+# Illustrative BIRD 2.13+ configuration for Provider C (AS64503)
+protocol bgp cust_as64502 {
+    local 198.51.100.1 as 64503;
+    neighbor 198.51.100.2 as 64502;
+    local role provider;
+    require roles on;
+
+    ipv4 {
+        import limit 500 action block;
+        import filter {
+            # RFC 9234 OTC drop is handled automatically by BIRD when local role is set
+            if roa_check(r4, net, bgp_path.last) = ROA_INVALID then reject;
+            accept;
+        };
+        export all;
+    };
+}
 ```
 
-1. **Role Negotiation**: When establishing a BGP session, peers negotiate their commercial relationship in the `OPEN` message: `Provider`, `Customer`, `Peer`, or `RS-Client`.
-2. **OTC Attribute**: When a route moves down a hierarchy (Provider $\to$ Customer) or laterally across peers (Peer $\leftrightarrow$ Peer), the router attaches the **Only to Customer (OTC)** path attribute (Type 35), recording its own ASN.
-3. **Automatic Leak Rejection**: If an upstream router receives a route from a customer or lateral peer that already contains an OTC attribute, it detects an illegal "valley" path and automatically rejects the route, neutralizing the leak in software without requiring complex manual prefix-lists.
+## MANRS Principles and Incident Response
 
-## Automated Leak Detection via Route Collectors and Monitors
-
-When route leaks occur, real-time monitoring algorithms detect them through anomalous propagation signatures:
-- **Valley-Path Algorithms**: Automated telemetry engines inspect the `AS_PATH` streams received by RIPE RIS and RouteViews. By maintaining a global inferred topology map (customer-provider pairs), algorithms flag any path containing a *Customer $\to$ Provider $\to$ Customer* sequence as a probable route leak.
-- **Traffic Shift Probes**: Automated synthetic measurement networks (e.g., RIPE Atlas, ThousandEyes) detect sudden 200ms latency spikes and buffer-bloat jitter on paths that previously converged in 15ms.
-
-## BGPsec Route Leak Prevention Potential
-
-While BGPsec (RFC 8205) was designed to protect path integrity by having each AS cryptographically sign its announcement to the next hop, **base BGPsec does not inherently prevent route leaks**:
-- In a route leak, the customer legally received the route from Provider $A$ with a valid cryptographic signature.
-- The customer appends its own valid signature and passes it to Provider $B$.
-- The signature chain is mathematically flawless!
-- To prevent leaks, cryptographic protocols must incorporate role metadata (such as ASPA or signed OTC attributes) into the signature envelope.
-
-## MANRS Principles and Their Implementation Status
-
-The **Mutually Agreed Norms for Routing Security (MANRS)** is a global, industry-led initiative operated under the Internet Society (ISOC) that establishes a baseline of routing hygiene:
+Technical controls work best when backed by operational norms. The **Mutually Agreed Norms for Routing Security (MANRS)** framework defines four baseline actions for network operators:
 
 | MANRS Action | Technical Requirement | Operational Focus |
 |:---|:---|:---|
-| **Action 1: Filtering** | Prevent propagation of incorrect routing information | Strict prefix-lists on customer sessions; RPKI ROV enforcement |
-| **Action 2: Anti-Spoofing** | Prevent traffic with spoofed source IP addresses | Unicast Reverse Path Forwarding (uRPF, RFC 3704) on edge access links |
-| **Action 3: Coordination** | Facilitate global operational communication | Accurate, maintained contact info in PeeringDB and RIR WHOIS |
-| **Action 4: Global Validation**| Publicly document routing policy | Publish valid ROAs in RPKI and maintained `route`/`as-set` objects in IRR |
+| **1. Filtering** | Drop incorrect announcements at customer edges | IRR prefix-lists (`bgpq4`), RPKI ROV, RFC 9234 OTC, `maximum-prefix` |
+| **2. Anti-Spoofing** | Block spoofed source IP packets | Unicast RPF (RFC 3704) on customer access interfaces |
+| **3. Coordination** | Enable rapid NOC-to-NOC escalation | Up-to-date 24/7 phone/email contacts in PeeringDB and RIR WHOIS |
+| **4. Global Validation** | Publish authoritative routing intent | Valid minimal ROAs, ASPA objects, and maintained IRR `as-set` records |
 
-MANRS participation has become a mandatory procurement requirement for Tier-1 telcos, major cloud operators, and financial enterprises.
+When a severe leak still slips past filters into the global DFZ:
 
-## Coordination and Incident Response When Leaks Occur
-
-When a severe leak bypasses filters and floods a network:
-1. **Out-of-Band NOC Communication**: Operators contact the leaking network's 24/7 Network Operations Center (NOC) via phone numbers published in **PeeringDB**.
-2. **Session Teardown**: If the leaking customer does not answer, the upstream provider immediately executes `shutdown` on the BGP neighbor session.
-3. **Emergency Disaggregation**: The victim network temporarily announces more-specific `/24` subprefixes to reclaim its traffic until the leak converges out of the global DFZ.
+1. **Detect via Real-Time Monitors**: Use RIPE RIS Live, BGPalerter, or internal BMP collectors to identify the leaking ASN and the exact upstream propagating the valley path.
+2. **Isolate the Session**: The upstream provider immediately shuts down or applies an emergency prefix-limit block to the leaking customer's BGP session.
+3. **Coordinate Out-of-Band**: Contact the leaking network's NOC via PeeringDB emergency contacts; do not rely solely on email if the leak is disrupting reachability to their own mail servers.
+4. **Emergency Disaggregation (Last Resort)**: Only if the leak involves a less-specific aggregate, the victim may temporarily originate matching more-specific `/24` prefixes until the upstream clears the leaked state.

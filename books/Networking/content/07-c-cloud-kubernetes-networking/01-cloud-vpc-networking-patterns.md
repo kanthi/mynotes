@@ -82,6 +82,8 @@ A subnet is "public" or "private" strictly based on its route table—not its na
 
 As an organization grows beyond a single VPC, three primary patterns connect workloads.
 
+![Cloud multi-VPC hub-and-spoke architecture with App and Data spokes, Transit Gateway route tables, Inspection and Egress VPC, and Direct Connect or ExpressRoute contrasted with non-transitive VPC peering](../../images/diagram-cloud-vpc-tgw-peering.svg)
+
 ### VPC Peering
 
 VPC Peering creates a direct, non-transitive L3 routing link between two VPCs.
