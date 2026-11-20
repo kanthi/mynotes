@@ -124,6 +124,7 @@ book:
     - content/07-ops-and-fleet/01-disko.md
     - content/07-ops-and-fleet/02-impermanence.md
     - content/07-ops-and-fleet/03-deploy-rs.md
+    - content/07-ops-and-fleet/03b-deploy-rs-2026-and-app-profiles.md
     - content/07-ops-and-fleet/04-colmena.md
     - content/07-ops-and-fleet/05-shared-modules.md
     - content/07-ops-and-fleet/06-images-generators.md
@@ -136,6 +137,7 @@ book:
     - content/07-ops-and-fleet/13-backups.md
     - content/07-ops-and-fleet/14-auto-upgrade.md
     - content/07-ops-and-fleet/15-read-an-update-before-switching.md
+    - content/07-ops-and-fleet/15b-deployment-lifeline-tmux-et-btop.md
     - content/07-ops-and-fleet/16-is-my-flake-lock-stale.md
   - part: Internals
     contents:
@@ -216,6 +218,14 @@ book:
     - content/14-production-labs/03-critical-vs-noncritical.md
     - content/14-production-labs/04-builder-factory-and-restricted-ssh.md
     - content/14-production-labs/05-channel-promotion-and-ci-hosts.md
+    - content/14-production-labs/06-lab-h1-remote-builder-and-harmonia-cache.md
+    - content/14-production-labs/07-lab-h2-git-sha-edge-vm-and-magic-rollback.md
+    - content/14-production-labs/08-lab-h3-secure-boot-tpm2-and-sbom.md
+    - content/14-production-labs/09-lab-h4-pxe-netboot-and-disko-provisioning.md
+    - content/14-production-labs/10-lab-p1-self-hosted-runners-s3-cache-and-canary.md
+    - content/14-production-labs/11-lab-p2-observability-slo-burn-rate-and-pgbackrest-pitr.md
+    - content/14-production-labs/12-lab-p3-cross-compiled-edge-ota-and-sysupdate.md
+    - content/14-production-labs/13-lab-p4-trusted-compute-key-rotation-and-cve-triage.md
   - part: Production Capstones
     contents:
     - content/15-production-capstones/01-enterprise-architecture-and-threat-model.md

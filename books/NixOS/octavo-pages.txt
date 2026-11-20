@@ -105,6 +105,7 @@ content/07-ops-and-fleet/00-index.html	Operations and fleet
 content/07-ops-and-fleet/01-disko.html	Disko
 content/07-ops-and-fleet/02-impermanence.html	Impermanence (idea and patterns)
 content/07-ops-and-fleet/03-deploy-rs.html	deploy-rs
+content/07-ops-and-fleet/03b-deploy-rs-2026-and-app-profiles.html	deploy-rs 1.0 in 2026: Tagged Pins, Groups, and Multi-Profile App Deploys
 content/07-ops-and-fleet/04-colmena.html	Colmena
 content/07-ops-and-fleet/05-shared-modules.html	Shared modules across hosts
 content/07-ops-and-fleet/06-images-generators.html	Images with nixos-generators
@@ -117,6 +118,7 @@ content/07-ops-and-fleet/12-secure-boot-tpm.html	Secure Boot and TPM (awareness)
 content/07-ops-and-fleet/13-backups.html	Backup story
 content/07-ops-and-fleet/14-auto-upgrade.html	Unattended upgrades (system.autoUpgrade)
 content/07-ops-and-fleet/15-read-an-update-before-switching.html	Read an Update Before You Switch: diff-closures, path-info and why-depends
+content/07-ops-and-fleet/15b-deployment-lifeline-tmux-et-btop.html	Deployment Lifeline and Rapid Patching: Spare Tunnels, Eternal Terminal, tmux, and btop
 content/07-ops-and-fleet/16-is-my-flake-lock-stale.html	Is My flake.lock Stale? Lock Age, Branch Distance and End-of-Life Branches
 content/08-internals/00-index.html	Internals and currency
 content/08-internals/01-evaluator.html	The evaluator
@@ -186,6 +188,14 @@ content/14-production-labs/02-operator-keys-and-groups.html	Operator Keys and Gr
 content/14-production-labs/03-critical-vs-noncritical.html	Critical vs Non-Critical Hives
 content/14-production-labs/04-builder-factory-and-restricted-ssh.html	Builder Factory and Restricted Store SSH
 content/14-production-labs/05-channel-promotion-and-ci-hosts.html	Channel Promotion and CI Host Groups
+content/14-production-labs/06-lab-h1-remote-builder-and-harmonia-cache.html	Lab H1: Cross-Arch Remote Builder and Harmonia Binary Cache
+content/14-production-labs/07-lab-h2-git-sha-edge-vm-and-magic-rollback.html	Lab H2: Git-SHA Edge VM, Systemd Sandboxing, and Magic Rollback
+content/14-production-labs/08-lab-h3-secure-boot-tpm2-and-sbom.html	Lab H3: Lanzaboote Secure Boot, TPM2 Auto-Unlock, and CycloneDX SBOM
+content/14-production-labs/09-lab-h4-pxe-netboot-and-disko-provisioning.html	Lab H4: Zero-Touch PXE Netboot and Disko Bare-Metal Provisioning
+content/14-production-labs/10-lab-p1-self-hosted-runners-s3-cache-and-canary.html	Lab P1: Declarative GitHub Runners, S3 Cache, and Canary Fleet Rollout
+content/14-production-labs/11-lab-p2-observability-slo-burn-rate-and-pgbackrest-pitr.html	Lab P2: Full-Stack Observability, SLO Burn Rates, and pgBackRest PITR
+content/14-production-labs/12-lab-p3-cross-compiled-edge-ota-and-sysupdate.html	Lab P3: Cross-Compiled ARM64 Edge Images, DeviceTree, and systemd-sysupdate OTA
+content/14-production-labs/13-lab-p4-trusted-compute-key-rotation-and-cve-triage.html	Lab P4: Fleet Trusted Compute, TPM-Safe Key Rotation, and CVE Patching
 content/15-production-capstones/01-enterprise-architecture-and-threat-model.html	Production Architecture and Threat Model
 content/15-production-capstones/02-disko-storage-and-ephemeral-base.html	Disko Storage and Ephemeral Base System
 content/15-production-capstones/03-hardened-network-and-vpn-mesh.html	Hardened Networking and WireGuard Mesh

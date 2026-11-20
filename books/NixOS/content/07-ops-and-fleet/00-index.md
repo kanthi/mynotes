@@ -51,6 +51,7 @@ You need **at least one disposable machine or VM**. Disko and impermanence are u
 | Disko | `01-disko` | Declarative partitioning / filesystems |
 | Impermanence | `02-impermanence` | Ephemeral root + persist lists |
 | deploy-rs | `03-deploy-rs` | Profile deploy over SSH |
+| deploy-rs 1.0 (2026) | `03b-deploy-rs-2026-and-app-profiles` | `v1.0.0` tag, `--groups`, `--test`, parallel `remoteBuild`, two multi-profile app deploy patterns |
 | Colmena | `04-colmena` | Hive, tags, multi-node |
 | Shared modules | `05-shared-modules` | Roles, profiles, host thinness |
 | Images / generators | `06-images-generators` | ISO, qcow, cloud images |
@@ -62,6 +63,8 @@ You need **at least one disposable machine or VM**. Disko and impermanence are u
 | Secure Boot / TPM | `12-secure-boot-tpm` | Lanzaboote awareness, LUKS+TPM |
 | Backups | `13-backups` | Restic/Borg/ZFS + restore drill |
 | Unattended upgrades | `14-auto-upgrade` | `system.autoUpgrade` from a reviewed branch, reboot windows, rings, alerts |
+| Read an update before switching | `15-read-an-update-before-switching` | `diff-closures`, `path-info`, `why-depends` before activation |
+| Deployment lifeline & rapid patching | `15b-deployment-lifeline-tmux-et-btop` | Spare SSH tunnels, Eternal Terminal (`et`), `tmux`, `btop` telemetry, direct `switch-to-configuration` rollback |
 | Is my flake.lock stale? | `16-is-my-flake-lock-stale` | Pin age, distance to branch tip, end-of-life branches, a second nixpkgs without `follows` |
 
 Suggested path: **Disko → Impermanence → deploy-rs → Colmena → shared modules**, then **images ↔ terraform**, then **tests → CI**, finish with **GC / SB-TPM / backups**.

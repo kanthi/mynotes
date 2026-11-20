@@ -52,7 +52,7 @@ deploy-rs
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
-    deploy-rs.url = "github:serokell/deploy-rs";
+    deploy-rs.url = "github:serokell/deploy-rs/v1.0.0";
     deploy-rs.inputs.nixpkgs.follows = "nixpkgs";
   };
 

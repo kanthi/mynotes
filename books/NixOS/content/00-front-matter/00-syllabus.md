@@ -85,7 +85,7 @@ This **standalone NixOS book** is a **normal topic-oriented** manuscript. Parts 
 | **Containers & K8s** | `11-containers-and-kubernetes/` | Nix-built container images, K8s modules, Helm charts, Argo/Flux GitOps, Talos Linux | Declarative containers, Talos clusters & GitOps pipelines without Dockerfile drift |
 | **IaC & Cloud** | `12-iac-and-cloud/` | Terraform/OpenTofu with Nix, Ansible provisioning, multi-cloud, Proxmox VE, Ceph storage | Provisioning, hypervisors, Ceph storage and cloud state managed through deterministic definitions |
 | **Platform Engineering** | `13-platform-engineering/` | Internal developer platform, monorepos, Colmena fleet deploys, MicroVMs | Enterprise scale platforms operate with automated maintenance & checklists |
-| **Production Labs** | `14-production-labs/` | Infrastructure audits, operator keys, builder factories, channel promotion | Real-world infra patterns extracted and hardened |
+| **Production Labs** | `14-production-labs/` | Infrastructure audits, operator keys, builder factories, Home Labs (H1–H4) & Production Labs (P1–P4) | Real-world infra patterns, PXE/Disko, Secure Boot/TPM2, canary CI/CD, SLO/PITR & ARM64 OTA drills |
 | **Production Capstones**| `15-production-capstones/` | Multi-region production infrastructure, deployable edge cloud & conclusion | Automated fleet rollout, air-gapped edge cloud drills & the path forward |
 | Projects | `99-projects/` | Derivations + distro branding | Hands-on artifacts exist |
 | Appendices | `100-appendices/` | Master glossary, CLI cheatsheets, version reference | Reference tables at hand |

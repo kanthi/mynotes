@@ -38,7 +38,7 @@ This is a **normal topic-oriented book** (parts and chapters), not a day-calenda
 | **Containers & K8s** | `11-containers-and-kubernetes/` | Nix-built container images, K8s modules, Helm charts, Argo/Flux GitOps, Talos Linux |
 | **IaC & Cloud** | `12-iac-and-cloud/` | Terraform/OpenTofu with Nix, Ansible provisioning, multi-cloud, Proxmox VE, Ceph storage |
 | **Platform Engineering** | `13-platform-engineering/` | Internal developer platform, monorepos, Colmena fleet deploys, MicroVMs |
-| **Production Labs** | `14-production-labs/` | Infrastructure audits, operator keys, builder factories, channel promotion |
+| **Production Labs** | `14-production-labs/` | Infrastructure audits, operator keys, builder factories, Home Labs (H1–H4) & Production Labs (P1–P4) |
 | **Production Capstones**| `15-production-capstones/` | Multi-region production infrastructure, deployable edge cloud stack & Conclusion |
 | **Misc** | `16-misc/` | Current pin (Nix 2.35 / NixOS 26.05), how a release is built, minimal ISO to a desktop, a builder that sleeps |
 | **Projects** | `99-projects/` | Derivations + branded distro (ISO, themes, editions) |
