@@ -58,8 +58,16 @@ You do **not** need prior C packaging expertise. You do need willingness to read
 | Remote builders | `10-remote-builders` | Offload realization; features |
 | Reproducibility | `11-reproducibility` | L0–L5 honesty, measurement |
 | **ROS 2 / nix-ros-overlay** | `12-ros2-nix-ros-overlay` | Robotics underlays, flakes, caches, workspaces |
+| Running a Nixpkgs team | `13-running-a-nixpkgs-team` | GitHub teams, sync automation, review queues |
+| Fixing packages with overlays | `14-overlays-fix-everything` | Pragmatic overlay composition, recursion traps |
+| Cross-compilation for multiple platforms | `15-cross-compilation-multiple-platforms` | Native cross-toolchains, pkgsCross, build/host/target |
+| Downstream package sets and upstream flow | `16-downstream-package-sets-and-upstream-flow` | Downstream distribution, staging/channels, carry-upstream-retire |
+| Continuous packaging & AI release engineering | `17-continuous-packaging-pipelines-and-ai-review` | Temporal orchestration, update bots, AI review judgment, ABI gates |
+| Security backporting & supply-chain provenance | `18-security-backporting-and-supply-chain-provenance` | Surgical CVE patches, SPDX/CycloneDX SBOMs, VEX, cache signing |
+| Debugging complex build systems in Nix | `19-debugging-complex-build-systems` | CMake, Meson, Autotools, Bazel, rpath/patchelf in hermetic sandboxes |
 
-Suggested linear path: **01 → 02 → 03 → 04 → 05 → 06 → 07 → 08**, then **09 ↔ 10** as a pair, finish with **11**.
+Suggested linear path: **01 → 02 → 03 → 04 → 05 → 06 → 07 → 08**, then **09 ↔ 10** as a pair, finish fundamentals with **11**.
+**Advanced distribution & enterprise packaging:** Study **13 → 15 → 16 → 17 → 18 → 19**.
 **Robotics elective:** after overlays + caches literacy, take **12** (can also run from a Fedora dual-stack install).
 
 ---
@@ -204,6 +212,14 @@ Most chapters use the same spine so you can scan as a reference:
 2. Multiple outputs (if closures bloated)
 3. nixpkgs layout (upstream-shaped expressions)
 4. Language ecosystems B (stop reinventing builders)
+
+### Path D — “Enterprise Packaging & Distribution Platform (Flox-style)”
+
+1. Downstream package sets and upstream flow (`16`)
+2. Continuous packaging pipelines and AI release engineering (`17`)
+3. Security backporting, vulnerability triage & supply-chain provenance (`18`)
+4. Debugging complex build systems in Nix (`19`)
+5. Cross-compilation for multiple platforms (`15`)
 
 ---
 

@@ -30,7 +30,7 @@ This is a **normal topic-oriented book** (parts and chapters), not a day-calenda
 | NixOS host | `03-nixos-host/` | Install, rebuild, users, net, modules, boot |
 | Home & layout | `04-home-and-flake-layout/` | Flake layout, locks, Home Manager, shells/editors, polyglot devShells, Docker migration |
 | Services & security | `05-services-and-security/` | Secrets (SOPS/Agenix/Vault), hardening, TLS front door, containers |
-| Packaging | `06-packaging/` | stdenv, overlays, caches, language ecosystems, cross-compilation, **ROS 2** |
+| Packaging | `06-packaging/` | stdenv, overlays, caches, language ecosystems, cross-compilation, **ROS 2**, downstream distributions, automated packaging pipelines & AI review, security backporting, complex build systems |
 | Ops & fleet | `07-ops-and-fleet/` | Disko, deploy, tests, CI, images, backups |
 | Internals | `08-internals/` | Evaluator, module system, upgrades, troubleshooting |
 | Capstone | `09-capstone/` | Rebuildability proof and recovery notes |

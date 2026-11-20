@@ -97,6 +97,10 @@ content/06-packaging/12-ros2-nix-ros-overlay.html	ROS 2 robotics with nix-ros-ov
 content/06-packaging/13-running-a-nixpkgs-team.html	Running a Nixpkgs team
 content/06-packaging/14-overlays-fix-everything.html	Fixing Packages with Overlays
 content/06-packaging/15-cross-compilation-multiple-platforms.html	Cross-Compilation for Multiple Platforms
+content/06-packaging/16-downstream-package-sets-and-upstream-flow.html	Downstream Package Sets and Upstream Flow
+content/06-packaging/17-continuous-packaging-pipelines-and-ai-review.html	Continuous Packaging Pipelines and AI Release Engineering
+content/06-packaging/18-security-backporting-and-supply-chain-provenance.html	Security Backporting, Vulnerability Triage, and Supply Chain Provenance
+content/06-packaging/19-debugging-complex-build-systems.html	Debugging Complex Build Systems in Nix
 content/07-ops-and-fleet/00-index.html	Operations and fleet
 content/07-ops-and-fleet/01-disko.html	Disko
 content/07-ops-and-fleet/02-impermanence.html	Impermanence (idea and patterns)

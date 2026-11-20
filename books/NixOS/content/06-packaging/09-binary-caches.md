@@ -215,6 +215,40 @@ Symptom: “I added a cache to my user conf and nothing happened.” Fix: system
 
 ---
 
+## Theory 9 — Binary cache wire protocol, S3/post-build hooks, and pull-through proxies
+
+### 1. Inside the binary cache wire protocol
+
+Every Nix binary cache (whether `cache.nixos.org`, S3, Harmonia, or Attic) speaks the same dead-simple HTTP layout:
+
+1. **`GET /nix-cache-info`** — declares store dir (`/nix/store`), whether mass queries are supported (`WantMassQuery: 1`), and cache `Priority` (lower number = queried first; `cache.nixos.org` is `40`).
+2. **`GET /<32-char-store-hash>.narinfo`** — small text metadata file containing:
+   ```text
+   StorePath: /nix/store/abcd...-hello-2.12.1
+   URL: nar/xyz123.nar.zst
+   Compression: zstd
+   FileHash: sha256:...
+   FileSize: 51420
+   NarHash: sha256:...
+   NarSize: 226512
+   References: ...-glibc-2.40 ...-hello-2.12.1
+   Deriver: ...-hello-2.12.1.drv
+   Sig: cache.nixos.org-1:BASE64_ED25519_SIG==
+   ```
+3. **`GET /nar/xyz123.nar.zst`** — the compressed Nix Archive (NAR). Nix streams, decompresses, hashes the NAR against `NarHash`, and verifies the Ed25519 `Sig` over the fingerprint (`1;<StorePath>;<NarHash>;<NarSize>;<References>`) before registering the path in `/nix/var/nix/db/db.sqlite`.
+
+### 2. Negative caching and TTL tuning
+
+Nix caches both `.narinfo` hits and `404` misses locally in `~/.cache/nix/binary-cache-v*.sqlite` (or `/root/.cache/nix/` for the daemon). If CI just pushed a path 2 minutes ago and your laptop still tries to build it locally, you hit the **negative narinfo cache** (`narinfo-cache-negative-ttl`, default `3600` seconds). Override it per-command with `--option narinfo-cache-negative-ttl 0` or lower it on CI runners.
+
+### 3. Direct S3 caches, `post-build-hook`, and `ncps`
+
+- **Zero-server S3 binary cache:** Nix natively speaks S3 (`nix copy --to 's3://my-nix-cache?region=us-east-1&compression=zstd&secret-key=/run/secrets/cache.sec' ./result`), making S3 + CloudFront or Cloudflare R2 an ultra-low-maintenance cache for CI fleets.
+- **Automatic upload with `post-build-hook`:** Configure `nix.settings.post-build-hook` on dedicated builders to upload `$OUT_PATHS` asynchronously (via a local queue or `attic push` / `nix copy`) the instant each derivation finishes, rather than waiting for the end of a long CI job.
+- **LAN pull-through proxy (`ncps`):** In air-gapped or office/datacenter labs, deploy **ncps** (Nix Cache Proxy Server) as a local HTTP pull-through cache in front of `cache.nixos.org` and Cachix so 50 machines never download the same 400 MB toolchain over the WAN.
+
+---
+
 ## Worked examples
 
 ### NixOS module fragment for team cache

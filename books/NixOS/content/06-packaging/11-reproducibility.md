@@ -160,6 +160,47 @@ Substitutes accelerate L2 distribution; they do not replace measurement.
 
 ---
 
+## Theory 6 — Determinism mechanics: `SOURCE_DATE_EPOCH`, compiler flags, and CA derivations
+
+### 1. What Nix normalizes automatically (and what it doesn't)
+
+Inside the Linux build sandbox (`sandbox = true`), Nix isolates mount, network, PID, IPC, UTS, and user namespaces, mounts `/nix/store` read-only, sets `TZ=UTC`, and exports **`SOURCE_DATE_EPOCH=315532800`** (1980-01-01 00:00:00 UTC—chosen because ZIP archives cannot represent timestamps before 1980). After the build completes, Nix resets all file modification timestamps inside `$out` to `1` (1970-01-01 00:00:01 UTC).
+
+What Nix **cannot** automatically normalize:
+- Timestamps or hostnames baked *inside* binary files, `.pyc` headers, gzip headers, Java `.jar` entries, or `__DATE__`/`__TIME__` C macros.
+- Non-deterministic parallel link order, Go map iteration order, or `/tmp/nix-build-*` build directory paths captured in DWARF debug info or panic backtraces.
+- CPU feature detection (`-march=native`, `cpuid` probes in configure scripts).
+
+### 2. Compiler flags that eliminate L3 drift
+
+| Ecosystem | Reproducibility flags / patterns |
+|-----------|----------------------------------|
+| **C / C++ (GCC / Clang)** | `-ffile-prefix-map=/build=/.` (or `-fdebug-prefix-map`), `-frandom-seed=<deterministic>`, `ZERO_AR_DATE=1` for `ar` archives |
+| **Go** | `-trimpath` (strips `/build/...` source paths from binaries), `-buildvcs=false`, `-ldflags="-buildid="` |
+| **Rust** | `--remap-path-prefix=/build=/sources` (injected automatically by modern `buildRustPackage`), `CARGO_INCREMENTAL=0` |
+| **Python** | `PYTHONHASHSEED=0`, `SOURCE_DATE_EPOCH` honored by `compileall` / wheel builders |
+| **Archives (tar/gzip)** | `tar --sort=name --mtime="@${SOURCE_DATE_EPOCH}" --owner=0 --group=0 --numeric-owner`, `gzip -n` |
+
+### 3. Testing L3 bitwise reproducibility with `--check` and `--repeat`
+
+To prove a derivation is bitwise deterministic without manually juggling two output directories, ask Nix to build it twice in a row and compare every byte:
+
+```bash
+# Build once, then rebuild in a fresh sandbox and fail if ANY byte differs
+nix build .#cooltool --rebuild --keep-failed
+
+# Or with classic nix-build: run 2 consecutive builds and keep the diff on mismatch
+nix-build -A cooltool --check --repeat 1 --keep-failed
+```
+
+If `--rebuild` / `--check` fails, Nix preserves the differing build output next to the original store path so you can immediately run `diffoscope` to pinpoint the exact offending byte offset (e.g., an embedded timestamp or build-id).
+
+### 4. Content-Addressed Derivations (`ca-derivations`) and early cutoff
+
+In Nix's experimental **content-addressed derivations** model (`experimental-features = ca-derivations`), a derivation's output store path is computed from the **hash of its actual output bytes** (just like a FOD), rather than its input `.drv` hash. This enables **early cutoff**: if you edit a comment in `glibc` or change a build script without altering the resulting `glibc` binaries, downstream packages see the identical content-addressed store path and skip rebuilding entirely. While `ca-derivations` is still maturing across all of Nixpkgs, understanding the distinction between input-addressed and content-addressed paths is essential for interpreting reproducibility claims and projects like [r13y.com](https://r13y.com/) (the NixOS minimal ISO reproducibility tracker).
+
+---
+
 ## Worked example — measurement script
 
 ```bash

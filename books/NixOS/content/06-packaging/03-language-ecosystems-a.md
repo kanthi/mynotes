@@ -374,6 +374,38 @@ Disabling checks forever without a ticket is how bitrot lands in production imag
 
 ---
 
+## Theory 8 — How language builders actually work under the hood
+
+Every major Nixpkgs language builder solves the same core problem: **standard builds run without network access**, yet Go, Rust, Python, and Node all expect a package manager to download transitive dependencies. Nixpkgs bridges this gap with a **two-derivation pipeline**:
+
+```text
+  Stage 1 (FOD, network allowed)         Stage 2 (normal drv, no network)
+  ┌──────────────────────────────┐       ┌──────────────────────────────┐
+  │ Fetch & vendor dependencies  │──────►│ Compile against vendored     │
+  │ (goModules / cargoDeps /     │       │ store path (offline sandbox) │
+  │  npmDeps) -> verified hash   │       │ -> install + wrap -> $out    │
+  └──────────────────────────────┘       └──────────────────────────────┘
+```
+
+### Deep knobs per ecosystem (26.05 patterns)
+
+| Ecosystem | Modern Nixpkgs idiom | Key internals to know |
+|-----------|----------------------|-----------------------|
+| **Go** (`buildGoModule`) | `vendorHash = "sha256-...";` (or `vendorHash = null;` if `vendor/` is committed in git) | Set `proxyVendor = true;` when a module has non-Go files or complex replace directives (`go mod download` cache format instead of `go mod vendor`). Use `subPackages = [ "cmd/mycli" ];` to avoid building internal test/example binaries. |
+| **Rust** (`rustPlatform.buildRustPackage`) | `cargoHash = "sha256-...";` (backed by `fetchCargoVendor`) or `cargoLock.lockFile = ./Cargo.lock;` | `cargoLock.lockFile` uses `importCargoLock` to fetch each crate individually without a single monolithic `cargoHash`—great for local/private repos, though git crates require `cargoLock.outputHashes`. Set `useFetchCargoVendor = true;` (default in 26.05) for reproducible vendor layouts. |
+| **Python** (`buildPythonApplication` / `buildPythonPackage`) | `pyproject = true;` + `build-system = [ setuptools ];` + `dependencies = [ ... ];` | Legacy `format = "setuptools"` is deprecated in favor of `pyproject = true`. Always add `pythonImportsCheck = [ "mypkg" ];` to catch missing runtime imports even when unit tests are disabled. `wrapPythonPrograms` injects `PYTHONPATH` into `$out/bin/*` during `fixupPhase`. |
+| **Node** (`buildNpmPackage`) | `npmDepsHash = "sha256-...";` (backed by `fetchNpmDeps` + `npmConfigHook`) | Set `makeCacheWritable = true;` if tools try to write into the npm cache during build. Set `dontNpmBuild = true;` for pure-JS packages without a `build` script. For monorepos or `pnpm`/`yarn`, use `pnpm.fetchDeps` + `pnpm.configHook` or `fetchYarnDeps`. |
+
+### When to reach beyond Nixpkgs built-in builders
+
+Built-in Nixpkgs builders (`buildGoModule`, `buildRustPackage`, `buildNpmPackage`) are ideal for **single-artifact packaging** and upstream Nixpkgs PRs. For **fast inner-loop CI** on large private monorepos where recompiling all dependencies on every single-line code edit is too slow, teams often layer specialized flake frameworks:
+
+- **Rust:** `crane` (splits dependency compilation into a cached `buildDepsOnly` derivation so incremental app builds take seconds).
+- **Python:** `uv2nix` / `pyproject.nix` (turns `uv.lock` directly into fine-grained Nix derivations when your app needs exact PyPI versions not matching Nixpkgs's single `python3Packages` set).
+- **Go:** `gomod2nix` (generates per-module FODs from `go.sum` so adding one dependency doesn't re-download the entire vendor tree).
+
+---
+
 ## Worked example — flake with Go tool + check
 
 ```nix

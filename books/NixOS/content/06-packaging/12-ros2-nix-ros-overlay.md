@@ -445,6 +445,43 @@ env | rg -i 'ament|colcon|ros|rmw' | head
 
 ---
 
+## Packaging your own ROS 2 node with `buildRosPackage` & DDS networking
+
+For robot appliances deployed via NixOS (rather than interactive `colcon build` development), package each ROS 2 node declaratively with `rosDistro.buildRosPackage` so it becomes a cacheable store path with explicit `ament_cmake` / `ament_python` dependencies:
+
+```nix
+# pkgs/my-lidar-node/package.nix (called via rosDistro.callPackage)
+{
+  buildRosPackage,
+  ament-cmake,
+  rclcpp,
+  sensor-msgs,
+}:
+
+buildRosPackage {
+  pname = "my-lidar-node";
+  version = "0.2.0";
+  src = ./.;
+  buildType = "ament_cmake";
+
+  nativeBuildInputs = [ ament-cmake ];
+  propagatedBuildInputs = [
+    rclcpp
+    sensor-msgs
+  ];
+}
+```
+
+### DDS RMW selection and NixOS firewall rules
+
+ROS 2 nodes discover each other over **DDS UDP multicast** (ports `7400 + 250 * ROS_DOMAIN_ID` and up). NixOS enables a strict `nftables`/`iptables` firewall by default, which silently blocks cross-host ROS 2 topic discovery unless configured:
+
+- **Switch RMW explicitly** in your shell or systemd unit (`RMW_IMPLEMENTATION=rmw_cyclonedds_cpp` or `rmw_fastrtps_cpp`) and include the matching package (`rmw-cyclonedds-cpp`) in `buildEnv`.
+- **Single-host isolation:** Set `ROS_LOCALHOST_ONLY=1` (or `ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST` on Jazzy+) during laptop labs so multicast traffic stays on `lo`.
+- **Multi-host robot LAN:** Open the DDS UDP port range on the dedicated robot interface (`networking.firewall.interfaces."eth0".allowedUDPPortRanges = [ { from = 7400; to = 7500; } ];`) rather than disabling the firewall globally.
+
+---
+
 ## Security and supply chain
 
 - Overlay + ROS sources are a **large** trust surface—pin **flake.lock** and review updates

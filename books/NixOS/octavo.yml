@@ -114,6 +114,10 @@ book:
     - content/06-packaging/13-running-a-nixpkgs-team.md
     - content/06-packaging/14-overlays-fix-everything.md
     - content/06-packaging/15-cross-compilation-multiple-platforms.md
+    - content/06-packaging/16-downstream-package-sets-and-upstream-flow.md
+    - content/06-packaging/17-continuous-packaging-pipelines-and-ai-review.md
+    - content/06-packaging/18-security-backporting-and-supply-chain-provenance.md
+    - content/06-packaging/19-debugging-complex-build-systems.md
   - part: Ops and Fleet
     contents:
     - content/07-ops-and-fleet/00-index.md

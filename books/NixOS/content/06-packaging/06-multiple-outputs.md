@@ -189,6 +189,49 @@ Do not multi-out for fashion—multi-out when dependents would otherwise drag we
 
 ---
 
+## Theory 8 — How `multiple-outputs.sh` and closure guards work
+
+### 1. Automatic output routing (`outputBin`, `outputLib`, `outputDev`, `outputMan`)
+
+Nixpkgs's built-in `multiple-outputs.sh` setup hook (sourced automatically during `stdenv` builds) reads your `outputs` list and automatically sets conventional target variables:
+
+| Variable | Default resolution | What `multiple-outputs.sh` moves during `fixupPhase` |
+|----------|--------------------|------------------------------------------------------|
+| `outputBin` | `bin` if present, else `out` | `bin/`, `sbin/` |
+| `outputLib` | `lib` if present, else `out` | `lib/*.so*` |
+| `outputDev` | `dev` if present, else `out` | `include/`, `lib/pkgconfig/`, `share/pkgconfig/`, `lib/cmake/`, `share/aclocal/` |
+| `outputMan` | `man` if present, else `out` | `share/man/` |
+| `outputDoc` | `doc` if present, else `out` | `share/doc/` |
+
+During `fixupPhase`, `multiple-outputs.sh` also rewrites `.pc` (`pkg-config`) and `.cmake` files in `$dev` so `includedir` points to `$dev/include` while `libdir` points to `$out/lib` (or `$lib/lib`), and writes `$dev/nix-support/propagated-build-inputs` so any package listing `foo` in `buildInputs` automatically receives both `foo.dev` (headers) and `foo.out` (shared libs).
+
+### 2. Enforcing zero reference leaks with `disallowedReferences` and `disallowedRequisites`
+
+Manually running `rg` on `nix path-info -r` catches leaks once; **derivation-level closure assertions** prevent regressions in CI forever:
+
+```nix
+stdenv.mkDerivation (finalAttrs: {
+  pname = "lean-daemon";
+  version = "1.0.0";
+  outputs = [ "out" "dev" "man" ];
+
+  # Fail the build immediately if ANY output retains a reference to compilers or dev headers
+  disallowedReferences = [ stdenv.cc ];
+  disallowedRequisites = [ python3 ]; # checks transitive closure, not just direct refs!
+})
+```
+
+With `__structuredAttrs = true;`, you can scope checks per output (`outputChecks.out.disallowedReferences = [ finalAttrs.finalPackage.dev ];`) so `$out` is guaranteed never to pull `$dev` into production images.
+
+> [!CAUTION]
+> **Avoid `remove-references-to` unless truly necessary:** `remove-references-to` overwrites store hashes in binaries with `eeeeeeee...` to sever accidental references (e.g., compiler paths embedded in Go/C buildinfo). Never run it blindly on paths that are actually opened at runtime—prefer fixing the build flag (`-ffile-prefix-map`, `-trimpath`) first.
+
+### 3. How `separateDebugInfo` resolves symbols at runtime
+
+When `separateDebugInfo = true;` is set, `fixupPhase` splits DWARF symbols out of `$out/bin/*` and `$out/lib/*.so*` into `$debug/lib/debug/.build-id/xx/yyyy.debug` and leaves a lightweight `.note.gnu.build-id` in the stripped production binary. On NixOS, enabling `services.nix-serve` / `debuginfod` or installing the `.debug` output lets `gdb`, `lldb`, and `perf` resolve full source lines and stack frames on demand without bloating production containers.
+
+---
+
 ## Worked example — toy multi-output C library + app
 
 ```c

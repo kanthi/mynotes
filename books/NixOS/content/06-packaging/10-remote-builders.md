@@ -194,6 +194,35 @@ Exact store write permissions and `nix.sshServe` patterns vary by version—veri
 
 ---
 
+## Theory 8 — Protocol internals (`ssh://` vs `ssh-ng://`), scheduling, and hardening
+
+### 1. Why `ssh-ng://` beats legacy `ssh://`
+
+| Protocol | Remote command invoked | Key differences |
+|----------|------------------------|-----------------|
+| **`ssh://`** (legacy) | `nix-store --serve --write` | Older serial protocol; no daemon-side multiplexing; limited feature negotiation; struggles with content-addressed derivations and modern store types |
+| **`ssh-ng://`** (modern) | `nix-daemon --stdio` | Speaks the native Nix daemon worker protocol over SSH; supports connection multiplexing, proper `builders-use-substitutes`, modern derivation features, and cleaner error propagation |
+
+Always prefer `protocol = "ssh-ng";` in `nix.buildMachines` unless targeting a very old remote Nix installation.
+
+### 2. How the Nix build hook schedules jobs
+
+For each derivation that misses local and remote binary caches, the local `nix-daemon` evaluates all configured `buildMachines` in order:
+
+1. **System filter:** Does `machine.systems` include the derivation's `system` (e.g., `x86_64-linux` or `aarch64-linux`)?
+2. **Feature filter:** Does `machine.supportedFeatures` contain every entry in the derivation's `requiredSystemFeatures` (e.g., `kvm`, `big-parallel`, `nixos-test`, `gccarch-x86-64-v3`), AND does the derivation require every feature listed in `machine.mandatoryFeatures`?
+   - Use **`mandatoryFeatures = [ "big-parallel" ];`** to reserve an expensive 64-core builder strictly for heavy builds (LLVM, Rust, Chromium) so trivial shell scripts don't waste SSH round-trips.
+3. **Load factor:** Among eligible builders with `currentJobs < maxJobs`, Nix picks the builder with the lowest `(currentJobs + 1) / speedFactor` (with lock files under `/tmp/nix-build-hook/` coordinating concurrent builds).
+
+### 3. Hardening shared builders & Darwin Linux builders
+
+> [!CAUTION]
+> **Security boundary on `trusted-users`:** Granting `nixbuilder` membership in `nix.settings.trusted-users` on a remote builder lets that SSH user pass arbitrary `extra-substituters`, override `sandbox = false`, or import unsigned NARs into the builder's `/nix/store`. Never expose a trusted builder SSH key to untrusted CI forks or PR branches. Restrict the builder's `authorized_keys` with `restrict,pty` and dedicated per-environment keys, and run untrusted builds in ephemeral single-tenant VMs.
+
+For **macOS (Darwin) developers** who need to build `x86_64-linux` or `aarch64-linux` NixOS closures locally without managing a cloud VM, `nix-darwin` provides `nix.linux-builder.enable = true;`—an embedded, automatically managed NixOS VM pre-wired as a local `ssh-ng://` remote builder.
+
+---
+
 ## Worked example — two-VM lab checklist
 
 ```text

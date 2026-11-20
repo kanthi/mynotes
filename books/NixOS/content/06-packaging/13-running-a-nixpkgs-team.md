@@ -4,121 +4,213 @@ title: Running a Nixpkgs team
 
 # Running a Nixpkgs team
 
-## Thesis
+**Goal:** Design, charter, and operate a durable Nixpkgs maintainer team—connecting GitHub team governance, in-tree team sync (`maintainers/team-list.nix`), automated review tooling (`nixpkgs-review`, `nix-diff`, `ofborg`), supply-chain review checklists, and sustainable queue facilitation.
 
-Nixpkgs is the largest open-source software distribution in the world, with roughly a thousand active contributors every month. Most of that work is volunteer, and many critical pull requests still get **one** committer glance. A **Nixpkgs team** is how you turn “we care about these packages” into a durable, public review loop: a GitHub team under the NixOS organisation, packages that list that team as maintainers, a board outsiders can see, and a norm that the team **blocks** bad merges rather than racing to press the green button. Tweag’s 2026 write-up of their security-minded team is the worked example; the mechanics apply to any topic-oriented group that can meet the community’s trust bar.
+> [!NOTE]
+> **Baseline:** Nix **2.35+** and **NixOS 26.05+**. Team sync automation from GitHub into the Nixpkgs tree landed in 2025; the policy that **teams are accountable individuals, not corporate brands** is current as of the Tweag 2026 write-up.
 
-Version note: packaging workflow here targets **Nix 2.35+** and **NixOS 26.05+** (verified against static Nix **2.35.3**). Team sync automation described by Tweag landed in 2025; policy that **teams are individuals, not corporate brands** is current as of the Tweag post (2026-10-08).
+## Why it matters
 
-## Mental model
+Nixpkgs is the largest open-source software distribution in the world, with roughly a thousand active contributors every month across more than 100,000 packages. Most of that work is volunteer, and many critical pull requests still receive only a **single** committer glance before merge.
 
-```text
-  GitHub team (NixOS org)  ──sync──►  in-tree team definition (maintainers-list / teams)
-           │                                      │
-           │                                      ▼
-           │                         package meta.maintainers includes the team
-           │                                      │
-           ▼                                      ▼
-  project board + review script          CODEOWNERS / review requests / notifications
-           │
-           ▼
-  Matrix / chat for standards     private checklist (slightly harder to game)
-```
+A **Nixpkgs team** turns “we care about these packages” into a durable, auditable review loop: a GitHub team under the `NixOS` organisation, in-tree team definitions wired into `meta.teams` / `meta.maintainers`, a public queue board outsiders can inspect, and an explicit norm—such as **blocking** defective or suspicious changes rather than racing to hit merge. Tweag’s 2026 write-up of their security-minded team provides a concrete operational blueprint that applies equally to ecosystem teams (Rust, Python, Robotics, Security, Kernel) and enterprise contributors.
 
-| Piece | What it does |
-|-------|----------------|
-| **GitHub team under NixOS/Nixpkgs** | Any Nixpkgs **committer** can create one; membership is the trust boundary |
-| **In-code team definitions** | Sync from GitHub into the Nixpkgs tree (automation from 2025) so `meta.maintainers` stays honest |
-| **Package maintainer entry** | How the team gets pinged when those packages move |
-| **Public board** | Shows what is in flight so others can help or audit |
-| **Private checklist** | Internal review bar (security smells, patch correctness) — not a secret cabal, just not a public scoring rubric attackers can tailor to |
-| **Merge posture** | Tweag’s team **does not merge**; it **blocks** when something is wrong. Adjust to your charter, but be explicit |
+---
 
-**Policy that surprised Tweag (and then made sense):** corporate-affiliated *branded* teams are no longer permitted; members must be **individuals**, with or without a day-job affiliation. You still get org-sponsored capacity; you do not get a logo as a trust root.
-
-## Worked examples
-
-### Case 1: Draft the charter as a Nixpkgs issue first
-
-Before creating GitHub objects, write a short public issue that states:
-
-1. **Goal** (e.g. “prevent malicious or careless changes from landing on packages we track”).
-2. **Scope** (exact attribute paths or package sets).
-3. **Membership rule** (Tweag required **commit access** so reputation is already established).
-4. **Merge rule** (review-and-block vs review-and-merge).
-5. **Communication** (Matrix room, meeting cadence, how reminders work).
-
-That issue becomes the onboarding document. Volunteers join because the work is visible; drive-by requests get a clear “yes, if you already have commit bit” answer.
-
-### Case 2: Create the GitHub team and let the tree sync
-
-Committers create the team in the NixOS/Nixpkgs GitHub organisation, add initial members, then rely on the **GitHub → Nixpkgs team definition sync** so the repository’s team data matches reality. You should not hand-maintain a diverging parallel list in a private wiki.
-
-Checklist:
+## Mental model: governance & notification architecture
 
 ```text
-[ ] GitHub team exists under the NixOS org
-[ ] Members are individuals with commit access (if that is your bar)
-[ ] In-tree team entry appears after sync
-[ ] Relevant packages list the team in meta.maintainers
-[ ] Notifications actually fire on a test PR (open a no-op against a tracked package)
+  GitHub team (@NixOS/<team>)  ──sync bot──►  maintainers/team-list.nix
+               │                                         │
+               │                                         ▼
+               │                       package meta.teams / meta.maintainers
+               │                                         │
+               ▼                                         ▼
+  Public GitHub Project Board             ofborg / PR mention notifications
+  + triage automation script                             │
+               │                                         ▼
+               ▼                          Local verification (nixpkgs-review,
+  Matrix / Zulip standards room           nix-diff, upstream source audit)
+  + private security checklist                           │
+                                                         ▼
+                                          Approve / Request changes / Block
 ```
 
-Adding the team as maintainer is the boring step people forget. Without it, you have a chat room with a fancy name.
+| Component | Operational role |
+|-----------|------------------|
+| **GitHub team under `NixOS` org** | Any Nixpkgs **committer** can create one; membership defines the trust boundary |
+| **In-tree team definitions (`maintainers/team-list.nix`)** | Automated GitHub → Nixpkgs sync keeps in-tree team membership aligned with GitHub without manual drift |
+| **Package metadata (`meta.teams` / `meta.maintainers`)** | Connects packages to the team so `ofborg` and GitHub automatically ping reviewers when a PR touches those paths |
+| **Public project board** | Exposes queue depth, reviewer assignment, and review SLA so contributors see work in flight |
+| **Private review checklist** | Internal bar for security smells, patch forensics, and supply-chain checks—kept private so attackers cannot optimize specifically against a public rubric |
+| **Explicit merge posture** | Tweag’s team **does not merge**; it **blocks** when something is wrong. Separating review from merge removes conflict-of-interest optics |
 
-### Case 3: Make review load visible
+> [!IMPORTANT]
+> **Individuals, not corporate brands:** Nixpkgs policy no longer permits corporate-branded teams as trust roots. Team members must be **accountable individuals** (with or without employer sponsorship). Organizations can fund engineering time, build farms, and review bandwidth, but trust in Nixpkgs accrues to named humans with track records.
 
-Tweag paired a **GitHub project board** with a small script that keeps the board current. The point is not the script language; it is that:
+---
 
-- outsiders can see queue depth,
-- a vacationing reviewer does not strand a PR invisibly,
-- you can measure “250+ PRs in six months” instead of vibes.
+## Setting up a team: step-by-step
 
-Keep the **public** list of tracked packages next to the board. Keep the **private** checklist private enough that it is not a free coaching guide for someone trying to sneak a bad `postInstall` past you.
+### 1. Publish a public charter issue first
 
-### Case 4: What “success” looked like for Tweag
+Before creating GitHub objects or touching `maintainers/`, open a concise Nixpkgs issue that defines the team’s contract:
 
-Between March and September 2026 the team reviewed **everything** that touched their package set — more than **250** pull requests. They did not claim to have caught malware or a live zero-day. They **did** catch real mistakes (for example an incorrectly applied patch) and code-quality issues. That is the honest bar for a new team: continuous presence beats heroic incident response.
+1. **Mission & non-goals** (e.g., “review every PR touching our tracked security-sensitive packages and block unverified supply-chain or patch regressions”).
+2. **Exact scope** (list of attribute paths, `pkgs/by-name/` prefixes, or NixOS module directories).
+3. **Membership bar** (e.g., existing Nixpkgs commit access so community trust is already established, or a documented path for onboarding contributors after N quality reviews).
+4. **Merge posture** (`review-and-block` vs `review-and-merge`—be explicit).
+5. **Communication & cadence** (Matrix room, triage rotation, escalation path when a reviewer is away).
 
-### Case 5: Maintainer metadata shape (sketch)
+That issue doubles as your onboarding document and sets clear expectations for drive-by membership requests.
 
-Exact attribute names evolve; always copy from a nearby package in the tree you are editing. The *idea* is:
+### 2. Create the GitHub team and verify in-tree sync
+
+Committers create the team under the `NixOS` GitHub organization, add initial members, and let the **GitHub → Nixpkgs team sync** propagate the entry into `maintainers/team-list.nix` (do not maintain a parallel hand-edited roster in an external wiki).
+
+```text
+Setup verification checklist:
+[ ] GitHub team exists under the NixOS org with individual members
+[ ] In-tree team entry appears in maintainers/team-list.nix after sync
+[ ] Team is attached to target packages in meta.teams (or lib.teams.<name>)
+[ ] Test PR against a tracked package triggers actual team mention notifications
+[ ] Project board automation ingests new PRs touching scoped files
+```
+
+### 3. Wire team ownership in package metadata
+
+Check `maintainers/team-list.nix` and nearby `pkgs/by-name/` packages for the exact schema on your target Nixpkgs revision. Modern packages declare teams via `meta.teams` alongside individual `meta.maintainers`:
 
 ```nix
-# sketch — follow current nixpkgs conventions for the package you touch
+# pkgs/by-name/ex/example/package.nix (excerpt)
 meta = {
-  # …
+  description = "Example security-critical daemon";
+  homepage = "https://example.org";
+  license = lib.licenses.mit;
   maintainers = with lib.maintainers; [
-    someIndividual
-    # teams.<yourTeam>  # when the synced team entry exists
+    alice
+    bob
   ];
+  teams = with lib.teams; [
+    security-review
+  ];
+  mainProgram = "exampled";
 };
 ```
 
-Run the repository’s existing validation (`nixpkgs-lint` / CI maintainer checks — whatever the current `CONTRIBUTING.md` points at) rather than inventing a parallel schema. Treat the sketch as orientation, then verify against `pkgs/by-name/…` on your checkout.
+Validate metadata against the repository’s own checks (`nixpkgs-lint` / maintainer schema tests in `CONTRIBUTING.md`) before opening the wiring PR.
 
-## The trap
+---
 
-1. **Branding the team as a company.** Policy wants accountable humans. Sponsor the work; do not make the org name the trust root.
-2. **Opening membership to everyone on day one without a trust bar.** “Anyone can join” is fine *after* you define how strangers get evaluated. Tweag leaned on **existing commit access**.
-3. **Merging by default because you can.** A security-oriented team that also merges creates conflict-of-interest optics. Prefer **block-on-problem** unless your charter says otherwise.
-4. **Publishing the entire checklist.** Transparency of *queue* ≠ transparency of *detection heuristics*. A little friction against gaming is healthy.
-5. **Ignoring volunteer intermittency.** Availability fluctuates. Budget gentle reminders and a single facilitator who keeps the board honest — otherwise the team exists only on paper.
+## Technical review workflow: what reviewers actually run
 
-## The boring rule
+A credible Nixpkgs team does not rubber-stamp diffs in the GitHub web UI. Reviewers verify builds, reverse dependencies, and derivation diffs locally or on a dedicated builder.
 
-Publish a charter issue, create an **individual** GitHub team, sync it into Nixpkgs, attach it to `meta.maintainers` for a **small** package set, and review in public with a board. Block bad changes; do not fetishize merge counts. Rotate people; keep one person responsible for nudging the queue. Re-read Nixpkgs `CONTRIBUTING.md` and the current teams policy before you invent process.
+### 1. Build the PR and its reverse dependencies with `nixpkgs-review`
 
-## Try this
+`nixpkgs-review` checks out the PR, computes every package whose `.drv` changed compared to the target branch, builds them in a sandbox, and optionally posts a structured build report directly to the PR:
 
-1. Pick **three** packages you already maintain. Estimate monthly PR volume (GitHub search `is:pr path:pkgs/…`).
-2. Draft a one-page charter issue (goal, scope, membership, merge posture).
-3. If you have commit access, create a topic team and add yourself; confirm the in-tree sync updates.
-4. Add the team to those three packages’ `meta.maintainers` on a branch and open a PR that *only* does that — prove notifications work.
-5. Stand up a project board with columns `Incoming / Reviewing / Done` and move one real PR through it.
+```bash
+# Review PR #345678 from a local nixpkgs checkout, building all affected packages
+nixpkgs-review pr 345678
+
+# On a builder with more resources, cap parallel jobs and post results to GitHub
+nixpkgs-review pr 345678 --num-parallel-evals 4 --post-result
+
+# Review only a specific platform or limit reverse-dependency rebuilds
+nixpkgs-review pr 345678 --systems x86_64-linux --package mypkg
+```
+
+### 2. Inspect derivation-level diffs with `nix-diff`
+
+When a PR claims to be a minor bump or formatting cleanup, compare the `.drv` before and after to verify nothing unexpected leaked into `configureFlags`, `patches`, `env`, or transitive inputs:
+
+```bash
+# Compare old and new derivations for a tracked package
+nix-diff \
+  $(nix eval --raw .#mypkg.drvPath) \
+  $(nix eval --raw github:NixOS/nixpkgs/pull/345678/head#mypkg.drvPath)
+```
+
+### 3. Blast-radius and branch-target check
+
+Every PR must target the right branch (`master` vs `staging`):
+
+| Estimated rebuild count | Correct base branch | Reviewer action if mis-targeted |
+|-------------------------|---------------------|---------------------------------|
+| **1 – ~500 derivations** | `master` | Normal review + `nixpkgs-review` |
+| **> 500 derivations** (core libs, Python/Rust/glibc/stdenv) | `staging` | Request retarget to `staging`; do **not** merge to `master` (overloads Hydra and breaks `nixos-unstable` cache hit rates) |
+| **Security hotfix / regression** on stable release | `nixos-26.05` (backport) | Verify minimal diff, check ABI compatibility, backport cleanly after `master` |
+
+### 4. High-signal security & supply-chain checks
+
+During review, focus attention on the surfaces where bugs and malicious changes hide:
+
+- **Source provenance:** Does `src` point to the canonical upstream repository and signed release tag, or did a contributor quietly redirect `owner`/`url` to a personal fork or unverified tarball?
+- **FOD hash changes:** Never accept a hash change without verifying *why* the bytes changed (compare upstream release diff between old `rev` and new `rev`).
+- **Build-phase hooks:** Audit every addition to `prePatch`, `postPatch`, `preConfigure`, `postInstall`, `preFixup`, and `setupHook`—these execute arbitrary shell code or alter runtime wrappers.
+- **Patched files & vendored blobs:** Inspect every `.patch` file line-by-line; flag pre-compiled binaries, minified blobs, or `doCheck = false` additions that silence failing test suites without justification.
+- **Closure drift:** Compare `nix path-info -rS` before and after to catch accidental `-dev` leaks or unexpected new runtime dependencies.
+
+---
+
+## Operating the queue: visibility, metrics, and sustainability
+
+Volunteer capacity fluctuates. Teams die quietly when PRs pile up with no visible owner.
+
+### Public board + lightweight automation
+
+Pair a **GitHub Project board** (`Incoming` → `In Review` → `Changes Requested` → `Done`) with a small scheduled script (e.g., GitHub Actions + `gh api graphql`) that automatically adds every open PR touching your tracked packages to `Incoming`:
+
+```bash
+# Quick CLI triage: list open PRs touching a team's tracked packages
+gh pr list --repo NixOS/nixpkgs \
+  --search 'is:open label:"6.topic: security"' \
+  --json number,title,author,updatedAt,reviewDecision \
+  --jq '.[] | "#\(.number) [\(.reviewDecision // "PENDING")] \(.title) (@\(.author.login))"'
+```
+
+### Honest success metrics (the Tweag 2026 benchmark)
+
+Between March and September 2026, Tweag’s security-focused Nixpkgs team reviewed **every** PR touching their package set—more than **250 pull requests** in six months. They did not claim theatrical zero-day interceptions; they **did** catch real engineering defects (misapplied patches, broken flags, code-quality regressions) continuously.
+
+**That is the real operational bar:** predictable, boring coverage over 100% of your scope beats heroic incident response after a broken build hits `nixos-unstable`.
+
+---
+
+## Pitfalls
+
+| Trap | Why it hurts | Mitigation |
+|------|--------------|------------|
+| **Corporate-branded teams** | Violates Nixpkgs individual-accountability policy and erodes community trust | Register individual contributors; sponsor their time transparently without making a brand the trust root |
+| **Zero-bar membership on day one** | Dilutes review quality and creates trust ambiguity | Start with an explicit bar (e.g., existing committers) and publish a clear graduation path for new reviewers |
+| **Security team that also merges by default** | Creates conflict-of-interest optics and pressures reviewers into speed over rigor | Adopt a **review-and-block** posture unless your charter explicitly requires merge authority |
+| **Publishing the exact internal detection rubric** | Gives opportunistic contributors or attackers a checklist to game | Keep queue status and tracked package lists **public**; keep adversarial heuristics internal |
+| **No facilitator / rotation** | Volunteer intermittency strands PRs silently until the team becomes nominal-only | Assign a rotating weekly triage facilitator who nudges stalled reviews and keeps the board accurate |
+
+---
+
+## Lab — launch a scoped review loop
+
+1. **Scope estimation:** Pick **three** packages you rely on in production. Measure their 90-day PR volume using GitHub search (`repo:NixOS/nixpkgs is:pr path:pkgs/by-name/<xx>/<pkg>`).
+2. **Charter draft:** Write a one-page charter issue covering mission, exact package list, membership rule, merge posture, and Matrix/escalation norms.
+3. **Local review drill:** Pick one open Nixpkgs PR touching any of those packages and run `nixpkgs-review pr <num>` plus `nix-diff` on the resulting `.drv` paths.
+4. **Metadata wiring:** Check `maintainers/team-list.nix` on a current Nixpkgs checkout, verify how `meta.teams` is structured, and inspect `ofborg` notification behavior on a sample PR.
+5. **Triage board:** Set up a three-column project board (`Incoming` / `Reviewing` / `Done`) and write a one-line `gh pr list` query to audit stale PRs older than 7 days.
+
+---
+
+## Checkpoint
+
+- [ ] Explained how GitHub teams sync into `maintainers/team-list.nix` and trigger PR review notifications via `meta.teams`.
+- [ ] Run `nixpkgs-review pr <num>` and `nix-diff` to verify a package change and its reverse dependencies.
+- [ ] Distinguished when a PR belongs on `master` vs `staging` based on rebuild blast radius.
+- [ ] Listed the high-risk supply-chain surfaces to inspect in every Nixpkgs PR (`src`, FOD hashes, patches, phase hooks, `doCheck`).
+- [ ] Designed a sustainable queue posture (public board, rotating facilitator, clear block-vs-merge charter).
 
 ## Sources
 
 - [How to set up and run a Nixpkgs team](https://www.tweag.io/blog/2026-10-08-running-nixpkgs-team/) (Aleksandr Bantev / Tweag, 2026-10-08)
 - [Nixpkgs CONTRIBUTING.md](https://github.com/NixOS/nixpkgs/blob/master/CONTRIBUTING.md) (maintainer and contribution norms)
-- Nixpkgs teams / maintainers documentation in-tree (follow current `maintainers/` and teams sync docs in the revision you ship against)
+- [nixpkgs-review](https://github.com/Mic92/nixpkgs-review) (automated PR build and review tool)
+- Nixpkgs `maintainers/team-list.nix` and `maintainers/README.md` in-tree documentation

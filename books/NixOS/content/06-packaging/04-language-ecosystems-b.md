@@ -245,6 +245,48 @@ both-run = pkgs.runCommand "both-run" {
 
 ---
 
+## Theory 8 — Cross-ecosystem failure patterns and polyglot packaging
+
+When maintaining a polyglot repository (for example, a Rust CLI plus a Python data pipeline plus a TypeScript web frontend bundled into one flake), three recurring failure classes appear across every ecosystem:
+
+### 1. Native FFI extensions inside high-level languages
+
+Pure Go, pure Python, and pure JS package easily. Complexity spikes the moment a dependency compiles native C/C++/Rust extensions (`cgo`, `cryptography` / `numpy` / `pydantic-core` in Python, `node-gyp` / `sharp` / `better-sqlite3` in Node, `*-sys` crates in Rust):
+
+- **Rule 1:** Put the build-time compiler bridge (`pkg-config`, `cmake`, `python3` for `node-gyp`, `rustPlatform.cargoSetupHook` for PyO3) in **`nativeBuildInputs`**.
+- **Rule 2:** Put the linked C libraries (`openssl`, `libffi`, `vips`, `sqlite`) in **`buildInputs`**.
+- **Rule 3:** Disable vendored C builds (`OPENSSL_NO_VENDOR = 1;`, `LIBSQLITE3_SYS_USE_PKG_CONFIG = 1;`) so Nix links against the system Nixpkgs library (ensuring security patches propagate cleanly).
+
+### 2. Lockfile drift and FOD invalidation
+
+| Ecosystem | Lockfile | What invalidates the dependency FOD hash |
+|-----------|----------|------------------------------------------|
+| Go | `go.mod` + `go.sum` | Any dependency add/bump, Go toolchain major version change affecting `go mod vendor` output |
+| Rust | `Cargo.lock` | Any crate bump, workspace member change, or switching `fetchCargoTarball` → `fetchCargoVendor` |
+| Node | `package-lock.json` / `pnpm-lock.yaml` | Any dependency change, lockfile version change (`lockfileVersion` 2 vs 3), or npm version bump |
+| Python (Nixpkgs) | Uses `python3Packages` | Upgrading `nixpkgs` channel (no per-app FOD hash unless using `uv2nix`/`poetry2nix`) |
+
+### 3. Polyglot composition (embedding one ecosystem's output inside another)
+
+Nix makes polyglot builds cleaner than Docker multi-stage builds because each ecosystem builds in its own pure derivation and passes its `$out` as a read-only input:
+
+```nix
+# Example: embed a built TypeScript/Vite frontend inside a Go binary's embed.FS
+backend = pkgs.buildGoModule {
+  pname = "dashboard";
+  version = "1.0.0";
+  src = ./backend;
+  vendorHash = "sha256-...";
+  preBuild = ''
+    cp -r ${frontend}/dist ./ui/dist
+  '';
+};
+```
+
+Here `frontend` is built once via `buildNpmPackage`, cached independently, and copied hermetically into `backend` during `preBuild`—no Node runtime ever enters the final Go binary's runtime closure.
+
+---
+
 ## Worked example — dual packages in one flake
 
 ```nix

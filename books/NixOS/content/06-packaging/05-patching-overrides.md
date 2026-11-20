@@ -244,6 +244,67 @@ python3.pkgs.numpy.overridePythonAttrs (old: {
 
 ---
 
+## Theory 8 — In-depth override & patching mechanics (26.05)
+
+### 1. Two-argument `overrideAttrs (finalAttrs: prevAttrs: ...)`
+
+When a package was written with `stdenv.mkDerivation (finalAttrs: { ... })`, the **two-argument** `overrideAttrs` form lets you update `version` and have `src`, `name`, and `passthru` recompute cleanly against `finalAttrs`:
+
+```nix
+pkgs.ripgrep.overrideAttrs (finalAttrs: prevAttrs: {
+  version = "14.1.1";
+  src = pkgs.fetchFromGitHub {
+    owner = "BurntSushi";
+    repo = "ripgrep";
+    rev = finalAttrs.version;
+    hash = "sha256-...";
+  };
+  patches = (prevAttrs.patches or [ ]) ++ [ ./patches/0001-local-tweak.patch ];
+})
+```
+
+> [!WARNING]
+> **Avoid `overrideDerivation`:** The legacy `overrideDerivation` function bypasses `mkDerivation`'s argument processing (so changing `buildInputs` or `version` does *not* re-run `stdenv` attribute normalization). Always use `override` (for `callPackage` args) or `overrideAttrs` (for `mkDerivation` attrs).
+
+### 2. `substituteInPlace` and `replaceVars` (replacing `substituteAll`)
+
+For tiny path or constant substitutions inside source files, maintaining a `.patch` file that breaks on surrounding context changes is fragile. Use Nixpkgs's built-in substitution helpers:
+
+- **`substituteInPlace`** (in `postPatch`) with **`--replace-fail`** (never legacy `--replace`, which silently succeeds if the target string disappears in an upstream upgrade!):
+  ```nix
+  postPatch = ''
+    substituteInPlace src/config.c \
+      --replace-fail "/usr/bin/env" "${coreutils}/bin/env"
+  '';
+  ```
+- **`replaceVars`** (in `patches` or `src` templates, replacing deprecated `substituteAll`): interpolates `@var@` placeholders at build time and fails loudly if any placeholder is left unsubstituted:
+  ```nix
+  patches = [
+    (replaceVars ./patches/hardcode-store-paths.patch {
+      inherit bash coreutils;
+    })
+  ];
+  ```
+
+### 3. Scoped package sets with `lib.makeScope` and `overrideScope`
+
+When maintaining a family of interdependent internal packages (e.g., a shared library `libacme` plus three daemons that link it), `lib.makeScope` creates an isolated mini-fixed-point that consumers can override without touching global `pkgs`:
+
+```nix
+acmeScope = lib.makeScope pkgs.newScope (self: {
+  libacme = self.callPackage ./pkgs/libacme.nix { };
+  acme-server = self.callPackage ./pkgs/acme-server.nix { };
+  acme-cli = self.callPackage ./pkgs/acme-cli.nix { };
+});
+
+# Override libacme ONLY inside acmeScope — acme-server and acme-cli pick it up automatically
+acmeDebug = acmeScope.overrideScope (final: prev: {
+  libacme = prev.libacme.overrideAttrs { dontStrip = true; };
+});
+```
+
+---
+
 ## Worked examples
 
 ### Example A — local patch on `hello`

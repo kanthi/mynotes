@@ -231,6 +231,49 @@ stdenv.mkDerivation {
 
 ---
 
+## Theory 8 — NAR serialization, fetcher traps, and `fetchpatch2`
+
+Understanding **how** Nix hashes a fixed-output derivation saves hours of debugging mysterious hash mismatches.
+
+### 1. Flat hashing vs NAR recursive hashing
+
+| Mode | What Nix hashes | Deterministic? |
+|------|-----------------|----------------|
+| `outputHashMode = "flat"` (`fetchurl`) | The raw bytes of a single file | Exact byte stream of the downloaded file |
+| `outputHashMode = "recursive"` (`fetchzip`, `fetchFromGitHub`, `fetchgit`) | The **Nix Archive (NAR)** serialization of the unpacked directory tree | Canonicalizes mtimes to `0`, ignores uid/gid, sorts directory entries lexicographically, preserves only regular/executable bit and symlinks |
+
+Because NAR strips timestamps, ownership, and filesystem inode ordering, two builds that unpack the same tarball on different filesystems produce the exact same recursive SRI hash—**as long as** the unpacked file contents and executable bits match.
+
+### 2. Why GitHub archive tarballs break hashes (`fetchFromGitHub` vs `fetchurl`)
+
+Never use `fetchurl` on GitHub's auto-generated `/archive/refs/tags/v1.0.tar.gz` URLs. GitHub periodically upgrades its `git archive` / `gzip` compression backend, which changes the compressed `.tar.gz` bytes even when the underlying source tree is identical—breaking `flat` hashes overnight.
+
+`fetchFromGitHub` avoids this by unpacking the archive and computing a **NAR (`recursive`) hash** over the extracted tree (and switching to `fetchgit` automatically when `fetchSubmodules = true` or `leaveDotGit = true`).
+
+### 3. `fetchpatch` vs `fetchpatch2`
+
+When pulling an upstream fix commit directly from GitHub or GitLab as a `.patch` file:
+- Always prefer **`fetchpatch2`** over legacy `fetchpatch` in modern Nixpkgs. `fetchpatch2` normalizes git diff headers (stripping volatile `index` hashes, git version footers, and commit stats) via `filterdiff` before hashing, so upstream git upgrades do not invalidate your patch FOD hash.
+- Pin immutable **40-character commit SHAs** (`https://github.com/org/repo/commit/<sha>.patch`), never mutable PR URLs (`/pull/123.patch`), which change whenever someone force-pushes the PR branch.
+
+### 4. Converting hashes and prefetching cleanly
+
+```bash
+# Prefetch a tarball and print SRI hash + store path
+nix store prefetch-file --json https://ftp.gnu.org/gnu/hello/hello-2.12.1.tar.gz
+
+# Convert a legacy base32 sha256 hash to modern SRI format
+nix hash convert --hash-algo sha256 --from nix32 --to sri <base32-hash>
+
+# Compute the recursive NAR SRI hash of a local directory
+nix hash path ./my-source-dir
+```
+
+> [!WARNING]
+> **The FOD cache-poisoning trap:** Remember that Nix identifies a FOD's store path *solely* by `(name, outputHash)`. If you bump `rev` in `fetchFromGitHub` and forget to change `hash` (leaving the old valid hash), Nix sees that the old store path already exists in `/nix/store` and **silently reuses the old source tree** without re-downloading! Always invalidate `hash = lib.fakeHash;` (or prefetch) whenever you change `url` or `rev`.
+
+---
+
 ## Worked examples
 
 ### Example A — tarball package skeleton

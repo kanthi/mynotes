@@ -223,6 +223,53 @@ Do not rewrite half of nixpkgs for fun. **New** private packages: by-name shape.
 
 ---
 
+## Theory 8 — RFC 140 (`pkgs/by-name`) constraints, `testers`, and `meta` schema
+
+### 1. How `pkgs/by-name` auto-discovery works (RFC 140)
+
+`pkgs/top-level/by-name-overlay.nix` scans `pkgs/by-name/<shard>/<name>/package.nix` at evaluation time and automatically calls `pkgs.callPackage ./pkgs/by-name/<shard>/<name>/package.nix { }`—eliminating merge conflicts on `pkgs/top-level/all-packages.nix`.
+
+To stay valid under Nixpkgs CI (`pkgs/by-name` checks):
+- The directory name `<name>` **must** match the top-level attribute name, and `<shard>` must be the first two lowercase characters of `<name>`.
+- `package.nix` must be callable with **empty overrides** (`callPackage ... { }`)—if a package needs custom dependency injection (e.g., `python311Packages` instead of default `python3Packages`), it belongs in `all-packages.nix` or wraps its own dependency selection cleanly.
+- All helper files (patches, extra Nix files) for that package live inside `pkgs/by-name/<shard>/<name>/` and must not be referenced from outside that directory.
+
+### 2. Standardized `passthru.tests` with `testers`
+
+Rather than writing fragile ad-hoc shell scripts for every package, Nixpkgs provides `pkgs.testers`:
+
+```nix
+passthru.tests = {
+  # Verifies `<mainProgram> --version` prints finalAttrs.version
+  version = testers.testVersion {
+    package = finalAttrs.finalPackage;
+    command = "cooltool --version";
+  };
+
+  # Verifies pkg-config module resolution for libraries
+  pkg-config = testers.hasPkgConfigModules {
+    package = finalAttrs.finalPackage;
+  };
+};
+```
+
+Run any package's passthru tests directly: `nix build .#cooltool.tests.version`.
+
+### 3. Essential `meta` attributes for upstream & policy engines
+
+| Attribute | Purpose |
+|-----------|---------|
+| `meta.mainProgram` | Primary binary for `nix run` and `lib.getExe` |
+| `meta.changelog` | Direct URL to release notes for reviewers and update bots |
+| `meta.license` | SPDX-mapped `lib.licenses.*` (gates `allowUnfree` and binary cache redistribution) |
+| `meta.sourceProvenance` | Declares `[ lib.sourceTypes.fromSource ]` vs `[ lib.sourceTypes.binaryNativeCode ]` |
+| `meta.platforms` / `meta.badPlatforms` | Declares supported systems so Hydra skips incompatible architectures |
+| `meta.broken` / `meta.knownVulnerabilities` | Marks unmaintained or vulnerable packages so `nixos-rebuild` refuses them unless explicitly permitted |
+
+Format all Nixpkgs expressions with **`nixfmt`** (RFC 166 official formatter) before opening a PR.
+
+---
+
 ## Worked example — flake package laid out like by-name
 
 ```text

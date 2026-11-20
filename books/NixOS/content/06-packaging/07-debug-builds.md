@@ -181,6 +181,51 @@ Without it, debugging after garbage collection becomes archaeology.
 
 ---
 
+## Theory 9 — Interactive phase stepping, `NIX_DEBUG`, and `nix-diff`
+
+When `--keep-failed` isn't enough and you want a live, repeatable shell with the exact `stdenv` variables and hooks loaded, step through phases manually inside `nix develop`:
+
+```bash
+# Enter the exact build environment of a package
+nix develop .#broken
+
+# Create a scratch working directory and run phases one by one
+mkdir -p /tmp/debug-work && cd /tmp/debug-work
+unpackPhase
+cd "$sourceRoot"
+patchPhase
+configurePhase
+buildPhase
+```
+
+Because `nix develop` exports the derivation's exact `nativeBuildInputs`, `buildInputs`, `NIX_CFLAGS_COMPILE`, `PKG_CONFIG_PATH`, and phase functions (`runPhase`), you can edit source files, re-run `buildPhase` in seconds, and inspect the exact compiler flags without waiting for Nix to re-unpack or re-copy the store.
+
+### Tracing compiler and linker wrappers with `NIX_DEBUG`
+
+When a build fails with `cannot find -lfoo` or mysterious header errors, set `NIX_DEBUG` (values `1` through `7`) to make `cc-wrapper` and `bintools-wrapper` print every argument before and after Nix's rewriting:
+
+```bash
+# Inside nix develop (or temporarily in the derivation)
+NIX_DEBUG=1 buildPhase 2>&1 | head -n 60
+```
+
+- `NIX_DEBUG=1`: prints the final rewritten `gcc` / `ld` command lines and injected `-I` / `-L` / `-rpath` flags.
+- `NIX_DEBUG=6` or `7`: enables bash `set -x` inside the wrappers to trace every hardening and purity check.
+
+### Comparing derivations with `nix-diff`
+
+When an unexpected rebuild triggers (or a package builds differently on CI vs your laptop), diff the two `.drv` files directly:
+
+```bash
+nix run nixpkgs#nix-diff -- \
+  /nix/store/aaaa...-foo-1.0.drv \
+  /nix/store/bbbb...-foo-1.0.drv
+```
+
+`nix-diff` recursively walks the derivation input graph and highlights the exact environment variable, patch, or transitive dependency that diverged.
+
+---
+
 ## Worked example — scripted break/fix series
 
 ```nix
