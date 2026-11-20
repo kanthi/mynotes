@@ -30,7 +30,7 @@ The opening inspection examples can be studied before building the lab VM. Repea
 | VMs or containers | 01–19, then 20 and/or 21, followed by 23–28 |
 | Kubernetes on Linux | 01–19, then 21–22 and 23–28 |
 | Kernel investigation | Relevant foundations, then 23–24 and 29–30; select a depth track in 33–37 |
-| Ubuntu-specific integration | Relevant foundations, then the selected desktop/cloud branches in 31 and release-specific cases in 38 |
+| Ubuntu-specific integration | Relevant foundations, then the selected desktop/cloud branches in 31 and release-specific cases + Canonical Academy SysAdmin track in 38 |
 | Practical Linux networking | Relevant foundations, then the hands-on Linux networking depth track in 39 |
 
 Choose the services and technology branches relevant to your lab. The ordinary server route does not require Kubernetes, specialized hardware, every filesystem or every database. Later chapters explain their prerequisites; a branch can be studied when those prerequisites are satisfied.

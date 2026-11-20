@@ -192,7 +192,12 @@ content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/11-troubleshooting-
 content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/12-performance-tuning-and-optimization.html	Chapter 12: Performance Tuning and Optimization
 content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/13-customization-and-flavors.html	Chapter 13: Customization and Flavors
 content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/14-enterprise-deployment-and-management.html	Chapter 14: Enterprise Deployment and Management
+content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/15-canonical-academy-sysadmin-architecture-and-roadmap.html	Chapter 15: Canonical Academy SysAdmin Architecture & Exam Roadmap
 content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/15-conclusion-the-road-ahead.html	Conclusion: The Road Ahead
+content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/16-cert-1-using-linux-terminal.html	Chapter 16: Certification 1 — Using Linux Terminal
+content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/17-cert-2-using-ubuntu-desktop.html	Chapter 17: Certification 2 — Using Ubuntu Desktop
+content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/18-cert-3-using-ubuntu-server.html	Chapter 18: Certification 3 — Using Ubuntu Server
+content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/19-cert-4-using-devops-principles.html	Chapter 19: Certification 4 — Using DevOps Principles
 content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/index.html	Part 38 — Ubuntu 26.04 LTS: From Desktop to Enterprise Cloud
 content/39-networking-in-linux/00-introduction-networking-with-linux.html	Introduction: Networking with Linux
 content/39-networking-in-linux/01-network-interfaces-drivers-and-link-layer-control.html	Chapter 1: Network Interfaces, Drivers, and Link-Layer Control

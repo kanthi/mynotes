@@ -272,6 +272,11 @@ book:
     - content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/12-performance-tuning-and-optimization.md
     - content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/13-customization-and-flavors.md
     - content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/14-enterprise-deployment-and-management.md
+    - content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/15-canonical-academy-sysadmin-architecture-and-roadmap.md
+    - content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/16-cert-1-using-linux-terminal.md
+    - content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/17-cert-2-using-ubuntu-desktop.md
+    - content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/18-cert-3-using-ubuntu-server.md
+    - content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/19-cert-4-using-devops-principles.md
     - content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/15-conclusion-the-road-ahead.md
   - part: Networking in Linux
     contents:

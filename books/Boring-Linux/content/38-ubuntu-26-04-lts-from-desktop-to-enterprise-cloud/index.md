@@ -35,6 +35,13 @@ From memory-safe userspace components rewritten in Rust (`sudo-rs`, `uutils`), t
 │   ├── Ch 12: Performance Tuning & Optimization (amd64v3, Sysprof)      │
 │   ├── Ch 13: Customization and Flavors (Ubuntu Core, Image Craft)      │
 │   └── Ch 14: Enterprise Deployment & Management (Landscape, authd)     │
+│                                                                        │
+│   CANONICAL ACADEMY SYSADMIN QUALIFICATION TRACK                       │
+│   ├── Ch 15: Canonical Academy Architecture & Exam Roadmap             │
+│   ├── Ch 16: Certification 1 — Using Linux Terminal                    │
+│   ├── Ch 17: Certification 2 — Using Ubuntu Desktop                    │
+│   ├── Ch 18: Certification 3 — Using Ubuntu Server                     │
+│   └── Ch 19: Certification 4 — Using DevOps Principles                 │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -72,5 +79,15 @@ From memory-safe userspace components rewritten in Rust (`sudo-rs`, `uutils`), t
     GNOME shell customization, alternative desktop environments, building custom appliance images with `ubuntu-image`, and immutable Ubuntu Core.
 15. **[Chapter 14: Enterprise Deployment and Management](14-enterprise-deployment-and-management.md)**
     Canonical Landscape fleet management, authd cloud identity (Entra ID, Google Cloud IAM, OIDC), ADSys Active Directory GPO integration, and livepatching.
-16. **[Conclusion: The Road Ahead](15-conclusion-the-road-ahead.md)**
+16. **[Chapter 15: Canonical Academy SysAdmin Architecture & Exam Roadmap](15-canonical-academy-sysadmin-architecture-and-roadmap.md)**
+    Modular qualification framework, performance-based terminal scoring mechanics, cross-reference to Boring Linux parts, and the 3-node Multipass/LXD lab setup.
+17. **[Chapter 16: Certification 1 — Using Linux Terminal](16-cert-1-using-linux-terminal.md)**
+    FHS navigation, regex and stream redirection, GPT/MBR partitioning and `/etc/fstab`, `journald` and `logrotate`, `cron`, user lifecycle, DAC/SUID/SGID/Sticky bits, `sudo`, and SSH keys.
+18. **[Chapter 17: Certification 2 — Using Ubuntu Desktop](17-cert-2-using-ubuntu-desktop.md)**
+    APT/DEB822 vs. Snap confinement, Layer 2 ARP/VLANs, Netplan and NetworkManager, PKI trust stores, Active Directory (`realmd`/`sssd`), POSIX ACLs, GRUB2/initramfs rescue, LVM snapshots, and open-source licensing.
+19. **[Chapter 18: Certification 3 — Using Ubuntu Server](18-cert-3-using-ubuntu-server.md)**
+    Unattended `autoinstall`, `cloud-init`, and PXE boot, single-user GRUB rescue, signals and `systemd` unit/timer authoring, SSH hardening, `ufw` and `iptables`, NFSv4/Samba, and Nginx/Apache2/PostgreSQL/MariaDB stacks.
+20. **[Chapter 19: Certification 4 — Using DevOps Principles](19-cert-4-using-devops-principles.md)**
+    Docker Compose, LXD system containers/VMs, KVM (`virsh`), CPU/memory/IO bottleneck triage (`vmstat`, `iostat`, `lsof`), packet forensics (`ss`, `dig`, `tcpdump`), defensive Bash/Python with Git, idempotent Ansible playbooks, and Ubuntu Pro/ESM/Livepatch/Landscape.
+21. **[Conclusion: The Road Ahead](15-conclusion-the-road-ahead.md)**
     Synthesis of the 12-year support horizon, immutable workstation trends, AI acceleration at the edge, and the future of open-source enterprise infrastructure.
