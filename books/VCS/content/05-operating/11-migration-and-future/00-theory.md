@@ -24,4 +24,4 @@ Actions YAML ── rewrite ──►  new CI
 
 ## How to read this chapter
 
-Strategies, preserving history, interoperability, trends, decision, future.
+Strategies, preserving history, interoperability, trends, decision, future, and the Jujutsu (`jj`) track: working copy as a commit, the Majjit DAG TUI, and the full `jj` workflow primer (revsets, DAG surgery, bookmarks, and stacked PRs).

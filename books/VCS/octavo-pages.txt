@@ -313,6 +313,7 @@ content/05-operating/11-migration-and-future/05-decision-framework.html	A Decisi
 content/05-operating/11-migration-and-future/06-future-of-code-hosting.html	The Future of Code Hosting
 content/05-operating/11-migration-and-future/07-jj-working-copy-as-commit.html	jj (Jujutsu): Working Copy as a Commit
 content/05-operating/11-migration-and-future/08-majjit-jj-dag-tui.html	Majjit: a Magit-style TUI for the Jujutsu DAG
+content/05-operating/11-migration-and-future/09-jj-primer.html	Jujutsu (jj) Primer: Revsets, DAG Operations, Bookmarks, and Stacked PRs
 content/06-github-actions/01-fundamentals/00-theory.html	Theory
 content/06-github-actions/01-fundamentals/01-automate-with-actions.html	Automate Tasks with Actions
 content/06-github-actions/01-fundamentals/02-workflow-anatomy.html	Workflow Anatomy

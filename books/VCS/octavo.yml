@@ -406,6 +406,7 @@ book:
       - content/05-operating/11-migration-and-future/06-future-of-code-hosting.md
       - content/05-operating/11-migration-and-future/07-jj-working-copy-as-commit.md
       - content/05-operating/11-migration-and-future/08-majjit-jj-dag-tui.md
+      - content/05-operating/11-migration-and-future/09-jj-primer.md
   - part: GitHub Actions
     contents:
     - part: Fundamentals
