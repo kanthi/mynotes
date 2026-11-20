@@ -82,11 +82,11 @@ This **standalone NixOS book** is a **normal topic-oriented** manuscript. Parts 
 | Internals | `08-internals/` | Evaluator, modules, upgrades | You can debug eval/store issues and plan upgrades |
 | Capstone | `09-capstone/` | Rebuildability | Wipe/rebuild proof (+ optional multi-node bar) |
 | **CI/CD** | `10-cicd/` | Binary caches, GitHub Actions, GitLab CI, remote builders, caching | Automated hermetic build & test pipelines push trusted caches |
-| **Containers & K8s** | `11-containers-and-kubernetes/` | Nix-built container images, K8s modules, Helm charts, Argo/Flux GitOps | Declarative containers & GitOps pipelines without Dockerfile drift |
-| **IaC & Cloud** | `12-iac-and-cloud/` | Terraform/OpenTofu with Nix, Ansible provisioning, multi-cloud | Provisioning and cloud state managed through deterministic definitions |
+| **Containers & K8s** | `11-containers-and-kubernetes/` | Nix-built container images, K8s modules, Helm charts, Argo/Flux GitOps, Talos Linux | Declarative containers, Talos clusters & GitOps pipelines without Dockerfile drift |
+| **IaC & Cloud** | `12-iac-and-cloud/` | Terraform/OpenTofu with Nix, Ansible provisioning, multi-cloud, Proxmox VE, Ceph storage | Provisioning, hypervisors, Ceph storage and cloud state managed through deterministic definitions |
 | **Platform Engineering** | `13-platform-engineering/` | Internal developer platform, monorepos, Colmena fleet deploys, MicroVMs | Enterprise scale platforms operate with automated maintenance & checklists |
 | **Production Labs** | `14-production-labs/` | Infrastructure audits, operator keys, builder factories, channel promotion | Real-world infra patterns extracted and hardened |
-| **Production Capstones**| `15-production-capstones/` | Multi-region production infrastructure deployment & conclusion | Automated fleet rollout, disaster recovery drills & the path forward |
+| **Production Capstones**| `15-production-capstones/` | Multi-region production infrastructure, deployable edge cloud & conclusion | Automated fleet rollout, air-gapped edge cloud drills & the path forward |
 | Projects | `99-projects/` | Derivations + distro branding | Hands-on artifacts exist |
 | Appendices | `100-appendices/` | Master glossary, CLI cheatsheets, version reference | Reference tables at hand |
 

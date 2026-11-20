@@ -161,11 +161,14 @@ content/11-containers-and-kubernetes/02-kubernetes-manifests-as-modules.html	Kub
 content/11-containers-and-kubernetes/03-helm-charts-from-nix.html	Helm Charts Generated from Nix
 content/11-containers-and-kubernetes/04-gitops-argo-flux.html	GitOps with Argo CD and Flux
 content/11-containers-and-kubernetes/05-service-mesh-observability.html	Service Mesh and Observability
+content/11-containers-and-kubernetes/06-talos-linux-with-nix.html	Talos Linux from a Nix Flake
 content/12-iac-and-cloud/01-terraform-providers-with-nix.html	Managing Terraform Providers with Nix
 content/12-iac-and-cloud/02-opentofu-integration.html	OpenTofu Integration
 content/12-iac-and-cloud/03-ansible-provisioning.html	Ansible Provisioning with Nix
 content/12-iac-and-cloud/04-cloud-provider-config.html	Cloud Provider Configuration
 content/12-iac-and-cloud/05-multi-cloud-deployment.html	Multi-Cloud Deployment Patterns
+content/12-iac-and-cloud/06-proxmox-ve-automation.html	Proxmox VE Templates and OpenTofu Rollout
+content/12-iac-and-cloud/07-ceph-storage-integration.html	Ceph Storage with Proxmox, NixOS, and Kubernetes
 content/13-platform-engineering/01-internal-developer-platform.html	The Internal Developer Platform Pattern
 content/13-platform-engineering/02-monorepo-strategies.html	Monorepo Strategies with Nix
 content/13-platform-engineering/03-multi-platform-distribution.html	Multi-Platform Development and Distribution
@@ -188,6 +191,7 @@ content/15-production-capstones/02-disko-storage-and-ephemeral-base.html	Disko S
 content/15-production-capstones/03-hardened-network-and-vpn-mesh.html	Hardened Networking and WireGuard Mesh
 content/15-production-capstones/04-distributed-application-stack.html	Distributed Application Stack and Secrets
 content/15-production-capstones/05-automated-fleet-rollout-and-disaster-recovery.html	Automated Fleet Rollout and Disaster Recovery
+content/15-production-capstones/05b-deployable-edge-cloud-stack.html	Deployable Edge Cloud ("Verlegefähige Cloud"): Talos, Proxmox, and NixOS
 content/15-production-capstones/06-conclusion-the-path-forward.html	Conclusion: The Path Forward
 content/16-misc/00-index.html	Misc
 content/16-misc/01-current-nix-and-nixos.html	Current Nix and NixOS

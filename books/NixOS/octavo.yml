@@ -185,6 +185,7 @@ book:
     - content/11-containers-and-kubernetes/03-helm-charts-from-nix.md
     - content/11-containers-and-kubernetes/04-gitops-argo-flux.md
     - content/11-containers-and-kubernetes/05-service-mesh-observability.md
+    - content/11-containers-and-kubernetes/06-talos-linux-with-nix.md
   - part: IaC and Cloud
     contents:
     - content/12-iac-and-cloud/01-terraform-providers-with-nix.md
@@ -192,6 +193,8 @@ book:
     - content/12-iac-and-cloud/03-ansible-provisioning.md
     - content/12-iac-and-cloud/04-cloud-provider-config.md
     - content/12-iac-and-cloud/05-multi-cloud-deployment.md
+    - content/12-iac-and-cloud/06-proxmox-ve-automation.md
+    - content/12-iac-and-cloud/07-ceph-storage-integration.md
   - part: Platform Engineering
     contents:
     - content/13-platform-engineering/01-internal-developer-platform.md
@@ -220,6 +223,7 @@ book:
     - content/15-production-capstones/03-hardened-network-and-vpn-mesh.md
     - content/15-production-capstones/04-distributed-application-stack.md
     - content/15-production-capstones/05-automated-fleet-rollout-and-disaster-recovery.md
+    - content/15-production-capstones/05b-deployable-edge-cloud-stack.md
     - content/15-production-capstones/06-conclusion-the-path-forward.md
     - part: Enterprise Architecture and Threat Model_files
       contents:
