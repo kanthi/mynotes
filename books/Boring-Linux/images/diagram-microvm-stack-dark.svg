@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 620" role="img" aria-label="Five-layer microVM architecture showing Guest Workload and Guest Kernel in VMX Non-Root mode above the Rust VMM, Host Linux KVM kernel module, and Hardware Silicon in VMX Root mode." color-scheme="dark">
+<title>The microVM Execution Stack</title><desc>Five-layer microVM architecture showing Guest Workload and Guest Kernel in VMX Non-Root mode above the Rust VMM, Host Linux KVM kernel module, and Hardware Silicon in VMX Root mode.</desc>
+<defs>
+  <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+    <path d="M20 0H0V20" fill="none" stroke="#2c3440" stroke-width="0.8"/>
+  </pattern>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M 1 1.5 L 8.5 5 L 1 8.5 z" fill="#60a5fa"/>
+  </marker>
+  <marker id="arrow-muted" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M 1 1.5 L 8.5 5 L 1 8.5 z" fill="#9aa8b8"/>
+  </marker>
+  <style>
+    .title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 22px; font-weight: 700; fill: #e8eef5; }
+    .subtitle { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 14.5px; fill: #9aa8b8; }
+    .label { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 16px; font-weight: 600; fill: #e8eef5; }
+    .small { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13.5px; fill: #9aa8b8; }
+    .code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; fill: #c5d0dc; }
+    .code-sm { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; fill: #c5d0dc; }
+    .canvas { fill: #1c2129; }
+    .frame { fill: none; stroke: #3a4452; stroke-width: 1; }
+    .rack { fill: #232a36; stroke: #566578; stroke-width: 1.4; }
+    .node { fill: #2a3140; stroke: #6b7c90; stroke-width: 1.6; }
+    .bay { fill: #2a3140; stroke: #5a6b7d; stroke-width: 1.4; }
+    .bubble { fill: #332a42; stroke: #8b7aa8; stroke-width: 1.3; }
+    .green { fill: #1f3328; stroke: #4e8f65; stroke-width: 1.5; }
+    .amber { fill: #382f1e; stroke: #b88a32; stroke-width: 1.5; }
+    .rose { fill: #3a2326; stroke: #b85c62; stroke-width: 1.5; }
+    .link { fill: none; stroke: #60a5fa; stroke-width: 1.8; stroke-linecap: round; }
+    .link-dash { fill: none; stroke: #9aa8b8; stroke-width: 1.4; stroke-dasharray: 5 4; stroke-linecap: round; }
+  </style>
+</defs>
+<rect class="canvas" width="960" height="620" rx="16"/>
+<rect width="960" height="620" rx="16" fill="url(#grid)"/>
+<rect class="frame" x="8" y="8" width="944" height="604" rx="12"/>
+<text x="480" y="42" class="title" text-anchor="middle">The microVM Execution Stack</text>
+<text x="480" y="68" class="subtitle" text-anchor="middle">Hardware-enforced tenant isolation from silicon to guest workload</text>
+<rect class="rack" x="36" y="96" width="888" height="176" rx="12"/>
+<text x="58" y="122" class="code" text-anchor="start">VMX Non-Root Mode (Guest)</text>
+<rect class="green" x="70" y="134" width="620" height="56" rx="10"/>
+<text x="380.0" y="159.2" class="label" text-anchor="middle">Guest Workload (Ring 3)</text>
+<text x="380.0" y="181.2" class="small" text-anchor="middle">Untrusted tenant processes, containers, or serverless functions</text>
+<rect class="bay" x="70" y="204" width="620" height="56" rx="10"/>
+<text x="380.0" y="229.2" class="label" text-anchor="middle">Guest Linux Kernel (Ring 0)</text>
+<text x="380.0" y="251.2" class="small" text-anchor="middle">Direct boot via Linux Boot Protocol / PVH  ·  VirtIO drivers + 16550A UART</text>
+<rect class="bubble" x="720" y="134" width="180" height="126" rx="10"/>
+<text x="810.0" y="176.2" class="label" text-anchor="middle">Guest Boundary</text>
+<text x="810.0" y="198.2" class="small" text-anchor="middle">Own kernel</text>
+<text x="810.0" y="216.2" class="small" text-anchor="middle">Own page tables</text>
+<text x="810.0" y="234.2" class="small" text-anchor="middle">No host FS/PIDs</text>
+<rect class="rack" x="36" y="302" width="888" height="278" rx="12"/>
+<text x="58" y="328" class="code" text-anchor="start">VMX Root Mode (Host)</text>
+<rect class="amber" x="70" y="342" width="620" height="64" rx="10"/>
+<text x="380.0" y="371.2" class="label" text-anchor="middle">Userspace VMM in Rust (Ring 3)</text>
+<text x="380.0" y="393.2" class="small" text-anchor="middle">Allocates guest RAM · loads vmlinux · emulates VirtIO · jailer + seccomp</text>
+<rect class="node" x="70" y="424" width="620" height="64" rx="10"/>
+<text x="380.0" y="453.2" class="label" text-anchor="middle">Host Linux Kernel + KVM (Ring 0)</text>
+<text x="380.0" y="475.2" class="small" text-anchor="middle">kvm.ko + kvm_intel/kvm_amd · VMCS/VMCB · EPT/NPT · in-kernel IRQCHIP</text>
+<rect class="bay" x="70" y="506" width="620" height="58" rx="10"/>
+<text x="380.0" y="532.2" class="label" text-anchor="middle">Host Hardware Silicon</text>
+<text x="380.0" y="554.2" class="small" text-anchor="middle">Intel VT-x / AMD-V · EPT / NPT · VPID / ASID · APICv / AVIC · IOMMU</text>
+<rect class="bubble" x="720" y="342" width="180" height="146" rx="10"/>
+<text x="810.0" y="385.2" class="label" text-anchor="middle">KVM ABI</text>
+<text x="810.0" y="407.2" class="code-sm" text-anchor="middle">/dev/kvm ioctls</text>
+<text x="810.0" y="425.2" class="code-sm" text-anchor="middle">mmap(kvm_run)</text>
+<text x="810.0" y="443.2" class="code-sm" text-anchor="middle">ioeventfd</text>
+<text x="810.0" y="461.2" class="code-sm" text-anchor="middle">irqfd</text>
+<path class="link" d="M380 190 V204" marker-end="url(#arrow)"/>
+<path class="link" d="M380 260 V342" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<text x="394" y="294" class="code-sm" text-anchor="start">VM-Entry / VM-Exit (trapped by KVM)</text>
+<path class="link" d="M380 406 V424" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<path class="link" d="M380 488 V506" marker-end="url(#arrow)" marker-start="url(#arrow)"/>
+<text x="480" y="602" class="subtitle" text-anchor="middle">Guest instructions run natively on silicon until an intercepted event triggers a VM-Exit.</text>
+</svg>

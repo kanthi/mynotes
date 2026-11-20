@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 650" role="img" aria-label="Three-tier KVM file descriptor hierarchy (/dev/kvm, VM fd, vCPU fd), memory slot mapping guest physical RAM to VMM mmap host virtual memory, and the KVM_RUN loop contrasting light kernel exits with heavy userspace exits." color-scheme="dark">
+<title>KVM Userspace ABI: File Descriptors, Memory Slots, and Run Loop</title><desc>Three-tier KVM file descriptor hierarchy (/dev/kvm, VM fd, vCPU fd), memory slot mapping guest physical RAM to VMM mmap host virtual memory, and the KVM_RUN loop contrasting light kernel exits with heavy userspace exits.</desc>
+<defs>
+  <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+    <path d="M20 0H0V20" fill="none" stroke="#2c3440" stroke-width="0.8"/>
+  </pattern>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M 1 1.5 L 8.5 5 L 1 8.5 z" fill="#60a5fa"/>
+  </marker>
+  <marker id="arrow-muted" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M 1 1.5 L 8.5 5 L 1 8.5 z" fill="#9aa8b8"/>
+  </marker>
+  <style>
+    .title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 22px; font-weight: 700; fill: #e8eef5; }
+    .subtitle { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 14.5px; fill: #9aa8b8; }
+    .label { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 16px; font-weight: 600; fill: #e8eef5; }
+    .small { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13.5px; fill: #9aa8b8; }
+    .code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; fill: #c5d0dc; }
+    .code-sm { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; fill: #c5d0dc; }
+    .canvas { fill: #1c2129; }
+    .frame { fill: none; stroke: #3a4452; stroke-width: 1; }
+    .rack { fill: #232a36; stroke: #566578; stroke-width: 1.4; }
+    .node { fill: #2a3140; stroke: #6b7c90; stroke-width: 1.6; }
+    .bay { fill: #2a3140; stroke: #5a6b7d; stroke-width: 1.4; }
+    .bubble { fill: #332a42; stroke: #8b7aa8; stroke-width: 1.3; }
+    .green { fill: #1f3328; stroke: #4e8f65; stroke-width: 1.5; }
+    .amber { fill: #382f1e; stroke: #b88a32; stroke-width: 1.5; }
+    .rose { fill: #3a2326; stroke: #b85c62; stroke-width: 1.5; }
+    .link { fill: none; stroke: #60a5fa; stroke-width: 1.8; stroke-linecap: round; }
+    .link-dash { fill: none; stroke: #9aa8b8; stroke-width: 1.4; stroke-dasharray: 5 4; stroke-linecap: round; }
+  </style>
+</defs>
+<rect class="canvas" width="960" height="650" rx="16"/>
+<rect width="960" height="650" rx="16" fill="url(#grid)"/>
+<rect class="frame" x="8" y="8" width="944" height="634" rx="12"/>
+<text x="480" y="40" class="title" text-anchor="middle">KVM Userspace ABI: File Descriptors, Memory Slots, and Run Loop</text>
+<text x="480" y="66" class="subtitle" text-anchor="middle">Three-tier fd hierarchy (top), guest RAM mapping (middle), and light vs. heavy VM-Exit path (bottom)</text>
+<rect class="rack" x="30" y="88" width="900" height="154" rx="12"/>
+<rect class="bay" x="52" y="108" width="250" height="114" rx="10"/>
+<text x="177.0" y="136.9" class="label" text-anchor="middle">1. System fd (/dev/kvm)</text>
+<text x="177.0" y="157.9" class="code-sm" text-anchor="middle">KVM_GET_API_VERSION (12)</text>
+<text x="177.0" y="174.9" class="code-sm" text-anchor="middle">KVM_CHECK_EXTENSION</text>
+<text x="177.0" y="191.9" class="code-sm" text-anchor="middle">KVM_GET_VCPU_MMAP_SIZE</text>
+<text x="177.0" y="208.9" class="code-sm" text-anchor="middle">KVM_CREATE_VM →</text>
+<rect class="amber" x="355" y="108" width="250" height="114" rx="10"/>
+<text x="480.0" y="136.9" class="label" text-anchor="middle">2. VM fd (1 per microVM)</text>
+<text x="480.0" y="157.9" class="code-sm" text-anchor="middle">KVM_SET_USER_MEMORY_REGION</text>
+<text x="480.0" y="174.9" class="code-sm" text-anchor="middle">KVM_CREATE_IRQCHIP / PIT2</text>
+<text x="480.0" y="191.9" class="code-sm" text-anchor="middle">KVM_IOEVENTFD / KVM_IRQFD</text>
+<text x="480.0" y="208.9" class="code-sm" text-anchor="middle">KVM_CREATE_VCPU →</text>
+<rect class="green" x="658" y="108" width="250" height="114" rx="10"/>
+<text x="783.0" y="136.9" class="label" text-anchor="middle">3. vCPU fd (1 thread each)</text>
+<text x="783.0" y="157.9" class="code-sm" text-anchor="middle">mmap() → struct kvm_run</text>
+<text x="783.0" y="174.9" class="code-sm" text-anchor="middle">KVM_GET/SET_SREGS &amp; REGS</text>
+<text x="783.0" y="191.9" class="code-sm" text-anchor="middle">KVM_SET_CPUID2 / MSRS</text>
+<text x="783.0" y="208.9" class="code-sm" text-anchor="middle">KVM_RUN (blocking loop)</text>
+<path class="link" d="M302 165 H355" marker-end="url(#arrow)"/>
+<path class="link" d="M605 165 H658" marker-end="url(#arrow)"/>
+<rect class="rack" x="30" y="262" width="900" height="136" rx="12"/>
+<text x="52" y="288" class="label" text-anchor="start">Memory Slot: Guest RAM is ordinary VMM process memory</text>
+<rect class="green" x="52" y="304" width="240" height="76" rx="10"/>
+<text x="172.0" y="330.4" class="label" text-anchor="middle">Guest RAM (GPA)</text>
+<text x="172.0" y="351.4" class="code-sm" text-anchor="middle">0x0000_0000 .. 0x20_0000</text>
+<text x="172.0" y="369.4" class="small" text-anchor="middle">Unmapped holes → MMIO exit</text>
+<rect class="amber" x="355" y="304" width="250" height="76" rx="10"/>
+<text x="480.0" y="329.9" class="label" text-anchor="middle">Memory Slot 0 (KVM)</text>
+<text x="480.0" y="350.9" class="code-sm" text-anchor="middle">guest_phys_addr: 0x0</text>
+<text x="480.0" y="368.9" class="code-sm" text-anchor="middle">userspace_addr: vm_ram</text>
+<rect class="node" x="668" y="304" width="240" height="76" rx="10"/>
+<text x="788.0" y="330.4" class="label" text-anchor="middle">VMM Process RAM (HVA)</text>
+<text x="788.0" y="351.4" class="code-sm" text-anchor="middle">mmap(MAP_ANONYMOUS)</text>
+<text x="788.0" y="369.4" class="small" text-anchor="middle">Demand-paged into EPT</text>
+<path class="link" d="M292 342 H355" marker-end="url(#arrow)"/>
+<path class="link" d="M605 342 H668" marker-end="url(#arrow)"/>
+<rect class="rack" x="30" y="418" width="900" height="184" rx="12"/>
+<text x="52" y="444" class="label" text-anchor="start">The KVM_RUN Loop: Light Exits (~450 ns) vs. Heavy Userspace Exits (~1,200+ ns)</text>
+<rect class="amber" x="52" y="464" width="230" height="114" rx="10"/>
+<text x="167.0" y="500.9" class="label" text-anchor="middle">VMM Thread</text>
+<text x="167.0" y="521.9" class="small" text-anchor="middle">Userspace (Ring 3)</text>
+<text x="167.0" y="539.9" class="code-sm" text-anchor="middle">Reads kvm_run union</text>
+<text x="167.0" y="556.9" class="small" text-anchor="middle">Handles IO / MMIO / HLT</text>
+<rect class="rose" x="365" y="464" width="230" height="114" rx="10"/>
+<text x="480.0" y="500.9" class="label" text-anchor="middle">KVM (Host Kernel)</text>
+<text x="480.0" y="521.9" class="small" text-anchor="middle">Ring 0 (kvm_intel.ko)</text>
+<text x="480.0" y="539.9" class="small" text-anchor="middle">Handles light exits:</text>
+<text x="480.0" y="556.9" class="code-sm" text-anchor="middle">EPT fault, CPUID, APIC</text>
+<rect class="green" x="678" y="464" width="230" height="114" rx="10"/>
+<text x="793.0" y="500.9" class="label" text-anchor="middle">Guest vCPU</text>
+<text x="793.0" y="521.9" class="small" text-anchor="middle">VMX Non-Root Mode</text>
+<text x="793.0" y="539.9" class="small" text-anchor="middle">Runs natively on silicon</text>
+<text x="793.0" y="556.9" class="code-sm" text-anchor="middle">until OUT / MMIO / HLT</text>
+<path class="link" d="M282 496 H365" marker-end="url(#arrow)"/>
+<text x="323" y="488" class="code-sm" text-anchor="middle">1. KVM_RUN</text>
+<path class="link" d="M595 496 H678" marker-end="url(#arrow)"/>
+<text x="636" y="488" class="code-sm" text-anchor="middle">2. VM-Entry</text>
+<path class="link" d="M678 548 H595" marker-end="url(#arrow)"/>
+<text x="636" y="568" class="code-sm" text-anchor="middle">3. VM-Exit</text>
+<path class="link" d="M365 548 H282" marker-end="url(#arrow)"/>
+<text x="323" y="568" class="code-sm" text-anchor="middle">4. Heavy Exit</text>
+<text x="480" y="628" class="subtitle" text-anchor="middle">Minimizing heavy exits (step 4) is the core reason VirtIO batches I/O in shared memory.</text>
+</svg>

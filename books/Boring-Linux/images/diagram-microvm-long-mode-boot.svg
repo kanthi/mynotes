@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 640" role="img" aria-label="Left panel shows the x86-64 microVM guest physical memory map from 0x0 to the MMIO gap at 0xD000_0000. Right panel shows the 2 MiB hugepage identity map (CR3 to PML4, PDPT, PD) and initial Long Mode vCPU registers." color-scheme="light">
+<title>Direct Linux Boot: Guest Physical Map and 64-Bit Identity Paging</title><desc>Left panel shows the x86-64 microVM guest physical memory map from 0x0 to the MMIO gap at 0xD000_0000. Right panel shows the 2 MiB hugepage identity map (CR3 to PML4, PDPT, PD) and initial Long Mode vCPU registers.</desc>
+<defs>
+  <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+    <path d="M20 0H0V20" fill="none" stroke="#cfd8e6" stroke-width="0.8"/>
+  </pattern>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M 1 1.5 L 8.5 5 L 1 8.5 z" fill="#3b82c4"/>
+  </marker>
+  <marker id="arrow-muted" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M 1 1.5 L 8.5 5 L 1 8.5 z" fill="#5c6b7a"/>
+  </marker>
+  <style>
+    .title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 22px; font-weight: 700; fill: #2a3542; }
+    .subtitle { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 14.5px; fill: #5c6b7a; }
+    .label { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 16px; font-weight: 600; fill: #2a3542; }
+    .small { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13.5px; fill: #5c6b7a; }
+    .code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; fill: #3d4f5f; }
+    .code-sm { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; fill: #3d4f5f; }
+    .canvas { fill: #eef2f7; }
+    .frame { fill: none; stroke: #d0d9e4; stroke-width: 1; }
+    .rack { fill: #dce5ef; stroke: #8fa0b3; stroke-width: 1.4; }
+    .node { fill: #f7fafc; stroke: #7d8fa3; stroke-width: 1.6; }
+    .bay { fill: #f7fafc; stroke: #a8b7c8; stroke-width: 1.4; }
+    .bubble { fill: #ebe0f4; stroke: #b39bc9; stroke-width: 1.3; }
+    .green { fill: #e3f2e8; stroke: #5c9e72; stroke-width: 1.5; }
+    .amber { fill: #fdf3dc; stroke: #c49438; stroke-width: 1.5; }
+    .rose { fill: #fae5e5; stroke: #c46b6b; stroke-width: 1.5; }
+    .link { fill: none; stroke: #3b82c4; stroke-width: 1.8; stroke-linecap: round; }
+    .link-dash { fill: none; stroke: #5c6b7a; stroke-width: 1.4; stroke-dasharray: 5 4; stroke-linecap: round; }
+  </style>
+</defs>
+<rect class="canvas" width="960" height="640" rx="16"/>
+<rect width="960" height="640" rx="16" fill="url(#grid)"/>
+<rect class="frame" x="8" y="8" width="944" height="624" rx="12"/>
+<text x="480" y="40" class="title" text-anchor="middle">Direct Linux Boot: Guest Physical Map &amp; 64-Bit Identity Paging</text>
+<text x="480" y="66" class="subtitle" text-anchor="middle">Skipping BIOS and GRUB by laying out kernel, Zero Page, GDT, and 2 MiB identity page tables in RAM</text>
+<rect class="rack" x="30" y="90" width="440" height="502" rx="12"/>
+<text x="250" y="118" class="label" text-anchor="middle">x86-64 MicroVM GPA Memory Map</text>
+<rect class="rose" x="52" y="134" width="396" height="46" rx="10"/>
+<text x="250.0" y="154.0" class="code-sm" text-anchor="middle">0xD000_0000 – 0xFFFF_FFFF  (MMIO Gap — No Memslot)</text>
+<text x="250.0" y="172.0" class="small" text-anchor="middle">VirtIO-MMIO (0xD000_0000+) · IOAPIC (0xFEC0_0000) · LAPIC</text>
+<rect class="green" x="52" y="188" width="396" height="44" rx="10"/>
+<text x="250.0" y="207.0" class="code-sm" text-anchor="middle">0x0010_0000+ (1 MiB+)  vmlinux ELF / bzImage + RAM</text>
+<text x="250.0" y="225.0" class="small" text-anchor="middle">Kernel loaded directly; optional initrd near top of low RAM</text>
+<rect class="bay" x="52" y="240" width="396" height="40" rx="10"/>
+<text x="250.0" y="265.0" class="code-sm" text-anchor="middle">0x000A_0000 – 0x000F_FFFF  Legacy Hole (E820_RESERVED)</text>
+<rect class="node" x="52" y="288" width="396" height="40" rx="10"/>
+<text x="250.0" y="313.0" class="code-sm" text-anchor="middle">0x0009_FC00  EBDA: Intel MP Table / ACPI RSDP</text>
+<rect class="node" x="52" y="336" width="396" height="40" rx="10"/>
+<text x="250.0" y="361.0" class="code-sm" text-anchor="middle">0x0002_0000  Kernel Command Line (ASCII, NUL-terminated)</text>
+<rect class="amber" x="52" y="384" width="396" height="46" rx="10"/>
+<text x="250.0" y="404.0" class="code-sm" text-anchor="middle">0x0000_9000 – 0x0000_BFFF  Boot Page Tables</text>
+<text x="250.0" y="422.0" class="small" text-anchor="middle">PML4 (0x9000) · PDPT (0xA000) · PD (0xB000)</text>
+<rect class="bubble" x="52" y="438" width="396" height="46" rx="10"/>
+<text x="250.0" y="458.0" class="code-sm" text-anchor="middle">0x0000_7000  Zero Page (boot_params / hvm_start_info)</text>
+<text x="250.0" y="476.0" class="small" text-anchor="middle">Passed to Linux in RSI (64-bit) or EBX (PVH 32-bit)</text>
+<rect class="bay" x="52" y="492" width="396" height="40" rx="10"/>
+<text x="250.0" y="517.0" class="code-sm" text-anchor="middle">0x0000_0500  GDT (null, 0x08 code64, 0x10 data, 0x18 TSS)</text>
+<rect class="bay" x="52" y="540" width="396" height="36" rx="10"/>
+<text x="250.0" y="562.8" class="code-sm" text-anchor="middle">0x0000_0000 – 0x0000_04FF  Reserved (legacy IVT / BDA)</text>
+<rect class="rack" x="495" y="90" width="435" height="502" rx="12"/>
+<text x="712" y="118" class="label" text-anchor="middle">Long-Mode Identity Paging &amp; Entry State</text>
+<rect class="amber" x="525" y="136" width="170" height="62" rx="10"/>
+<text x="610.0" y="163.6" class="label" text-anchor="middle">CR3</text>
+<text x="610.0" y="183.6" class="code" text-anchor="middle">= 0x9000</text>
+<rect class="node" x="730" y="136" width="170" height="62" rx="10"/>
+<text x="815.0" y="163.6" class="label" text-anchor="middle">PML4 @ 0x9000</text>
+<text x="815.0" y="183.6" class="code-sm" text-anchor="middle">[0] → 0xA000 | P|W</text>
+<path class="link" d="M695 167 H730" marker-end="url(#arrow)"/>
+<rect class="node" x="525" y="224" width="170" height="62" rx="10"/>
+<text x="610.0" y="251.6" class="label" text-anchor="middle">PDPT @ 0xA000</text>
+<text x="610.0" y="271.6" class="code-sm" text-anchor="middle">[0] → 0xB000 | P|W</text>
+<rect class="node" x="730" y="224" width="170" height="62" rx="10"/>
+<text x="815.0" y="251.6" class="label" text-anchor="middle">PD @ 0xB000</text>
+<text x="815.0" y="271.6" class="code-sm" text-anchor="middle">512× 2 MiB (PS=1)</text>
+<path class="link" d="M815 198 V211 H610 V224" marker-end="url(#arrow)"/>
+<path class="link" d="M695 255 H730" marker-end="url(#arrow)"/>
+<path class="link" d="M815 286 V316" marker-end="url(#arrow)"/>
+<rect class="green" x="525" y="320" width="375" height="58" rx="10"/>
+<text x="712.5" y="346.1" class="label" text-anchor="middle">Identity-Mapped Guest RAM (0 .. 1 GiB)</text>
+<text x="712.5" y="366.1" class="small" text-anchor="middle">GVA == GPA (no Level-4 PT needed because PS=1)</text>
+<rect class="bubble" x="525" y="400" width="375" height="176" rx="10"/>
+<text x="539" y="439.9" class="label" text-anchor="start">Initial vCPU 0 Registers (KVM_SET_SREGS / REGS)</text>
+<text x="539" y="460.9" class="code-sm" text-anchor="start">CR0  = PE | PG | WP | NE | ET | MP</text>
+<text x="539" y="478.9" class="code-sm" text-anchor="start">CR4  = PAE  ·  EFER = LME | LMA (0x500)</text>
+<text x="539" y="496.9" class="code-sm" text-anchor="start">CS   = sel 0x08, L=1, D/B=0, P=1, Type=0xB</text>
+<text x="539" y="514.9" class="code-sm" text-anchor="start">TR   = busy 64-bit TSS (required by VT-x!)</text>
+<text x="539" y="532.9" class="code-sm" text-anchor="start">RIP  = startup_64  ·  RSI = 0x7000 (boot_params)</text>
+<text x="539" y="550.9" class="code-sm" text-anchor="start">RFLAGS = 0x2  ·  CPUID set via KVM_SET_CPUID2</text>
+<text x="480" y="618" class="subtitle" text-anchor="middle">Bad sregs trigger KVM_EXIT_FAIL_ENTRY; bad page tables trigger a triple fault (KVM_EXIT_SHUTDOWN).</text>
+</svg>

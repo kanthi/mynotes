@@ -41,7 +41,7 @@ Attempt the Part 32 projects as you progress: a recoverable server after 11, a s
 
 Parts 01–05 have complete chapter sequences. Part 06 contains nine chapters, through service cgroups, resource boundaries and an initial sandbox. Its next chapters cover reload/restart and graceful shutdown, user services, and failure diagnosis and recovery.
 
-Parts 07–32 are planned and are not yet in the sidebar. Parts 33–39 already contain optional depth-track material; they are being reviewed for prerequisites, overlap and technical accuracy. Their presence is not a substitute for the unwritten core parts. The sidebar lists the chapters currently available.
+Parts 08–19 and 21–32 are planned and are not yet in the sidebar. Part 20 (Virtualization and Virtual Machine Operations) now includes the **microVMs** sub-section covering VT-x/VMCS/EPT, KVM in Rust, direct Linux boot, VirtIO devices, and Firecracker/Cloud Hypervisor. Parts 33–39 already contain optional depth-track material; they are being reviewed for prerequisites, overlap and technical accuracy. Their presence is not a substitute for the unwritten core parts. The sidebar lists the chapters currently available.
 
 The map below covers the whole curriculum, including planned parts. Part numbers are stable references; they do not require a reader to complete every optional track.
 

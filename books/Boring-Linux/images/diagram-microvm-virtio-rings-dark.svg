@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 620" role="img" aria-label="Top section shows the three Split Virtqueue rings in guest RAM (Descriptor Table with a 3-descriptor block request chain, Available Ring, and Used Ring). Bottom section shows KVM ioeventfd and irqfd decoupling vCPU execution from VMM I/O threads." color-scheme="dark">
+<title>VirtIO Split Virtqueue and Asynchronous KVM Fast Path</title><desc>Top section shows the three Split Virtqueue rings in guest RAM (Descriptor Table with a 3-descriptor block request chain, Available Ring, and Used Ring). Bottom section shows KVM ioeventfd and irqfd decoupling vCPU execution from VMM I/O threads.</desc>
+<defs>
+  <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+    <path d="M20 0H0V20" fill="none" stroke="#2c3440" stroke-width="0.8"/>
+  </pattern>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M 1 1.5 L 8.5 5 L 1 8.5 z" fill="#60a5fa"/>
+  </marker>
+  <marker id="arrow-muted" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M 1 1.5 L 8.5 5 L 1 8.5 z" fill="#9aa8b8"/>
+  </marker>
+  <style>
+    .title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 22px; font-weight: 700; fill: #e8eef5; }
+    .subtitle { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 14.5px; fill: #9aa8b8; }
+    .label { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 16px; font-weight: 600; fill: #e8eef5; }
+    .small { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13.5px; fill: #9aa8b8; }
+    .code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; fill: #c5d0dc; }
+    .code-sm { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; fill: #c5d0dc; }
+    .canvas { fill: #1c2129; }
+    .frame { fill: none; stroke: #3a4452; stroke-width: 1; }
+    .rack { fill: #232a36; stroke: #566578; stroke-width: 1.4; }
+    .node { fill: #2a3140; stroke: #6b7c90; stroke-width: 1.6; }
+    .bay { fill: #2a3140; stroke: #5a6b7d; stroke-width: 1.4; }
+    .bubble { fill: #332a42; stroke: #8b7aa8; stroke-width: 1.3; }
+    .green { fill: #1f3328; stroke: #4e8f65; stroke-width: 1.5; }
+    .amber { fill: #382f1e; stroke: #b88a32; stroke-width: 1.5; }
+    .rose { fill: #3a2326; stroke: #b85c62; stroke-width: 1.5; }
+    .link { fill: none; stroke: #60a5fa; stroke-width: 1.8; stroke-linecap: round; }
+    .link-dash { fill: none; stroke: #9aa8b8; stroke-width: 1.4; stroke-dasharray: 5 4; stroke-linecap: round; }
+  </style>
+</defs>
+<rect class="canvas" width="960" height="620" rx="16"/>
+<rect width="960" height="620" rx="16" fill="url(#grid)"/>
+<rect class="frame" x="8" y="8" width="944" height="604" rx="12"/>
+<text x="480" y="40" class="title" text-anchor="middle">VirtIO Split Virtqueue and Asynchronous KVM Fast Path</text>
+<text x="480" y="66" class="subtitle" text-anchor="middle">Lockless shared-RAM rings (top) decoupled from KVM_RUN via ioeventfd and irqfd (bottom)</text>
+<rect class="rack" x="30" y="88" width="900" height="278" rx="12"/>
+<text x="52" y="114" class="label" text-anchor="start">Shared Guest RAM (accessed via VolatileSlice + Acquire/Release barriers)</text>
+<rect class="node" x="52" y="130" width="856" height="98" rx="10"/>
+<text x="66" y="157.9" class="label" text-anchor="start">1. Descriptor Table (Driver writes, Device reads) — 16 bytes × N</text>
+<text x="66" y="178.9" class="code-sm" text-anchor="start">[0] addr=0x40000  len=16    flags=NEXT        next=1   (virtio-blk 16B request header)</text>
+<text x="66" y="196.9" class="code-sm" text-anchor="start">[1] addr=0x50000  len=4096  flags=NEXT|WRITE  next=2   (4 KiB guest data buffer)</text>
+<text x="66" y="214.9" class="code-sm" text-anchor="start">[2] addr=0x40010  len=1     flags=WRITE       next=0   (1-byte completion status)</text>
+<rect class="green" x="52" y="246" width="412" height="102" rx="10"/>
+<text x="66" y="275.9" class="label" text-anchor="start">2. Available Ring (Driver → Device)</text>
+<text x="66" y="296.9" class="code-sm" text-anchor="start">idx: u16 (wrapping, written with Release)</text>
+<text x="66" y="314.9" class="code-sm" text-anchor="start">ring[0..N]: head descriptor indices (e.g. 0)</text>
+<text x="66" y="332.9" class="code-sm" text-anchor="start">used_event: u16 (EVENT_IDX suppression)</text>
+<rect class="amber" x="496" y="246" width="412" height="102" rx="10"/>
+<text x="510" y="275.9" class="label" text-anchor="start">3. Used Ring (Device → Driver)</text>
+<text x="510" y="296.9" class="code-sm" text-anchor="start">idx: u16 (wrapping, written with Release)</text>
+<text x="510" y="314.9" class="code-sm" text-anchor="start">ring[0..N]: { id: u32, len: u32 }</text>
+<text x="510" y="332.9" class="code-sm" text-anchor="start">avail_event: u16 (EVENT_IDX suppression)</text>
+<rect class="rack" x="30" y="388" width="900" height="184" rx="12"/>
+<text x="52" y="414" class="label" text-anchor="start">Async Signaling: Bypassing Synchronous KVM_RUN Userspace Exits</text>
+<rect class="green" x="52" y="434" width="230" height="118" rx="10"/>
+<text x="167.0" y="463.9" class="label" text-anchor="middle">Guest vCPU</text>
+<text x="167.0" y="484.9" class="small" text-anchor="middle">1. Writes QueueNotify</text>
+<text x="167.0" y="502.9" class="code-sm" text-anchor="middle">   (doorbell MMIO)</text>
+<text x="167.0" y="519.9" class="small" text-anchor="middle">4. Receives MSI-X /</text>
+<text x="167.0" y="537.9" class="code-sm" text-anchor="middle">   IOAPIC interrupt</text>
+<rect class="rose" x="365" y="434" width="230" height="118" rx="10"/>
+<text x="480.0" y="463.9" class="label" text-anchor="middle">Host Kernel (KVM)</text>
+<text x="480.0" y="484.9" class="small" text-anchor="middle">ioeventfd: traps kick,</text>
+<text x="480.0" y="502.9" class="code-sm" text-anchor="middle">signals fd &amp; resumes!</text>
+<text x="480.0" y="519.9" class="small" text-anchor="middle">irqfd: injects IRQ /</text>
+<text x="480.0" y="537.9" class="code-sm" text-anchor="middle">Posted Interrupt</text>
+<rect class="amber" x="678" y="434" width="230" height="118" rx="10"/>
+<text x="793.0" y="463.9" class="label" text-anchor="middle">VMM I/O Thread / vhost</text>
+<text x="793.0" y="484.9" class="small" text-anchor="middle">2. Wakes via epoll()</text>
+<text x="793.0" y="502.9" class="code-sm" text-anchor="middle">   drains Avail Ring</text>
+<text x="793.0" y="519.9" class="small" text-anchor="middle">3. preadv / io_uring,</text>
+<text x="793.0" y="537.9" class="code-sm" text-anchor="middle">   writes Used + irqfd</text>
+<path class="link" d="M282 468 H365" marker-end="url(#arrow)"/>
+<text x="323" y="460" class="code-sm" text-anchor="middle">QueueNotify</text>
+<path class="link" d="M595 468 H678" marker-end="url(#arrow)"/>
+<text x="636" y="460" class="code-sm" text-anchor="middle">ioeventfd</text>
+<path class="link" d="M678 522 H595" marker-end="url(#arrow)"/>
+<text x="636" y="542" class="code-sm" text-anchor="middle">irqfd (write 1)</text>
+<path class="link" d="M365 522 H282" marker-end="url(#arrow)"/>
+<text x="323" y="542" class="code-sm" text-anchor="middle">IRQ inject</text>
+<text x="480" y="598" class="subtitle" text-anchor="middle">With EVENT_IDX + ioeventfd + irqfd, high-IOPS workloads batch dozens of buffers per notification.</text>
+</svg>

@@ -131,6 +131,16 @@ book:
     - content/07-processes-memory-and-resource-administration/08-cgroups-v2-hierarchy-controllers-delegation-and-accounting.md
     - content/07-processes-memory-and-resource-administration/10-file-descriptors-process-limits-and-exhaustion.md
     - content/07-processes-memory-and-resource-administration/11-psi-contention-and-pressure-versus-utilization.md
+  - part: Virtualization and Virtual Machine Operations
+    contents:
+    - part: microVMs
+      contents:
+      - content/20-virtualization-and-virtual-machine-operations/01-microvms/index.md
+      - content/20-virtualization-and-virtual-machine-operations/01-microvms/01-trap-and-emulate-to-vtx-vmcs-and-ept.md
+      - content/20-virtualization-and-virtual-machine-operations/01-microvms/02-kvm-from-user-space-in-rust.md
+      - content/20-virtualization-and-virtual-machine-operations/01-microvms/03-booting-linux.md
+      - content/20-virtualization-and-virtual-machine-operations/01-microvms/04-virtio-devices.md
+      - content/20-virtualization-and-virtual-machine-operations/01-microvms/05-production-vmms-firecracker-and-cloud-hypervisor.md
   - part: Running Multiple Kernels on One Bare-Metal Server
     contents:
     - content/33-running-multiple-kernels-on-one-bare-metal-server/index.md

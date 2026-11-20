@@ -69,6 +69,12 @@ content/07-processes-memory-and-resource-administration/05-page-cache-writeback-
 content/07-processes-memory-and-resource-administration/08-cgroups-v2-hierarchy-controllers-delegation-and-accounting.html	cgroups v2: hierarchy, controllers, delegation and accounting
 content/07-processes-memory-and-resource-administration/10-file-descriptors-process-limits-and-exhaustion.html	File descriptors, process limits and exhaustion patterns
 content/07-processes-memory-and-resource-administration/11-psi-contention-and-pressure-versus-utilization.html	PSI, contention and distinguishing pressure from utilization
+content/20-virtualization-and-virtual-machine-operations/01-microvms/01-trap-and-emulate-to-vtx-vmcs-and-ept.html	1. Trap-and-Emulate to VT-x, VMCS, and EPT
+content/20-virtualization-and-virtual-machine-operations/01-microvms/02-kvm-from-user-space-in-rust.html	2. KVM from User Space in Rust
+content/20-virtualization-and-virtual-machine-operations/01-microvms/03-booting-linux.html	3. Booting Linux
+content/20-virtualization-and-virtual-machine-operations/01-microvms/04-virtio-devices.html	4. virtio Devices
+content/20-virtualization-and-virtual-machine-operations/01-microvms/05-production-vmms-firecracker-and-cloud-hypervisor.html	5. Production VMMs: Firecracker and Cloud Hypervisor
+content/20-virtualization-and-virtual-machine-operations/01-microvms/index.html	microVMs
 content/33-running-multiple-kernels-on-one-bare-metal-server/00-introduction-the-multikernel-problem.html	Introduction: The Multikernel Problem
 content/33-running-multiple-kernels-on-one-bare-metal-server/01-linux-kernel-fundamentals.html	Chapter 1: Linux Kernel Fundamentals
 content/33-running-multiple-kernels-on-one-bare-metal-server/02-the-boot-process-in-depth.html	Chapter 2: The Boot Process in Depth
@@ -188,4 +194,22 @@ content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/13-customization-an
 content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/14-enterprise-deployment-and-management.html	Chapter 14: Enterprise Deployment and Management
 content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/15-conclusion-the-road-ahead.html	Conclusion: The Road Ahead
 content/38-ubuntu-26-04-lts-from-desktop-to-enterprise-cloud/index.html	Part 38 — Ubuntu 26.04 LTS: From Desktop to Enterprise Cloud
+content/39-networking-in-linux/00-introduction-networking-with-linux.html	Introduction: Networking with Linux
+content/39-networking-in-linux/01-network-interfaces-drivers-and-link-layer-control.html	Chapter 1: Network Interfaces, Drivers, and Link-Layer Control
+content/39-networking-in-linux/02-ip-addressing-ipv4-ipv6-and-host-models.html	Chapter 2: IP Addressing, IPv4/IPv6, and Host Models
+content/39-networking-in-linux/03-layer-2-networking-ethernet-arp-and-ndp.html	Chapter 3: Layer 2 Networking: Ethernet, ARP, and NDP
+content/39-networking-in-linux/04-layer-3-packet-forwarding-and-ip-stack-internals.html	Chapter 4: Layer 3 Packet Forwarding and IP Stack Internals
+content/39-networking-in-linux/05-vlans-8021q-qinq-and-vlan-aware-switching.html	Chapter 5: VLANs: 802.1Q, QinQ, and VLAN-Aware Switching
+content/39-networking-in-linux/06-linux-bridges-and-software-switching.html	Chapter 6: Linux Bridges and Software Switching
+content/39-networking-in-linux/07-bonding-teaming-and-link-aggregation.html	Chapter 7: Bonding, Teaming, and Link Aggregation
+content/39-networking-in-linux/08-routing-policy-routing-vrfs-and-dynamic-routing.html	Chapter 8: Routing, Policy Routing, VRFs, and Dynamic Routing
+content/39-networking-in-linux/09-dhcp-clients-servers-and-relays.html	Chapter 9: DHCP: Clients, Servers, and Relays
+content/39-networking-in-linux/10-dns-resolution-caching-and-authoritative-services.html	Chapter 10: DNS: Resolution, Caching, and Authoritative Services
+content/39-networking-in-linux/11-firewalling-netfilter-and-nftables.html	Chapter 11: Firewalling: Netfilter and nftables
+content/39-networking-in-linux/12-nat-connection-tracking-and-address-translation.html	Chapter 12: NAT, Connection Tracking, and Address Translation
+content/39-networking-in-linux/13-vpns-wireguard-ipsec-and-encrypted-tunnels.html	Chapter 13: VPNs: WireGuard, IPsec, and Encrypted Tunnels
+content/39-networking-in-linux/14-virtual-networking-overlays-containers-and-tc-ebpf.html	Chapter 14: Virtual Networking, Overlays, Containers, and tc/eBPF
+content/39-networking-in-linux/15-network-troubleshooting-packet-forensics-and-observability.html	Chapter 15: Network Troubleshooting, Packet Forensics, and Observability
+content/39-networking-in-linux/16-capstone-hands-on-enterprise-linux-network-lab.html	Chapter 16: Capstone Lab: Enterprise Linux Network Fabric
+content/39-networking-in-linux/index.html	Part 39 — Networking in Linux
 index.html	Introduction
