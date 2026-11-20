@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 244" role="img" aria-label="A MAC and PHY transmit symbols across one link to a receiving PHY and MAC." color-scheme="dark">
+<defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="#344454" stroke-width=".65"/></pattern>
+<marker id="arrow" viewBox="0 0 8 8" markerWidth="6" markerHeight="6" refX="7" refY="4" orient="auto"><path d="m0 0 8 4-8 4z" fill="#83bff0"/></marker></defs>
+<rect width="760" height="244" rx="12" fill="#182332"/><rect width="760" height="244" rx="12" fill="url(#grid)"/>
+<g font-family="system-ui, sans-serif" fill="#e3edf6">
+<text x="32" y="38" text-anchor="start" font-size="21" font-weight="650" fill="#e3edf6">One Ethernet transmission</text>
+<rect x="24" y="86" width="150" height="72" rx="8" fill="#233346" stroke="#839ab1" stroke-width="1.5"/>
+<text x="99.0" y="119.0" text-anchor="middle" font-size="16" font-weight="650" fill="#e3edf6">MAC</text>
+<text x="99.0" y="141.0" text-anchor="middle" font-size="14" font-weight="400" fill="#b1c1d1">Build frame + FCS</text>
+<rect x="208" y="86" width="150" height="72" rx="8" fill="#233346" stroke="#839ab1" stroke-width="1.5"/>
+<text x="283.0" y="119.0" text-anchor="middle" font-size="16" font-weight="650" fill="#e3edf6">PHY</text>
+<text x="283.0" y="141.0" text-anchor="middle" font-size="14" font-weight="400" fill="#b1c1d1">Encode symbols</text>
+<rect x="402" y="86" width="150" height="72" rx="8" fill="#233346" stroke="#839ab1" stroke-width="1.5"/>
+<text x="477.0" y="119.0" text-anchor="middle" font-size="16" font-weight="650" fill="#e3edf6">PHY</text>
+<text x="477.0" y="141.0" text-anchor="middle" font-size="14" font-weight="400" fill="#b1c1d1">Recover symbols</text>
+<rect x="586" y="86" width="150" height="72" rx="8" fill="#233346" stroke="#839ab1" stroke-width="1.5"/>
+<text x="661.0" y="119.0" text-anchor="middle" font-size="16" font-weight="650" fill="#e3edf6">MAC</text>
+<text x="661.0" y="141.0" text-anchor="middle" font-size="14" font-weight="400" fill="#b1c1d1">Check frame FCS</text>
+<line x1="174" y1="122" x2="206" y2="122" stroke="#83bff0" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="358" y1="122" x2="400" y2="122" stroke="#83bff0" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="552" y1="122" x2="584" y2="122" stroke="#83bff0" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="380" y="94" text-anchor="middle" font-size="14" font-weight="400" fill="#e3edf6">link</text>
+<text x="191" y="68" text-anchor="middle" font-size="16" font-weight="650" fill="#83bff0">Transmitter</text>
+<text x="567" y="68" text-anchor="middle" font-size="16" font-weight="650" fill="#83bff0">Receiver</text>
+<text x="380" y="197" text-anchor="middle" font-size="17" font-weight="400" fill="#e3edf6">A capture above the receiving MAC sees accepted frames.</text>
+<text x="380" y="221" text-anchor="middle" font-size="15" font-weight="400" fill="#e3edf6">Signal levels and most rejected frames require evidence from the interface.</text>
+</g></svg>

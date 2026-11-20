@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 438" role="img" aria-label="A browser returns a code to a portal. The portal obtains tokens from the issuer and calls an API." color-scheme="light">
+<defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="#d0d9e4" stroke-width=".65"/></pattern>
+<marker id="arrow" viewBox="0 0 8 8" markerWidth="6" markerHeight="6" refX="7" refY="4" orient="auto"><path d="m0 0 8 4-8 4z" fill="#25699f"/></marker></defs>
+<rect width="760" height="438" rx="12" fill="#eef2f7"/><rect width="760" height="438" rx="12" fill="url(#grid)"/>
+<g font-family="system-ui, sans-serif" fill="#2a3542">
+<text x="32" y="38" text-anchor="start" font-size="21" font-weight="650" fill="#2a3542">A portal sign-in and one delegated API call</text>
+<rect x="18" y="60" width="132" height="40" rx="8" fill="#f7fafc" stroke="#7d8fa3" stroke-width="1.5"/>
+<text x="84.0" y="85.0" text-anchor="middle" font-size="16" font-weight="650" fill="#2a3542">Browser</text>
+<line x1="84" y1="100" x2="84" y2="421" stroke="#76578e" stroke-width="2" stroke-dasharray="5 4"/>
+<rect x="212" y="60" width="132" height="40" rx="8" fill="#f7fafc" stroke="#7d8fa3" stroke-width="1.5"/>
+<text x="278.0" y="85.0" text-anchor="middle" font-size="16" font-weight="650" fill="#2a3542">Portal</text>
+<line x1="278" y1="100" x2="278" y2="421" stroke="#76578e" stroke-width="2" stroke-dasharray="5 4"/>
+<rect x="404" y="60" width="132" height="40" rx="8" fill="#f7fafc" stroke="#7d8fa3" stroke-width="1.5"/>
+<text x="470.0" y="85.0" text-anchor="middle" font-size="16" font-weight="650" fill="#2a3542">Issuer</text>
+<line x1="470" y1="100" x2="470" y2="421" stroke="#76578e" stroke-width="2" stroke-dasharray="5 4"/>
+<rect x="596" y="60" width="132" height="40" rx="8" fill="#f7fafc" stroke="#7d8fa3" stroke-width="1.5"/>
+<text x="662.0" y="85.0" text-anchor="middle" font-size="16" font-weight="650" fill="#2a3542">Inventory API</text>
+<line x1="662" y1="100" x2="662" y2="421" stroke="#76578e" stroke-width="2" stroke-dasharray="5 4"/>
+<line x1="278" y1="138" x2="84" y2="138" stroke="#25699f" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="181.0" y="131" text-anchor="middle" font-size="14" font-weight="650" fill="#2a3542">Redirect to issuer</text>
+<line x1="84" y1="181" x2="470" y2="181" stroke="#25699f" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="277.0" y="174" text-anchor="middle" font-size="14" font-weight="650" fill="#2a3542">Authorization request</text>
+<line x1="470" y1="224" x2="84" y2="224" stroke="#25699f" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="277.0" y="217" text-anchor="middle" font-size="14" font-weight="650" fill="#2a3542">Redirect with code</text>
+<line x1="84" y1="267" x2="278" y2="267" stroke="#25699f" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="181.0" y="260" text-anchor="middle" font-size="14" font-weight="650" fill="#2a3542">Callback with code</text>
+<line x1="278" y1="310" x2="470" y2="310" stroke="#25699f" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="374.0" y="303" text-anchor="middle" font-size="14" font-weight="650" fill="#2a3542">Code + verifier</text>
+<line x1="470" y1="353" x2="278" y2="353" stroke="#25699f" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="374.0" y="346" text-anchor="middle" font-size="14" font-weight="650" fill="#2a3542">ID and access tokens</text>
+<line x1="278" y1="396" x2="662" y2="396" stroke="#25699f" stroke-width="2" marker-end="url(#arrow)"/>
+<text x="470.0" y="389" text-anchor="middle" font-size="14" font-weight="650" fill="#2a3542">Access token + request</text>
+</g></svg>

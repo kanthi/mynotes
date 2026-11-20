@@ -10,6 +10,8 @@ title: Intro
 
 Use `04` and `04b` whenever you see mysterious hangs on tunneled paths; use `07` and `08` for multi-tenant and multipath Linux routing.
 
+After routing fundamentals, follow [one TCP connection across three autonomous systems](10-follow-a-connection-across-the-internet.md) and predict where the request and reply appear.
+
 ## Chapters in this part
 
 | Chapter | File |
@@ -22,3 +24,4 @@ Use `04` and `04b` whenever you see mysterious hangs on tunneled paths; use `07`
 | [Policy Routing and VRF](07-vrf-and-policy-routing.md) | `07-vrf-and-policy-routing.md` |
 | [Linux ECMP: Nexthop Objects, Hash Policies and Resilient Groups](08-linux-ecmp-nexthop-groups.md) | `08-linux-ecmp-nexthop-groups.md` |
 | [Multicast Membership and Distribution Trees](09-multicast-distribution.md) | `09-multicast-distribution.md` |
+| [Follow a Connection Across the Internet](10-follow-a-connection-across-the-internet.md) | `10-follow-a-connection-across-the-internet.md` |

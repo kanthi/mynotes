@@ -26,6 +26,14 @@ Linux namespace labs can run without network-device images when the host permits
 
 The namespace-based examples above were run on the writing host as documented in their chapters. Kernel, tool and permission differences can change the result; check the prerequisites and record your own observations.
 
+## Short labs without container images
+
+| Question | Exercise | What you need |
+|---|---|---|
+| What appears on a small-MTU link and what reaches UDP? | [Read fragment offsets at two observation points](68-ipv4-fragments-on-loopback.md) | Linux with user/network namespaces, iproute2, Bash, Python 3.10+ |
+| Where do unread bytes go after a short receive? | [Compare stream and datagram reads](69-tcp-and-udp-short-reads.md) | Python 3 on Linux or macOS |
+| Why can verification fail for a certificate issued by a trusted CA? | [Change the reference name and the trust anchor independently](70-certificate-path-and-service-name.md) | Bash and OpenSSL 3 |
+
 ## Switching and campus path
 
 Study [VLANs and trunks](../03-layer-2/02-vlans-trunks.md), [spanning-tree elections](../03-layer-2/03b-spanning-tree-election.md) and [link aggregation](../03-layer-2/04-link-aggregation.md). Then build the workbook's [VLAN](04-vlans-and-trunks.md), [spanning tree](05-spanning-tree.md), [aggregation](06-link-aggregation.md) and [Linux LACP member failure](53-lacp-member-failure.md), [inter-VLAN and DHCP](07-inter-vlan-and-dhcp.md), and [first-hop redundancy](08-vrrp-and-varp.md) labs. Extend the [campus project](../09-projects/03b-campus-vlan-vrrp-ospf.md) with the [failure-domain matrix](../09-projects/03c-campus-failure-domain-design.md).

@@ -10,6 +10,10 @@ title: Intro
 
 Read sequentially if you are building from scratch, or jump straight to the IPv6 (`06`–`06c`) and neighbor table (`07`–`07c`) deep dives.
 
+For the path from hardware to application, read [From Signals to Ethernet Frames](14-from-signals-to-frames.md) alongside the Ethernet chapter, then follow [a URL to its web response](15-from-a-url-to-a-web-response.md) after the transport chapter.
+
+Compare a single web origin with [peer-assisted delivery](16-peer-discovery-and-piece-verification.md) by assembling a map from two independent sources.
+
 ## Chapters in this part
 
 | Chapter | File |
@@ -32,3 +36,6 @@ Read sequentially if you are building from scratch, or jump straight to the IPv6
 | [Host Forwarding and Routing Intro](11-host-forwarding-and-routing-intro.md) | `11-host-forwarding-and-routing-intro.md` |
 | [Control, Data, and Management Planes](12-control-data-management-planes.md) | `12-control-data-management-planes.md` |
 | [Encrypted DNS: DoT, DoH and Discovering Them](13-encrypted-dns-doh-dot.md) | `13-encrypted-dns-doh-dot.md` |
+| [From Signals to Ethernet Frames](14-from-signals-to-frames.md) | `14-from-signals-to-frames.md` |
+| [From a URL to a Web Response](15-from-a-url-to-a-web-response.md) | `15-from-a-url-to-a-web-response.md` |
+| [Peer Discovery and Piece Verification](16-peer-discovery-and-piece-verification.md) | `16-peer-discovery-and-piece-verification.md` |

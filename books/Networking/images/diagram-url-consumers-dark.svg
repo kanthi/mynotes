@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 270" role="img" aria-label="DNS uses the host, the HTTP request carries path and query, and the browser processes the fragment." color-scheme="dark">
+<defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="#344454" stroke-width=".65"/></pattern>
+<marker id="arrow" viewBox="0 0 8 8" markerWidth="6" markerHeight="6" refX="7" refY="4" orient="auto"><path d="m0 0 8 4-8 4z" fill="#83bff0"/></marker></defs>
+<rect width="760" height="270" rx="12" fill="#182332"/><rect width="760" height="270" rx="12" fill="url(#grid)"/>
+<g font-family="system-ui, sans-serif" fill="#e3edf6">
+<text x="32" y="38" text-anchor="start" font-size="21" font-weight="650" fill="#e3edf6">Which part of the URL travels where?</text>
+<rect x="32" y="63" width="696" height="48" rx="8" fill="#233346" stroke="#839ab1" stroke-width="1.5"/>
+<text x="380.0" y="92.0" text-anchor="middle" font-size="16" font-weight="650" fill="#e3edf6">https://atlas.example:8443/maps?floor=2#stairs</text>
+<line x1="145" y1="111" x2="145" y2="144" stroke="#83bff0" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="32" y="147" width="226" height="70" rx="8" fill="#233346" stroke="#839ab1" stroke-width="1.5"/>
+<text x="145.0" y="179.0" text-anchor="middle" font-size="16" font-weight="650" fill="#e3edf6">DNS resolver</text>
+<text x="145.0" y="201.0" text-anchor="middle" font-size="14" font-weight="400" fill="#b1c1d1">atlas.example</text>
+<text x="145" y="247" text-anchor="middle" font-size="15" font-weight="400" fill="#83bff0">Name → address</text>
+<line x1="379" y1="111" x2="379" y2="144" stroke="#83bff0" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="266" y="147" width="226" height="70" rx="8" fill="#233346" stroke="#839ab1" stroke-width="1.5"/>
+<text x="379.0" y="179.0" text-anchor="middle" font-size="16" font-weight="650" fill="#e3edf6">HTTP server</text>
+<text x="379.0" y="201.0" text-anchor="middle" font-size="14" font-weight="400" fill="#b1c1d1">/maps?floor=2</text>
+<text x="379" y="247" text-anchor="middle" font-size="15" font-weight="400" fill="#83bff0">Request target</text>
+<line x1="613" y1="111" x2="613" y2="144" stroke="#83bff0" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="500" y="147" width="226" height="70" rx="8" fill="#233346" stroke="#839ab1" stroke-width="1.5"/>
+<text x="613.0" y="179.0" text-anchor="middle" font-size="16" font-weight="650" fill="#e3edf6">Browser document</text>
+<text x="613.0" y="201.0" text-anchor="middle" font-size="14" font-weight="400" fill="#b1c1d1">#stairs</text>
+<text x="613" y="247" text-anchor="middle" font-size="15" font-weight="400" fill="#83bff0">Local navigation</text>
+</g></svg>

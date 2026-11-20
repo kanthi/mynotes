@@ -10,6 +10,8 @@ title: Intro
 
 Start with `01-why-encapsulate.md`, then choose your tunnel family: WireGuard/IPsec (`02`–`02g`), VXLAN/EVPN (`03`–`06b`), NAT traversal/MASQUE (`08`–`09`), or MPLS (`10`–`10b`).
 
+For a worked VM move, follow [virtual interfaces and SDN](11-virtual-interfaces-and-sdn.md). For a privacy-oriented overlay, trace [an onion circuit](12-onion-routing-and-observer-visibility.md) and compare the observations at its two ends.
+
 ## Chapters in this part
 
 | Chapter | File |
@@ -36,3 +38,5 @@ Start with `01-why-encapsulate.md`, then choose your tunnel family: WireGuard/IP
 | [MASQUE: Tunnelling UDP and IP over HTTP (CONNECT-UDP and CONNECT-IP)](09-masque-connect-udp-ip.md) | `09-masque-connect-udp-ip.md` |
 | [MPLS Label Switching: Label Stacks, LDP, PHP and SR-MPLS on Linux](10-mpls-label-switching.md) | `10-mpls-label-switching.md` |
 | [BGP/MPLS IP VPNs: VRFs, Route Distinguishers and Route Targets](10b-bgp-mpls-l3vpn.md) | `10b-bgp-mpls-l3vpn.md` |
+| [Virtual Interfaces and Software-Defined Networks](11-virtual-interfaces-and-sdn.md) | `11-virtual-interfaces-and-sdn.md` |
+| [Onion Routing and Observer Visibility](12-onion-routing-and-observer-visibility.md) | `12-onion-routing-and-observer-visibility.md` |

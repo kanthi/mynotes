@@ -35,6 +35,21 @@ ping -M do -s 1472 10.0.0.1   # DF set; 1472 + 28 = 1500
 
 IPv6 uses ICMPv6 extensively (ND, PMTUD); similar lab methods with `ping -6`.
 
+## Reconstruct an IPv4 datagram from two fragments
+
+A router receives a 1,500-byte IPv4 datagram carrying UDP. The IPv4 header is 20 bytes, DF is clear, and the outgoing IP MTU is 1,000 bytes. Each fragment needs its own 20-byte IP header. The fragment offset counts in units of eight payload bytes, so every fragment followed by another must carry a multiple of eight bytes. The largest such payload that fits is 976 bytes, since 980 rounded down to a multiple of eight is 976.
+
+| Fragment | Original IP payload bytes | IP total length | Offset field | More Fragments |
+|---|---|---:|---:|---:|
+| First | 0–975 (976 bytes) | 996 | 0 | 1 |
+| Last | 976–1,479 (504 bytes) | 524 | 122 | 0 |
+
+The two fragments share the source, destination, protocol, and identification value that the destination uses for reassembly. Only the first carries the start of the UDP header. The last tells the receiver where the original payload ends. Arrival order does not matter, but losing either fragment prevents delivery of this UDP datagram. A transport-port filter can therefore miss later fragments in a capture. Some analyzers display the offset as bytes (976) after multiplying the wire value (122) by eight. [IPv4 fragmentation and reassembly](https://www.rfc-editor.org/rfc/rfc791#section-3.2)
+
+Repeat the decision with DF set. The router discards the oversized packet and normally returns ICMP Destination Unreachable, code 4, with the next-hop MTU. IPv6 routers likewise return Packet Too Big when forwarding would exceed the link MTU. IPv6 puts any fragmentation decision at the source. See [IPv6 fragment headers](../02-networking-foundations/06c-ipv6-extension-headers-and-fragmentation.md).
+
+Measure both fragment lengths and check the delivered UDP payload in [Lab 68](../09-lab-workbook/68-ipv4-fragments-on-loopback.md).
+
 ## Path MTU discovery (idea)
 
 1. Sender assumes path MTU (often interface MTU)

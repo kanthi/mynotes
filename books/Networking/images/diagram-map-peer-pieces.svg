@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 340" role="img" aria-label="The directory sends peer addresses to East. North and South have separate data connections to East, which verifies each map piece." color-scheme="light">
+<defs>
+<marker id="forward" viewBox="0 0 8 8" markerWidth="5" markerHeight="5" refX="7" refY="4" orient="auto"><path d="m0 0 8 4-8 4z" fill="#25699f"/></marker>
+<marker id="reply" viewBox="0 0 8 8" markerWidth="5" markerHeight="5" refX="7" refY="4" orient="auto"><path d="m0 0 8 4-8 4z" fill="#76578e"/></marker>
+<pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="#d0d9e4" stroke-width=".65"/></pattern>
+</defs>
+<rect width="760" height="340" rx="12" fill="#eef2f7"/><rect width="760" height="340" rx="12" fill="url(#grid)"/>
+<g font-family="system-ui, sans-serif">
+<text x="27" y="37" text-anchor="start" font-size="22" font-weight="650" fill="#2a3542">Finding peers and fetching map pieces</text>
+<rect x="280" y="60" width="200" height="68" rx="9" fill="#f7fafc" stroke="#7d8fa3" stroke-width="1.5"/>
+<text x="380.0" y="88" text-anchor="middle" font-size="18" font-weight="650" fill="#2a3542">Directory</text>
+<text x="380.0" y="111" text-anchor="middle" font-size="15" font-weight="400" fill="#2a3542">North and South addresses</text>
+<rect x="26" y="132" width="200" height="68" rx="9" fill="#f7fafc" stroke="#7d8fa3" stroke-width="1.5"/>
+<text x="126.0" y="160" text-anchor="middle" font-size="18" font-weight="650" fill="#2a3542">North</text>
+<text x="126.0" y="183" text-anchor="middle" font-size="15" font-weight="400" fill="#2a3542">Offers pieces 0 and 1</text>
+<rect x="534" y="132" width="200" height="68" rx="9" fill="#f7fafc" stroke="#7d8fa3" stroke-width="1.5"/>
+<text x="634.0" y="160" text-anchor="middle" font-size="18" font-weight="650" fill="#2a3542">South</text>
+<text x="634.0" y="183" text-anchor="middle" font-size="15" font-weight="400" fill="#2a3542">Offers pieces 1 and 2</text>
+<rect x="245" y="240" width="270" height="68" rx="9" fill="#f7fafc" stroke="#7d8fa3" stroke-width="1.5"/>
+<text x="380.0" y="268" text-anchor="middle" font-size="18" font-weight="650" fill="#2a3542">East</text>
+<text x="380.0" y="291" text-anchor="middle" font-size="15" font-weight="400" fill="#2a3542">Checks each piece digest</text>
+<path d="M380 128V237" stroke="#76578e" stroke-width="2.6" fill="none" marker-end="url(#reply)" stroke-dasharray="6 4"/>
+<text x="392" y="169" text-anchor="start" font-size="15" font-weight="600" fill="#76578e">Peer list</text>
+<path d="M126 200V274H241" stroke="#25699f" stroke-width="2.6" fill="none" marker-end="url(#forward)"/>
+<path d="M634 200V274H519" stroke="#25699f" stroke-width="2.6" fill="none" marker-end="url(#forward)"/>
+<text x="176" y="258" text-anchor="middle" font-size="15" font-weight="600" fill="#25699f">Map data</text>
+<text x="577" y="258" text-anchor="middle" font-size="15" font-weight="600" fill="#25699f">Map data</text>
+</g></svg>

@@ -22,7 +22,7 @@ Application protocols give **meaning** to payloads. Operators still need a worki
 | DHCP | UDP | 67/68 | IPv4 host config |
 | DHCPv6 | UDP | 546/547 | IPv6 host config |
 | HTTP | TCP | 80 | Web (cleartext) |
-| HTTPS | TCP | 443 | HTTP over TLS |
+| HTTPS | TCP or UDP | 443 | HTTP/1.1 or HTTP/2 over TLS/TCP, or HTTP/3 over QUIC/UDP |
 | SSH | TCP | 22 | Secure shell / SFTP |
 | NTP | UDP | 123 | Time |
 | BGP | TCP | 179 | Routing (control plane app) |
@@ -94,6 +94,8 @@ HTTPS: App ──TCP:443── TLS ── HTTP ── Server
 curl -v http://192.0.2.10/
 curl -vk https://192.0.2.10/
 ```
+
+Follow [a URL to its web response](15-from-a-url-to-a-web-response.md) for an annotated exchange and a loopback exercise that shows which fields actually reach the server.
 
 ## SSH
 

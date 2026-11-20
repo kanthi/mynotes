@@ -161,6 +161,8 @@ The advertised receive window reflects receiver capacity; the sender's congestio
 **Check yourself:** if a receiver acknowledges through byte 2000 but has not yet received 2001–3000, the next cumulative ACK is 2001. An ACK is an endpoint's claim about bytes accepted in sequence, not proof of application processing or disk persistence.
 
 
+Use [the short-read lab](../09-lab-workbook/69-tcp-and-udp-short-reads.md) to account for the unread bytes after the same receiver-buffer limit on TCP and UDP.
+
 ## Checkpoint
 
 A client opens HTTPS to a server. Name protocol numbers/fields for: Ethernet type, IP protocol, TCP ports (client ephemeral + 443), and where TLS sits.

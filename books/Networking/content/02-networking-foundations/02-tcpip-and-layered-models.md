@@ -34,7 +34,7 @@ Some texts split “host-to-network” further; for labs, **Ethernet + ARP/ND** 
 | 4 | Transport | TCP/UDP |
 | 3 | Network | IP / ICMP |
 | 2 | Data link | Ethernet frames, switching |
-| 1 | Physical | Cables, optics, signaling (usually out of scope here) |
+| 1 | Physical | Cables, optics, [signaling and PHYs](14-from-signals-to-frames.md) |
 
 **Practical rule:** know *where the address lives* and *which header you are looking at in a capture*, not seven acronyms for a quiz.
 
@@ -61,6 +61,12 @@ Some texts split “host-to-network” further; for labs, **Ethernet + ARP/ND** 
 
 - Protocol semantics (DNS query/response, HTTP methods)
 - Often implements its own retries on top of UDP
+
+## How independent implementations interoperate
+
+A layer model supplies vocabulary. Interoperability also requires a specification precise enough for two independent implementations to agree on the wire. IEEE 802.3 defines Ethernet MAC and physical-layer behavior. Internet specifications define how protocols such as IP, TCP, and HTTP exchange data over compatible lower layers. The agreement can cover field encodings, valid message order, and receiver behavior on an error. Two Ethernet ports still need a common physical mode, just as two HTTP endpoints need a version both understand. [IEEE 802.3 Ethernet](https://www.ieee802.org/3/) · [HTTP semantics](https://www.rfc-editor.org/rfc/rfc9110)
+
+Consider a home gateway with an optical uplink and four switched LAN ports. The transceiver recovers symbols on the uplink. The embedded switch can bridge a frame between two LAN ports using a MAC lookup. The router handles a frame addressed to its gateway MAC and looks up the destination IP. Finally, the management web server accepts an HTTP request addressed to the gateway itself. Assign a layer to the **decision** you are tracing. The label on the enclosure applies to the whole device.
 
 ## Demultiplexing (up the stack)
 

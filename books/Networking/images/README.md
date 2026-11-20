@@ -84,6 +84,18 @@ The hero figure `diagram-dist-switch-multihome.svg` (+ `-dark`) is the **first p
 | `diagram-lab-rtbh-flowspec.svg` | Lab 65: RTBH & BGP FlowSpec DDoS mitigation | yes |
 | `diagram-lab-gnmic-prometheus.svg` | Lab 66: SR Linux gNMIc + Prometheus telemetry | yes |
 | `diagram-lab-xdp-bbr-netem.svg` | Lab 67: eBPF XDP drop, TCP BBR & fq_codel | yes |
+| `diagram-frame-signal-path.svg` | Physical signal path between Ethernet MACs | yes |
+| `diagram-url-consumers.svg` | URL fields consumed by DNS, HTTP, and the browser | yes |
+| `diagram-vm-move-sdn.svg` | Local and remote VM forwarding after a move | yes |
+| `diagram-encryption-boundaries.svg` | Wi-Fi, VPN, and TLS endpoints on one path | yes |
+| `diagram-portal-authorization.svg` | OIDC code flow and delegated API access | yes |
+| `diagram-onion-circuit.svg` | Tor exit circuit and end-to-end HTTPS | yes |
+| `diagram-map-request-return-path.svg` | Request across an exchange and reply via transit | yes |
+| `diagram-map-peer-pieces.svg` | Directory contacts and independent map transfers | yes |
+| `diagram-lab-ipv4-fragment-offsets.svg` | IPv4 fragment boundaries, sizes, and offsets | yes |
+| `diagram-lab-short-socket-reads.svg` | Bytes remaining after short TCP and UDP receives | yes |
+| `diagram-lab-certificate-decisions.svg` | One server certificate with three verifier inputs | yes |
+| `diagram-onion-service-rendezvous.svg` | Separate Tor introduction and application circuits | yes |
 | `diagram-encapsulation.svg` + 12 mono/concept SVGs | Models / habits | yes |
 
 When adding illustrated figures: dual files + reference tokens + theme-swap (already in `styles/reader-mode-body.html`). Embed light path only.

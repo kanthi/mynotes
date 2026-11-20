@@ -10,6 +10,8 @@ title: Intro
 
 Use `04-hardening-checklists.md` as a baseline audit and dive into `05`–`08` for Linux firewall and queue tuning.
 
+To trace a user's access, start with [keys and encryption boundaries](12-keys-identities-and-encryption-boundaries.md), then follow [federated login and API authorization](13-federated-login-and-api-authorization.md) from sign-in to the resource decision.
+
 ## Chapters in this part
 
 | Chapter | File |
@@ -31,3 +33,5 @@ Use `04-hardening-checklists.md` as a baseline audit and dive into `05`–`08` f
 | [MACsec (IEEE 802.1AE) and MKA: Hop-by-Hop Ethernet Encryption](09-macsec-and-mka.md) | `09-macsec-and-mka.md` |
 | [Dropping Attack Traffic with Routing: RTBH, Source-Based RTBH and BGP FlowSpec](10-rtbh-and-flowspec.md) | `10-rtbh-and-flowspec.md` |
 | [IPv6 First-Hop Security and Binding Validation](11-ipv6-first-hop-security.md) | `11-ipv6-first-hop-security.md` |
+| [Keys, Identities, and Encryption Boundaries](12-keys-identities-and-encryption-boundaries.md) | `12-keys-identities-and-encryption-boundaries.md` |
+| [Federated Login and API Authorization](13-federated-login-and-api-authorization.md) | `13-federated-login-and-api-authorization.md` |

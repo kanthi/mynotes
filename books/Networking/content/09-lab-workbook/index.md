@@ -10,6 +10,8 @@ title: Intro
 
 Start with [Workbook Guide](00-workbook-guide.md) to pick a learning path based on the images available on your lab host.
 
+For short exercises without container images, compare [IP fragment offsets](68-ipv4-fragments-on-loopback.md), [TCP and UDP receive buffers](69-tcp-and-udp-short-reads.md), and [certificate trust and service names](70-certificate-path-and-service-name.md).
+
 ## Chapters in this part
 
 | Chapter | File |
@@ -82,3 +84,6 @@ Start with [Workbook Guide](00-workbook-guide.md) to pick a learning path based 
 | [Lab 65: Destination RTBH and BGP FlowSpec DDoS Mitigation](65-rtbh-and-bgp-flowspec-mitigation.md) | `65-rtbh-and-bgp-flowspec-mitigation.md` |
 | [Lab 66: Streaming Telemetry with Nokia SR Linux, gNMIc, and Prometheus](66-streaming-telemetry-gnmic-prometheus.md) | `66-streaming-telemetry-gnmic-prometheus.md` |
 | [Lab 67: eBPF XDP Packet Drop, TCP BBR, and fq_codel Bufferbloat Tuning](67-ebpf-xdp-drop-and-tcp-bbr-netem.md) | `67-ebpf-xdp-drop-and-tcp-bbr-netem.md` |
+| [Lab 68 — Read IPv4 Fragment Offsets on Loopback](68-ipv4-fragments-on-loopback.md) | `68-ipv4-fragments-on-loopback.md` |
+| [Lab 69 — Short Reads on TCP and UDP Sockets](69-tcp-and-udp-short-reads.md) | `69-tcp-and-udp-short-reads.md` |
+| [Lab 70 — Verify the Certificate Path and Service Name](70-certificate-path-and-service-name.md) | `70-certificate-path-and-service-name.md` |

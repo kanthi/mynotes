@@ -92,6 +92,8 @@ A switch's forwarding decision uses the destination MAC and VLAN, not the destin
 A frame check sequence detects corruption; it does not repair the frame or prove that the sender is trustworthy. In full-duplex switched Ethernet, endpoints transmit and receive concurrently; collisions are not the normal explanation for a modern full-duplex link's packet loss. Inspect interface errors, drops, link negotiation, and switch counters in context.
 
 
+To follow a frame below the MAC, trace the [NIC and physical signal path](14-from-signals-to-frames.md).
+
 ## Checkpoint
 
 Explain what a switch does when it receives a frame with an **unknown** destination MAC, and what it does with the **source** MAC.

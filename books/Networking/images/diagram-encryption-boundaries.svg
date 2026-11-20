@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 296" role="img" aria-label="Wi-Fi connects laptop and access point, the VPN connects gateways, and TLS connects laptop and web edge." color-scheme="light">
+<defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="#d0d9e4" stroke-width=".65"/></pattern>
+<marker id="arrow" viewBox="0 0 8 8" markerWidth="6" markerHeight="6" refX="7" refY="4" orient="auto"><path d="m0 0 8 4-8 4z" fill="#25699f"/></marker></defs>
+<rect width="760" height="296" rx="12" fill="#eef2f7"/><rect width="760" height="296" rx="12" fill="url(#grid)"/>
+<g font-family="system-ui, sans-serif" fill="#2a3542">
+<text x="32" y="38" text-anchor="start" font-size="21" font-weight="650" fill="#2a3542">Where does each encryption layer end?</text>
+<line x1="75" y1="93" x2="218" y2="93" stroke="#25699f" stroke-width="2"/>
+<line x1="218" y1="93" x2="365" y2="93" stroke="#25699f" stroke-width="2"/>
+<line x1="365" y1="93" x2="524" y2="93" stroke="#25699f" stroke-width="2"/>
+<line x1="524" y1="93" x2="682" y2="93" stroke="#25699f" stroke-width="2"/>
+<rect x="15" y="73" width="120" height="41" rx="8" fill="#f7fafc" stroke="#7d8fa3" stroke-width="1.5"/>
+<text x="75.0" y="98.5" text-anchor="middle" font-size="16" font-weight="650" fill="#2a3542">Laptop</text>
+<rect x="158" y="73" width="120" height="41" rx="8" fill="#f7fafc" stroke="#7d8fa3" stroke-width="1.5"/>
+<text x="218.0" y="98.5" text-anchor="middle" font-size="16" font-weight="650" fill="#2a3542">Access point</text>
+<rect x="305" y="73" width="120" height="41" rx="8" fill="#f7fafc" stroke="#7d8fa3" stroke-width="1.5"/>
+<text x="365.0" y="98.5" text-anchor="middle" font-size="16" font-weight="650" fill="#2a3542">Office GW</text>
+<rect x="464" y="73" width="120" height="41" rx="8" fill="#f7fafc" stroke="#7d8fa3" stroke-width="1.5"/>
+<text x="524.0" y="98.5" text-anchor="middle" font-size="16" font-weight="650" fill="#2a3542">Remote GW</text>
+<rect x="622" y="73" width="120" height="41" rx="8" fill="#f7fafc" stroke="#7d8fa3" stroke-width="1.5"/>
+<text x="682.0" y="98.5" text-anchor="middle" font-size="16" font-weight="650" fill="#2a3542">Web edge</text>
+<line x1="75" y1="148" x2="218" y2="148" stroke="#76578e" stroke-width="2"/>
+<line x1="75" y1="141" x2="75" y2="155" stroke="#76578e" stroke-width="2"/>
+<line x1="218" y1="141" x2="218" y2="155" stroke="#76578e" stroke-width="2"/>
+<text x="146.5" y="139" text-anchor="middle" font-size="15" font-weight="650" fill="#76578e">Wi-Fi link</text>
+<line x1="365" y1="192" x2="524" y2="192" stroke="#76578e" stroke-width="2"/>
+<line x1="365" y1="185" x2="365" y2="199" stroke="#76578e" stroke-width="2"/>
+<line x1="524" y1="185" x2="524" y2="199" stroke="#76578e" stroke-width="2"/>
+<text x="444.5" y="183" text-anchor="middle" font-size="15" font-weight="650" fill="#76578e">Site VPN</text>
+<line x1="75" y1="236" x2="682" y2="236" stroke="#76578e" stroke-width="2"/>
+<line x1="75" y1="229" x2="75" y2="243" stroke="#76578e" stroke-width="2"/>
+<line x1="682" y1="229" x2="682" y2="243" stroke="#76578e" stroke-width="2"/>
+<text x="378.5" y="227" text-anchor="middle" font-size="15" font-weight="650" fill="#76578e">Browser TLS</text>
+<text x="380" y="274" text-anchor="middle" font-size="15" font-weight="400" fill="#2a3542">Each bracket joins the two parties that hold keys for that layer.</text>
+</g></svg>

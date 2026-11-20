@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 322" role="img" aria-label="The access ISP sends the request directly to the map network across the exchange. The map network returns the reply through transit." color-scheme="light">
+<defs>
+<marker id="forward" viewBox="0 0 8 8" markerWidth="5" markerHeight="5" refX="7" refY="4" orient="auto"><path d="m0 0 8 4-8 4z" fill="#25699f"/></marker>
+<marker id="reply" viewBox="0 0 8 8" markerWidth="5" markerHeight="5" refX="7" refY="4" orient="auto"><path d="m0 0 8 4-8 4z" fill="#76578e"/></marker>
+<pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="#d0d9e4" stroke-width=".65"/></pattern>
+</defs>
+<rect width="760" height="322" rx="12" fill="#eef2f7"/><rect width="760" height="322" rx="12" fill="url(#grid)"/>
+<g font-family="system-ui, sans-serif">
+<text x="27" y="37" text-anchor="start" font-size="22" font-weight="650" fill="#2a3542">Two routes for one TCP connection</text>
+<rect x="28" y="97" width="206" height="68" rx="9" fill="#f7fafc" stroke="#7d8fa3" stroke-width="1.5"/>
+<text x="131.0" y="125" text-anchor="middle" font-size="18" font-weight="650" fill="#2a3542">Access ISP</text>
+<text x="131.0" y="148" text-anchor="middle" font-size="15" font-weight="400" fill="#2a3542">AS 64496</text>
+<rect x="526" y="97" width="206" height="68" rx="9" fill="#f7fafc" stroke="#7d8fa3" stroke-width="1.5"/>
+<text x="629.0" y="125" text-anchor="middle" font-size="18" font-weight="650" fill="#2a3542">Map network</text>
+<text x="629.0" y="148" text-anchor="middle" font-size="15" font-weight="400" fill="#2a3542">AS 64498</text>
+<path d="M234 130H523" stroke="#25699f" stroke-width="2.6" fill="none" marker-end="url(#forward)"/>
+<text x="380" y="98" text-anchor="middle" font-size="16" font-weight="650" fill="#25699f">Request to 203.0.113.80</text>
+<text x="380" y="153" text-anchor="middle" font-size="15" font-weight="400" fill="#2a3542">Across the exchange</text>
+<rect x="280" y="218" width="200" height="68" rx="9" fill="#f7fafc" stroke="#7d8fa3" stroke-width="1.5"/>
+<text x="380.0" y="246" text-anchor="middle" font-size="18" font-weight="650" fill="#2a3542">Transit provider</text>
+<text x="380.0" y="269" text-anchor="middle" font-size="15" font-weight="400" fill="#2a3542">AS 64497</text>
+<path d="M629 166V252H484" stroke="#76578e" stroke-width="2.6" fill="none" marker-end="url(#reply)"/>
+<path d="M280 252H131V169" stroke="#76578e" stroke-width="2.6" fill="none" marker-end="url(#reply)"/>
+<text x="380" y="310" text-anchor="middle" font-size="16" font-weight="600" fill="#76578e">Reply to the gateway’s public address, 198.51.100.27</text>
+</g></svg>

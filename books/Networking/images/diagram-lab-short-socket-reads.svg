@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 325" role="img" aria-label="TCP retains the unread bytes of NORTH whereas UDP truncates that first datagram. The next datagram remains EAST." color-scheme="light">
+<defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="#d0d9e4" stroke-width=".65"/></pattern>
+<marker id="arrow" viewBox="0 0 8 8" markerWidth="6" markerHeight="6" refX="7" refY="4" orient="auto"><path d="m0 0 8 4-8 4z" fill="#25699f"/></marker></defs>
+<rect width="760" height="325" rx="12" fill="#eef2f7"/><rect width="760" height="325" rx="12" fill="url(#grid)"/>
+<g font-family="system-ui, sans-serif" fill="#2a3542">
+<text x="28" y="36" text-anchor="start" font-size="21" font-weight="650" fill="#2a3542">Two sends, then a three-byte receive buffer</text>
+<text x="240" y="78" text-anchor="middle" font-size="15" font-weight="650" fill="#25699f">At the sender</text>
+<text x="434" y="78" text-anchor="middle" font-size="15" font-weight="650" fill="#25699f">First read</text>
+<text x="648" y="78" text-anchor="middle" font-size="15" font-weight="650" fill="#25699f">Still available</text>
+<text x="33" y="140" text-anchor="start" font-size="18" font-weight="650" fill="#2a3542">TCP</text>
+<rect x="146" y="101" width="178" height="64" rx="8" fill="#f7fafc" stroke="#7d8fa3" stroke-width="1.5"/>
+<text x="235.0" y="138.0" text-anchor="middle" font-size="16" font-weight="650" fill="#2a3542">NORTHEAST</text>
+<line x1="324" y1="133" x2="364" y2="133" stroke="#25699f" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="367" y="101" width="134" height="64" rx="8" fill="#f7fafc" stroke="#7d8fa3" stroke-width="1.5"/>
+<text x="434.0" y="138.0" text-anchor="middle" font-size="16" font-weight="650" fill="#2a3542">NOR</text>
+<line x1="501" y1="133" x2="544" y2="133" stroke="#25699f" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="547" y="101" width="185" height="64" rx="8" fill="#f7fafc" stroke="#7d8fa3" stroke-width="1.5"/>
+<text x="639.5" y="130.0" text-anchor="middle" font-size="16" font-weight="650" fill="#2a3542">THEAST</text>
+<text x="639.5" y="152.0" text-anchor="middle" font-size="14" font-weight="400" fill="#43566a">Six stream bytes</text>
+<text x="33" y="242" text-anchor="start" font-size="18" font-weight="650" fill="#2a3542">UDP</text>
+<rect x="146" y="203" width="178" height="64" rx="8" fill="#f7fafc" stroke="#7d8fa3" stroke-width="1.5"/>
+<text x="235.0" y="240.0" text-anchor="middle" font-size="16" font-weight="650" fill="#2a3542">NORTH  |  EAST</text>
+<line x1="324" y1="235" x2="364" y2="235" stroke="#25699f" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="367" y="203" width="134" height="64" rx="8" fill="#f7fafc" stroke="#7d8fa3" stroke-width="1.5"/>
+<text x="434.0" y="240.0" text-anchor="middle" font-size="16" font-weight="650" fill="#2a3542">NOR</text>
+<line x1="501" y1="235" x2="544" y2="235" stroke="#25699f" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="547" y="203" width="185" height="64" rx="8" fill="#f7fafc" stroke="#7d8fa3" stroke-width="1.5"/>
+<text x="639.5" y="232.0" text-anchor="middle" font-size="16" font-weight="650" fill="#2a3542">EAST</text>
+<text x="639.5" y="254.0" text-anchor="middle" font-size="14" font-weight="400" fill="#43566a">One datagram</text>
+<text x="380" y="305" text-anchor="middle" font-size="16" font-weight="400" fill="#2a3542">The unread TH stays queued for TCP. UDP discards it with the first datagram.</text>
+</g></svg>

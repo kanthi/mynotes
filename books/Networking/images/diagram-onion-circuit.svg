@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 291" role="img" aria-label="Client, guard, middle, exit and public catalog, with a circuit ending at the exit and TLS ending at the catalog." color-scheme="light">
+<defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="#d0d9e4" stroke-width=".65"/></pattern>
+<marker id="arrow" viewBox="0 0 8 8" markerWidth="6" markerHeight="6" refX="7" refY="4" orient="auto"><path d="m0 0 8 4-8 4z" fill="#25699f"/></marker></defs>
+<rect width="760" height="291" rx="12" fill="#eef2f7"/><rect width="760" height="291" rx="12" fill="url(#grid)"/>
+<g font-family="system-ui, sans-serif" fill="#2a3542">
+<text x="32" y="38" text-anchor="start" font-size="21" font-weight="650" fill="#2a3542">A Tor exit circuit carrying HTTPS</text>
+<line x1="131" y1="110" x2="166" y2="110" stroke="#25699f" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="284" y1="110" x2="319" y2="110" stroke="#25699f" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="437" y1="110" x2="472" y2="110" stroke="#25699f" stroke-width="2" marker-end="url(#arrow)"/>
+<line x1="590" y1="110" x2="625" y2="110" stroke="#25699f" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="16" y="86" width="114" height="48" rx="8" fill="#f7fafc" stroke="#7d8fa3" stroke-width="1.5"/>
+<text x="73.0" y="115.0" text-anchor="middle" font-size="16" font-weight="650" fill="#2a3542">Client</text>
+<rect x="169" y="86" width="114" height="48" rx="8" fill="#f7fafc" stroke="#7d8fa3" stroke-width="1.5"/>
+<text x="226.0" y="115.0" text-anchor="middle" font-size="16" font-weight="650" fill="#2a3542">Guard</text>
+<rect x="322" y="86" width="114" height="48" rx="8" fill="#f7fafc" stroke="#7d8fa3" stroke-width="1.5"/>
+<text x="379.0" y="115.0" text-anchor="middle" font-size="16" font-weight="650" fill="#2a3542">Middle</text>
+<rect x="475" y="86" width="114" height="48" rx="8" fill="#f7fafc" stroke="#7d8fa3" stroke-width="1.5"/>
+<text x="532.0" y="115.0" text-anchor="middle" font-size="16" font-weight="650" fill="#2a3542">Exit</text>
+<rect x="628" y="86" width="114" height="48" rx="8" fill="#f7fafc" stroke="#7d8fa3" stroke-width="1.5"/>
+<text x="685.0" y="115.0" text-anchor="middle" font-size="16" font-weight="650" fill="#2a3542">Catalog</text>
+<line x1="73" y1="179" x2="532" y2="179" stroke="#76578e" stroke-width="2"/>
+<line x1="73" y1="173" x2="73" y2="185" stroke="#76578e" stroke-width="2"/>
+<line x1="532" y1="173" x2="532" y2="185" stroke="#76578e" stroke-width="2"/>
+<text x="302.5" y="169" text-anchor="middle" font-size="16" font-weight="650" fill="#76578e">Tor circuit to the exit</text>
+<line x1="73" y1="235" x2="685" y2="235" stroke="#76578e" stroke-width="2"/>
+<line x1="73" y1="229" x2="73" y2="241" stroke="#76578e" stroke-width="2"/>
+<line x1="685" y1="229" x2="685" y2="241" stroke="#76578e" stroke-width="2"/>
+<text x="379.0" y="225" text-anchor="middle" font-size="16" font-weight="650" fill="#76578e">Browser TLS to the catalog</text>
+<text x="380" y="273" text-anchor="middle" font-size="15" font-weight="400" fill="#2a3542">The catalog receives the connection from the exit and decrypts HTTPS itself.</text>
+</g></svg>
