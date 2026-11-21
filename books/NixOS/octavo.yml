@@ -258,6 +258,7 @@ book:
     - content/16-misc/11-nixcon-2026-operations-security-and-platforms.md
     - content/16-misc/12-nixcon-2024-highlights.md
     - content/16-misc/13-nix-2-36-release-and-installer.md
+    - content/16-misc/14-installing-nixos-on-a-small-vps.md
   - part: Projects
     contents:
     - content/99-projects/00-index.md
