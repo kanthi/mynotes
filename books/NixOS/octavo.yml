@@ -247,6 +247,10 @@ book:
     - content/16-misc/02-how-a-release-is-built.md
     - content/16-misc/03-minimal-iso-to-desktop.md
     - content/16-misc/04-sleeping-builder.md
+    - content/16-misc/05-nixcon-2025-field-guide.md
+    - content/16-misc/06-nixcon-2025-infrastructure-and-builds.md
+    - content/16-misc/07-nixcon-2025-production-operations.md
+    - content/16-misc/08-nixcon-2025-config-secrets-and-sandboxing.md
   - part: Projects
     contents:
     - content/99-projects/00-index.md
