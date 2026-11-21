@@ -4,6 +4,9 @@ title: Current Nix and NixOS
 
 # Current Nix and NixOS
 
+> [!NOTE]
+> **Update, 19 November 2026:** Nix 2.36.0 was announced after this chapter was checked. See [Nix 2.36 and the official installer](13-nix-2-36-release-and-installer.md). The pins below describe the 13 November state.
+
 **Goal:** Know which Nix and which NixOS this book means by "current" on 13 November 2026, and which number you are allowed to bump later.
 
 Three different clocks get called "the version":

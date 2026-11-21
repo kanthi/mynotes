@@ -140,6 +140,7 @@ book:
     - content/07-ops-and-fleet/14-auto-upgrade.md
     - content/07-ops-and-fleet/15-read-an-update-before-switching.md
     - content/07-ops-and-fleet/15b-deployment-lifeline-tmux-et-btop.md
+    - content/07-ops-and-fleet/15c-nix-diff-between-revisions.md
     - content/07-ops-and-fleet/16-is-my-flake-lock-stale.md
   - part: Internals
     contents:
@@ -256,6 +257,7 @@ book:
     - content/16-misc/10-nixcon-2026-core-builds-and-stores.md
     - content/16-misc/11-nixcon-2026-operations-security-and-platforms.md
     - content/16-misc/12-nixcon-2024-highlights.md
+    - content/16-misc/13-nix-2-36-release-and-installer.md
   - part: Projects
     contents:
     - content/99-projects/00-index.md

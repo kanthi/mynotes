@@ -64,6 +64,7 @@ You need **at least one disposable machine or VM**. Disko and impermanence are u
 | Backups | `13-backups` | Restic/Borg/ZFS + restore drill |
 | Unattended upgrades | `14-auto-upgrade` | `system.autoUpgrade` from a reviewed branch, reboot windows, rings, alerts |
 | Read an update before switching | `15-read-an-update-before-switching` | `diff-closures`, `path-info`, `why-depends` before activation |
+| Diffing configurations between revisions | `15c-nix-diff-between-revisions` | `nix-diff` of system derivations between Git/jj revisions and against the live host |
 | Deployment lifeline & rapid patching | `15b-deployment-lifeline-tmux-et-btop` | Spare SSH tunnels, Eternal Terminal (`et`), `tmux`, `btop` telemetry, direct `switch-to-configuration` rollback |
 | Is my flake.lock stale? | `16-is-my-flake-lock-stale` | Pin age, distance to branch tip, end-of-life branches, a second nixpkgs without `follows` |
 

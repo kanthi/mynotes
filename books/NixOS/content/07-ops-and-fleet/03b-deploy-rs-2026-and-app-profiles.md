@@ -223,6 +223,32 @@ deploy .#web-01 --remote-build --skip-checks
 
 And if your SSH key requires a hardware YubiKey PIN or passphrase (#225 — `deploy-rs` opens multiple SSH connections per run), enable SSH connection multiplexing (`ControlMaster auto`, `ControlPersist 60s`) for the target host so you tap the token only once per deployment.
 
+## History, neighbours and when `nixos-rebuild` is enough
+
+Further notes from Serokell's post [deploy-rs in 2026](https://serokell.io/blog/deploy-rs-nix) (5 November 2026):
+
+| Year | Feature that landed without an announcement |
+|------|---------------------------------------------|
+| 2021 | Deploy several nodes with one command, rolling back nodes that succeeded if a later one fails (#80); use deploy-rs as a Rust library (#104) |
+| 2022 | `remoteBuild`: build on the target using its substituters (#175) |
+| 2023 | `activate.darwin` for nix-darwin without a custom script (#213); user-profile fix after newer Nix moved user profiles (#231) |
+| 2024 | `interactiveSudo` (#257); every pull request tested by deploying to virtual machines in CI (#264) |
+
+Context that explains why a tool like this needs a maintainer:
+
+- **Flakes are still experimental.** Nix commands can change between versions. Nix 2.32 (October 2025) and 2.33 changed the derivation JSON that deploy-rs parses, and deploys broke until contributors fixed them.
+- **More than one Nix exists.** Lix forked from Nix 2.18 (first release July 2024); Determinate Systems ships its own. Lix is not officially supported by deploy-rs, though some users run it.
+- **Two neighbours were rewritten.** `switch-to-configuration` has a Rust version, default since NixOS 24.11, which deploy-rs handles without changes. `nixos-rebuild` is now Python (`nixos-rebuild-ng`, default since NixOS 25.11) and can deploy a single machine with `--target-host`.
+
+```bash
+# one machine, one system configuration: this may be all you need
+nixos-rebuild switch --flake .#yak --target-host root@yak
+```
+
+Use deploy-rs when you need several profiles and nodes at once, user profiles, or **magic rollback**. Serokell also published **update-daemon**, which updates flake inputs across many repositories and opens pull requests, a natural companion for a pinned `flake.lock` (see [Is my flake lock stale?](16-is-my-flake-lock-stale.md)).
+
+Related: [Nix 2.36 and the official installer](../16-misc/13-nix-2-36-release-and-installer.md) lists the newest Nix changes that tools like deploy-rs must track.
+
 ## The trap
 
 The trap is **installing `deploy-rs` globally via `cargo install deploy-rs` and letting it drift from the `inputs.deploy-rs` version in your flake**. Because the target node runs the `activate` binary built from your flake input while your laptop runs `deploy`, version skew between the two binaries can break CLI flag handshakes between `deploy` and `activate`. Always invoke `deploy` from the flake (`nix run .#deploy-rs` or `pkgs.deploy-rs` inside `devShells.default`).
