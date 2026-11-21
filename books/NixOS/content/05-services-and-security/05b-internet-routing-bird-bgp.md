@@ -9,6 +9,8 @@ title: Internet-scale routing with BIRD and BGP
 > [!NOTE]
 > This chapter is based on the NixCon 2025 talk [Internet scale routing with NixOS](https://talks.nixcon.org/nixcon-2025/talk/7YWTUC/) by Yifei Sun, an experience report. Code: [stepbrobd/router](https://github.com/stepbrobd/router). Slides: [slides.pdf](https://stepbrobd.github.io/router/slides.pdf).
 
+For the module's typed literals, supported shapes and generator internals, continue with [NixOS Router: the typed BIRD module](05c-nixos-router-bird-module-internals.md).
+
 ## Why this chapter exists
 
 [Firewall discipline](05-firewall-discipline.md) covers hosts that sit behind someone else's network. If you own an address block and an AS number, the host becomes a router. It speaks BGP to upstreams, announces prefixes, and decides which traffic leaves through which upstream. NixOS suits this well:
