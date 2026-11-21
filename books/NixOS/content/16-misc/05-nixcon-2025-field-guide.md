@@ -14,6 +14,7 @@ The conference had 69 sessions: long and short talks, lightning talks, workshops
 | [Nix infrastructure and build internals](06-nixcon-2025-infrastructure-and-builds.md) | Hydra, binary caches, sandboxing, evaluation speed, dynamic derivations, formatter |
 | [Operating NixOS in production](07-nixcon-2025-production-operations.md) | Deployment, OTA updates, CRA compliance, Kubernetes, mirrors, testing, embedded |
 | [Configuration patterns, secrets and sandboxing](08-nixcon-2025-config-secrets-and-sandboxing.md) | Dendritic pattern, external config, agenix-shell, jail.nix, Flatpak, Clan, finix |
+| [Deep dives](09-nixcon-2025-deep-dives.md) | Hydra, OTA, NixOps4, dendritic, jail.nix, finix, nixos-compose, LTS |
 | [Internet routing with BIRD](../05-services-and-security/05b-internet-routing-bird-bgp.md) | BGP, anycast |
 
 ## Talk index
