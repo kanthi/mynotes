@@ -25,5 +25,6 @@ Field notes that have to stay dated. The rest of the book teaches the model. Thi
 | Nix 2.36 and the official installer | Which installer to use, daemon and cgroup changes, what to update |
 | Installing NixOS on a small VPS | Install routes that failed and worked, nixos-anywhere, newcomer pitfalls |
 | Restic backups field report | Fragile rsync snapshots, Restic design, laptop timers, containers, `restic copy`, REST server |
+| deploy-rs field notes | Pin and CLI rules, new features, Nix drift, system-owned vs app-owned deploys, limits |
 
 Read the version chapter before the install. The install assumes 26.05 media and a flake input of `nixos-26.05`. When 26.11 is actually released, change the pin with the upgrade-planning runbook. Leave `system.stateVersion` where the install set it.
