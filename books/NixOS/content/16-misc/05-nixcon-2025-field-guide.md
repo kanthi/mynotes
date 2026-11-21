@@ -5,6 +5,8 @@
 > [!NOTE]
 > Source: the public [NixCon 2025 schedule](https://talks.nixcon.org/nixcon-2025/schedule/). These notes are built from the **published talk abstracts**, not from the recordings. Where a claim goes beyond an abstract it is marked as our own advice. Watch the recording before you rely on a talk's numbers or APIs.
 
+Other years: [NixCon 2026](10-nixcon-2026-core-builds-and-stores.md) ([operations](11-nixcon-2026-operations-security-and-platforms.md)) and [NixCon 2024](12-nixcon-2024-highlights.md).
+
 ## How to use this chapter
 
 The conference had 69 sessions: long and short talks, lightning talks, workshops and panels. Four chapters follow this one, grouped by theme:

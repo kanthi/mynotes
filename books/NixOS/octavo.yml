@@ -252,6 +252,9 @@ book:
     - content/16-misc/07-nixcon-2025-production-operations.md
     - content/16-misc/08-nixcon-2025-config-secrets-and-sandboxing.md
     - content/16-misc/09-nixcon-2025-deep-dives.md
+    - content/16-misc/10-nixcon-2026-core-builds-and-stores.md
+    - content/16-misc/11-nixcon-2026-operations-security-and-platforms.md
+    - content/16-misc/12-nixcon-2024-highlights.md
   - part: Projects
     contents:
     - content/99-projects/00-index.md

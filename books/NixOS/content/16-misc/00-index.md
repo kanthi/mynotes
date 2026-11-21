@@ -19,5 +19,8 @@ Field notes that have to stay dated. The rest of the book teaches the model. Thi
 | NixCon 2025: production operations | OTA updates, CRA, Kubernetes, testing, embedded |
 | NixCon 2025: config, secrets, sandboxing | Dendritic pattern, sops templates, jail.nix, Flatpak, Clan, finix |
 | NixCon 2025 deep dives | Hydra rewrite, A/B OTA, NixOps4, dendritic, jail.nix, finix, nixos-compose, LTS |
+| NixCon 2026: core, builds and stores | Scaling Nix, Nixception, lazy stores, unprivileged builds, laut, `.devShell` |
+| NixCon 2026: operations, security, platforms | CRA, STIG, declarative AS, test driver, nixos-secrets, RISC-V |
+| NixCon 2024 highlights | comin, module contracts, buildbot-nix, supply-chain provenance, Tvix |
 
 Read the version chapter before the install. The install assumes 26.05 media and a flake input of `nixos-26.05`. When 26.11 is actually released, change the pin with the upgrade-planning runbook. Leave `system.stateVersion` where the install set it.
