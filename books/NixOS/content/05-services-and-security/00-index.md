@@ -23,6 +23,7 @@ Layout and Home Manager made the repo operable. This part makes a **service slic
 | Comparison alternative | agenix |
 | Host attack surface | Host hardening patterns |
 | Network policy | Firewall discipline |
+| Internet routing | Internet-scale routing with BIRD and BGP |
 | HTTPS front door | TLS and reverse-proxy |
 | Durable state | A data service pattern (PostgreSQL) |
 | Isolation literacy | NixOS containers |
@@ -53,6 +54,7 @@ After this part you should be able to run a small app path—proxy → backend �
 | agenix (comparison) | Same job, different UX | House default declared |
 | Host hardening | SSH, sudo, surface | Hardening module + recovery notes |
 | Firewall discipline | Deny by default | `docs/ports.md` living matrix |
+| Internet-scale routing (optional) | BIRD + BGP as NixOS options, anycast | Declarative sessions and export filters |
 | TLS front door | Caddy or Nginx + ACME/lab TLS | 443 front; localhost backends |
 | Data service | PostgreSQL pattern | State, auth, backup story |
 | NixOS containers | nspawn `containers.*` | Isolation decision record |

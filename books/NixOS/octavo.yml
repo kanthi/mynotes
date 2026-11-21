@@ -88,6 +88,7 @@ book:
     - content/05-services-and-security/03c-vault-integration.md
     - content/05-services-and-security/04-hardening.md
     - content/05-services-and-security/05-firewall-discipline.md
+    - content/05-services-and-security/05b-internet-routing-bird-bgp.md
     - content/05-services-and-security/06-tls-front-door.md
     - content/05-services-and-security/07-data-service.md
     - content/05-services-and-security/08-nixos-containers.md
