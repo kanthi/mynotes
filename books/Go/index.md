@@ -77,6 +77,7 @@ The book is organized into structured phases of engineering depth:
 
 ## 2. Core Language Essentials
 - **Language Building Blocks:** Variables, types, and functions *(1.26: `new(expr)`; 1.27: generic methods, promoted field keys)*.
+- **Machine Representation & Addressability:** Integer bit-widths, IEEE-754 floating-point semantics, 1-byte `bool`, and addressable vs. unaddressable values.
 - **Control Flow:** Effective use of `if`, `for`, and `switch`.
 - **Data Structures:** Arrays, slices, strings, and maps internals.
 - **Composite Types:** Structs and data modeling.
@@ -260,7 +261,8 @@ The book is organized into structured phases of engineering depth:
 - **Memory Defense:** `runtime/secret` zeroization for sensitive cryptographic material.
 
 ## 23. Performance and Tooling
-- **Profiling in Depth:** Profiling CPU, memory, goroutines, and block/mutex contention with `pprof` and `trace`.
+- **Debugging Workflows:** Debugging by eye, panic stack traces, Delve (`dlv`), VSCode/GoLand setup, and Docker remote debugging.
+- **Profiling in Depth:** Profiling CPU, memory, goroutines, and block/mutex contention with `pprof` (`list`), `trace`, and `gotraceui`.
 - **Developer Toolkit:** Command-line tooling ecosystem (`ripgrep`, `fd`, `fzf`, `gopsutil`).
 - **Static Analysis:** Writing custom AST analyzers and linters using `go/analysis`.
 - **Code Generation:** Type-safe SQL with `sqlc`, enum string generation with `stringer`, and asset embedding.

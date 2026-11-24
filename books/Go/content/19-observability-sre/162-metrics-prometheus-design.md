@@ -531,6 +531,12 @@ http_request_duration_seconds_count 4
 - Scrape with a local Prometheus or `curl` a real listener.
 - Write PromQL: `rate(http_requests_total{status="500"}[5m])`.
 
+## A Warning About Measuring Too Much
+
+Every unique combination of metric name + label values creates a separate **time series** in Prometheus's memory and TSDB index:
+- **Cardinality explosions:** Never put unbounded values (`user_id`, `request_id`, raw URL paths with IDs, email addresses) in metric labels. A single endpoint with 1M users creates 1M time series and can OOM your Prometheus server.
+- **Scrape & storage cost:** Instrument what drives SLOs, capacity planning, and incident triage (RED/USE). Hundreds of unused vanity gauges slow down `/metrics` scrapes and cause alert fatigue.
+
 ## Further Reading
 
 - Prometheus metric and labeling best practices

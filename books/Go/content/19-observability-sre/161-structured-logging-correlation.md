@@ -455,6 +455,31 @@ status: 200 resp id: abc-123
 - Level from `LOG_LEVEL` env; hide Debug when `info`.
 - Spawn work with `context` so child goroutines keep the request id.
 
+## Shipping `slog` to Elasticsearch & Kibana
+
+In production, `slog.NewJSONHandler(os.Stdout, ...)` writes one JSON object per line to `stdout`. Container runtimes (Docker/Kubernetes) or log shippers (**Fluent Bit**, **Filebeat**, **Vector**) tail `stdout` and index those JSON lines directly into **Elasticsearch**.
+
+In **Kibana**, structured keys become first-class filterable fields (`request_id: "abc-123" AND level: "ERROR"`), letting you reconstruct every step of a failing request across services without regex parsing.
+
+## Logging Pitfalls & Warnings
+
+- **Never log secrets or PII:** Bearer tokens, passwords, session cookies, and raw payment data must be redacted (e.g., via `slog.HandlerOptions.ReplaceAttr` or `slog.LogValuer`).
+- **Avoid logging inside tight hot loops:** Even structured JSON serialization allocates and writes to `os.Stdout` (which can block on slow pipe readers). Gate verbose diagnostics behind `slog.LevelDebug` and `logger.Enabled(ctx, slog.LevelDebug)`.
+- **Log at the right level:** Use `Error` only for actionable failures, `Warn` for degraded/retried states, and `Info` for key lifecycle events.
+
+## Bonus: Inspecting Raw HTTP Traffic with `net/http/httputil`
+
+When debugging third-party API integrations or malformed headers locally, `net/http/httputil` prints the exact wire-level HTTP request or response:
+
+```go
+dump, err := httputil.DumpRequestOut(req, true) // true includes body
+if err == nil {
+	slog.Debug("outbound http", "raw", string(dump))
+}
+```
+
+Use `httputil.DumpRequest` on the server side and `httputil.DumpResponse` on responses—never enable body dumps in production where payloads contain credentials or large streams.
+
 ## Further Reading
 
 - Go `log/slog` package documentation

@@ -477,6 +477,12 @@ invalid rejected: true
 - Put `trace_id` into slog fields for log↔trace joins.
 - Continue a trace across a simulated queue message header map.
 
+## A Warning on Sampling
+
+Tracing every single request at 100% in high-throughput services creates massive network, collector, and storage bills—and adds CPU/memory overhead for span serialization.
+- **Head-based sampling** (e.g., `TraceIDRatioBased(0.01)` at the edge) is cheap and keeps costs predictable, **but** it drops 99% of rare errors and slow tail requests before you know they failed.
+- **Tail-based sampling** (in an OpenTelemetry Collector) buffers spans briefly and keeps 100% of error or high-latency traces while sampling healthy traffic down—at the cost of extra collector memory and stateful routing by `trace_id`.
+
 ## Further Reading
 
 - OpenTelemetry Go documentation

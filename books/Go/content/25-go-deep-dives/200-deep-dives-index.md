@@ -126,6 +126,7 @@ If you are still learning syntax, finish Core, Memory, and Concurrency first.
 | 268 | [`go list -json` package metadata](268-go-list-json-package-metadata.md) |
 | 269 | [`goroutineleak` pprof profile](269-goroutineleak-pprof.md) |
 | 270 | [Open-source architecture teardown: Kubernetes, `etcd`, and Prometheus in Go 1.27](270-oss-architecture-k8s-etcd-prometheus.md) |
+| 271 | [Compiler walk pass, dead code elimination, and devirtualization](271-compiler-walk-dce-devirtualization.md) |
 
 ## Stack Diagram
 

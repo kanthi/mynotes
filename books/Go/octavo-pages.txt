@@ -87,6 +87,9 @@ content/07-stdlib/999d-crypto-mldsa.html	crypto/mldsa
 content/07-stdlib/999e-crypto-mlkem.html	crypto/mlkem
 content/07-stdlib/999f-uuid.html	The uuid Package (Go 1.27)
 content/07-stdlib/999g-maphash-hasher.html	hash/maphash.Hasher: Custom Equality for Hash-Based Containers
+content/07-stdlib/999h-unique-weak-addcleanup-scenarios.html	Modern Identity and Lifecycle Scenarios — uuid, unique, weak, and runtime.AddCleanup
+content/07-stdlib/999i-crypto-hpke-fips-140-3.html	Post-Quantum Crypto, HPKE (RFC 9180), and FIPS 140-3 (Go 1.24–1.27)
+content/07-stdlib/999j-portable-simd-scenarios.html	Portable and Hardware Vector SIMD Scenarios (simd and simd/archsimd)
 content/08-data-structures-and-algorithms/01-algorithmic-complexity.html	Algorithmic Complexity and Big-O
 content/08-data-structures-and-algorithms/02-stacks-and-queues.html	Stacks, Queues, and Ring Buffers
 content/08-data-structures-and-algorithms/03-linked-lists.html	Linked Lists
@@ -120,6 +123,13 @@ content/09-cli-tools-in-go/318-project-network-security-mini-tools.html	Project:
 content/09-cli-tools-in-go/319-project-text-and-log-tools.html	Project: Text and Log CLI Tools
 content/09-cli-tools-in-go/320-project-http-debug-cli.html	Project: HTTP Debug CLI
 content/09-cli-tools-in-go/321-cross-platform-cli-notes.html	Cross-Platform CLI Notes
+content/09-cli-tools-in-go/322-terminal-tty-raw-mode-bubble-tea.html	Terminal TTY Raw Mode, ANSI Rendering, and Bubble Tea Architecture
+content/09-cli-tools-in-go/323-command-trees-kong-cobra-completions.html	Command Trees, Zero-Alloc Flag Parsing, and Shell Completion Engines
+content/09-cli-tools-in-go/324-pty-subprocess-multiplexing-ssh-tui.html	Pseudo-Terminals (PTY), Subprocess Multiplexing, and SSH TUI Apps
+content/09-cli-tools-in-go/326-cli-packaging-self-update-mldsa.html	CLI Packaging, Self-Updating Binaries, and Cross-Platform Distribution
+content/09-cli-tools-in-go/327-structured-cli-config-xdg-keychains.html	Structured CLI Configuration, XDG Base Directories, and Secret Keychains
+content/09-cli-tools-in-go/328-terminal-streaming-pagers-renderers.html	High-Throughput Terminal Streaming, Pagers, and Table-Markdown Renderers
+content/09-cli-tools-in-go/329-cli-plugin-architectures-go-plugin-wazero.html	Plugin Architectures for Go CLIs (go-plugin, wazero Wasm, and Native plugin Pitfalls)
 content/10-concurrency-ground-up/250-concurrency-ground-up-index.html	Concurrency From the Ground Up
 content/10-concurrency-ground-up/251-goroutines-fundamentals.html	Goroutines Fundamentals
 content/10-concurrency-ground-up/252-channels-complete.html	Channels Complete
@@ -137,7 +147,7 @@ content/10-concurrency-ground-up/262-race-conditions-vs-data-races.html	Race Con
 content/10-concurrency-ground-up/263-signaling-cond-broadcast.html	Signaling: Cond and Broadcast
 content/100-appendices/01-glossary.html	Glossary
 content/100-appendices/02-command-cheat-sheet.html	Command Cheat Sheet
-content/100-appendices/03-whats-new-1-21-to-1-27.html	What's New: Go 1.21 – 1.27
+content/100-appendices/03-whats-new-1-21-to-1-27.html	What's New: Go 1.21 – Go 1.27.4
 content/11-concurrency-parallelism/40-concurrency-basics.html	Concurrency Basics
 content/11-concurrency-parallelism/41-channel-patterns.html	Channel Patterns
 content/11-concurrency-parallelism/42-synchronization.html	Synchronization
@@ -146,6 +156,11 @@ content/11-concurrency-parallelism/44-concurrency-guidelines.html	Concurrency De
 content/11-concurrency-parallelism/44b-worker-pools.html	Worker Pools
 content/11-concurrency-parallelism/44c-pipelines-cond.html	Pipelines & Complex Patterns
 content/11-concurrency-parallelism/44d-goroutine-leak-profile.html	Goroutine Leak Profiles
+content/11-concurrency-parallelism/45-lock-free-atomics-and-queues.html	Lock-Free Programming, Atomic Primitives, and Michael-Scott Queues
+content/11-concurrency-parallelism/46-lock-free-ring-buffers-mpmc.html	Lock-Free Ring Buffers, Bounded MPMC Queues, and the Disruptor Pattern
+content/11-concurrency-parallelism/47-weighted-semaphores-adaptive-limits.html	Weighted Semaphores, Token-Bucket Rate Limiters, and Adaptive Concurrency Limits
+content/11-concurrency-parallelism/48-singleflight-request-coalescing.html	Singleflight, Request Coalescing, and Cache Stampede Defense
+content/11-concurrency-parallelism/49-lock-free-skip-lists-ordered-maps.html	Lock-Free Skip Lists and Concurrent Ordered Maps (LSM MemTables)
 content/12-socket-programming/00-introduction-why-sockets-matter-in-go.html	Introduction: Why Sockets Matter in Go
 content/12-socket-programming/01-networking-fundamentals.html	Chapter 1: Networking Fundamentals
 content/12-socket-programming/02-gos-net-package.html	Chapter 2: Go's net Package
@@ -227,6 +242,9 @@ content/17-systems-programming/156-project-systems-ops-toolkit.html	Project: Sys
 content/17-systems-programming/157-systemd-socket-activation.html	systemd Socket Activation
 content/17-systems-programming/158-linux-procfs-introspection.html	Linux procfs Introspection
 content/17-systems-programming/159-project-mini-supervisor.html	Project: Mini Process Supervisor
+content/17-systems-programming/160-linux-syscalls-vdso-io-uring.html	Linux Syscalls, vDSO Fast Paths, and io_uring vs. netpoll
+content/17-systems-programming/161-ebpf-cilium-ringbuf-uprobes.html	eBPF in Go, cilium/ebpf, Kernel Ring Buffers, and Go Uprobe Tracing
+content/17-systems-programming/162-linux-namespaces-cgroups-v2-containers.html	Linux Namespaces, Cgroups v2, pivot_root, and Container Runtimes in Go
 content/18-distributed-infra/150-distributed-infra-index.html	Distributed Infrastructure Overview
 content/18-distributed-infra/150a-system-design-method-and-capacity.html	System Design in Go: Requirements, Estimates, and Scaling
 content/18-distributed-infra/150b-consistent-hashing.html	Consistent Hashing and Shard Ownership in Go
@@ -240,6 +258,7 @@ content/18-distributed-infra/155-idempotency-keys.html	Idempotency and Deduplica
 content/18-distributed-infra/156-leader-election-basics.html	Leader Election Basics
 content/18-distributed-infra/157-outbox-reliable-side-effects.html	Transactional Outbox Pattern
 content/18-distributed-infra/158-project-resilient-worker.html	Project: Resilient Worker
+content/18-distributed-infra/159-raft-consensus-wire-protocols-rpc.html	Raft Consensus, Custom Binary Wire Protocols, and High-Throughput RPC (Go 1.24–1.27)
 content/19-observability-sre/160-observability-sre-index.html	Observability and SRE Overview
 content/19-observability-sre/161-structured-logging-correlation.html	Structured Logging and Correlation
 content/19-observability-sre/162-metrics-prometheus-design.html	Metrics and Prometheus Design
@@ -295,29 +314,34 @@ content/24-performance-engineering/186b-simd-with-archsimd.html	SIMD Without Ass
 content/24-performance-engineering/186c-compress-flate-rewrite.html	Go 1.27 compress/flate Rewrite
 content/24-performance-engineering/186d-inside-pgo-compiler-internals.html	Inside PGO: Devirtualization, Inlining Budgets, and Loop Alignment
 content/24-performance-engineering/187-project-optimize-hot-endpoint.html	Project: Optimize a Hot Endpoint
+content/24-performance-engineering/188-arena-allocators-bump-slabs-mmap.html	Arena Allocators, Bump-Pointer Slabs, Index Handles, and Off-Heap Mmap
+content/24-performance-engineering/189-string-interning-weak-caches.html	String Interning, Weak Pointers, and Zero-Leak Memory Caches
+content/24-performance-engineering/190-high-perf-caching-w-tinylfu-byte-slabs.html	High-Performance In-Memory Caching, W-TinyLFU, and Zero-GC Byte Slabs
+content/24-performance-engineering/191-zero-alloc-iterators-coroutines-stenciling.html	Zero-Allocation Iterators, Coroutine iter.Pull Internals, and Generic Stenciling
+content/24-performance-engineering/192-zero-alloc-database-rawbytes-rowscolumnscanner.html	Zero-Allocation Database Engineering (RawBytes, RowsColumnScanner, and Pool Tuning)
 content/25-go-deep-dives/200-deep-dives-index.html	Go Deep Dives Overview
 content/25-go-deep-dives/201-scheduler-gmp-deep-dive.html	Scheduler Deep Dive (GMP)
 content/25-go-deep-dives/202-memory-model-happens-before.html	Memory Model and Happens-Before
 content/25-go-deep-dives/203-channels-select-internals.html	Channel and Select Internals
 content/25-go-deep-dives/204-interface-representation.html	Interface Representation (eface / iface)
 content/25-go-deep-dives/205-slice-map-internals.html	Slice and Map Internals
-content/25-go-deep-dives/206-defer-panic-stack.html	Defer, Panic, and Stack Unwind
+content/25-go-deep-dives/206-defer-panic-stack.html	Defer, Panic, Recover Mechanics, and Open-Coded Defers
 content/25-go-deep-dives/207-generics-implementation.html	Generics Implementation Deep Dive
 content/25-go-deep-dives/208-gc-internals-pacer.html	GC Internals and Pacer
 content/25-go-deep-dives/209-compiler-ssa-pgo.html	Compiler, SSA, Inlining, and PGO
 content/25-go-deep-dives/210-link-build-modes-race.html	Linking, Build Modes, and Race ABI
-content/25-go-deep-dives/211-reflect-internals.html	Reflect Internals and Cost
+content/25-go-deep-dives/211-reflect-internals.html	Reflect, internal/abi.Type Metadata, and Zero-Alloc Type Introspection
 content/25-go-deep-dives/212-modules-mvs-toolchain.html	Modules, MVS, and Toolchain
-content/25-go-deep-dives/213-netpoller-network-io.html	Netpoller and Network I/O
-content/25-go-deep-dives/214-timers-time-after-pitfalls.html	Timers, Tickers, and time.After Pitfalls
-content/25-go-deep-dives/215-stack-growth-copying.html	Stack Growth and Copying
+content/25-go-deep-dives/213-netpoller-network-io.html	The Runtime Network Poller (netpoll, epoll, kqueue, IOCP)
+content/25-go-deep-dives/214-timers-time-after-pitfalls.html	Timer Heap Architecture, 4-ary Min-Heaps, and Synchronous Timer Channels
+content/25-go-deep-dives/215-stack-growth-copying.html	Stack Growth, Contiguous Stacks, Pointer Adjustment, and runtime/secret
 content/25-go-deep-dives/216-finalizers-cleanup.html	Finalizers and runtime.AddCleanup
 content/25-go-deep-dives/217-weak-unique-packages.html	weak and unique Packages
-content/25-go-deep-dives/218-swiss-maps-maphash.html	Swiss Maps and maphash
+content/25-go-deep-dives/218-swiss-maps-maphash.html	Swiss Maps, Control Bytes, Extendible Hashing, and maphash (Go 1.24–1.27)
 content/25-go-deep-dives/219-sync-pool-zero-alloc.html	sync.Pool and Zero-Allocation Patterns
 content/25-go-deep-dives/220-goroutine-leaks-diagnosis.html	Goroutine Leaks and Diagnosis
 content/25-go-deep-dives/221-godebug-runtime-knobs.html	GODEBUG and Runtime Knobs
-content/25-go-deep-dives/222-pprof-trace-under-the-hood.html	pprof and Execution Tracer Internals
+content/25-go-deep-dives/222-pprof-trace-under-the-hood.html	Execution Tracer v2, FlightRecorder, and SIGPROF Profiler Internals
 content/25-go-deep-dives/223-testing-synctest-bubbles.html	testing/synctest: Bubbles, Durable Blocks, Fake Time
 content/25-go-deep-dives/224-zero-copy-io.html	Zero-Copy I/O (sendfile, splice, Copy)
 content/25-go-deep-dives/225-http-transport-conn-pool.html	HTTP Transport and Connection Pool
@@ -327,11 +351,11 @@ content/25-go-deep-dives/228-cgo-scheduler-transitions.html	cgo and Scheduler Tr
 content/25-go-deep-dives/229-iterators-range-over-func.html	Iterators and range-over-func Deep Dive
 content/25-go-deep-dives/230-abi-assembly-nosplit.html	ABI, Assembly, and go:nosplit
 content/25-go-deep-dives/231-coverage-fuzz-engine.html	Coverage Instrumentation and Fuzz Engine
-content/25-go-deep-dives/232-build-cache-reproducibility.html	Build Cache and Reproducibility
+content/25-go-deep-dives/232-build-cache-reproducibility.html	Build Cache, Action DAG, MVS, and Linker Internals (.gopclntab)
 content/25-go-deep-dives/233-goexperiment-catalog.html	GOEXPERIMENT Catalog
 content/25-go-deep-dives/234-wasm-wasip1.html	WebAssembly and wasip1
 content/25-go-deep-dives/234b-wasm-binary-size.html	Where Go's WebAssembly bytes go: measuring and shrinking a wasip1 binary
-content/25-go-deep-dives/235-string-byte-internals.html	String and []byte Internals
+content/25-go-deep-dives/235-string-byte-internals.html	String, Slice, and UTF-8 Internals (nextslicecap and Copy Elision)
 content/25-go-deep-dives/236-error-interface-cost.html	Error Interface Cost and Wrapping
 content/25-go-deep-dives/237-production-mistakes-deep-dive.html	Production Mistakes Deep Dive
 content/25-go-deep-dives/238-production-debugging-tooling.html	Production Debugging Tooling
@@ -340,21 +364,21 @@ content/25-go-deep-dives/240-reading-runtime-source.html	Reading the Go Runtime 
 content/25-go-deep-dives/241-tls-handshake-path.html	crypto/tls Handshake Path
 content/25-go-deep-dives/242-slog-handler-design.html	slog Handler Design Deep Dive
 content/25-go-deep-dives/243-gomaxprocs-cgroup-containers.html	GOMAXPROCS, cgroups, and Containers
-content/25-go-deep-dives/244-plugin-buildmode-pitfalls.html	Plugins and buildmode Pitfalls
+content/25-go-deep-dives/244-plugin-buildmode-pitfalls.html	Plugin Buildmode Pitfalls (-buildmode=plugin) and Production Alternatives
 content/25-go-deep-dives/245-x-scout-topic-radar.html	Topic Radar (X + Ecosystem Signals)
 content/25-go-deep-dives/246-internals-for-interns-radar.html	Article Radar: Internals for Interns + Kin
-content/25-go-deep-dives/247-memory-allocator-deep-dive.html	Memory Allocator Deep Dive
-content/25-go-deep-dives/248-runtime-bootstrap.html	Runtime Bootstrap
+content/25-go-deep-dives/247-memory-allocator-deep-dive.html	Memory Allocator and TCMalloc Subsystem (mcache, mcentral, mheap, and Size-Specialized Malloc)
+content/25-go-deep-dives/248-runtime-bootstrap.html	Runtime Bootstrap, rt0_go, schedinit, and Package init DAG
 content/25-go-deep-dives/249-selectgo-compiler-runtime.html	select: Compiler and selectgo
 content/25-go-deep-dives/250-stacktraces-runtime-metadata.html	Stacktraces and Runtime Metadata
 content/25-go-deep-dives/251-mmap-vs-pread-storage.html	mmap vs pread in Go Storage
 content/25-go-deep-dives/252-compiler-frontend.html	Compiler Frontend: Scan, Parse, Typecheck
-content/25-go-deep-dives/253-compiler-ir-ssa-backend.html	Compiler Mid/Back: IR, SSA, Machine Code, Link
-content/25-go-deep-dives/254-race-detector-internals.html	Race Detector Internals
+content/25-go-deep-dives/253-compiler-ir-ssa-backend.html	Compiler IR, Escape Analysis, SSA Backend, and Bounds-Check Elimination
+content/25-go-deep-dives/254-race-detector-internals.html	Race Detector (-race) and ThreadSanitizer Shadow Memory Internals
 content/25-go-deep-dives/255-write-barrier-mark-assist.html	Write Barriers and Mark Assist
 content/25-go-deep-dives/256-work-stealing-findrunnable.html	Work Stealing and findrunnable
 content/25-go-deep-dives/257-type-assert-convert-runtime.html	Type Assert and Convert at Runtime
-content/25-go-deep-dives/258-os-signals-runtime.html	OS Signals and the Runtime
+content/25-go-deep-dives/258-os-signals-runtime.html	OS Signal Handling, sigaltstack, and Synchronous Trap Internals
 content/25-go-deep-dives/259-http2-go-runtime.html	HTTP/2 in Go
 content/25-go-deep-dives/260-database-sql-pool.html	database/sql Pool and Context
 content/25-go-deep-dives/261-json-performance-patterns.html	JSON Performance Patterns
@@ -366,6 +390,7 @@ content/25-go-deep-dives/266-epoll-inside-the-go-scheduler.html	epoll Inside the
 content/25-go-deep-dives/267-gomaxprocs-and-p-counts.html	GOMAXPROCS, Ps, and What schedtrace Shows
 content/25-go-deep-dives/268-go-list-json-package-metadata.html	go list -json for Package Metadata
 content/25-go-deep-dives/269-goroutineleak-pprof.html	goroutineleak pprof Profile
+content/25-go-deep-dives/270-oss-architecture-k8s-etcd-prometheus.html	Open-Source Architecture Teardown — Kubernetes, etcd, and Prometheus in Go 1.27
 content/26-long-term-maintenance/01-reflection-in-practice.html	Reflection in Practice
 content/26-long-term-maintenance/02-unsafe-code.html	Unsafe Code
 content/26-long-term-maintenance/03-cgo-and-ffi.html	Cgo and Foreign Function Interfaces
