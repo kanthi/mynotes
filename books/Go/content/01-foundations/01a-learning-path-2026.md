@@ -113,7 +113,7 @@ go version
 go mod tidy
 ```
 
-If you use a `toolchain` directive, set it explicitly (`toolchain go1.27.1` at this writing) and keep CI aligned. `go mod tidy` on modules with `go 1.27` consolidates `require` blocks into the standard direct + indirect layout.
+If you use a `toolchain` directive, set it explicitly (`toolchain go1.27.4` at this writing) and keep CI aligned. `go mod tidy` on modules with `go 1.27` consolidates `require` blocks into the standard direct + indirect layout.
 
 ### 2. Run Modernization and Safety Baseline
 

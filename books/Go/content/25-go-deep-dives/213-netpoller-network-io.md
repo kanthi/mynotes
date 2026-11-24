@@ -1,140 +1,68 @@
 ---
-title: Netpoller and Network I/O
+title: The Runtime Network Poller (netpoll, epoll, kqueue, IOCP)
 ---
 
-# Netpoller and Network I/O
+# The Runtime Network Poller (`netpoll`, `epoll`, `kqueue`, IOCP)
 
-## Overview
+Go's runtime network poller (`src/runtime/netpoll.go`, `netpoll_epoll.go`, `netpoll_kqueue.go`, `netpoll_windows.go`, and `src/internal/poll`) turns non-blocking asynchronous OS socket events into blocking-style synchronous Go code (`conn.Read(buf)`) so 100,000 idle connections consume only ~2 KB stack + ~160 B `pollDesc` each—zero blocked OS threads.
 
-Blocking on a socket in Go rarely blocks an OS thread the way a naive `read()` would in a 1:1 thread model. The **netpoller** integrates with the scheduler: a G waiting on network readiness parks, its M can run other work, and the poller wakes the G when the FD is ready.
-
-This is why Go servers scale to huge connection counts with modest `GOMAXPROCS`.
-
-> Companion: [Internals for Interns — Network Poller](https://internals-for-interns.com/posts/go-netpoller/) (who calls `netpoll` from `findrunnable` / sysmon).
-
-
-## Diagram: Netpoll park
+## Bridging Goroutines and Kernel Event Loops
 
 ```text
-sequence (top → bottom):
-  actors: goroutine, runtime, epoll/kqueue/IOCP
-  goroutine --> runtime  : Read would block
-  runtime --> goroutine  : park netpoll wait
-  runtime --> epoll/kqueue/IOCP  : register FD
-  epoll/kqueue/IOCP --> runtime  : readable
-  runtime --> goroutine  : goready
-  goroutine --> goroutine  : Read completes
+                              Go User Code
+                       n, err := conn.Read(buf)
+                                  |
+                          [1] Non-blocking read
+                                  v
+                       syscall.Read(fd, buf)
+                             /            \
+                     [Data Available]   [EAGAIN / EWOULDBLOCK]
+                           /                        \
+                  Return to User            [2] Register in pollDesc
+                                            [3] gopark(waitReasonIOWait)
+                                            (Goroutine parked in _Gwaiting)
+                                            (Thread M free to run other Gs)
+                                                     |
+                                                     v
+                                          +---------------------+
+                                          | OS Kernel Poller    |
+                                          | (epoll / kqueue)    |
+                                          +----------+----------+
+                                                     |
+                              [4] epoll_wait detects socket readability
+                                                     |
+                                                     v
+                                          +---------------------+
+                                          | runtime.netpoll()   |
+                                          | Awakens parked Gs   |
+                                          | injectglist()       |
+                                          +----------+----------+
+                                                     |
+                                      [5] G transitions to _Grunnable
+                                      [6] Resumes Read(), extracts data
 ```
 
-## Mental Model
+## Core Structures: `pollDesc` and `pollCache`
 
-```text
-G calls conn.Read
-  -> runtime sees would-block
-  -> G parks on netpoll wait
-  -> M may run other Gs
-  ...
-kernel marks FD readable
-  -> netpoller (epoll/kqueue/IOCP) notices
-  -> G becomes runnable
-  -> Read completes
-```
+Each network FD attaches to a `pollDesc` allocated from a lock-free 4 KB block pool (`pollCache`). Its atomic `rg` (reader) and `wg` (writer) fields act as state machines (`0 = pdReady`, `1 = pdWait`, or `*g` pointing to the parked goroutine). Deadlines (`SetReadDeadline`) arm runtime timer-heap callbacks (`pd.rt`, `pd.wt`) that wake the parked goroutine to return `os.ErrDeadlineExceeded` without closing the socket.
 
-Platform backends:
+| Operating System | Engine | Mechanism | Characteristics |
+|---|---|---|---|
+| Linux | `epoll` | `epoll_create1`, `epoll_ctl` (`EPOLLET`) | Edge-triggered; drains until `EAGAIN` |
+| macOS / BSD | `kqueue` | `kqueue()`, `kevent()` (`EV_CLEAR`) | Filter-based (`EVFILT_READ`, `EVFILT_WRITE`) |
+| Windows | IOCP | `CreateIoCompletionPort` | Completion-based; Go 1.25+ supports `FILE_FLAG_OVERLAPPED` in `os.NewFile` |
 
-| OS | Mechanism |
-|----|-----------|
-| Linux | epoll |
-| BSD/macOS | kqueue |
-| Windows | IOCP |
+## Scheduler Integration and Go 1.24–1.27 Upgrades
 
-## Deadlines vs Poller
+- **Three polling points:** `runtime.findrunnable` (idle work-stealing fallback), every 61st `schedtick` fairness check, and `sysmon` every 10 ms (`injectglist` + `startm`).
+- **Linux MPTCP default (Go 1.24+):** `net.ListenConfig` enables Multipath TCP by default on supported Linux kernels.
+- **Windows overlapped handles (Go 1.25+):** `os.NewFile` binds `FILE_FLAG_OVERLAPPED` handles directly to IOCP.
+- **HTTP/2 RFC 9218 priority & QUIC handshake polling (Go 1.27):** `Server.DisableClientPriority` and `tls.QUICConfig.ClientHelloInfoConn`.
 
-`SetDeadline` / `context` cancellation arm timers that **also** wake blocked network ops. Without deadlines, a stuck peer can pin a G forever (goroutine + buffer memory).
+Observe netpoller wakeups live with `GODEBUG=netpoll=1 go run server.go`, and always set explicit `ReadTimeout`, `WriteTimeout`, and `IdleTimeout` so unresponsive peers cannot pin `_Gwaiting` goroutines indefinitely.
 
-```go
-_ = conn.SetReadDeadline(time.Now().Add(30 * time.Second))
-// or
-ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
-defer cancel()
-// http and many APIs use Request.Context()
-```
+## Related Chapters
 
-## Interaction With Syscalls
-
-Not every I/O goes through netpoll. File I/O and some cgo paths still block Ms. Network sockets registered with the poller are the sweet spot for massive concurrency.
-
-Go 1.26 simplified how **P** tracks syscall state (derive from G instead of a dedicated P-syscall state), which helps syscall/cgo-heavy paths. See [cgo & scheduler](228-cgo-scheduler-transitions.md).
-
-## Zero-Copy Adjacent
-
-`io.Copy` between sockets may use `splice`/`sendfile` on Linux when types allow — poller still owns readiness. TLS usually **cannot** sendfile the cleartext path the same way. See [zero-copy I/O](224-zero-copy-io.md).
-
-## Diagnosis
-
-| Symptom | Check |
-|---------|--------|
-| Goroutines stuck in `net.Read` | Deadlines? peer hang? |
-| Threads exploding | Blocking syscalls / DNS / cgo, not poller waits |
-| High latency, low CPU | Downstream wait; trace shows park on poll |
-
-```bash
-go tool pprof http://localhost:6060/debug/pprof/goroutine
-# look for runtime.netpollblock, internal/poll.runtime_pollWait
-```
-
-## Experiment
-
-```bash
-go mod init example
-go run .
-```
-
-```go
-package main
-
-import (
-	"fmt"
-	"io"
-	"net"
-	"time"
-)
-
-func main() {
-	ln, err := net.Listen("tcp", "127.0.0.1:0")
-	if err != nil {
-		panic(err)
-	}
-	defer ln.Close()
-
-	go func() {
-		c, err := ln.Accept()
-		if err != nil {
-			return
-		}
-		defer c.Close()
-		time.Sleep(50 * time.Millisecond)
-		_, _ = c.Write([]byte("hello"))
-	}()
-
-	c, err := net.Dial("tcp", ln.Addr().String())
-	if err != nil {
-		panic(err)
-	}
-	defer c.Close()
-	_ = c.SetReadDeadline(time.Now().Add(time.Second))
-	buf := make([]byte, 16)
-	n, err := c.Read(buf)
-	fmt.Printf("read %q err=%v\n", buf[:n], err)
-
-	// deadline fire
-	_ = c.SetReadDeadline(time.Now().Add(20 * time.Millisecond))
-	_, err = c.Read(buf)
-	fmt.Printf("timeout? %v\n", err)
-	_, _ = io.WriteString(c, "x")
-}
-```
-
-**What to notice:** Read waits without spinning a CPU core; deadlines surface as errors, not hangs.
-
-**Try next:** Open 10k localhost connections with short deadlines; watch RSS and goroutine count stay manageable.
+- [201 Scheduler GMP Deep Dive](201-scheduler-gmp-deep-dive.md)
+- [266 epoll Inside the Go Scheduler](266-epoll-inside-the-go-scheduler.md)
+- [01 Netpoller and Goroutine Scaling](../14-network-performance/01-netpoller-and-goroutine-scaling.md)

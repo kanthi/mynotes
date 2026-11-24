@@ -121,6 +121,11 @@ If you are still learning syntax, finish Core, Memory, and Concurrency first.
 | 263 | Goroutine switch mechanics |
 | 264 | Measuring a "compiler will optimize it" idiom (`netip.AddrFrom16(ip.As16())`) |
 | 265 | Why Go binaries are big: sections, reachability, linker method rules |
+| 266 | [epoll inside the Go scheduler](266-epoll-inside-the-go-scheduler.md) |
+| 267 | [GOMAXPROCS and P counts](267-gomaxprocs-and-p-counts.md) |
+| 268 | [`go list -json` package metadata](268-go-list-json-package-metadata.md) |
+| 269 | [`goroutineleak` pprof profile](269-goroutineleak-pprof.md) |
+| 270 | [Open-source architecture teardown: Kubernetes, `etcd`, and Prometheus in Go 1.27](270-oss-architecture-k8s-etcd-prometheus.md) |
 
 ## Stack Diagram
 

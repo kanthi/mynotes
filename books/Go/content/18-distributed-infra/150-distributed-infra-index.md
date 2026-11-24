@@ -47,6 +47,7 @@ Before selecting a distributed pattern, work through [requirements, capacity est
 | 156 Leader election | Leases, renew/cancel | Singleton loops without split brain |
 | 157 Transactional outbox | Same-TX events + relay | Reliable side effects |
 | 158 Project: resilient worker | Retry, DLQ, shutdown | End-to-end worker lab |
+| 159 Raft, wire protocols, & RPC | `BinaryAppender`, `Buffer.Peek`, `DialTCP`, `h2c`, `synctest` | [Raft consensus, wire framing, and high-throughput RPC](159-raft-consensus-wire-protocols-rpc.md) |
 
 ## Core Mental Models
 

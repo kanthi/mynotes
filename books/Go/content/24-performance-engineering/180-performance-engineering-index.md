@@ -33,6 +33,11 @@ baseline -> profile -> hypothesize -> change one thing -> remeasure -> keep/reve
 | 186c compress/flate rewrite | Go 1.27 encoder | Speed vs size; pin uncompressed hashes |
 | 186d Inside PGO | Devirtualize, inlining, alignment | Compiler internals & 99% CDF cut |
 | 187 Project: optimize endpoint | Full loop | Before/after report |
+| 188 Arena allocators & mmap | Bump slabs, index handles, `MmapSlab` | [Region-based arenas and off-heap slabs](188-arena-allocators-bump-slabs-mmap.md) |
+| 189 Interning & weak caches | `unique`, `weak.Pointer`, `AddCleanup` | [Zero-leak self-evicting caches](189-string-interning-weak-caches.md) |
+| 190 W-TinyLFU & byte slabs | 4-bit Count-Min Sketch, `noscan` rings | [Multi-core zero-GC caching](190-high-perf-caching-w-tinylfu-byte-slabs.md) |
+| 191 Zero-alloc iterators & generics | `rangefunc`, `coroswitch`, GCShape stencils | [Iterator and generic compiler lowering](191-zero-alloc-iterators-coroutines-stenciling.md) |
+| 192 Zero-alloc database | `sql.RawBytes`, `RowsColumnScanner`, pools | [Zero-boxing SQL streaming in Go 1.27](192-zero-alloc-database-rawbytes-rowscolumnscanner.md) |
 
 ## Core Principles
 

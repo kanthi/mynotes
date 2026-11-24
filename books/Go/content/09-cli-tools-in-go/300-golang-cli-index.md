@@ -58,6 +58,13 @@ After this part you can:
 | 319 | **Project:** text/log tools (`textkit`) |
 | 320 | **Project:** HTTP debug CLI (`httpdbg`) |
 | 321 | Cross-platform CLI notes (Windows/paths/signals) |
+| 322 | [Terminal TTY raw mode, ANSI rendering, and Bubble Tea](322-terminal-tty-raw-mode-bubble-tea.md) |
+| 323 | [Command trees, zero-alloc flags, and `__complete` engines](323-command-trees-kong-cobra-completions.md) |
+| 324 | [Pseudo-terminals (PTY), subprocess multiplexing, and SSH TUIs](324-pty-subprocess-multiplexing-ssh-tui.md) |
+| 326 | [CLI packaging, atomic self-updates, and ML-DSA verification](326-cli-packaging-self-update-mldsa.md) |
+| 327 | [Structured CLI config, XDG directories, and secret keychains](327-structured-cli-config-xdg-keychains.md) |
+| 328 | [High-throughput terminal streaming, `$PAGER`, and renderers](328-terminal-streaming-pagers-renderers.md) |
+| 329 | [CLI plugin architectures (`go-plugin`, `wazero` Wasm, `plugin` pitfalls)](329-cli-plugin-architectures-go-plugin-wazero.md) |
 
 ## Suggested schedule
 

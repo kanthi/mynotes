@@ -1,188 +1,58 @@
 ---
-title: Defer, Panic, and Stack Unwind
+title: Defer, Panic, Recover Mechanics, and Open-Coded Defers
 ---
 
-# Defer, Panic, and Stack Unwind
+# Defer, Panic, Recover Mechanics, and Open-Coded Defers
 
-## Overview
+Go's `defer` evolved across three generations—dropping from ~35–50 ns per heap-allocated `_defer` (pre-Go 1.13) to ~1.4 ns with **Open-Coded Defers** (Go 1.14+), making `defer mu.Unlock()` effectively free in standard functions.
 
-`defer` schedules a call to run when the surrounding function returns — normally or via panic. Modern Go **open-codes** many defers (cheap), but loops that defer still accumulate work until return. Panic unwinds the stack running defers until `recover` or process crash.
-
-Errors: [Panic and recover](../05-errors/35-panic-recover.md).
-
-
-## Diagram: Panic unwind
+## Three Generations of `defer`
 
 ```text
-  panic(value)
-       │
-       v
-  run defers LIFO (this frame)
-       │
-       v
-  caller frames … until recover
-       │
-       ├── recover in defer ──► stop, resume
-       └── none ──► crash + stacks
+Generation 1 (Pre-Go 1.13) | Heap-allocated _defer (~35–50 ns, 1 heap alloc)
+                           v
+Generation 2 (Go 1.13)     | Stack-allocated _defer (~10–15 ns, 0 heap allocs)
+                           v
+Generation 3 (Go 1.14+)    | Open-coded defers via uint8 deferBits bitmask (~1.4 ns)
 ```
 
-## Defer Semantics
+## Open-Coded Defers (`deferBits`) vs. Linked-List `_defer`
 
-```go
-func f() {
-	defer fmt.Println("second")
-	defer fmt.Println("first") // LIFO
-	fmt.Println("body")
-}
-// body, first, second
-```
-
-### Arguments evaluated immediately
-
-```go
-func g() {
-	x := 1
-	defer fmt.Println(x) // prints 1 even if x changes later
-	x = 2
-}
-```
-
-To see final values, defer a closure:
-
-```go
-defer func() { fmt.Println(x) }()
-```
-
-### Named results
-
-Deferred closures can assign named return values — used carefully in middleware-style wrappers:
-
-```go
-func wrap() (err error) {
-	defer func() {
-		if err != nil {
-			err = fmt.Errorf("wrap: %w", err)
-		}
-	}()
-	return do()
-}
-```
-
-## Cost Model
-
-| Pattern | Cost |
-|---------|------|
-| Few defers per function (open-coded) | Very low |
-| `defer` inside hot loop | Registers many defers; prefer explicit unlock or scoped helper |
-| `defer mu.Unlock()` after Lock | Idiomatic and fine outside mega-hot paths |
-
-```go
-// Prefer for tight loops:
-mu.Lock()
-// critical
-mu.Unlock()
-
-// Prefer for error-prone multi-return:
-mu.Lock()
-defer mu.Unlock()
-```
-
-## Panic Unwind
+When a function has `<= 8` `defer` statements, `defers * returns <= 15`, and **no `defer` inside loops**, the compiler allocates an 8-bit `deferBits uint8` on the stack frame:
 
 ```text
-panic(value)
-  -> run defers in current function (LIFO)
-  -> pop frame
-  -> run defers in caller
-  -> ...
-  -> recover in a deferred call? stop unwind, return
-  -> else crash process (dump stacks)
+                              Function Stack Frame
++-----------------------------------------------------------------------------+
+| deferBits: 0b00000101 (Bits 0 and 2 are active)                             |
++-----------------------------------------------------------------------------+
+| arg0: mu (Pointer to sync.Mutex for defer #0)                               |
+| arg2: file (Pointer to os.File for defer #2)                                |
++-----------------------------------------------------------------------------+
+                                     |
+             At Function Return: Scan deferBits in Reverse Order
+             1. Bit 2 set? -> Call file.Close()
+             2. Bit 1 set? -> Skip
+             3. Bit 0 set? -> Call mu.Unlock()
 ```
 
-`recover` only works **directly inside a deferred function** during that panic:
+> [!WARNING]
+> **Never put `defer` inside hot loops:** A `defer` inside a `for` loop disables open-coded defers and pushes a heap `_defer` onto `g._defer` on every iteration (~38 ns and 48 B/op), keeping files open until the enclosing function exits. Extract the loop body into a helper function.
 
-```go
-defer func() {
-	if r := recover(); r != nil {
-		// log, convert to error
-	}
-}()
-```
+## Panic Unwinding and `recover()` Invariants
 
-### What recover cannot do
+- **`runtime.gopanic`:** Pushes a `_panic` struct onto `g._panic`, walks up the stack running open-coded `deferBits` and `_defer` entries in LIFO order, and exits with status 2 if unhandled.
+- **Direct-call invariant (`runtime.gorecover`):** `recover()` verifies `argp == uintptr(p.sp)`—it **must** be called directly inside a deferred function on the panicking goroutine (wrapping `recover()` in a helper returns `nil`, and panics never cross goroutine boundaries).
+- **Immediate argument evaluation vs. named returns:** Arguments to `defer fn(x)` evaluate immediately when the `defer` line runs, while deferred closures capture named return variables by reference and can modify them after `return`.
 
-- Fix corrupted program state magically
-- Replace typed API errors as the default control flow
-- Catch panics in **other** goroutines — each G panics independently
+## Go 1.25–1.27 Unwinding and Traceback Upgrades
 
-```go
-go func() {
-	defer func() { recover() }() // only protects this goroutine
-	mayPanic()
-}()
-```
+- **Pprof goroutine labels in tracebacks (Go 1.27 default):** Modules targeting `go 1.27` automatically print `runtime/pprof` goroutine labels in panic headers (`GODEBUG=tracebacklabels=0` to disable).
+- **Deduplicated repanic formatting (Go 1.25+):** Recovering and re-panicking prints `panic: msg [recovered, repanicked]` instead of duplicating the message.
+- **Canonical closure symbols & code sharing (Go 1.27):** Inlined `defer func() { ... }()` closures keep clean symbol names and share machine code across inlined call sites.
+- **Relocation-free `.gopclntab` + DWARF5 (Go 1.25–1.26):** Accelerates `runtime.gopanic` and `runtime.Callers` stack unwinding.
 
-## Stack Growth
+## Related Chapters
 
-Goroutine stacks start small and **grow/shrink** (copy stack). Pointers into stack frames are invisible to Go code safely — the compiler/runtime rewrites them. Do not pass pointers from Go stack to C without pinning rules (cgo).
-
-## Experiment
-
-```bash
-go mod init example
-go run .
-```
-
-```go
-package main
-
-import "fmt"
-
-func deferOrder() {
-	defer fmt.Println("D1")
-	defer fmt.Println("D2")
-	fmt.Println("body")
-}
-
-func deferArgs() {
-	x := 1
-	defer fmt.Println("arg", x)
-	defer func() { fmt.Println("closure", x) }()
-	x = 9
-}
-
-func recoverDemo() (err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			err = fmt.Errorf("panic: %v", r)
-		}
-	}()
-	panic("boom")
-}
-
-func main() {
-	deferOrder()
-	deferArgs()
-	fmt.Println("recovered", recoverDemo())
-}
-```
-
-**Expected output:**
-
-```text
-body
-D2
-D1
-closure 9
-arg 1
-recovered panic: boom
-```
-
-**What to notice:** LIFO order; args vs closure capture; panic converted to error only with defer+recover.
-
-**Try next:** Benchmark loop with `defer unlock` vs paired unlock for a million iterations — see if it matters in your Go version.
-
-## Related
-
-- [Panic recover](../05-errors/35-panic-recover.md)
-- [Must pattern](../05-errors/35b-must-pattern-odin.md)
+- [35 Panic and Recover](../05-errors/35-panic-recover.md)
+- [215 Stack Growth and Copying](215-stack-growth-copying.md)
+- [232 Build Cache, Action DAG, and Linker Internals](232-build-cache-reproducibility.md)

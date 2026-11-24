@@ -1,553 +1,127 @@
 ---
-title: 'What''s New: Go 1.21 – 1.27'
+title: "What's New: Go 1.21 – Go 1.27.4"
 ---
 
-# What's New: Go 1.21 – 1.27
+# What's New: Go 1.21 – Go 1.27.4
 
-This appendix is a reference, not a tutorial. Each section lists what changed in that release and shows one complete program that demonstrates two or three of the most useful additions. All programs compile and run with Go 1.27.
-
-The desk domain appears throughout: orders, tickets, prices, shifts.
-
----
+This appendix is a concise release-by-release reference covering **Go 1.21 through Go 1.27.4** (latest patch release: November 10, 2026; [Go Release History](https://go.dev/doc/devel/release)). Every example compiles and runs on Go 1.27.4+.
 
 ## Go 1.21
 
-| Feature | Package / layer | What it does |
+| Feature | Package / Layer | What It Does |
 |---|---|---|
-| `min` / `max` | language builtin | Return the smallest or largest of two or more comparable values. |
-| `clear` | language builtin | Zero all elements of a slice or delete all keys of a map. |
-| `slices` | `slices` | Sort, search, compare, and transform slices with generic functions. |
-| `maps` | `maps` | Copy, clone, and compare maps with generic functions. |
-| `cmp` | `cmp` | `cmp.Compare`, `cmp.Or`, and the `cmp.Ordered` constraint. |
-| Structured logging | `log/slog` | `slog.Info`, `slog.Error`, handler configuration, key-value pairs. |
-| One-time helpers | `sync` | `sync.OnceFunc`, `sync.OnceValue`, `sync.OnceValues`. |
-| Test context | `testing` | `t.Context()` returns a context that cancels when the test ends. |
-
-```go
-// desk121.go
-package main
-
-import (
-	"cmp"
-	"fmt"
-	"log/slog"
-	"os"
-	"slices"
-)
-
-type Order struct {
-	ID    int
-	Item  string
-	Price float64
-}
-
-func main() {
-	orders := []Order{
-		{1, "keyboard", 89.99},
-		{2, "monitor", 349.00},
-		{3, "mouse", 29.50},
-		{4, "desk pad", 19.95},
-	}
-
-	// slices.SortFunc with cmp.Compare for a numeric field.
-	slices.SortFunc(orders, func(a, b Order) int {
-		return cmp.Compare(a.Price, b.Price)
-	})
-
-	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
-
-	for _, o := range orders {
-		logger.Info("order",
-			"id", o.ID,
-			"item", o.Item,
-			"price", o.Price,
-		)
-	}
-
-	// min / max builtins.
-	cheapest := orders[0].Price
-	priciest := orders[len(orders)-1].Price
-	fmt.Printf("range: %.2f – %.2f\n", cheapest, priciest)
-
-	// clear resets the slice elements to zero values.
-	scratch := []int{10, 20, 30}
-	clear(scratch)
-	fmt.Println("after clear:", scratch)
-}
-```
-
-Run:
-
-```bash
-go run desk121.go
-```
-
-Output:
-
-```
-time=... level=INFO msg=order id=4 item="desk pad" price=19.95
-time=... level=INFO msg=order id=3 item=mouse price=29.5
-time=... level=INFO msg=order id=1 item=keyboard price=89.99
-time=... level=INFO msg=order id=2 item=monitor price=349
-range: 19.95 – 349.00
-after clear: [0 0 0]
-```
-
----
+| `min` / `max` / `clear` | Language builtins | Generic minimum/maximum builtins; `clear` zeroes slice elements or deletes all map keys. |
+| `slices`, `maps`, `cmp` | Standard library | Generic collection helpers (`slices.SortFunc`, `cmp.Compare`, `cmp.Or`). |
+| `log/slog` | `log/slog` | Structured leveled logging with JSON/Text handlers. |
+| `sync.OnceFunc` / `OnceValue` | `sync` | Lazy one-time initialization helpers without boilerplate. |
 
 ## Go 1.22
 
-| Feature | Package / layer | What it does |
+| Feature | Package / Layer | What It Does |
 |---|---|---|
-| `for i := range n` | language | Integer range: iterates `i` from `0` to `n-1`. No `int` variable needed. |
-| Per-iteration loop variable | language | Each loop body gets its own copy of `i` and `v`; goroutines no longer share the same address. |
-| Method + path patterns | `net/http` | `mux.HandleFunc("GET /tickets/{id}", h)` matches method and captures `{id}`. |
-| `r.PathValue` | `net/http` | `r.PathValue("id")` extracts a named segment from the matched route. |
-
-```go
-// desk122.go
-package main
-
-import (
-	"fmt"
-	"net/http"
-	"strconv"
-)
-
-var tickets = map[int]string{
-	1: "Replace keyboard",
-	2: "Monitor flicker",
-	3: "Desk lamp broken",
-}
-
-func ticketHandler(w http.ResponseWriter, r *http.Request) {
-	raw := r.PathValue("id")
-	id, err := strconv.Atoi(raw)
-	if err != nil {
-		http.Error(w, "bad id", http.StatusBadRequest)
-		return
-	}
-	title, ok := tickets[id]
-	if !ok {
-		http.Error(w, "not found", http.StatusNotFound)
-		return
-	}
-	fmt.Fprintf(w, "ticket %d: %s\n", id, title)
-}
-
-func main() {
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /tickets/{id}", ticketHandler)
-
-	// for i := range n — print ticket IDs without a separate counter variable.
-	fmt.Println("known ticket IDs:")
-	for i := range 3 {
-		fmt.Println(" ", i+1)
-	}
-
-	fmt.Println("listening on :8122")
-	if err := http.ListenAndServe(":8122", mux); err != nil {
-		fmt.Println(err)
-	}
-}
-```
-
-Run:
-
-```bash
-go run desk122.go &
-curl -s http://localhost:8122/tickets/2
-```
-
-Output:
-
-```
-known ticket IDs:
-  1
-  2
-  3
-listening on :8122
-ticket 2: Monitor flicker
-```
-
----
+| `for i := range n` | Language | Integer range loop (`0` to `n-1`). |
+| Per-iteration loop variables | Language | Eliminates classic goroutine loop-variable capture bugs. |
+| Enhanced `http.ServeMux` | `net/http` | Method + path wildcard patterns (`"GET /tickets/{id}"`) and `r.PathValue("id")`. |
+| `math/rand/v2`, `reflect.TypeFor[T]` | Standard library | Modern PCG/ChaCha8 PRNGs and zero-alloc compile-time `reflect.Type` lookup. |
 
 ## Go 1.23
 
-| Feature | Package / layer | What it does |
+| Feature | Package / Layer | What It Does |
 |---|---|---|
-| `iter` package | `iter` | Defines `iter.Seq[V]` and `iter.Seq2[K,V]` — the function types a `range` loop can consume. |
-| Range-over-function | language | `for v := range f` works when `f` is `func(yield func(V) bool)`. |
-| `strings.SplitSeq` | `strings` | Like `strings.Split` but yields substrings one at a time via an iterator. |
-| `strings.FieldsSeq` | `strings` | Lazy word-splitting iterator; no intermediate slice allocated. |
-| `maps.Keys` / `maps.Values` | `maps` | Return `iter.Seq` iterators over map keys or values. |
-| `time.Tick` GC fix | `time` | The ticker created by `time.Tick` is now garbage-collected when unreachable. |
-
-```go
-// desk123.go
-package main
-
-import (
-	"fmt"
-	"maps"
-	"strings"
-)
-
-func main() {
-	// strings.FieldsSeq: iterate words without building a []string.
-	shift := "Monday Tuesday Wednesday Thursday Friday"
-	fmt.Print("days: ")
-	for day := range strings.FieldsSeq(shift) {
-		fmt.Printf("%s ", day)
-	}
-	fmt.Println()
-
-	// maps.Keys iterator — consume keys without an intermediate slice.
-	prices := map[string]float64{
-		"keyboard": 89.99,
-		"monitor":  349.00,
-		"mouse":    29.50,
-	}
-
-	fmt.Println("items in stock:")
-	for item := range maps.Keys(prices) {
-		fmt.Printf("  %s\n", item)
-	}
-
-	// strings.SplitSeq: lazy split on a delimiter.
-	csvRow := "order_id,item,qty,price"
-	fmt.Print("columns: ")
-	for col := range strings.SplitSeq(csvRow, ",") {
-		fmt.Printf("[%s]", col)
-	}
-	fmt.Println()
-}
-```
-
-Run:
-
-```bash
-go run desk123.go
-```
-
-Output:
-
-```
-days: Monday Tuesday Wednesday Thursday Friday
-items in stock:
-  keyboard
-  monitor
-  mouse
-columns: [order_id][item][qty][price]
-```
-
----
+| Range-over-function & `iter` | Language / `iter` | `iter.Seq[V]`, `iter.Seq2[K,V]`, `iter.Pull` coroutines, `maps.Keys`, `slices.Chunk`, `slices.Backward`. |
+| `unique` package | `unique` | `unique.Make[T]` value canonicalization (interning) with `O(1)` handle equality. |
+| Synchronous unbuffered timers | `time` / runtime | `time.Timer`/`Ticker` channels become unbuffered and GC-eligible without `Stop()`. |
 
 ## Go 1.24
 
-| Feature | Package / layer | What it does |
+| Feature | Package / Layer | What It Does |
 |---|---|---|
-| `b.Loop()` | `testing` | Replaces `for i := 0; i < b.N; i++`; handles timer reset automatically. |
-| `testing/synctest` (experimental) | `testing/synctest` | Runs goroutines in a fake-time bubble to test concurrent code deterministically. |
-| Weak pointers | `weak` | `weak.Pointer[T]` — a reference that does not keep an object alive; useful for caches. |
-| `runtime.AddCleanup` | `runtime` | Attach a cleanup function to an object, called on collection (replaces `SetFinalizer`). |
-| `sync/atomic` `And`/`Or` | `sync/atomic` | Bitwise AND and OR operations added to integer atomic types. |
-
-```go
-// desk124_test.go
-package main
-
-import (
-	"testing"
-)
-
-// priceAfterDiscount applies a percentage discount.
-func priceAfterDiscount(price, pct float64) float64 {
-	return price * (1 - pct/100)
-}
-
-// BenchmarkDiscount uses b.Loop() — no manual b.N loop needed.
-func BenchmarkDiscount(b *testing.B) {
-	price := 349.00
-	pct := 15.0
-	var result float64
-	for b.Loop() {
-		result = priceAfterDiscount(price, pct)
-	}
-	_ = result
-}
-
-func TestDiscount(t *testing.T) {
-	ctx := t.Context() // cancelled when the test ends
-	_ = ctx
-
-	got := priceAfterDiscount(100.0, 10.0)
-	if got != 90.0 {
-		t.Fatalf("want 90.0, got %f", got)
-	}
-}
-```
-
-Run:
-
-```bash
-go test -bench=. -benchmem ./desk124_test.go
-```
-
-Output:
-
-```
-goos: linux
-goarch: amd64
-BenchmarkDiscount-8   1000000000   0.2990 ns/op   0 B/op   0 allocs/op
-PASS
-```
-
----
+| SwissTable maps & `HashTrieMap` `sync.Map` | Runtime | Parallel 8-slot SWAR/SIMD map probing, bounded 1,024-element table splits, lock-free read `sync.Map`. |
+| Generic type aliases | Language | Parameterized type aliases (`type Handler[T any] = func(T) error`). |
+| `omitzero` struct tag | `encoding/json` | Omits zero-value structs (`time.Time`, `time.Duration`) cleanly. |
+| `os.Root` (`os.OpenRoot`) | `os` | Kernel-enforced traversal-resistant directory scoping (`openat2` on Linux). |
+| `weak.Pointer[T]` & `runtime.AddCleanup` | `weak` / `runtime` | Non-resurrecting, cycle-safe cleanups and zero-leak weak caches. |
+| `testing.B.Loop()` & `T.Context()` | `testing` | Safer benchmark loop + test-scoped cancellation context. |
+| `strings.SplitSeq`, `FieldsSeq`, `Lines` | `strings` / `bytes` | Zero-slice-allocation splitting iterators. |
+| `crypto/mlkem`, `crypto/hkdf`, `crypto/sha3`, `crypto/fips140`, `NewGCMWithRandomNonce` | `crypto/*` | Post-quantum FIPS 203 KEM, native HKDF/SHA-3, built-in FIPS 140-3 module. |
+| `go.mod` `tool` directives & `GOCACHEPROG` | Toolchain | First-class CLI tool tracking (`go get -tool`) and remote build cache protocol. |
 
 ## Go 1.25
 
-| Feature | Package / layer | What it does |
+| Feature | Package / Layer | What It Does |
 |---|---|---|
-| `wg.Go(f)` | `sync` | Adds a goroutine to a `sync.WaitGroup` and calls `f()` in it; no separate `Add`/`Done` pair needed. |
-| `testing/synctest` stable | `testing/synctest` | Fake-time goroutine bubble graduates from experimental to stable. |
-| `os.Root` | `os` | A handle to a directory; all path operations are constrained to it, preventing traversal attacks. |
-
-```go
-// desk125.go
-package main
-
-import (
-	"fmt"
-	"log/slog"
-	"os"
-	"sync"
-)
-
-type Ticket struct {
-	ID    int
-	Title string
-}
-
-func process(t Ticket) error {
-	slog.Info("processing", "id", t.ID, "title", t.Title)
-	return nil
-}
-
-func main() {
-	tickets := []Ticket{
-		{1, "Replace keyboard"},
-		{2, "Monitor flicker"},
-		{3, "Desk lamp broken"},
-		{4, "Chair squeaks"},
-	}
-
-	var wg sync.WaitGroup
-
-	// wg.Go launches a goroutine and tracks it — no Add/Done boilerplate.
-	for _, tk := range tickets {
-		wg.Go(func() {
-			if err := process(tk); err != nil {
-				slog.Error("failed", "id", tk.ID, "err", err)
-			}
-		})
-	}
-
-	wg.Wait()
-	fmt.Fprintln(os.Stdout, "all tickets processed")
-}
-```
-
-Run:
-
-```bash
-go run desk125.go
-```
-
-Output:
-
-```
-time=... level=INFO msg=processing id=1 title="Replace keyboard"
-time=... level=INFO msg=processing id=2 title="Monitor flicker"
-time=... level=INFO msg=processing id=3 title="Desk lamp broken"
-time=... level=INFO msg=processing id=4 title="Chair squeaks"
-all tickets processed
-```
-
----
+| Container-aware `GOMAXPROCS` | Runtime | Reads Linux cgroup CPU quotas dynamically (`runtime.SetDefaultGOMAXPROCS`). |
+| `sync.WaitGroup.Go(fn)` | `sync` | Launches and tracks a goroutine without `Add(1)` / `defer Done()` boilerplate. |
+| `testing/synctest` (GA) | `testing/synctest` | Deterministic concurrency bubbles with virtualized clocks. |
+| `runtime/trace.FlightRecorder` | `runtime/trace` | Always-on `<1%` CPU ring-buffer execution trace snapshots. |
+| `reflect.TypeAssert[T]` | `reflect` | Zero-allocation generic extraction from `reflect.Value`. |
+| `http.CrossOriginProtection` | `net/http` | Token-free CSRF defense using `Sec-Fetch-Site` / `Origin`. |
+| Parallel `AddCleanup` & `unique` GC | Runtime | Concurrent cleanup workers and single-cycle `unique.Handle` reclamation; `GODEBUG=checkfinalizers=1`. |
 
 ## Go 1.26
 
-| Feature | Package / layer | What it does |
+| Feature | Package / Layer | What It Does |
 |---|---|---|
-| `errors.AsType[T]` | `errors` | Generic form of `errors.As`; returns `(T, bool)` without declaring a pointer-to-target. |
-| `slices.Chunk` | `slices` | Yields successive sub-slices of length at most n via an iterator. |
-| `url.Clone` | `net/url` | Deep-copies a `*url.URL` including its query `Values` map. |
-| `context.AfterFunc` clarification | `context` | Behaviour when the stop function is called after cancellation is now defined by the spec. |
+| Green Tea GC (default) | Runtime | Span-local + SIMD pointer scanning cutting GC CPU overhead by 10%–40%. |
+| `new(expr)` | Language | Built-in `new` accepts any value expression (`new(int32(5))`). |
+| Self-referential type constraints | Language | Enables F-bounded polymorphism (`type Adder[A Adder[A]] interface { Add(A) A }`). |
+| `errors.AsType[E]` | `errors` | Zero-reflection generic replacement for `errors.As`. |
+| ~30% faster Cgo & 64-bit heap randomization | Runtime | Lower `cgocall` overhead and randomized 64-bit `mheap` base addresses. |
+| Rewritten `go fix` modernizer | Toolchain | `go/analysis`-based modernizers and `//go:fix inline` deprecation inlining. |
+| `crypto/hpke`, `testing/cryptotest`, `slog.NewMultiHandler`, `bytes.Buffer.Peek`, `Dialer.DialTCP`, `reflect.Type.Fields()` | Standard library | RFC 9180 HPKE, deterministic crypto tests, multi-handler logging, zero-alloc lookahead & typed dialing. |
+| `runtime/secret` & `simd/archsimd` (experimental) | Runtime / `simd` | Cryptographic stack/register zeroing and hardware SIMD intrinsics. |
+
+## Go 1.27 (Latest: Go 1.27.4 — Nov 10, 2026)
+
+| Feature | Package / Layer | What It Does |
+|---|---|---|
+| Generic methods | Language | Methods on concrete types can declare their own type parameters (e.g., `(*rand.Rand).N[Int]`). |
+| Promoted field keys in struct literals | Language | Flattened composite literals for unambiguously promoted embedded fields (`go fix -embedlit`). |
+| Generalized function type inference | Language | Inference in composite literals, conversions, and channel sends. |
+| Size-specialized malloc | Runtime | Up to 30% faster small (`< 80 B`) heap allocations. |
+| `goroutineleak` pprof profile (GA) | `runtime/pprof` | GC-assisted `/debug/pprof/goroutineleak` profile; `pprof` labels printed in panic tracebacks by default. |
+| `asynctimerchan` removed | Runtime / `time` | Timer channels are always synchronous and unbuffered. |
+| `encoding/json/v2` & `jsontext` (GA) | `encoding/json/v2` | Strict-by-default v2 JSON engine (rejects duplicate keys & invalid UTF-8) + streaming token API. |
+| `uuid` & `crypto/mldsa` | Standard library | First-party `uuid` package and NIST FIPS 204 ML-DSA post-quantum signatures + `tls.MLKEM1024`. |
+| `strings.CutLast` / `bytes.CutLast`, `url.URL.Clone`, `synctest.Sleep`, `httptest.NewTestServer` | Standard library | Reverse cut, deep URL cloning, synctest virtual sleep, in-memory HTTP test server. |
+| `driver.RowsColumnScanner` & `sql.ConvertAssign`, `maphash.Hasher[T]` | `database/sql` / `hash/maphash` | Zero-boxing SQL column scanning and generic hashers. |
+| Portable `simd` (`GOEXPERIMENT=simd`) | `simd` | Width-agnostic portable vectors alongside `simd/archsimd` (amd64, arm64 NEON, Wasm). |
+| Go 1.27.1–1.27.4 patch releases | Security & stability | Security fixes across `cgo`, `cmd/go`, compiler, linker, `crypto/x509`, `crypto/tls`, `html/template`, `net/http`, and `os`. |
+
+## Complete Go 1.27.4 Showcase Program
 
 ```go
-// desk126.go
 package main
 
 import (
+	"encoding/json/v2"
 	"errors"
 	"fmt"
-	"slices"
-)
-
-// DeskError carries a numeric code for routing purposes.
-type DeskError struct {
-	Code    int
-	Message string
-}
-
-func (e *DeskError) Error() string {
-	return fmt.Sprintf("desk error %d: %s", e.Code, e.Message)
-}
-
-func processOrder(id int) error {
-	if id <= 0 {
-		return fmt.Errorf("processOrder: %w", &DeskError{Code: 400, Message: "invalid order id"})
-	}
-	return nil
-}
-
-func main() {
-	err := processOrder(-1)
-
-	// errors.AsType[T] — no &target variable needed.
-	if de, ok := errors.AsType[*DeskError](err); ok {
-		fmt.Printf("caught DeskError code=%d msg=%s\n", de.Code, de.Message)
-	}
-
-	// slices.Chunk — batch 5 order IDs into groups of 2.
-	orders := []int{101, 102, 103, 104, 105}
-	fmt.Println("batches:")
-	for batch := range slices.Chunk(orders, 2) {
-		fmt.Println(" ", batch)
-	}
-}
-```
-
-Run:
-
-```bash
-go run desk126.go
-```
-
-Output:
-
-```
-caught DeskError code=400 msg=invalid order id
-batches:
-  [101 102]
-  [103 104]
-  [105]
-```
-
----
-
-## Go 1.27
-
-| Feature | Package / layer | What it does |
-|---|---|---|
-| `encoding/json/v2` | `encoding/json/v2` | Redesigned JSON package: opt-in, cleaner API, better error messages, strict by default. |
-| `json:",omitzero"` | `encoding/json/v2` | Omits a field when it holds its zero value (works for structs, not just pointers). |
-| `stdlib/uuid` | `uuid` | First-party UUID generation and parsing; no third-party dependency needed. |
-| `strings.CutLast` | `strings` | Like `strings.Cut` but finds the *last* occurrence of the separator. |
-| `bytes.CutLast` | `bytes` | Same as `strings.CutLast` but operates on byte slices. |
-| Promoted field literals | language | Embedded-field names may be omitted in composite literals when unambiguous. |
-| `synctest.Sleep` | `testing/synctest` | Advances fake time inside a synctest bubble, waking goroutines blocked on timers. |
-
-```go
-// desk127.go
-package main
-
-import (
-	"fmt"
 	"strings"
-
-	jsonv2 "encoding/json/v2"
+	"uuid"
 )
 
-// ShiftEntry records one desk shift.
-// HourlyRate is omitted from JSON output when it is zero.
 type ShiftEntry struct {
-	StaffID    string  `json:"staff_id"`
-	Day        string  `json:"day"`
-	HourlyRate float64 `json:"hourly_rate,omitzero"`
+	ID         uuid.UUID `json:"id"`
+	StaffID    string    `json:"staff_id"`
+	HourlyRate *float64  `json:"hourly_rate,omitzero"`
 }
 
 func main() {
 	shifts := []ShiftEntry{
-		{"emp-001", "Monday", 22.50},
-		{"emp-002", "Tuesday", 0},       // HourlyRate omitted in output.
-		{"emp-003", "Wednesday", 18.75},
+		{ID: uuid.New(), StaffID: "emp-001", HourlyRate: new(22.50)},
+		{ID: uuid.New(), StaffID: "emp-002"}, // HourlyRate omitted via omitzero.
 	}
-
-	// encoding/json/v2: Marshal respects omitzero.
-	data, err := jsonv2.Marshal(shifts)
+	data, err := json.Marshal(shifts)
 	if err != nil {
+		if syntaxErr, ok := errors.AsType[*json.SemanticError](err); ok {
+			fmt.Println("semantic error:", syntaxErr)
+		}
 		panic(err)
 	}
 	fmt.Println(string(data))
 
-	// strings.CutLast: extract the extension from a versioned filename.
-	filename := "report.2025.csv"
-	before, after, found := strings.CutLast(filename, ".")
-	if found {
-		fmt.Printf("base=%q ext=%q\n", before, after)
-	}
-
-	// strings.CutLast on a path: find the last path segment.
-	path := "/desks/floor2/station7"
-	_, segment, _ := strings.CutLast(path, "/")
-	fmt.Printf("last segment: %s\n", segment)
+	base, ext, _ := strings.CutLast("report.2026.csv", ".")
+	fmt.Printf("base=%q ext=%q\n", base, ext)
 }
 ```
-
-Run:
-
-```bash
-go run desk127.go
-```
-
-Output:
-
-```
-[{"staff_id":"emp-001","day":"Monday","hourly_rate":22.5},{"staff_id":"emp-002","day":"Tuesday"},{"staff_id":"emp-003","day":"Wednesday","hourly_rate":18.75}]
-base="report.2025" ext="csv"
-last segment: station7
-```
-
----
-
-## Quick index
-
-| Feature | Version |
-|---|---|
-| `min`, `max`, `clear` builtins | 1.21 |
-| `slices`, `maps`, `cmp` packages | 1.21 |
-| `log/slog` | 1.21 |
-| `sync.OnceFunc` / `OnceValue` | 1.21 |
-| `t.Context()` | 1.21 |
-| `for i := range n` | 1.22 |
-| Per-iteration loop variable capture fix | 1.22 |
-| `net/http` method+path patterns, `PathValue` | 1.22 |
-| `iter` package, range-over-function | 1.23 |
-| `strings.SplitSeq`, `FieldsSeq` | 1.23 |
-| `maps.Keys`, `maps.Values` iterators | 1.23 |
-| `b.Loop()` in benchmarks | 1.24 |
-| `testing/synctest` (experimental) | 1.24 |
-| `weak.Pointer`, `runtime.AddCleanup` | 1.24 |
-| `wg.Go()` | 1.25 |
-| `testing/synctest` stable | 1.25 |
-| `os.Root` | 1.25 |
-| `errors.AsType[T]` | 1.26 |
-| `slices.Chunk` | 1.26 |
-| `url.Clone` | 1.26 |
-| `encoding/json/v2`, `omitzero` | 1.27 |
-| `stdlib/uuid` | 1.27 |
-| `strings.CutLast`, `bytes.CutLast` | 1.27 |
-| Promoted field literals | 1.27 |
-| `synctest.Sleep` | 1.27 |

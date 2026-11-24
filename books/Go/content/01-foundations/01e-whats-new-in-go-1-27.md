@@ -4,9 +4,9 @@ title: What's New in Go 1.27
 
 # What's New in Go 1.27
 
-Go **1.27** shipped in August 2026 ([release notes](https://go.dev/doc/go1.27)). The compatibility promise still holds: almost all existing programs compile and run. This chapter is the map of what actually changed—language, `go` command, runtime, and the standard library—so the rest of this book can assume **1.27** as the baseline.
+Go **1.27** shipped in August 2026 ([release notes](https://go.dev/doc/go1.27)), with **Go 1.27.4** released on November 10, 2026 ([release history](https://go.dev/doc/devel/release)). The compatibility promise still holds: almost all existing programs compile and run. This chapter is the map of what actually changed—language, `go` command, runtime, and the standard library—so the rest of this book can assume **Go 1.27.4+** as the baseline.
 
-Pin new modules with `go 1.27` (and `toolchain go1.27.1` or later when you want a specific compiler). Go 1.25 is out of support as of this release.
+Pin new modules with `go 1.27` (and `toolchain go1.27.4` when you want the latest security and bug-fix patch release). Go 1.25 is out of support as of Go 1.27.
 
 ## Language
 
@@ -39,7 +39,7 @@ go run .
 
 Output is deterministic for this PCG seed:
 
-```
+```text
 7
 616
 ```
@@ -213,7 +213,7 @@ Relative `//line` filenames resolve against the file that contains the directive
 
 1. [Upgrading to Go 1.27: What Breaks, What to Adopt First](01f-upgrading-a-module-to-go-1-27.md) — upgrade flowchart, breaking changes, and migration checklist.
 2. [Learning path](01a-learning-path-2026.md) — module baseline.
-3. [Installing](02-installing-running-go.md) — 1.27.1 tarball / macOS 13.
+3. [Installing](02-installing-running-go.md) — 1.27.4 tarball / macOS 13+.
 4. [Core commands](05-core-go-commands.md) and [vet/docs](06-formatting-vetting-docs.md).
 5. [JSON](../07-stdlib/985-encoding-json-csv-xml.md), [uuid/crypto](../07-stdlib/992-crypto-hash-rand-regexp.md).
 

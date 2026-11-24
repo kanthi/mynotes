@@ -52,6 +52,9 @@ If your HTTP handlers are solid but your process mishandles `SIGTERM`, you still
 | 157 Socket activation | systemd LISTEN_FDS | Privilege-separated bind |
 | 158 Linux procfs | `/proc/self`, cgroup peeks | Debug introspection |
 | 159 Project: minisup | multi-process supervisor | Restart + signal fanout |
+| 160 Linux syscalls, vDSO, & `io_uring` | `Syscall6`, `RawSyscall6`, vDSO, `openat2`, `io_uring` | [Syscall, vDSO, and `io_uring` vs. `netpoll`](160-linux-syscalls-vdso-io-uring.md) |
+| 161 eBPF in Go (`cilium/ebpf`) | CO-RE, `BPF_MAP_TYPE_RINGBUF`, Go uprobes | [Pure-Go eBPF loaders and ABIInternal tracing](161-ebpf-cilium-ringbuf-uprobes.md) |
+| 162 Namespaces & Cgroups v2 | `Cloneflags`, `LockOSThread`, `pivot_root`, `os.Root` | [Container runtime isolation in Go](162-linux-namespaces-cgroups-v2-containers.md) |
 
 ## Core Concepts Map
 

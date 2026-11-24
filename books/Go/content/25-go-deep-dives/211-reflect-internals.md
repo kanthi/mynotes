@@ -1,188 +1,133 @@
 ---
-title: Reflect Internals and Cost
+title: Reflect, internal/abi.Type Metadata, and Zero-Alloc Type Introspection
 ---
 
-# Reflect Internals and Cost
+# Reflect, `internal/abi.Type` Metadata, and Zero-Alloc Type Introspection
 
-## Overview
+Go is statically compiled with no virtual machine, yet `encoding/json/v2`, `database/sql`, and `fmt` inspect arbitrary struct fields, tags, and methods at runtime via `reflect`. Between Go 1.21 and Go 1.27, the runtime unified type descriptors in `src/internal/abi/type.go`, added zero-allocation `reflect.TypeAssert[T]` (Go 1.25), and introduced rangeable `Type.Fields()` / `Value.Fields()` iterators (Go 1.26).
 
-Package `reflect` exposes runtime type metadata (`rtype`) and dynamic values (`Value`). It powers encoding/json, dependency injection frameworks, and ORMs — and it is a common production hotspot when used on every request without caching.
+## The Unified Type Descriptor: `internal/abi.Type` (48 Bytes in `.rodata`)
 
-Usage intro: [Reflection](../26-long-term-maintenance/01-reflection-in-practice.md).
-
-
-## Diagram: Reflect path
+`reflect.Type`, `eface._type`, `itab._type`, and the Green Tea GC all share the exact same immutable 48-byte `abi.Type` header emitted into `.rodata`:
 
 ```text
-flow:
-  [V]
-       |
-       v
-  [Flags]
+                    internal/abi.Type (48 Bytes in .rodata)
++-------------------------------------------------------------------------------+
+| Size_:       uintptr (8B)  | Exact byte size of concrete type (unsafe.Sizeof) |
+| PtrBytes:    uintptr (8B)  | Highest byte offset containing a GC pointer      |
+| Hash:        uint32  (4B)  | Type hash for O(1) itab & TypeAssert checks      |
+| TFlag:       TFlag   (1B)  | Uncommon, ExtraStar, Named, RegularMemory        |
+| Align_:      uint8   (1B)  | Memory alignment (1, 2, 4, 8, 16)                |
+| FieldAlign_: uint8   (1B)  | Alignment when embedded as a struct field        |
+| Kind_:       Kind    (1B)  | Reflect kind + KindDirectIface bit (0x20)        |
+| Equal:       func(p, q unsafe.Pointer) bool (8B) | Compiler-generated equal   |
+| GCData:      *byte   (8B)  | Bitmask telling Green Tea GC which words are ptrs|
+| Str:         NameOff (4B)  | Relative 32-bit offset into .rodata name table   |
+| PtrToThis:   TypeOff (4B)  | Relative 32-bit offset to *T's abi.Type          |
++-------------------------------------------------------------------------------+
 ```
 
-## Core Types
+- **`PtrBytes` cuts GC scan work:** Putting pointer fields at the top of a struct minimizes `PtrBytes` so the Green Tea GC stops scanning before trailing scalar fields. If `PtrBytes == 0`, the type routes to `noscan` spans.
+- **`KindDirectIface` (`1 << 5`):** Indicates types (`*T`, `chan T`, `map[K]V`, `func()`, single-pointer structs) stored directly in `eface.data` without extra heap indirection.
+- **Relative 32-bit offsets (`NameOff`, `TypeOff`):** Eliminate dynamic linker relocations in `-buildmode=pie` binaries.
+
+## Anatomy of `reflect.Value` (24 Bytes) and Bitpacked `flag`
 
 ```go
-t := reflect.TypeOf(x)   // runtime type descriptor (nil-safe only if x typed)
-v := reflect.ValueOf(x)  // dynamic value
+type Value struct {
+	typ_ *abi.Type      // Word 0: immutable type descriptor in .rodata
+	ptr  unsafe.Pointer // Word 1: pointer to value (or direct value if flagIndir == 0)
+	flag                // Word 2: bitmask for Kind, Addressability, & Read-Only state
+}
 ```
 
-| API | Role |
-|-----|------|
-| `Type` | Size, kind, fields, methods — often cacheable |
-| `Value` | Read/write/call — easy to allocate |
-| `Kind` | `Int`, `Struct`, `Slice`, … |
-| `Interface` | Box back to `any` |
+| Bit Range in `flag` | Constant | Role |
+|---|---|---|
+| Bits `0..4` | `flagKindMask` (`31`) | `reflect.Kind` for `O(1)` switch dispatch |
+| Bit `5` | `flagStickyRO` | Obtained via unexported struct field (`Set()` panics) |
+| Bit `6` | `flagEmbedRO` | Obtained via unexported embedded struct pointer |
+| Bit `7` | `flagIndir` | `1` if `ptr` points to value memory; `0` if `ptr` *is* the value |
+| Bit `8` | `flagAddr` | Addressable (`CanAddr() == true`); required for `Set()` |
+| Bit `9` | `flagMethod` | Bound method value (`v.Method(i)`) |
 
-## What Metadata Lives Where
+## Zero-Allocation Extraction: `reflect.TypeAssert[T]` (Go 1.25+)
 
-```text
-interface / concrete
-       |
-       v
-    rtype  (uncommonType, struct fields, method table…)
-       |
-Value flags: addressable? settability? indir?
-```
-
-`ValueOf` on a non-pointer often yields a **non-addressable** copy — `Set` fails. Pass pointers for mutation:
+Legacy `v.Interface().(time.Time)` boxes `v` into an `any` (`eface`) on the heap before asserting. In Go 1.25–1.27, `reflect.TypeAssert[T](v)` compares `v.typ_ == abi.TypeFor[T]()` (one pointer compare) and copies directly into the caller's stack return slot (`0 B/op`, ~87% faster):
 
 ```go
-rv := reflect.ValueOf(&x).Elem()
-rv.SetInt(3)
+// Go 1.25–1.27: 0 B/op, 0 allocs/op.
+if ts, ok := reflect.TypeAssert[time.Time](v); ok {
+	_ = ts
+}
 ```
 
-## Allocations and Interface Boxing
+> [!TIP]
+> Pass `reflect.ValueOf(&cfg).Elem()` instead of `reflect.ValueOf(cfg)` so non-pointer structs avoid boxing copies and gain `flagAddr` addressability. Use `reflect.TypeFor[T]()` (Go 1.22+) instead of `reflect.TypeOf((*T)(nil)).Elem()`.
 
-Common alloc sources:
+## Cached Struct-Offset Plan with Go 1.26 `Type.Fields()`
 
-1. `Value.Interface()` boxing
-2. `ValueOf` of small values that escape
-3. Building `[]reflect.Value` for `Call`
-4. Pathological use inside tight loops without type caches
+Production codecs compute `field.Offset` once per `reflect.Type` (cached in Go 1.24+'s `HashTrieMap` `sync.Map`) and write directly via `unsafe.Add`:
 
 ```go
-// Cache field indexes by type
-var cache sync.Map // reflect.Type -> []int indices
-```
-
-`encoding/json` caches struct field info per type — copy that idea.
-
-## Method Calls via Reflect
-
-```go
-m := reflect.ValueOf(obj).MethodByName("Do")
-results := m.Call(nil)
-```
-
-Much slower than a direct call or interface method. Prefer interfaces for hot polymorphic paths; use reflect for glue and frameworks.
-
-## Unsafe Adjacent
-
-`reflect.Type` and `unsafe.Pointer` interactions exist for advanced serializers. Prefer well-tested libraries over hand-rolled unsafe reflection unless you accept maintenance cost.
-
-See [unsafe](../26-long-term-maintenance/02-unsafe-code.md).
-
-## When Reflect Is Justified
-
-| Use | Verdict |
-|-----|---------|
-| One-time config decode | Fine |
-| Per-request JSON (stdlib) | Fine — heavily optimized |
-| Per-request generic mapper over large structs | Cache or codegen (`go generate`, `json` struct tags already) |
-| Game loop / packet parse | Avoid; use codegen or concrete code |
-
-## Experiment
-
-```bash
-go mod init example
-go test -bench=. -benchmem
-```
-
-```go
-package main
+package fastcodec
 
 import (
 	"reflect"
-	"testing"
+	"sync"
+	"unsafe"
 )
 
-type S struct {
-	A int
-	B string
+type fieldPlan struct {
+	name   string
+	offset uintptr
+	kind   reflect.Kind
 }
 
-func direct(s *S) int { return s.A }
+var planCache sync.Map // map[reflect.Type][]fieldPlan
 
-func viaReflect(s *S) int {
-	return int(reflect.ValueOf(s).Elem().FieldByName("A").Int())
-}
-
-func BenchmarkDirect(b *testing.B) {
-	s := &S{A: 42}
-	for i := 0; i < b.N; i++ {
-		_ = direct(s)
+func CompilePlan(t reflect.Type) []fieldPlan {
+	if cached, ok := planCache.Load(t); ok {
+		return cached.([]fieldPlan)
 	}
-}
-
-func BenchmarkReflect(b *testing.B) {
-	s := &S{A: 42}
-	for i := 0; i < b.N; i++ {
-		_ = viaReflect(s)
+	var plans []fieldPlan
+	// Go 1.26+: range-over-func iterator avoids copying 104-byte StructField manually.
+	for field := range t.Fields() {
+		if !field.IsExported() {
+			continue
+		}
+		tag := field.Tag.Get("env")
+		if tag == "" || tag == "-" {
+			continue
+		}
+		plans = append(plans, fieldPlan{
+			name:   tag,
+			offset: field.Offset,
+			kind:   field.Type.Kind(),
+		})
 	}
+	actual, _ := planCache.LoadOrStore(t, plans)
+	return actual.([]fieldPlan)
 }
 
-// Keep a main so go run works if needed
-func main() {}
-```
-
-Put benchmarks in `main_test.go` or rename package for pure test module:
-
-```bash
-# simpler: single file package reflectbench_test
-```
-
-Alternatively run:
-
-```go
-// file: cost_test.go
-package cost
-
-import (
-	"reflect"
-	"testing"
-)
-
-type S struct{ A int }
-
-func BenchmarkFieldDirect(b *testing.B) {
-	s := S{A: 1}
-	for i := 0; i < b.N; i++ {
-		_ = s.A
-	}
-}
-
-func BenchmarkFieldReflect(b *testing.B) {
-	s := S{A: 1}
-	for i := 0; i < b.N; i++ {
-		_ = reflect.ValueOf(s).Field(0).Int()
+func PopulateFromEnv[T any](target *T, lookup func(string) (string, bool)) {
+	t := reflect.TypeFor[T]()
+	plans := CompilePlan(t)
+	basePtr := unsafe.Pointer(target)
+	for _, fp := range plans {
+		if fp.kind != reflect.String {
+			continue
+		}
+		if val, ok := lookup(fp.name); ok {
+			*(*string)(unsafe.Add(basePtr, fp.offset)) = val
+		}
 	}
 }
 ```
 
-```bash
-mkdir /tmp/reflect-cost && cd /tmp/reflect-cost
-go mod init example
-# write cost_test.go as above
-go test -bench=. -benchmem
-```
+Verify zero allocations with `noalloc` and [benchstat](https://pkg.go.dev/golang.org/x/perf/cmd/benchstat), inspect `LEAQ type:T(SB)` lowering in [lensm](https://github.com/loov/lensm), and audit `MethodByName` dead-code impact with `go build -ldflags="-dumpdep"`.
 
-**What to notice:** Reflect field access is often **orders of magnitude** slower and may allocate depending on path.
+## Related Chapters
 
-**Try next:** Cache `reflect.Type` and field index; re-benchmark `FieldByName` vs `Field(i)`.
-
-## Related
-
-- [Reflection](../26-long-term-maintenance/01-reflection-in-practice.md)
-- [Codegen](../23-performance-tooling/04-codegen.md)
+- [204 Interface Representation](204-interface-representation.md)
+- [232 Build Cache, Action DAG, and Linker Internals](232-build-cache-reproducibility.md)
+- [01 Reflection in Practice](../26-long-term-maintenance/01-reflection-in-practice.md)

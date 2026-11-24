@@ -1,128 +1,146 @@
 ---
-title: pprof and Execution Tracer Internals
+title: Execution Tracer v2, FlightRecorder, and SIGPROF Profiler Internals
 ---
 
-# pprof and Execution Tracer Internals
+# Execution Tracer v2, `FlightRecorder`, and `SIGPROF` Profiler Internals
 
-## Overview
+Recording nanosecond execution traces and 100 Hz CPU samples without locking the GMP scheduler or deadlocking signal handlers relies on three specialized runtime subsystems: the **Generation-Based Execution Tracer v2** (`src/runtime/trace.go`), the lock-free **`profBuf`** ring buffer (`src/runtime/cpuprof.go`, `profbuf.go`), and **512 KB Poisson heap sampling** (`mcache.nextSample`).
 
-Workflows live in [benchmarking & profiling](../24-performance-engineering/181-benchmarking-profiling-workflow.md). This chapter is the **mechanism**: how samples appear, what they mean, and how the execution tracer differs from CPU pprof.
-
-
-## Diagram: Profile vs trace
+## Execution Tracer v2: Per-M Double Buffering and Generations
 
 ```text
-flow:
-  [OnCPU]
-       |
-       v
-  [Tool]
-
-  [Events]
-       |
-       v
-  [Tool2]
+Legacy Tracer v1 (Go <= 1.21)                   Execution Tracer v2 (Go 1.22 – Go 1.27)
++-----------------------------------------+     +-------------------------------------------------+
+| - Global trace.lock on buffer flushes   |     | - Partitioned into self-contained Generations   |
+| - Post-processing loads ENTIRE trace    |     | - Per-M double buffers: m.trace.buf[gen % 2]    |
+|   into RAM to sort events & tables      |     | - Zero global lock on event writes              |
+| - Cannot support FlightRecorder         |     | - Enables O(1) FlightRecorder ring-buffer drop  |
++-----------------------------------------+     +-------------------------------------------------+
 ```
 
-## CPU Profile
+1. **Zero-lock event writes:** Each OS thread `M` writes varint-encoded events (delta timestamp, `goid`, `stackID`, `stringID`) directly into its local `m.trace.buf[gen % 2]`.
+2. **Wait-free generation flips (`traceAdvance`):** Roughly once per second, `trace.gen` increments (`N -> N+1`). Active writers immediately switch to `buf[(gen+1)%2]`, making generation `N` immutable for `traceReader` to drain with its own stack and string tables.
 
-Rough model:
+## How `trace.FlightRecorder` (Go 1.25–1.27) Runs Always-On at <1% CPU
 
 ```text
-OS signal / interrupt (platform dependent sampling)
-  -> record stack of current G/M
-  -> aggregate into profile proto
+                   FlightRecorder Sliding Generation Ring
++-------------------------------------------------------------------------------+
+|  [Gen 40: Dropped]   [Gen 41: 1.8s old]   [Gen 42: 0.9s old]   [Gen 43: Live] |
+|                      |<----- Retained inside FlightRecorder.ring []rawGen --->|
++-------------------------------------------------------------------------------+
+                                                      |
+                        SLO Breach! fr.WriteTo(out) --+
+                        1. Writes single GoTrace02 header
+                        2. Copies raw bytes of Gen 41 + Gen 42 + Gen 43 in O(N)
 ```
 
-```bash
-go test -cpuprofile=cpu.out -bench=.
-go tool pprof -http=:0 cpu.out
+Because each Tracer v2 generation is self-contained, evicting expired generations drops a single `[]byte` slice without parsing events or touching active threads.
+
+## `SIGPROF` CPU Sampling and Lock-Free `profBuf`
+
+`pprof.StartCPUProfile` arms a 100 Hz OS interval timer (`ITIMER_PROF` / `timer_create`). When `SIGPROF` interrupts `M` onto its 32 KB `m.gsignal` stack, `runtime.sigprof` cannot lock any mutex or allocate heap memory:
+
+```text
+Signal Context (m.gsignal stack)                 Background Reader (cpuProfile Goroutine)
++----------------------------------------+       +----------------------------------------+
+| runtime.sigprof(pc, sp, lr, gp, mp)    |       | profBuf.read(profBufBlocking)          |
+| 1. Unwinds gp's stack (up to 64 PCs)   |       | 1. Reads committed header + PCs        |
+| 2. Reads gp.labels (*labelMap pointer) |       | 2. Resolves PCs via .gopclntab         |
+| 3. Writes [count, time, tag, pc0..pcN] | ====> | 3. Compresses & writes pprof protobuf  |
+|    into lock-free profBuf ring buffer  |       +----------------------------------------+
++----------------------------------------+
 ```
 
-Implications:
+If `profBuf` fills up because the `io.Writer` stalls, `sigprof` atomically increments `buf.overflow` and returns immediately rather than blocking the signal handler.
 
-- **Sampling** — short functions may be undercounted
-- Inlined frames can look surprising
-- CPU profile is not wall-clock wait time
+## Heap Profiling: 512 KB Poisson Sampling (`mcache.nextSample`)
 
-## Heap / Alloc Profiles
+Each `P`'s `mcache.nextSample` holds a randomly sampled byte countdown with mean `runtime.MemProfileRate = 512 * 1024` (512 KB). Every allocation subtracts `size` from `nextSample`: 99.9% of allocations take a single subtraction with zero profiling cost; only when `nextSample <= 0` does the runtime unwind the stack into `mbuckets`.
 
-- Heap: objects still live at sample time (retained)
-- Alloc: cumulative allocations (even if freed)
-
-```bash
-go tool pprof http://localhost:6060/debug/pprof/heap
-```
-
-Use alloc profiles to find churn; heap profiles to find leaks/retention.
-
-## Block and Mutex Profiles
+## Complete Production Diagnostics Hub in Go 1.27
 
 ```go
-runtime.SetBlockProfileRate(1)       // careful in prod
-runtime.SetMutexProfileFraction(5)
-```
+package diagnostics
 
-These answer "who waited on locks/channels" — complementary to CPU.
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"os"
+	"runtime"
+	"runtime/pprof"
+	"runtime/trace"
+	"sync/atomic"
+	"time"
+)
 
-## Goroutine Profile
-
-Stacks of all Gs — best leak and deadlock forensic tool.
-
-## Execution Tracer (`go tool trace`)
-
-Records **events** with timestamps:
-
-- Goroutine create/block/unblock
-- Syscall enter/exit
-- GC STW / mark assist
-- Network poll
-- Processor start/stop
-
-```bash
-go test -trace=trace.out -bench=.
-go tool trace trace.out
-```
-
-Use when CPU is low but latency is high — classic **scheduler / stall** story.
-
-## Cost of Profiling
-
-| Mode | Overhead |
-|------|----------|
-| Occasional CPU 30s | Usually acceptable |
-| Always-on mutex rate=1 | Can be heavy |
-| Full traces long windows | Large files, overhead |
-
-Sample in production; continuous profiling products add aggregation layers.
-
-## Experiment
-
-```bash
-go test -bench=BenchmarkWork -cpuprofile=/tmp/cpu.out -benchtime=1s
-go tool pprof -top /tmp/cpu.out | head
-```
-
-```go
-package work_test
-
-import "testing"
-
-func work(n int) int {
-	x := 0
-	for i := 0; i < n; i++ {
-		x += i
-	}
-	return x
+type Engine struct {
+	fr           *trace.FlightRecorder
+	lastSnapshot atomic.Int64
 }
 
-func BenchmarkWork(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		_ = work(1000)
+func Start() (*Engine, error) {
+	runtime.SetMutexProfileFraction(5)
+	runtime.SetBlockProfileRate(10_000) // Sample waits > 10 µs.
+
+	fr := trace.NewFlightRecorder(trace.FlightRecorderConfig{
+		MinAge:   5 * time.Second,
+		MaxBytes: 4 << 20, // 4 MiB sliding ring buffer.
+	})
+	if err := fr.Start(); err != nil {
+		return nil, fmt.Errorf("start flight recorder: %w", err)
 	}
+	return &Engine{fr: fr}, nil
+}
+
+func (e *Engine) Stop() error { return e.fr.Stop() }
+
+func (e *Engine) InstrumentHandler(route string, next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		tenant := r.Header.Get("X-Tenant-ID")
+		if tenant == "" {
+			tenant = "anonymous"
+		}
+		// Go 1.27: pprof labels appear in CPU profiles AND panic tracebacks.
+		pprof.Do(r.Context(), pprof.Labels("route", route, "tenant", tenant), func(ctx context.Context) {
+			ctx, task := trace.NewTask(ctx, "HTTP:"+route)
+			defer task.End()
+
+			start := time.Now()
+			next.ServeHTTP(w, r.WithContext(ctx))
+
+			if elapsed := time.Since(start); elapsed > 250*time.Millisecond {
+				e.captureOncePerMinute()
+			}
+		})
+	})
+}
+
+func (e *Engine) captureOncePerMinute() {
+	now := time.Now().UnixNano()
+	prev := e.lastSnapshot.Load()
+	if now-prev < int64(time.Minute) || !e.lastSnapshot.CompareAndSwap(prev, now) {
+		return
+	}
+	f, err := os.Create(fmt.Sprintf("flight-%d.trace", now))
+	if err != nil {
+		return
+	}
+	defer f.Close()
+	_, _ = e.fr.WriteTo(f)
 }
 ```
 
-**What to notice:** Top frames should show `work` or inlined sites; if everything is `runtime.*`, you may be measuring something else (GC, tiny benchmark).
+## Modern Go 1.26–1.27 Profiling Defaults
 
-**Try next:** Generate a 200ms trace around an HTTP handler and find a long "block" on network or channel.
+- **`go tool pprof -http=:8080`:** Opens directly to the interactive Flame Graph view (Go 1.26+).
+- **`go tool trace -http=:6060`:** Binds safely to `localhost` by default (Go 1.27+).
+- **`/debug/pprof/goroutineleak`:** Generally available in Go 1.27—uses a Green Tea GC mark pass to report goroutines parked on unreachable channels or locks.
+- **Avoid `MemProfileRate = 1` or `SetBlockProfileRate(1)` in production:** Both add severe throughput overhead; keep `FlightRecorder` always-on with bounded `MaxBytes` and verify snapshot file cleanup with [gohawk](https://gohawk.dev/).
+
+## Related Chapters
+
+- [166b Flight Recorder](../19-observability-sre/166b-flight-recorder.md)
+- [269 goroutineleak pprof Profile](269-goroutineleak-pprof.md)
+- [258 OS Signals and Runtime](258-os-signals-runtime.md)

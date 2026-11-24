@@ -1,60 +1,43 @@
 ---
-title: Plugins and buildmode Pitfalls
+title: Plugin Buildmode Pitfalls (-buildmode=plugin) and Production Alternatives
 ---
 
-# Plugins and buildmode Pitfalls
+# Plugin Buildmode Pitfalls (`-buildmode=plugin`) and Production Alternatives
 
-## Overview
+Go's standard `plugin` package (`plugin.Open("myplugin.so")` built with `-buildmode=plugin`) loads shared objects via C `dlopen`, but almost no major Go CLI or daemon uses it in public distributions because of five hard runtime and linker invariants.
 
-`buildmode=plugin` looks like a dynamic extension story. In production it is usually a **trap**: brittle ABI, limited platforms, and operational pain. Prefer processes, Wasm, or explicit interfaces.
-
-
-## Diagram: Prefer process plugins
+## Why `plugin.Open` Breaks in Production
 
 ```text
-  need extension point?
-       │
-       ├── side process + RPC     (preferred)
-       ├── Wasm sandbox
-       └── buildmode=plugin       (fragile: skew, platforms)
+Host Binary (Go 1.27.4 + dep v1.2.0)              Plugin .so (Go 1.27.3 or dep v1.2.1)
++---------------------------------------------+    +---------------------------------------------+
+| runtime.firstmoduledata                     |    | plugin.moduledata                           |
+| - Global Green Tea GC heap & goroutines     |    | - plugininit() checks exact dependency hash |
++----------------------+----------------------+    +----------------------+----------------------+
+                       |                                                  |
+                       +------------> plugin.Open("p.so") <---------------+
+                                              |
+                                              v
+  FATAL ERROR: "plugin was built with a different version of package internal/abi"
 ```
 
-## Reality Check
+1. **Exact compiler & dependency hash lock:** `plugin_lastmoduleinit` (`src/runtime/plugin.go`) compares SHA-256 build hashes of every shared package—even a patch bump (`1.27.3` vs `1.27.4`) fails `plugin.Open`.
+2. **Requires `CGO_ENABLED=1` and dynamic `libc`:** Breaks static pure-Go builds and Alpine `musl` vs. Debian `glibc` portability.
+3. **Zero unloading:** Loaded `.so` segments can never be unloaded—hot reloads permanently leak memory.
+4. **No crash isolation:** A panic or Cgo `SIGSEGV` inside a plugin terminates the host process.
+5. **No Windows support:** `-buildmode=plugin` is unsupported on `GOOS=windows`.
 
-| Issue | Detail |
-|-------|--------|
-| Platforms | Not universal |
-| Version skew | Plugin must match main toolchain/deps closely |
-| Dependency bloat | Duplicated modules risk |
-| Debugging | Harder stacks and deploys |
-| Security | Loading code = trust boundary |
+## Production Alternatives
 
-## Prefer Alternatives
+| Model | Isolation | Per-Call Latency | Best Fit |
+|---|---|---|---|
+| PATH executables (`kubectl-*`, `gh-*`) | OS process | ~5–20 ms | CLI subcommand extensions |
+| `hashicorp/go-plugin` (gRPC + `yamux`) | Long-lived process | ~30–80 µs | Stateful cloud providers (`terraform`, `vault`) |
+| `wazero` WebAssembly (`GOOS=wasip1`, `CGO_ENABLED=0`) | Sandboxed linear RAM | ~50–150 ns | High-QPS filters, custom lint rules, untrusted code |
 
-1. **Side process + RPC** (gRPC/HTTP) — isolation, language freedom
-2. **Wasm plugins** — sandboxing story
-3. **Compile-time interfaces** + separate binaries
-4. **HashiCorp go-plugin** style (subprocess) if you need polyglot
+For a complete `wazero` plugin host implementation with memory and timeout caps, see [329 CLI Plugin Architectures](../09-cli-tools-in-go/329-cli-plugin-architectures-go-plugin-wazero.md).
 
-## If You Must
+## Related Chapters
 
-```bash
-go build -buildmode=plugin -o plug.so ./plug
-# open via plugin.Open; lookup symbols
-```
-
-Pin exact Go version + `go.mod` policy; test load on the **identical** base image as production.
-
-## Experiment
-
-Skip coding plugins by default. Instead document a design choice:
-
-```text
-feature flag -> separate binary -> RPC
-vs
-plugin.Open
-```
-
-Write a 10-line ADR in your repo choosing RPC.
-
-**Try next:** Read `go help buildmode` end-to-end once; note which modes you actually need (usually `exe` only).
+- [329 CLI Plugin Architectures (`go-plugin`, `wazero` Wasm, and Native `plugin` Pitfalls)](../09-cli-tools-in-go/329-cli-plugin-architectures-go-plugin-wazero.md)
+- [234 Wasm and wasip1](234-wasm-wasip1.md)

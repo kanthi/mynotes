@@ -1,77 +1,88 @@
 ---
-title: 'Compiler Mid/Back: IR, SSA, Machine Code, Link'
+title: Compiler IR, Escape Analysis, SSA Backend, and Bounds-Check Elimination
 ---
 
-# Compiler Mid/Back: IR, SSA, Machine Code, Link
+# Compiler IR, Escape Analysis, SSA Backend, and Bounds-Check Elimination
 
-## Overview
+`cmd/compile` is a purpose-built, pure-Go compiler engineered for fast builds and predictable machine code without an LLVM backend. Understanding its 5-stage pipeline, escape analysis flow graph, SSA passes, and Bounds-Check Elimination (BCE) lets you write idiomatic Go that compiles to bare-metal loops.
 
-After typecheck, the compiler optimizes in **IR**, lowers to **SSA**, emits **machine code** objects, then the **linker** produces a binary. This is where inlining, escape analysis, and PGO bite.
-
-## Diagram: mid and back end
+## The Five Stages of `cmd/compile`
 
 ```text
-  typed frontend
-       │
-       v
-  IR (inline, escape, …)
-       │
-       v
-  SSA opts + arch lower
-       │
-       v
-  .o objects ──► linker ──► binary
+Go Source Code (.go)
+         |
+         v
+[1. Lexing & Parsing] (cmd/compile/internal/syntax)     -> Concrete Syntax Tree
+         |
+         v
+[2. Type Checking] (cmd/compile/internal/types2)        -> Typed AST & Generic Inference
+         |
+         v
+[3. IR & Escape Analysis] (internal/noder, escape)      -> Stack vs. Heap Placement
+         |
+         v
+[4. SSA Optimization] (cmd/compile/internal/ssa)        -> 40+ Passes (DCE, CSE, BCE, Lower)
+         |
+         v
+[5. Code Generation] (cmd/compile/internal/genssa)      -> AMD64 / ARM64 / RISC-V / Wasm
 ```
 
-## IR responsibilities
+## Escape Analysis Flow Graph (`internal/escape`)
 
-| Pass family | Effect |
-|-------------|--------|
-| Inlining | Expand small callees; enable more opts |
-| Escape analysis | Stack vs heap |
-| Devirtualization | Concrete calls when type known |
-| Walk / order | Prepare for SSA |
+Escape analysis builds a weighted directed graph of variables (`location`) and assignments (`hole`):
+- Direct assignment (`a = b`): weight `0`.
+- Address-of (`a = &b`): weight `+1`.
+- Dereference (`a = *b`): weight `-1`.
 
-Flags: `go build -gcflags='-m -m'` shows escape/inline decisions.
+Five invariants force heap escape: returning a pointer to a local, capture by a long-lived closure, assignment to an interface (unless devirtualized), dynamic sizes exceeding stack thresholds (note Go 1.25–1.26 `variablemake` keeps small variable `make([]T, n)` on the stack), and sending pointers over channels.
 
-## SSA
-
-- Every value assigned once → easy dataflow
-- Dozens of rewrite passes (nilcheck elim, bounds prove, …)
-- Then **lower** to `AMD64…` / `ARM64…` ops
-
-```bash
-GOSSAFUNC=main go build .   # classic SSA HTML dump when supported
-go build -gcflags='-S' . 2>&1 | head
-```
-
-## Machine code + object files
-
-- Encode instructions, relocations, PC↔line metadata
-- One package → one (or more) object; still not runnable alone
-
-## Linker
+## SSA Form, Phi Nodes, and Bounds-Check Elimination (BCE)
 
 ```text
-resolve symbols across packages
-  → apply relocations
-  → layout sections
-  → emit ELF/Mach-O/PE + buildid
+        +-----------------+
+        |    x0 = 10      |
+        +--------+--------+
+                 |
+         if condition == true
+        /                  \
+    [True]                [False]
+      v                      v
++-----------+          +-----------+
+|  x1 = 20  |          |  x2 = 30  |
++-----+-----+          +-----+-----+
+      \                      /
+       +----------+---------+
+                  |
+                  v
+        +-------------------+
+        | x3 = phi(x1, x2)  |  <-- SSA Phi Node
+        +-------------------+
 ```
+
+The SSA `prove` pass tracks integer inequality ranges to eliminate redundant `runtime.panicIndex` checks:
+
+```go
+func processArray(s []int) int {
+	_ = s[3] // Single upfront bounds check proves len(s) > 3.
+	return s[0] + s[1] + s[2] + s[3] // All 4 subsequent checks eliminated!
+}
+```
+
+## Inspecting Compiler Decisions and Go 1.26–1.27 Upgrades
 
 ```bash
-go build -ldflags='-s -w -X main.version=dev' -trimpath -o app .
+GOSSAFUNC=processArray go build main.go          # Generates interactive ssa.html
+go build -gcflags="-m -m" main.go                # Escape analysis & inlining reasons
+go build -gcflags="-d=ssa/check_bce" main.go     # Bounds-check insertion report
 ```
 
-See also [210 link/race](210-link-build-modes-race.md), [248 bootstrap](248-runtime-bootstrap.md).
+- **Go 1.27 size-specialized malloc lowering:** SSA lowers small (`< 80 B`) allocations directly to specialized routines (up to 30% faster).
+- **Go 1.27 generic method lowering & closure code sharing:** Lowers `(*Rand).N[Int]` with full inference and deduplicates inlined closure bodies.
+- **PGO (Profile-Guided Optimization):** Raises the 80-point inlining budget on hot call edges (`go build -pgo=default.pgo`) for 2%–14% production CPU gains.
+- **Ecosystem SSA tools:** Pair [gohawk](https://gohawk.dev/) (interprocedural SSA `resourcelifetime`, `lockorder`, `goroutineownership`) with `noalloc` (`//noalloc:root`) and [lensm](https://github.com/loov/lensm) for disassembly inspection.
 
-## Experiment
+## Related Chapters
 
-```bash
-go build -gcflags='-m' . 2>&1 | head -40
-go tool nm ./app | rg 'main\\.|runtime\\.main' | head
-```
-
-**What to notice:** Even tiny mains reference large `runtime.*` symbol sets after link.
-
-**Try next:** Build twice with/without `-pgo=auto` after a CPU profile; bench a hot path.
+- [209 Compiler, SSA, and PGO](209-compiler-ssa-pgo.md)
+- [252 Compiler Frontend](252-compiler-frontend.md)
+- [186d Inside PGO Compiler Internals](../24-performance-engineering/186d-inside-pgo-compiler-internals.md)

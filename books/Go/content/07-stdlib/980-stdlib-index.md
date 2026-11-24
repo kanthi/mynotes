@@ -49,6 +49,11 @@ The standard library already solves these — if you know where to look.
 | 999c bufio advanced | `bufio` Scanner/Reader/Writer | Long lines, peek, flush |
 | 999d crypto/mldsa | `crypto/mldsa` | FIPS 204 ML-DSA post-quantum signatures (Go 1.27+) |
 | 999e crypto/mlkem | `crypto/mlkem` | FIPS 203 ML-KEM post-quantum key encapsulation (Go 1.24+) |
+| 999f uuid | `uuid` | Standard library UUID generation and parsing (Go 1.27+) |
+| 999g maphash.Hasher | `hash/maphash` | Generic `Hasher[T]` and `ComparableHasher[T]` (Go 1.27+) |
+| 999h identity & lifecycle | `uuid`, `unique`, `weak`, `runtime.AddCleanup` | [Production scenarios for identity, interning, and weak caches](999h-unique-weak-addcleanup-scenarios.md) |
+| 999i post-quantum & FIPS | `crypto/mlkem`, `crypto/mldsa`, `crypto/hpke`, `crypto/fips140` | [Post-quantum crypto, RFC 9180 HPKE, and FIPS 140-3](999i-crypto-hpke-fips-140-3.md) |
+| 999j portable SIMD | `simd`, `simd/archsimd` | [Portable and hardware vector SIMD scenarios](999j-portable-simd-scenarios.md) |
 
 ## Mental Model
 

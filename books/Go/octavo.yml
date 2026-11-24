@@ -1,7 +1,7 @@
 book:
   title: Go
   author: K19G
-  date: '2026-11-17'
+  date: '2026-11-24'
   description: 'A deep Go library: learning paths and projects'
   chapters:
   - index.md
@@ -108,6 +108,9 @@ book:
     - content/07-stdlib/999e-crypto-mlkem.md
     - content/07-stdlib/999f-uuid.md
     - content/07-stdlib/999g-maphash-hasher.md
+    - content/07-stdlib/999h-unique-weak-addcleanup-scenarios.md
+    - content/07-stdlib/999i-crypto-hpke-fips-140-3.md
+    - content/07-stdlib/999j-portable-simd-scenarios.md
   - part: Data Structures and Algorithms
     contents:
     - content/08-data-structures-and-algorithms/01-algorithmic-complexity.md
@@ -145,6 +148,13 @@ book:
     - content/09-cli-tools-in-go/319-project-text-and-log-tools.md
     - content/09-cli-tools-in-go/320-project-http-debug-cli.md
     - content/09-cli-tools-in-go/321-cross-platform-cli-notes.md
+    - content/09-cli-tools-in-go/322-terminal-tty-raw-mode-bubble-tea.md
+    - content/09-cli-tools-in-go/323-command-trees-kong-cobra-completions.md
+    - content/09-cli-tools-in-go/324-pty-subprocess-multiplexing-ssh-tui.md
+    - content/09-cli-tools-in-go/326-cli-packaging-self-update-mldsa.md
+    - content/09-cli-tools-in-go/327-structured-cli-config-xdg-keychains.md
+    - content/09-cli-tools-in-go/328-terminal-streaming-pagers-renderers.md
+    - content/09-cli-tools-in-go/329-cli-plugin-architectures-go-plugin-wazero.md
   - part: Concurrency Ground Up
     contents:
     - content/10-concurrency-ground-up/250-concurrency-ground-up-index.md
@@ -172,6 +182,11 @@ book:
     - content/11-concurrency-parallelism/44b-worker-pools.md
     - content/11-concurrency-parallelism/44c-pipelines-cond.md
     - content/11-concurrency-parallelism/44d-goroutine-leak-profile.md
+    - content/11-concurrency-parallelism/45-lock-free-atomics-and-queues.md
+    - content/11-concurrency-parallelism/46-lock-free-ring-buffers-mpmc.md
+    - content/11-concurrency-parallelism/47-weighted-semaphores-adaptive-limits.md
+    - content/11-concurrency-parallelism/48-singleflight-request-coalescing.md
+    - content/11-concurrency-parallelism/49-lock-free-skip-lists-ordered-maps.md
   - part: Socket Programming
     contents:
     - content/12-socket-programming/00-introduction-why-sockets-matter-in-go.md
@@ -265,6 +280,9 @@ book:
     - content/17-systems-programming/157-systemd-socket-activation.md
     - content/17-systems-programming/158-linux-procfs-introspection.md
     - content/17-systems-programming/159-project-mini-supervisor.md
+    - content/17-systems-programming/160-linux-syscalls-vdso-io-uring.md
+    - content/17-systems-programming/161-ebpf-cilium-ringbuf-uprobes.md
+    - content/17-systems-programming/162-linux-namespaces-cgroups-v2-containers.md
   - part: Distributed Infrastructure
     contents:
     - content/18-distributed-infra/150-distributed-infra-index.md
@@ -280,6 +298,7 @@ book:
     - content/18-distributed-infra/156-leader-election-basics.md
     - content/18-distributed-infra/157-outbox-reliable-side-effects.md
     - content/18-distributed-infra/158-project-resilient-worker.md
+    - content/18-distributed-infra/159-raft-consensus-wire-protocols-rpc.md
   - part: Observability and SRE
     contents:
     - content/19-observability-sre/160-observability-sre-index.md
@@ -347,6 +366,11 @@ book:
     - content/24-performance-engineering/186c-compress-flate-rewrite.md
     - content/24-performance-engineering/186d-inside-pgo-compiler-internals.md
     - content/24-performance-engineering/187-project-optimize-hot-endpoint.md
+    - content/24-performance-engineering/188-arena-allocators-bump-slabs-mmap.md
+    - content/24-performance-engineering/189-string-interning-weak-caches.md
+    - content/24-performance-engineering/190-high-perf-caching-w-tinylfu-byte-slabs.md
+    - content/24-performance-engineering/191-zero-alloc-iterators-coroutines-stenciling.md
+    - content/24-performance-engineering/192-zero-alloc-database-rawbytes-rowscolumnscanner.md
   - part: Go Deep Dives
     contents:
     - content/25-go-deep-dives/200-deep-dives-index.md
@@ -420,6 +444,7 @@ book:
     - content/25-go-deep-dives/267-gomaxprocs-and-p-counts.md
     - content/25-go-deep-dives/268-go-list-json-package-metadata.md
     - content/25-go-deep-dives/269-goroutineleak-pprof.md
+    - content/25-go-deep-dives/270-oss-architecture-k8s-etcd-prometheus.md
     - part: Assets
       contents: []
   - part: Long-Term Maintenance

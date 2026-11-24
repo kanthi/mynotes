@@ -1,7 +1,7 @@
 # Everything Go - Comprehensive Syllabus
 
 ::: {.content-visible when-format="html"}
-![Updated for Go 1.27](https://img.shields.io/badge/Go-1.27-00ADD8?style=flat&logo=go)
+![Updated for Go 1.27.4](https://img.shields.io/badge/Go-1.27.4-00ADD8?style=flat&logo=go)
 :::
 
 
