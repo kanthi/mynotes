@@ -62,6 +62,8 @@ content/01-commands/02-archives-and-compression/06-zip.html	zip
 content/01-commands/02-archives-and-compression/07-unzip.html	unzip
 content/01-commands/02-archives-and-compression/08-zcat.html	zcat
 content/01-commands/02-archives-and-compression/09-zgrep.html	zgrep
+content/01-commands/02-archives-and-compression/10-7z.html	7z
+content/01-commands/02-archives-and-compression/11-pigz.html	pigz
 content/01-commands/02-archives-and-compression/index.html	Intro
 content/01-commands/03-system-information/01-uname.html	uname
 content/01-commands/03-system-information/02-hostname.html	hostname
@@ -134,6 +136,9 @@ content/01-commands/05-system-monitoring/12-pressure-stall-information.html	Pres
 content/01-commands/05-system-monitoring/13-vdso.html	The vDSO: why clock_gettime() usually never enters the kernel
 content/01-commands/05-system-monitoring/14-proc-is-the-api.html	/proc Is the API: Rebuilding ps Columns from stat, status and smaps_rollup
 content/01-commands/05-system-monitoring/15-proc-pagemap.html	/proc/PID/pagemap: Reading Your Own Page Tables
+content/01-commands/05-system-monitoring/16-iotop.html	iotop
+content/01-commands/05-system-monitoring/17-pidstat.html	pidstat
+content/01-commands/05-system-monitoring/18-nethogs.html	nethogs
 content/01-commands/05-system-monitoring/index.html	Intro
 content/01-commands/06-users-and-groups/01-sudo.html	sudo
 content/01-commands/06-users-and-groups/02-visudo.html	visudo
@@ -184,6 +189,8 @@ content/01-commands/07-networking/32-firewall-cmd.html	firewall-cmd
 content/01-commands/07-networking/33-ssh-agent.html	ssh-agent / ssh-add
 content/01-commands/07-networking/34-cert-renewal-audit.html	Certificate renewal audit (64-day and 45-day certificates)
 content/01-commands/07-networking/35-poll-epoll-io-uring.html	poll vs epoll vs io_uring
+content/01-commands/07-networking/36-iperf3.html	iperf3
+content/01-commands/07-networking/37-wg.html	wg & wg-quick
 content/01-commands/07-networking/index.html	Intro
 content/01-commands/08-scheduling/01-cron.html	cron
 content/01-commands/08-scheduling/02-crontab.html	crontab
@@ -245,6 +252,7 @@ content/01-commands/12-terminals-and-mux/02-screen.html	screen
 content/01-commands/12-terminals-and-mux/03-byobu.html	byobu
 content/01-commands/12-terminals-and-mux/04-tmate.html	tmate
 content/01-commands/12-terminals-and-mux/05-abduco.html	abduco
+content/01-commands/12-terminals-and-mux/06-script.html	script & scriptreplay
 content/01-commands/12-terminals-and-mux/index.html	Intro
 content/01-commands/13-text-and-pipes/01-grep.html	grep
 content/01-commands/13-text-and-pipes/02-sed.html	sed
@@ -266,6 +274,8 @@ content/01-commands/13-text-and-pipes/17-jq.html	jq
 content/01-commands/13-text-and-pipes/18-pv.html	pv
 content/01-commands/13-text-and-pipes/19-yq.html	yq
 content/01-commands/13-text-and-pipes/20-numfmt.html	numfmt
+content/01-commands/13-text-and-pipes/21-shuf.html	shuf
+content/01-commands/13-text-and-pipes/22-tac-rev.html	tac & rev
 content/01-commands/13-text-and-pipes/index.html	Intro
 content/01-commands/14-packages/01-apt.html	apt
 content/01-commands/14-packages/02-dpkg.html	dpkg
