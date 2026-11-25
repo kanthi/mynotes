@@ -59,15 +59,13 @@ func main() {
 		var peak atomic.Int64
 		started := make(chan struct{})
 		var wg sync.WaitGroup
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			<-started
 			time.Sleep(30 * time.Millisecond) // let producer fill
 			for range ch {
 				time.Sleep(slow)
 			}
-		}()
+		})
 		close(started)
 		start := time.Now()
 		for i := 0; i < n; i++ {
@@ -89,13 +87,11 @@ func main() {
 		ch := make(chan []byte, 1)
 		var blocked atomic.Int64
 		var wg sync.WaitGroup
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			for range ch {
 				time.Sleep(slow)
 			}
-		}()
+		})
 		start := time.Now()
 		for i := 0; i < n; i++ {
 			b := make([]byte, len(payload))

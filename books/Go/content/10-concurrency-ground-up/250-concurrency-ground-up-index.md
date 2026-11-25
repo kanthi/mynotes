@@ -8,9 +8,25 @@ This part is a **diagram-first curriculum** for Go concurrency: goroutines, chan
 
 It is designed for programmers who already know Go basics (types, interfaces, errors) and want the *application* of concurrency primitives—not a feature laundry list.
 
-> **Pedagogy note.** The chapter map and teaching emphasis follow the structure popularized by interactive concurrency guides such as [Gist of Go: Concurrency](https://antonz.org/go-concurrency/) (Anton Zhiyanov). Explanations, diagrams, and code here are original to this book; they are not a copy of that site. Use both: that site for interactive exercises, this part for a library-style reference with ASCII diagrams integrated into the monorepo.
+**Tooling baseline (Go 1.27.4):** examples target modern Go 1.25–1.27 idioms (`WaitGroup.Go`, `testing/synctest`, `t.Context()`, `goroutineleak` pprof profile, generic methods, and `go test -race`). Use `go mod init` with `go 1.27` when creating lab modules.
 
-**Tooling baseline (late 2026):** examples assume a recent Go toolchain (Go 1.27-class: `WaitGroup.Go`, generic methods, `go test -race`). Use `go mod init` with `go 1.27` when creating lab modules.
+## 3-Part Syllabus Alignment
+
+| Part | Syllabus Topic | Mapped Chapters in This Section |
+|------|----------------|---------------------------------|
+| **Part 1. Concurrency Basics** | Goroutines | [251. Goroutines Fundamentals](251-goroutines-fundamentals.md) |
+| | Channels | [252. Channels Complete](252-channels-complete.md) |
+| | Composition | [253. Pipelines, Select & Cancel](253-pipelines-select-cancel.md) |
+| | Time | [254. Time, Throttle & Backpressure](254-time-throttle-backpressure.md), [254b. Streaming API Backpressure](254b-streaming-api-backpressure.md) |
+| | Context | [255. Context Complete](255-context-complete.md) |
+| **Part 2. Synchronization** | Wait groups | [256. WaitGroups & Encapsulation](256-waitgroups-encapsulation.md) |
+| | Data races | [257. Data Races & Mutex](257-data-races-mutex.md) |
+| | Race conditions | [262. Race Conditions vs. Data Races](262-race-conditions-vs-data-races.md) |
+| | Semaphores | [258. Semaphores & Rendezvous](258-semaphores-rendezvous.md) |
+| | Signaling | [263. Signaling (`sync.Cond` & Broadcast)](263-signaling-cond-broadcast.md) |
+| | Atomics | [259. Atomics Complete](259-atomics-complete.md) |
+| **Part 3. Other Topics** | Testing | [260. Testing Concurrent Code](260-testing-concurrent-code.md), [223. `testing/synctest` Bubbles](../25-go-deep-dives/223-testing-synctest-bubbles.md) |
+| | Internals | [261. Scheduler Model with Diagrams](261-scheduler-model-diagrams.md), [201. Scheduler (GMP) Deep Dive](../25-go-deep-dives/201-scheduler-gmp-deep-dive.md), [203. Channels & Select Internals](../25-go-deep-dives/203-channels-select-internals.md) |
 
 ## Learning Outcomes
 
@@ -147,4 +163,4 @@ go test -race ./...
 
 ## Attribution
 
-Teaching structure inspired by public concurrency curricula (notably antonz.org's *Gist of Go: Concurrency*). All prose, diagrams, and examples in this monorepo chapter set are written for this book under the same author voice as the rest of the Go library.
+All prose, diagrams, and examples in this section are written natively for this Go book.
