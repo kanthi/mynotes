@@ -64,7 +64,9 @@ The book is organized into structured phases of engineering depth:
 10. **Runtime Internals & Compiler Architecture (Part 25):** 71 deep dives into the GMP scheduler, memory allocator, GC pacer, compiler IR/SSA, and netpoller.
 11. **Long-Term Engineering & Synthesis (Parts 26–28):** Reflection, unsafe code, cgo/FFI, modern Go literature synthesis, and specialized frontiers (AI agents, desktop apps).
 12. **Event-Driven Architecture (Part 29 — EventDrivenDev):** 20-module Go Event-Driven curriculum covering brokers, Watermill, CQRS, Outbox, read models, data lakes, observability, fault tolerance, and sagas.
-13. **Capstones & Reference (Parts 99–100):** Hands-on builds, system-design labs, and master reference appendices.
+13. **Production AI in Go (Part 30 — Ai-in-Go):** 5-module hands-on curriculum from first LLM calls and streaming to function calling, vector databases, AI agents, and Model Context Protocol (MCP).
+14. **gRPC & Protobuf (Part 31):** 9-module curriculum covering Protobuf, `protoc`, unary & streaming RPCs, TLS/mTLS, interceptors, load balancing, testing, Kubernetes deployment, and Buf/ConnectRPC.
+15. **Capstones & Reference (Parts 99–100):** Hands-on builds, system-design labs, and master reference appendices.
 
 ---
 
@@ -143,7 +145,8 @@ The book is organized into structured phases of engineering depth:
 - **System Orchestration:** `os/exec` process pipelines, signal trapping, and context cancellation.
 - **Testing & Architecture:** Structuring large CLI applications and writing CLI test suites.
 - **Cobra & Viper Ecosystem:** Commands, persistent flags, hooks, shell auto-completion, and layered Viper config.
-- **Shipping & Releases:** Version ldflags, cross-compilation, and GoReleaser automation.
+- **Shipping & Releases:** Version ldflags, cross-compilation, and GoReleaser automation (Homebrew, Chocolatey, Docker, RPM/Deb).
+- **URL Monitor CLI Track (330–335):** End-to-end progression from `flag.Parse` and Cobra hooks to spinners, dynamic tables, `ExecuteC` testing, log rotation, and multi-platform distribution.
 - **Cookbook & Projects:** Network tools (`netkit`: ping, DNS, port scanner, HTTP probe), security tools (`netsec`), text processing (`textkit`), and HTTP debugging (`httpdbg`).
 
 ## 10. Concurrency From the Ground Up
@@ -318,6 +321,20 @@ The book is organized into structured phases of engineering depth:
 - **CQRS & Consistency (08–12):** CQRS event bus, at-least-once delivery & idempotency, transactional outbox, CQRS command bus, and read models.
 - **Ordering, Evolution & Recovery (13–16):** Message ordering & versioning, central data lake, internal & versioned events, and zero-downtime read-model migrations.
 - **Operability & Distributed Workflows (17–20):** Prometheus metrics & alerting, OpenTelemetry tracing, retries/circuit breakers/poison queues, and sagas & process managers.
+
+## 30. Ai-in-Go (Production AI Applications in Go)
+- **Complete 5-Module Curriculum:** [Ai-in-Go Intro](content/30-ai-in-go/index.md) — 43 lessons progressing from a deployed AI flashcards app to agents and MCP servers.
+- **01 — First Production AI App:** LLM calls, API scaffolding, prompt refinement, frontend, note ingestion, deployment, and SSE streaming.
+- **02 — Function Calling:** Structured tool definitions, JSON Schema validation, and turn-based LLM action loops.
+- **03 — Vector Databases:** Embeddings, chunking, note indexing, and a RAG-backed Quiz v2 API.
+- **04 — Building AI Agents:** Bounded tool-using agent loops, app & frontend integration, prompt tuning, and custom tools.
+- **05 — Model Context Protocol (MCP):** MCP architecture, building Go MCP servers, integrating servers into apps, and best practices.
+
+## 31. gRPC and Protobuf
+- **Complete 9-Module Curriculum:** [gRPC and Protobuf Intro](content/31-grpc-and-protobuf/index.md) — 54 lessons from `.proto` contracts to Kubernetes deployment and Buf/ConnectRPC.
+- **Core & Streaming (01–03):** Protobuf, `protoc`, unary TODO service, error handling, and server/client/bi-directional file-upload streaming.
+- **Security & Middleware (04–05):** Server TLS, mTLS, unary/stream interceptors, deadlines, metadata, API keys, `CallCredentials`, and JWT auth.
+- **Scale, Testing & Ops (06–09):** Client service config, retries, round-robin & custom load balancers, Postman/`grpcurl`/`bufconn` testing, Kubernetes + Let's Encrypt + Ingress/Cloudflare Tunnel, and Buf/ConnectRPC/Protovalidate.
 
 ## 99. Capstone Projects & Practice Labs
 - **Progressive Hands-On Projects:**

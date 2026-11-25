@@ -155,6 +155,12 @@ book:
     - content/09-cli-tools-in-go/327-structured-cli-config-xdg-keychains.md
     - content/09-cli-tools-in-go/328-terminal-streaming-pagers-renderers.md
     - content/09-cli-tools-in-go/329-cli-plugin-architectures-go-plugin-wazero.md
+    - content/09-cli-tools-in-go/330-url-monitor-flag-cli.md
+    - content/09-cli-tools-in-go/331-url-monitor-cobra-structure.md
+    - content/09-cli-tools-in-go/332-cli-usability-and-interactivity.md
+    - content/09-cli-tools-in-go/333-testing-cobra-and-http-clis.md
+    - content/09-cli-tools-in-go/334-cli-error-handling-and-log-rotation.md
+    - content/09-cli-tools-in-go/335-distributing-go-clis.md
   - part: Concurrency Ground Up
     contents:
     - content/10-concurrency-ground-up/250-concurrency-ground-up-index.md
@@ -445,6 +451,8 @@ book:
     - content/25-go-deep-dives/268-go-list-json-package-metadata.md
     - content/25-go-deep-dives/269-goroutineleak-pprof.md
     - content/25-go-deep-dives/270-oss-architecture-k8s-etcd-prometheus.md
+    - content/25-go-deep-dives/271-compiler-walk-dce-devirtualization.md
+    - content/25-go-deep-dives/272-go-compilation-pipeline-hands-on.md
     - part: Assets
       contents: []
   - part: Long-Term Maintenance
@@ -495,6 +503,26 @@ book:
     - content/29-event-driven-dev/18-tracing.md
     - content/29-event-driven-dev/19-fault-tolerance.md
     - content/29-event-driven-dev/20-sagas-and-process-managers.md
+  - part: Ai-in-Go
+    contents:
+    - content/30-ai-in-go/index.md
+    - content/30-ai-in-go/01-first-production-ai-app.md
+    - content/30-ai-in-go/02-function-calling.md
+    - content/30-ai-in-go/03-vector-databases.md
+    - content/30-ai-in-go/04-building-ai-agents.md
+    - content/30-ai-in-go/05-model-context-protocol.md
+  - part: gRPC and Protobuf
+    contents:
+    - content/31-grpc-and-protobuf/index.md
+    - content/31-grpc-and-protobuf/01-protobuf-grpc-protoc.md
+    - content/31-grpc-and-protobuf/02-simple-grpc-service.md
+    - content/31-grpc-and-protobuf/03-grpc-streaming.md
+    - content/31-grpc-and-protobuf/04-authentication-ssl-tls.md
+    - content/31-grpc-and-protobuf/05-interceptors-metadata-authz.md
+    - content/31-grpc-and-protobuf/06-client-service-config-lb.md
+    - content/31-grpc-and-protobuf/07-testing-grpc-services.md
+    - content/31-grpc-and-protobuf/08-containerising-deploying-k8s.md
+    - content/31-grpc-and-protobuf/09-buf-and-connectrpc.md
   - part: Projects
     contents:
     - content/99-projects/100a-k8s-event-watcher.md

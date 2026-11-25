@@ -65,6 +65,12 @@ After this part you can:
 | 327 | [Structured CLI config, XDG directories, and secret keychains](327-structured-cli-config-xdg-keychains.md) |
 | 328 | [High-throughput terminal streaming, `$PAGER`, and renderers](328-terminal-streaming-pagers-renderers.md) |
 | 329 | [CLI plugin architectures (`go-plugin`, `wazero` Wasm, `plugin` pitfalls)](329-cli-plugin-architectures-go-plugin-wazero.md) |
+| 330 | [URL Monitor CLI: Basic & Advanced Features with `flag`](330-url-monitor-flag-cli.md) |
+| 331 | [Structuring CLI Applications with Cobra](331-url-monitor-cobra-structure.md) |
+| 332 | [Enhancing CLI Usability and Interactivity](332-cli-usability-and-interactivity.md) |
+| 333 | [Testing CLI Applications (`httptest` & Cobra `ExecuteC`)](333-testing-cobra-and-http-clis.md) |
+| 334 | [Error Handling & Logging in CLIs (Custom Errors & Log Rotation)](334-cli-error-handling-and-log-rotation.md) |
+| 335 | [Distributing Your CLI (Docker, GoReleaser, Homebrew, Chocolatey, Deb/RPM)](335-distributing-go-clis.md) |
 
 ## Suggested schedule
 
