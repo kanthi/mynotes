@@ -17,7 +17,7 @@
 <text class="l" x="475.0" y="115.0" text-anchor="middle">from other P</text>
 <rect x="575" y="55" width="125" height="80" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
 <text class="l" x="637.5" y="83.0" text-anchor="middle">sysmon</text>
-<text class="l" x="637.5" y="99.0" text-anchor="middle">Preempt &</text>
+<text class="l" x="637.5" y="99.0" text-anchor="middle">Preempt &amp;</text>
 <text class="l" x="637.5" y="115.0" text-anchor="middle">Netpoll</text>
 <rect x="225" y="185" width="315" height="75" rx="8" fill="#e0ecff" stroke="#2563eb" stroke-width="1.4"/>
 <text class="l" x="382.5" y="218.5" text-anchor="middle">OS Netpoller (epoll / kqueue)</text>

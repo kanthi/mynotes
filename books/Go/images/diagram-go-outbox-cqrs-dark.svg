@@ -18,7 +18,7 @@
 <text class="l" x="632.5" y="107.0" text-anchor="middle">Kafka / Redis</text>
 <rect x="190" y="195" width="220" height="70" rx="8" fill="#1e293b" stroke="#64748b" stroke-width="1.4"/>
 <text class="l" x="300.0" y="226.0" text-anchor="middle">Read Model Updater</text>
-<text class="l" x="300.0" y="242.0" text-anchor="middle">Projection -> GET /ops</text>
+<text class="l" x="300.0" y="242.0" text-anchor="middle">Projection -&gt; GET /ops</text>
 <rect x="450" y="195" width="250" height="70" rx="8" fill="#143524" stroke="#4ade80" stroke-width="1.4"/>
 <text class="l" x="575.0" y="226.0" text-anchor="middle">Side-Effect Consumers</text>
 <text class="l" x="575.0" y="242.0" text-anchor="middle">Receipts, Email, Data Lake</text>

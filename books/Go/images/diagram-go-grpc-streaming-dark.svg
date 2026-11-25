@@ -5,19 +5,19 @@
 <text class="t" x="20" y="28">Four gRPC Streaming Patterns over HTTP/2</text>
 <rect x="20" y="50" width="325" height="95" rx="8" fill="#1e3a5f" stroke="#60a5fa" stroke-width="1.4"/>
 <text class="l" x="182.5" y="85.5" text-anchor="middle">1. Unary RPC</text>
-<text class="l" x="182.5" y="101.5" text-anchor="middle">Client -> 1 Req -> Server -> 1 Resp</text>
+<text class="l" x="182.5" y="101.5" text-anchor="middle">Client -&gt; 1 Req -&gt; Server -&gt; 1 Resp</text>
 <text class="l" x="182.5" y="117.5" text-anchor="middle">e.g. GetTodo / CreateTodo</text>
 <rect x="375" y="50" width="325" height="95" rx="8" fill="#143524" stroke="#4ade80" stroke-width="1.4"/>
 <text class="l" x="537.5" y="85.5" text-anchor="middle">2. Server Streaming</text>
-<text class="l" x="537.5" y="101.5" text-anchor="middle">Client -> 1 Req -> Server == N Resps ==></text>
+<text class="l" x="537.5" y="101.5" text-anchor="middle">Client -&gt; 1 Req -&gt; Server == N Resps ==&gt;</text>
 <text class="l" x="537.5" y="117.5" text-anchor="middle">e.g. WatchTodos / Log Tail</text>
 <rect x="20" y="170" width="325" height="95" rx="8" fill="#422006" stroke="#fbbf24" stroke-width="1.4"/>
 <text class="l" x="182.5" y="205.5" text-anchor="middle">3. Client Streaming</text>
-<text class="l" x="182.5" y="221.5" text-anchor="middle">Client == N Chunks ==> Server -> 1 Summary</text>
+<text class="l" x="182.5" y="221.5" text-anchor="middle">Client == N Chunks ==&gt; Server -&gt; 1 Summary</text>
 <text class="l" x="182.5" y="237.5" text-anchor="middle">e.g. File Upload / Telemetry</text>
 <rect x="375" y="170" width="325" height="95" rx="8" fill="#1e293b" stroke="#64748b" stroke-width="1.4"/>
 <text class="l" x="537.5" y="205.5" text-anchor="middle">4. Bi-Directional Streaming</text>
-<text class="l" x="537.5" y="221.5" text-anchor="middle">Client <== Concurrent Send & Recv ==></text>
+<text class="l" x="537.5" y="221.5" text-anchor="middle">Client &lt;== Concurrent Send &amp; Recv ==&gt;</text>
 <text class="l" x="537.5" y="237.5" text-anchor="middle">e.g. Chat / Live Sync</text>
 
 </svg>
