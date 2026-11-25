@@ -16,6 +16,7 @@ content/01-foundations/06-formatting-vetting-docs.html	Formatting, Vetting, and 
 content/01-foundations/07-dependency-management.html	Dependency Management
 content/01-foundations/08-workspaces-multimodule.html	Workspaces and Multi-Module Development
 content/02-core/09-predeclared-types.html	Predeclared Types
+content/02-core/09b-machine-representation-addressability.html	Machine Representation & Addressability
 content/02-core/10-zero-values.html	Zero Values and Initialization
 content/02-core/11-constants-literals.html	Constants and Literals
 content/02-core/12-variables-scope.html	Variables and Scope
@@ -303,6 +304,9 @@ content/23-performance-tooling/05-documentation.html	Documentation and APIs
 content/23-performance-tooling/06-toolexec-build-hooks.html	Joining the Go Build with -toolexec: Wrappers, Build-Cache Keys, and Compile-Time Instrumentation
 content/23-performance-tooling/07-pkgsite-api-client.html	The pkg.go.dev API: querying module metadata from Go programs
 content/23-performance-tooling/08-go-fix-modernizers.html	go fix modernizers: atomictypes, slices.Backward, embedlit, unsafe.Add, WaitGroup.Go
+content/23-performance-tooling/09-debugging-by-eye-and-panics.html	Debugging by Eye & Reading Panic Traces
+content/23-performance-tooling/10-interactive-debugging-delve-ide-docker.html	Interactive Debugging: Delve, VSCode, GoLand & Docker
+content/23-performance-tooling/11-gotraceui-and-pprof-workflows.html	Advanced Profiling: pprof list, Always-On pprof & gotraceui
 content/24-performance-engineering/180-performance-engineering-index.html	Performance Engineering Overview
 content/24-performance-engineering/181-benchmarking-profiling-workflow.html	Benchmarking and Profiling Workflow
 content/24-performance-engineering/182-memory-allocations-gc.html	Memory, Allocations, and GC
@@ -391,6 +395,7 @@ content/25-go-deep-dives/267-gomaxprocs-and-p-counts.html	GOMAXPROCS, Ps, and Wh
 content/25-go-deep-dives/268-go-list-json-package-metadata.html	go list -json for Package Metadata
 content/25-go-deep-dives/269-goroutineleak-pprof.html	goroutineleak pprof Profile
 content/25-go-deep-dives/270-oss-architecture-k8s-etcd-prometheus.html	Open-Source Architecture Teardown — Kubernetes, etcd, and Prometheus in Go 1.27
+content/25-go-deep-dives/271-compiler-walk-dce-devirtualization.html	Compiler Walk Pass, Dead Code Elimination, and Devirtualization
 content/26-long-term-maintenance/01-reflection-in-practice.html	Reflection in Practice
 content/26-long-term-maintenance/02-unsafe-code.html	Unsafe Code
 content/26-long-term-maintenance/03-cgo-and-ffi.html	Cgo and Foreign Function Interfaces
@@ -410,6 +415,27 @@ content/28-specialized/92-systems-programming.html	Systems Programming
 content/28-specialized/93-io-streaming.html	I/O and Streaming
 content/28-specialized/94-logging-observability.html	Logging and Observability
 content/28-specialized/95-adk-go-agents.html	ADK Go Agents (2.0)
+content/29-event-driven-dev/01-basic-async.html	01. Basic Async
+content/29-event-driven-dev/02-message-broker.html	02. Message Broker
+content/29-event-driven-dev/03-events.html	03. Events
+content/29-event-driven-dev/04-watermill-basics.html	04. Watermill Basics
+content/29-event-driven-dev/05-middlewares.html	05. Middlewares
+content/29-event-driven-dev/06-errors.html	06. Errors
+content/29-event-driven-dev/07-component-testing.html	07. Component Testing
+content/29-event-driven-dev/08-events-with-cqrs.html	08. Events with CQRS Pattern
+content/29-event-driven-dev/09-at-least-once-delivery.html	09. At Least Once Delivery
+content/29-event-driven-dev/10-outbox.html	10. Outbox
+content/29-event-driven-dev/11-commands-in-cqrs.html	11. Commands in CQRS Pattern
+content/29-event-driven-dev/12-read-models.html	12. Read Models
+content/29-event-driven-dev/13-message-ordering.html	13. Message Ordering
+content/29-event-driven-dev/14-data-lake.html	14. Data Lake
+content/29-event-driven-dev/15-internal-and-versioned-events.html	15. Internal and Versioned Events
+content/29-event-driven-dev/16-migrating-read-models.html	16. Migrating Read Models
+content/29-event-driven-dev/17-metrics-and-alerting.html	17. Metrics and Alerting
+content/29-event-driven-dev/18-tracing.html	18. Tracing
+content/29-event-driven-dev/19-fault-tolerance.html	19. Fault Tolerance
+content/29-event-driven-dev/20-sagas-and-process-managers.html	20. Sagas and Process Managers
+content/29-event-driven-dev/index.html	Intro
 content/99-projects/100a-k8s-event-watcher.html	027 Project 27: Kubernetes Event Watcher
 content/99-projects/100b-k8s-rollout-checker.html	028 Project 28: Kubernetes Rollout Checker
 content/99-projects/100c-terraform-plan-parser.html	029 Project 29: Terraform Plan Parser

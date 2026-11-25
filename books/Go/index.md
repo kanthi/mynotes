@@ -63,7 +63,8 @@ The book is organized into structured phases of engineering depth:
 9. **Performance Engineering & Tooling (Parts 23–24):** Profiling workflows, allocations/GC tuning, contention optimization, PGO, and SIMD vectorization.
 10. **Runtime Internals & Compiler Architecture (Part 25):** 71 deep dives into the GMP scheduler, memory allocator, GC pacer, compiler IR/SSA, and netpoller.
 11. **Long-Term Engineering & Synthesis (Parts 26–28):** Reflection, unsafe code, cgo/FFI, modern Go literature synthesis, and specialized frontiers (AI agents, desktop apps).
-12. **Capstones & Reference (Parts 99–100):** Hands-on builds, system-design labs, and master reference appendices.
+12. **Event-Driven Architecture (Part 29 — EventDrivenDev):** 20-module Go Event-Driven curriculum covering brokers, Watermill, CQRS, Outbox, read models, data lakes, observability, fault tolerance, and sagas.
+13. **Capstones & Reference (Parts 99–100):** Hands-on builds, system-design labs, and master reference appendices.
 
 ---
 
@@ -310,6 +311,13 @@ The book is organized into structured phases of engineering depth:
 - **Machine Learning & AI:** Building LLM-powered applications and AI pipelines in Go.
 - **AI Agent Frameworks:** Developing autonomous agents with ADK Go Agents.
 - **Advanced Streaming:** High-throughput streaming I/O pipelines and zero-copy transfers.
+
+## 29. EventDrivenDev (Go Event-Driven Architecture)
+- **Complete 20-Module Curriculum:** [EventDrivenDev Intro](content/29-event-driven-dev/index.md) — modeled on *Go Event-Driven v2.0* (Three Dots Labs) using Watermill, Redis Streams, Kafka, and PostgreSQL.
+- **Foundations & Plumbing (01–07):** Basic async workers, message brokers, typed events, Watermill router, middlewares, error classification, and component testing.
+- **CQRS & Consistency (08–12):** CQRS event bus, at-least-once delivery & idempotency, transactional outbox, CQRS command bus, and read models.
+- **Ordering, Evolution & Recovery (13–16):** Message ordering & versioning, central data lake, internal & versioned events, and zero-downtime read-model migrations.
+- **Operability & Distributed Workflows (17–20):** Prometheus metrics & alerting, OpenTelemetry tracing, retries/circuit breakers/poison queues, and sagas & process managers.
 
 ## 99. Capstone Projects & Practice Labs
 - **Progressive Hands-On Projects:**

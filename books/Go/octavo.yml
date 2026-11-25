@@ -472,6 +472,29 @@ book:
     - content/28-specialized/93-io-streaming.md
     - content/28-specialized/94-logging-observability.md
     - content/28-specialized/95-adk-go-agents.md
+  - part: EventDrivenDev
+    contents:
+    - content/29-event-driven-dev/index.md
+    - content/29-event-driven-dev/01-basic-async.md
+    - content/29-event-driven-dev/02-message-broker.md
+    - content/29-event-driven-dev/03-events.md
+    - content/29-event-driven-dev/04-watermill-basics.md
+    - content/29-event-driven-dev/05-middlewares.md
+    - content/29-event-driven-dev/06-errors.md
+    - content/29-event-driven-dev/07-component-testing.md
+    - content/29-event-driven-dev/08-events-with-cqrs.md
+    - content/29-event-driven-dev/09-at-least-once-delivery.md
+    - content/29-event-driven-dev/10-outbox.md
+    - content/29-event-driven-dev/11-commands-in-cqrs.md
+    - content/29-event-driven-dev/12-read-models.md
+    - content/29-event-driven-dev/13-message-ordering.md
+    - content/29-event-driven-dev/14-data-lake.md
+    - content/29-event-driven-dev/15-internal-and-versioned-events.md
+    - content/29-event-driven-dev/16-migrating-read-models.md
+    - content/29-event-driven-dev/17-metrics-and-alerting.md
+    - content/29-event-driven-dev/18-tracing.md
+    - content/29-event-driven-dev/19-fault-tolerance.md
+    - content/29-event-driven-dev/20-sagas-and-process-managers.md
   - part: Projects
     contents:
     - content/99-projects/100a-k8s-event-watcher.md
