@@ -20,6 +20,8 @@ Whereas a single LLM call or fixed workflow follows a hard-coded path, an **AI A
 
 ## The Agent Execution Loop
 
+![Bounded AI Agent Loop with RAG and MCP Tools](../../images/diagram-go-rag-agent-mcp.svg)
+
 ```text
 User Goal
    |

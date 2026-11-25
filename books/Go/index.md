@@ -66,7 +66,8 @@ The book is organized into structured phases of engineering depth:
 12. **Event-Driven Architecture (Part 29 — EventDrivenDev):** 20-module Go Event-Driven curriculum covering brokers, Watermill, CQRS, Outbox, read models, data lakes, observability, fault tolerance, and sagas.
 13. **Production AI in Go (Part 30 — Ai-in-Go):** 5-module hands-on curriculum from first LLM calls and streaming to function calling, vector databases, AI agents, and Model Context Protocol (MCP).
 14. **gRPC & Protobuf (Part 31):** 9-module curriculum covering Protobuf, `protoc`, unary & streaming RPCs, TLS/mTLS, interceptors, load balancing, testing, Kubernetes deployment, and Buf/ConnectRPC.
-15. **Capstones & Reference (Parts 99–100):** Hands-on builds, system-design labs, and master reference appendices.
+15. **Databases, Architecture & Edge Protocols (Part 32):** `pgx/v5`, `sqlc`, migrations, `SKIP LOCKED` SQL queues, SQLite WAL, Clean Architecture/DDD, Temporal durable workflows, and SSE/QUIC/WebRTC.
+16. **Capstones & Reference (Parts 99–100):** Hands-on builds, system-design labs, and master reference appendices.
 
 ---
 
@@ -335,6 +336,9 @@ The book is organized into structured phases of engineering depth:
 - **Core & Streaming (01–03):** Protobuf, `protoc`, unary TODO service, error handling, and server/client/bi-directional file-upload streaming.
 - **Security & Middleware (04–05):** Server TLS, mTLS, unary/stream interceptors, deadlines, metadata, API keys, `CallCredentials`, and JWT auth.
 - **Scale, Testing & Ops (06–09):** Client service config, retries, round-robin & custom load balancers, Postman/`grpcurl`/`bufconn` testing, Kubernetes + Let's Encrypt + Ingress/Cloudflare Tunnel, and Buf/ConnectRPC/Protovalidate.
+
+## 32. Databases, Architecture & Edge Protocols
+- **Production Data & Architecture:** [Part 32 Intro](content/32-databases-and-architecture/index.md) — `pgx/v5` & `sqlc`, `goose` migrations, `SKIP LOCKED` job queues, embedded SQLite WAL, Clean/Hexagonal Architecture & DDD, Temporal durable workflows, and SSE/HTTP3/WebRTC.
 
 ## 99. Capstone Projects & Practice Labs
 - **Progressive Hands-On Projects:**

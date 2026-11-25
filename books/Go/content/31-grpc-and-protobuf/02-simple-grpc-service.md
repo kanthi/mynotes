@@ -122,6 +122,47 @@ func main() {
 }
 ```
 
+## Calling the Service from a Go Client
+
+Always reuse a single `*grpc.ClientConn` across goroutines—it manages HTTP/2 connection pooling and reconnection internally.
+
+```go
+package client
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/status"
+)
+
+func DialAndInspectError(addr string) error {
+	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return fmt.Errorf("new client: %w", err)
+	}
+	defer conn.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	_ = ctx
+
+	// Inspect structured gRPC status codes on the client side:
+	if err != nil {
+		st, ok := status.FromError(err)
+		if ok && st.Code() == codes.InvalidArgument {
+			return fmt.Errorf("validation error: %s", st.Message())
+		}
+		return err
+	}
+	return nil
+}
+```
+
 ## Related Chapters
 
 - Previous: [01. Introduction to Protobuf, gRPC & Protoc](01-protobuf-grpc-protoc.md)

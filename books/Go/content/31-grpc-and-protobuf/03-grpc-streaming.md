@@ -16,6 +16,8 @@ HTTP/2 lets gRPC send multiple ordered messages over a single RPC call without b
 
 ## Streaming Patterns at a Glance
 
+![Four gRPC streaming patterns over HTTP/2](../../images/diagram-go-grpc-streaming.svg)
+
 ```text
 Server Streaming:        Client --- 1 Request ---> Server === N Responses (until nil return) ==> Client
 Client Streaming:        Client === N Chunks (Send) ==> Server (Recv until io.EOF) ---> 1 Summary

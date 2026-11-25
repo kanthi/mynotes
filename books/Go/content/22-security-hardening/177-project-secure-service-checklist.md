@@ -1,40 +1,58 @@
 ---
-title: 'Project: Secure Service Checklist'
+title: 'Project: Secure Service Checklist & Hardened Skeleton'
 ---
 
-# Project: Secure Service Checklist
+# Project: Secure Service Checklist & Hardened Skeleton
 
-## Overview
+Turn security hardening principles into a concrete, repeatable Go HTTP service skeleton with **strict timeouts**, **body size limits**, **security headers**, **CSRF protection**, **TLS 1.3**, and **automated CI checks**.
 
-Take any small HTTP service (Bookstore or echo) and harden it against a **checklist**. Tick items with code or config evidence.
+## Hardened HTTP Server Skeleton
 
-## Transport & process
+```go
+package main
 
-- [ ] TLS in production path (or documented edge termination)
-- [ ] `ReadHeaderTimeout` set on `http.Server`
-- [ ] Non-root container user
-- [ ] Graceful shutdown
+import (
+	"crypto/tls"
+	"net/http"
+	"time"
+)
 
-## Authn / authz
+func securityHeaders(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.Header().Set("X-Frame-Options", "DENY")
+		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
+		w.Header().Set("Content-Security-Policy", "default-src 'self'")
+		// Cap request body to 1 MiB to prevent memory exhaustion DoS.
+		r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
+		next.ServeHTTP(w, r)
+	})
+}
 
-- [ ] Auth on mutating routes
-- [ ] Password hashing (bcrypt/argon2) if local auth
-- [ ] JWT: alg allowlist + exp + aud (if used)
-- [ ] CSRF strategy documented for cookie sessions
+func newHardenedServer(addr string, handler http.Handler) *http.Server {
+	csrf := http.NewCrossOriginProtection()
+	return &http.Server{
+		Addr:              addr,
+		Handler:           securityHeaders(csrf.Handler(handler)),
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       15 * time.Second,
+		WriteTimeout:      15 * time.Second,
+		IdleTimeout:       60 * time.Second,
+		MaxHeaderBytes:    1 << 16, // 64 KiB
+		TLSConfig: &tls.Config{
+			MinVersion: tls.VersionTLS13,
+		},
+	}
+}
+```
 
-## Input / output
+## Production Security Checklist
 
-- [ ] MaxBytesReader on bodies
-- [ ] Path jail for file ops
-- [ ] No SSRF open URL fetch
-- [ ] Security headers (or edge config)
-
-## Secrets & deps
-
-- [ ] Secrets not in git
-- [ ] `govulncheck` clean or waived
-- [ ] Structured logs without secrets
-
-## Deliverable
-
-`SECURITY.md` in the project with checklist status + residual risks.
+| Layer | Requirement | Verification Command / Check |
+|-------|-------------|------------------------------|
+| **Transport** | TLS 1.3 minimum, HSTS on HTTPS origins | `sslscan` / `tls.VersionTLS13` unit test |
+| **Input & Edge** | `http.MaxBytesReader`, `http.NewCrossOriginProtection`, `os.Root` for file access | Oversized body returns `413`; cross-site POST rejected |
+| **Auth & Secrets** | Short-lived JWTs with issuer/audience checks; secrets from env/vault, never logged | `slog` redaction test on `Token` types |
+| **Dependencies** | Zero known reachable CVEs; pinned `go.sum` | `govulncheck ./...` in CI |
+| **Static Audit** | No SQL string concatenation, no weak `math/rand` for tokens | `gosec ./...` and `go vet ./...` |
+| **Container** | Non-root user (`USER 65532:65532`), read-only rootfs, `CGO_ENABLED=0` | `docker inspect` + Kubernetes `securityContext` |

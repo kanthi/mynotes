@@ -53,7 +53,48 @@ func DialBalanced(target string, creds credentials.TransportCredentials) (*grpc.
 
 ## Custom Load Balancing Policies
 
-When `round_robin` is not enough (for example, weighted routing, zone-aware affinity, or least-in-flight selection), implement `balancer.Builder` and `balancer.Picker` (using `base.NewBalancerBuilder`) and register the policy at init time with `balancer.Register(...)`.
+When `round_robin` is not enough (for example, weighted routing, zone-aware affinity, or least-in-flight selection), implement `base.PickerBuilder` and `balancer.Picker` and register the policy with `balancer.Register(...)`:
+
+```go
+package customlb
+
+import (
+	"sync/atomic"
+
+	"google.golang.org/grpc/balancer"
+	"google.golang.org/grpc/balancer/base"
+)
+
+const PolicyName = "my_custom_rr"
+
+func init() {
+	balancer.Register(base.NewBalancerBuilder(PolicyName, &pickerBuilder{}, base.Config{HealthCheck: true}))
+}
+
+type pickerBuilder struct{}
+
+func (*pickerBuilder) Build(info base.PickerBuildInfo) balancer.Picker {
+	if len(info.ReadySCs) == 0 {
+		return base.NewErrPicker(balancer.ErrNoSubConnAvailable)
+	}
+	scs := make([]balancer.SubConn, 0, len(info.ReadySCs))
+	for sc := range info.ReadySCs {
+		scs = append(scs, sc)
+	}
+	return &rrPicker{subConns: scs}
+}
+
+type rrPicker struct {
+	subConns []balancer.SubConn
+	next     atomic.Uint64
+}
+
+func (p *rrPicker) Pick(balancer.PickInfo) (balancer.PickResult, error) {
+	idx := p.next.Add(1) - 1
+	sc := p.subConns[idx%uint64(len(p.subConns))]
+	return balancer.PickResult{SubConn: sc}, nil
+}
+```
 
 ## Related Chapters
 

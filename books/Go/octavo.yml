@@ -20,13 +20,10 @@ book:
     - content/01-foundations/06-formatting-vetting-docs.md
     - content/01-foundations/07-dependency-management.md
     - content/01-foundations/08-workspaces-multimodule.md
-    - part: Formatting Vetting Docs_files
-      contents:
-      - part: Mediabag
-        contents: []
   - part: Core
     contents:
     - content/02-core/09-predeclared-types.md
+    - content/02-core/09b-machine-representation-addressability.md
     - content/02-core/10-zero-values.md
     - content/02-core/11-constants-literals.md
     - content/02-core/12-variables-scope.md
@@ -359,6 +356,9 @@ book:
     - content/23-performance-tooling/06-toolexec-build-hooks.md
     - content/23-performance-tooling/07-pkgsite-api-client.md
     - content/23-performance-tooling/08-go-fix-modernizers.md
+    - content/23-performance-tooling/09-debugging-by-eye-and-panics.md
+    - content/23-performance-tooling/10-interactive-debugging-delve-ide-docker.md
+    - content/23-performance-tooling/11-gotraceui-and-pprof-workflows.md
   - part: Performance Engineering
     contents:
     - content/24-performance-engineering/180-performance-engineering-index.md
@@ -453,8 +453,6 @@ book:
     - content/25-go-deep-dives/270-oss-architecture-k8s-etcd-prometheus.md
     - content/25-go-deep-dives/271-compiler-walk-dce-devirtualization.md
     - content/25-go-deep-dives/272-go-compilation-pipeline-hands-on.md
-    - part: Assets
-      contents: []
   - part: Long-Term Maintenance
     contents:
     - content/26-long-term-maintenance/01-reflection-in-practice.md
@@ -523,27 +521,16 @@ book:
     - content/31-grpc-and-protobuf/07-testing-grpc-services.md
     - content/31-grpc-and-protobuf/08-containerising-deploying-k8s.md
     - content/31-grpc-and-protobuf/09-buf-and-connectrpc.md
+  - part: Databases, Architecture and Protocols
+    contents:
+    - content/32-databases-and-architecture/index.md
+    - content/32-databases-and-architecture/01-pgx-and-sqlc.md
+    - content/32-databases-and-architecture/02-migrations-and-sql-queues.md
+    - content/32-databases-and-architecture/03-clean-architecture-and-ddd.md
+    - content/32-databases-and-architecture/04-durable-workflows-temporal.md
+    - content/32-databases-and-architecture/05-realtime-sse-quic-webrtc.md
   - part: Projects
     contents:
-    - content/99-projects/100a-k8s-event-watcher.md
-    - content/99-projects/100b-k8s-rollout-checker.md
-    - content/99-projects/100c-terraform-plan-parser.md
-    - content/99-projects/100d-terraform-risk-reporter.md
-    - content/99-projects/100e-prometheus-exporter.md
-    - content/99-projects/100f-prometheus-probe-service.md
-    - content/99-projects/100g-ebpf-tracepoint-basics.md
-    - content/99-projects/100h-ebpf-xdp-packet-counter.md
-    - content/99-projects/100i-proxmox-multi-node-scheduler.md
-    - content/99-projects/100j-proxmox-capacity-balancer.md
-    - content/99-projects/100k-k8s-hpa-simulator.md
-    - content/99-projects/100l-terraform-cost-estimator.md
-    - content/99-projects/100m-prometheus-alert-rule-tester.md
-    - content/99-projects/100n-infra-reconciler-daemon.md
-    - content/99-projects/100o-tinygo-blink-and-toolchain.md
-    - content/99-projects/100p-tinygo-button-interrupt.md
-    - content/99-projects/100q-tinygo-uart-sensor-loop.md
-    - content/99-projects/100r-tinygo-cooperative-tasks.md
-    - content/99-projects/100s-tinygo-i2c-realtime-monitor.md
     - content/99-projects/99-index.md
     - content/99-projects/99a-cli-ping-tool.md
     - content/99-projects/99b-url-shortener-api.md
@@ -571,6 +558,25 @@ book:
     - content/99-projects/99x-controller-pattern-sim.md
     - content/99-projects/99y-resource-index-and-ideas.md
     - content/99-projects/99z-k8s-pod-lister.md
+    - content/99-projects/100a-k8s-event-watcher.md
+    - content/99-projects/100b-k8s-rollout-checker.md
+    - content/99-projects/100c-terraform-plan-parser.md
+    - content/99-projects/100d-terraform-risk-reporter.md
+    - content/99-projects/100e-prometheus-exporter.md
+    - content/99-projects/100f-prometheus-probe-service.md
+    - content/99-projects/100g-ebpf-tracepoint-basics.md
+    - content/99-projects/100h-ebpf-xdp-packet-counter.md
+    - content/99-projects/100i-proxmox-multi-node-scheduler.md
+    - content/99-projects/100j-proxmox-capacity-balancer.md
+    - content/99-projects/100k-k8s-hpa-simulator.md
+    - content/99-projects/100l-terraform-cost-estimator.md
+    - content/99-projects/100m-prometheus-alert-rule-tester.md
+    - content/99-projects/100n-infra-reconciler-daemon.md
+    - content/99-projects/100o-tinygo-blink-and-toolchain.md
+    - content/99-projects/100p-tinygo-button-interrupt.md
+    - content/99-projects/100q-tinygo-uart-sensor-loop.md
+    - content/99-projects/100r-tinygo-cooperative-tasks.md
+    - content/99-projects/100s-tinygo-i2c-realtime-monitor.md
     - part: System Design
       contents:
       - content/99-projects/101-system-design/index.md

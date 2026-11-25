@@ -13,6 +13,8 @@ Writing to a database and publishing to an external message broker are two separ
 
 ## How the Outbox Pattern Works
 
+![Transactional Outbox and CQRS Event Flow](../../images/diagram-go-outbox-cqrs.svg)
+
 ```text
                  Single PostgreSQL ACID Transaction
                  +--------------------------------+

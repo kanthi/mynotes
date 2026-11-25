@@ -78,6 +78,32 @@ func startBufconnServer(t *testing.T, register func(*grpc.Server)) *grpc.ClientC
 }
 ```
 
+## Unit Testing Streaming Handlers Without a Network
+
+For pure unit tests of streaming handlers, pass a lightweight fake stream struct that buffers sent messages and feeds preloaded requests until returning `io.EOF`:
+
+```go
+type fakeUploadStream struct {
+	chunks []*Chunk
+	idx    int
+	result *UploadSummary
+}
+
+func (f *fakeUploadStream) Recv() (*Chunk, error) {
+	if f.idx >= len(f.chunks) {
+		return nil, io.EOF
+	}
+	c := f.chunks[f.idx]
+	f.idx++
+	return c, nil
+}
+
+func (f *fakeUploadStream) SendAndClose(s *UploadSummary) error {
+	f.result = s
+	return nil
+}
+```
+
 ## Related Chapters
 
 - Previous: [06. Client Service Config & Load Balancing](06-client-service-config-lb.md)

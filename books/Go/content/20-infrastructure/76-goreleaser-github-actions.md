@@ -1,74 +1,105 @@
 ---
-title: GoReleaser and GitHub Actions
+title: 'GoReleaser and GitHub Actions'
 ---
 
 # GoReleaser and GitHub Actions
 
-## Overview
+Automate reproducible, multi-platform Go releases on every Git tag (`v*.*.*`) using **GoReleaser** and **GitHub Actions**—producing static binaries, SHA-256 checksums, SBOMs, changelogs, and container images in a single pipeline.
 
-Automate multi-OS binaries, checksums, and GitHub Releases with **GoReleaser** and a tag-driven workflow.
-
-## Minimal `.goreleaser.yaml`
+## GitHub Actions Release Workflow (`.github/workflows/release.yml`)
 
 ```yaml
-version: 2
-builds:
-  - id: app
-    main: ./cmd/app
-    env: [CGO_ENABLED=0]
-    goos: [linux, darwin, windows]
-    goarch: [amd64, arm64]
-    ldflags:
-      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}}
-archives:
-  - formats: [tar.gz]
-    format_overrides:
-      - goos: windows
-        formats: [zip]
-checksum:
-  name_template: checksums.txt
-```
+name: Release
 
-## Workflow sketch
-
-```yaml
-# .github/workflows/release.yml
 on:
   push:
-    tags: ["v*"]
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
-      - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
-      - uses: actions/setup-go@v5
-        with: { go-version-file: go.mod }
-      - uses: goreleaser/goreleaser-action@v6
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Run tests
+        run: go test -race ./...
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: "~> v2"
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-## Local snapshot
+## Minimal `.goreleaser.yaml`
+
+```yaml
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - main: ./cmd/app
+    binary: app
+    env:
+      - CGO_ENABLED=0
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    flags: [-trimpath]
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.ShortCommit}}
+      - -X main.date={{.Date}}
+
+archives:
+  - format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+
+checksum:
+  name_template: "checksums.txt"
+
+sboms:
+  - artifacts: archive
+
+changelog:
+  sort: asc
+  filters:
+    exclude: ["^docs:", "^test:", "^chore:"]
+```
+
+## Local Dry-Run Before Tagging
+
+Always validate your release config locally before pushing a tag:
 
 ```bash
+goreleaser check
 goreleaser release --snapshot --clean
 ```
 
-## Rules of thumb
+Inspect `dist/` to verify binary sizes, `checksums.txt`, and `app --version` output.
 
-| Do | Don't |
-|----|--------|
-| Tag semver `v1.2.3` | Untagged mystery builds as “prod” |
-| Pin action versions | `@master` for release |
-| Verify checksums | Trust unsigned downloads blindly |
+## Related Chapters
 
-## Try next
-
-1. Snapshot release locally.
-2. Add `version` subcommand reading ldflags.
-3. Attach `govulncheck` job on PR.
+- [335. Distributing Your CLI](../09-cli-tools-in-go/335-distributing-go-clis.md) — Homebrew, Chocolatey, Docker, and `.deb`/`.rpm` packaging.
+- [70. Docker Multi-Stage Builds](70-docker-multistage.md)
