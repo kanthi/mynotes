@@ -36,6 +36,9 @@ content/02-networking-foundations/13-encrypted-dns-doh-dot.html	Encrypted DNS: D
 content/02-networking-foundations/14-from-signals-to-frames.html	From Signals to Ethernet Frames
 content/02-networking-foundations/15-from-a-url-to-a-web-response.html	From a URL to a Web Response
 content/02-networking-foundations/16-peer-discovery-and-piece-verification.html	Peer Discovery and Piece Verification
+content/02-networking-foundations/17-cidr-subnetting-vlsm-worked.html	17. CIDR, Subnetting, and VLSM Step-by-Step
+content/02-networking-foundations/18-sockets-ports-nat-and-conntrack.html	18. Sockets, Ports, NAT, and Linux conntrack
+content/02-networking-foundations/19-how-a-host-gets-online-end-to-end.html	19. End-to-End Walkthrough: How a Host Gets Online
 content/02-networking-foundations/index.html	Intro
 content/03-layer-2/01-ethernet-mac.html	Ethernet & MAC Learning
 content/03-layer-2/02-vlans-trunks.html	VLANs & Trunks
@@ -139,6 +142,7 @@ content/06-security-operations/07-containerlab-in-ci.html	Containerlab in CI: Sm
 content/06-security-operations/08-source-of-truth-templating-and-drift.html	Source of Truth, Config Templating, and Drift Detection
 content/06-security-operations/09-runbooks-and-incident-notes.html	Runbooks and Incident Notes
 content/06-security-operations/10-prechange-verification-and-streaming-telemetry.html	Pre-Change Verification and Streaming Telemetry
+content/06-security-operations/11-netops-ci-batfish-nornir-suzieq.html	11. NetOps CI Pipeline: Containerlab, Batfish, Nornir, and Suzieq
 content/06-security-operations/index.html	Intro
 content/07-a-overlays-tunnels/01-why-encapsulate.html	Why Encapsulate
 content/07-a-overlays-tunnels/02-site-tunnels.html	Site Tunnels
@@ -164,6 +168,7 @@ content/07-a-overlays-tunnels/10-mpls-label-switching.html	MPLS Label Switching:
 content/07-a-overlays-tunnels/10b-bgp-mpls-l3vpn.html	BGP/MPLS IP VPNs: VRFs, Route Distinguishers and Route Targets
 content/07-a-overlays-tunnels/11-virtual-interfaces-and-sdn.html	Virtual Interfaces and Software-Defined Networks
 content/07-a-overlays-tunnels/12-onion-routing-and-observer-visibility.html	Onion Routing and Observer Visibility
+content/07-a-overlays-tunnels/13-sdwan-multipath-steering-and-fec.html	13. SD-WAN, Multi-Path Steering, and Forward Error Correction
 content/07-a-overlays-tunnels/index.html	Intro
 content/07-b-fabrics-multi-area/01-clos-leaf-spine.html	Clos Leaf-Spine
 content/07-b-fabrics-multi-area/02-multi-area-ospf.html	Multi-Area OSPF
@@ -173,12 +178,15 @@ content/07-b-fabrics-multi-area/05-underlay-design-choices.html	Underlay Design 
 content/07-b-fabrics-multi-area/06-evpn-vxlan-fabric-design.html	EVPN-VXLAN Fabric Design: IRB, Anycast Gateway, and Route Types
 content/07-b-fabrics-multi-area/07-bgp-unnumbered-clos.html	BGP Unnumbered in Clos Fabrics (RFC 5549 / RFC 8950)
 content/07-b-fabrics-multi-area/08-optics-hardware-and-ai-fabrics.html	Optics, Switch ASICs, and Lossless AI/ML Fabrics
+content/07-b-fabrics-multi-area/09-rocev2-lossless-ethernet-and-ai-fabrics.html	09. RoCEv2, Lossless Ethernet, and AI/GPU Fabrics
 content/07-b-fabrics-multi-area/index.html	Intro
 content/07-c-cloud-kubernetes-networking/01-cloud-vpc-networking-patterns.html	Cloud VPC Networking Patterns
 content/07-c-cloud-kubernetes-networking/02-container-and-cni-primitives.html	Container Networking and CNI Primitives
 content/07-c-cloud-kubernetes-networking/03-kubernetes-services-and-dataplanes.html	Kubernetes Services, kube-proxy, and Cilium eBPF
 content/07-c-cloud-kubernetes-networking/04-ingress-gateway-api-and-network-policy.html	Ingress, Gateway API, and NetworkPolicy
 content/07-c-cloud-kubernetes-networking/05-kubernetes-bgp-egress-and-multicluster.html	Kubernetes BGP, Egress Gateways and Multi-Cluster Networking
+content/07-c-cloud-kubernetes-networking/06-cloud-transit-vpn-and-privatelink.html	06. Cloud Transit, Hybrid BGP/IPSec, and PrivateLink
+content/07-c-cloud-kubernetes-networking/07-cilium-ebpf-cni-and-gateway-api.html	07. Cilium eBPF CNI Internals and Kubernetes Gateway API
 content/07-c-cloud-kubernetes-networking/index.html	Intro
 content/07-d-dataplanes-and-traffic-delivery/01-ebpf-xdp-and-tc-dataplane.html	Linux eBPF, XDP, and TC Programmable Dataplanes
 content/07-d-dataplanes-and-traffic-delivery/02-l4-l7-load-balancing-dsr-and-proxies.html	L4/L7 Load Balancing, DSR, and Reverse Proxies
@@ -354,6 +362,8 @@ content/09-projects/03c-campus-failure-domain-design.html	Campus Design: Failure
 content/09-projects/04-edge-dual-home-lab.html	Edge Dual-Home Lab
 content/09-projects/05-clos-fabric-capstone.html	Capstone C3: 2×2 Clos Leaf-Spine Fabric
 content/09-projects/06-incident-week-capstone.html	Capstone C4: Five-Day Incident Week
+content/09-projects/07-zero-trust-tailscale-mesh-automation.html	07. Project: Zero-Trust Tailscale Mesh Onboarding & Policy Automation
+content/09-projects/08-multi-cluster-cilium-clustermesh-lab.html	08. Project: Multi-Cluster Kubernetes Fleet Simulator with Cilium ClusterMesh
 content/09-projects/index.html	Intro
 content/10-command-reference/01-commands.html	Lab and Network OS Command Reference
 content/10-command-reference/02-frr.html	FRRouting Cheat Sheet

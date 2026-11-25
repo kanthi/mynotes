@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 285" role="img" aria-label="Client private socket 10.0.1.15:54321 is translated by router SNAT into public 203.0.113.5:41002 and tracked in conntrack so return packets rewrite destination back to 10.0.1.15:54321." color-scheme="dark">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#60a5fa"/></marker>
+<style>.t{font-family:ui-sans-serif,system-ui,sans-serif;font-size:15px;font-weight:700;fill:#e2e8f0}.l{font-family:ui-sans-serif,system-ui,sans-serif;font-size:12px;fill:#e2e8f0}.n{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;fill:#94a3b8}</style></defs>
+<rect width="100%" height="100%" fill="#0f172a"/>
+<text class="t" x="20" y="28">5-Tuple Sockets, SNAT, and Linux conntrack State</text>
+<rect x="20" y="60" width="175" height="85" rx="8" fill="#1e3a5f" stroke="#60a5fa" stroke-width="1.4"/>
+<text class="l" x="107.5" y="90.5" text-anchor="middle">Client Socket</text>
+<text class="l" x="107.5" y="106.5" text-anchor="middle">Src: 10.0.1.15:54321</text>
+<text class="l" x="107.5" y="122.5" text-anchor="middle">Dst: 93.184.216.34:443</text>
+<rect x="245" y="50" width="225" height="105" rx="8" fill="#422006" stroke="#fbbf24" stroke-width="1.4"/>
+<text class="l" x="357.5" y="82.5" text-anchor="middle">NAT Router + conntrack</text>
+<text class="l" x="357.5" y="98.5" text-anchor="middle">10.0.1.15:54321 &lt;-&gt;</text>
+<text class="l" x="357.5" y="114.5" text-anchor="middle">203.0.113.5:41002</text>
+<text class="l" x="357.5" y="130.5" text-anchor="middle">State: ESTABLISHED</text>
+<rect x="520" y="60" width="180" height="85" rx="8" fill="#143524" stroke="#4ade80" stroke-width="1.4"/>
+<text class="l" x="610.0" y="90.5" text-anchor="middle">Remote HTTPS Server</text>
+<text class="l" x="610.0" y="106.5" text-anchor="middle">Sees Src: 203.0.113.5:41002</text>
+<text class="l" x="610.0" y="122.5" text-anchor="middle">Dst: 93.184.216.34:443</text>
+<rect x="145" y="195" width="430" height="65" rx="8" fill="#1e293b" stroke="#64748b" stroke-width="1.4"/>
+<text class="l" x="360.0" y="223.5" text-anchor="middle">Reverse Path: Reply to 203.0.113.5:41002 hits conntrack</text>
+<text class="l" x="360.0" y="239.5" text-anchor="middle">DNAT rewrites Dst -&gt; 10.0.1.15:54321 before LAN forwarding</text>
+<line x1="195" y1="102" x2="245" y2="102" stroke="#60a5fa" stroke-width="1.6" marker-end="url(#ah)"/>
+<text class="n" x="220.0" y="96.0" text-anchor="middle">LAN</text>
+<line x1="470" y1="102" x2="520" y2="102" stroke="#60a5fa" stroke-width="1.6" marker-end="url(#ah)"/>
+<text class="n" x="495.0" y="96.0" text-anchor="middle">SNAT</text>
+<line x1="520" y1="130" x2="470" y2="195" stroke="#60a5fa" stroke-width="1.6" marker-end="url(#ah)"/>
+<text class="n" x="495.0" y="156.5" text-anchor="middle">reply</text>
+
+</svg>
