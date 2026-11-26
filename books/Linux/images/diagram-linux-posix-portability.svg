@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 230" role="img" aria-label="Comparison of POSIX sh subset versus Bash-specific extensions for portable Linux scripts" style="color-scheme:light">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#3b5b85"/></marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#c0392b"/></marker>
+  </defs>
+  <rect width="820" height="230" fill="#ffffff" rx="8"/>
+  <text x="410.0" y="30" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#1f2a36">POSIX /bin/sh Subset vs. Bashisms: Writing Portable Systems Scripts</text>
+  <rect x="30" y="65" width="360" height="140" rx="8" fill="#f4f7fb" stroke="#c0392b" stroke-width="2"/>
+  <text x="210.0" y="89" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">POSIX /bin/sh (dash, ash, busybox, bash)</text>
+  <text x="210.0" y="109" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">[ "$a" = "$b" ] single brackets</text>
+  <text x="210.0" y="125" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">printf '%s\n' (never echo -e)</text>
+  <text x="210.0" y="141" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Command substitution $(cmd)</text>
+  <text x="210.0" y="157" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Runs inside Alpine &amp; initramfs</text>
+  <rect x="430" y="65" width="360" height="140" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="610.0" y="89" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Bash-Only Extensions (#!/usr/bin/env bash)</text>
+  <text x="610.0" y="109" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">[[ ... ]] regex &amp; globbing</text>
+  <text x="610.0" y="125" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Indexed &amp; associative arrays</text>
+  <text x="610.0" y="141" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Process substitution &lt;(cmd)</text>
+  <text x="610.0" y="157" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">set -o pipefail (POSIX-2024+)</text>
+</svg>
