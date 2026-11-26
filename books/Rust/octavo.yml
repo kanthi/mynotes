@@ -313,6 +313,36 @@ book:
     - content/25-rust-atomics-and-locks/08-operating-system-primitives.md
     - content/25-rust-atomics-and-locks/09-building-our-own-locks.md
     - content/25-rust-atomics-and-locks/10-ideas-and-inspiration.md
+  - part: Networking and Socket Programming
+    contents:
+    - content/26-networking-and-sockets/01-tcp-udp-and-framing.md
+    - content/26-networking-and-sockets/02-tls-rustls-and-quic.md
+    - content/26-networking-and-sockets/03-reverse-proxies-and-load-balancers.md
+  - part: Backend Web Engineering with Axum and Tower
+    contents:
+    - content/27-backend-web-axum/01-axum-routing-extractors-and-state.md
+    - content/27-backend-web-axum/02-tower-middleware-auth-and-rate-limiting.md
+    - content/27-backend-web-axum/03-websockets-sse-and-graceful-shutdown.md
+  - part: Databases, Storage, and Caching
+    contents:
+    - content/28-databases-and-storage/01-sqlx-postgres-and-connection-pooling.md
+    - content/28-databases-and-storage/02-redis-caching-and-embedded-storage.md
+    - content/28-databases-and-storage/03-building-a-log-structured-kv-store.md
+  - part: gRPC, Protobuf, and Event-Driven Systems
+    contents:
+    - content/29-grpc-and-event-driven/01-tonic-grpc-and-protobuf.md
+    - content/29-grpc-and-event-driven/02-event-driven-kafka-nats-and-outbox.md
+  - part: Observability, Performance, and Production SRE
+    contents:
+    - content/30-observability-and-sre/01-structured-tracing-metrics-and-otel.md
+    - content/30-observability-and-sre/02-profiling-zero-copy-and-deployment.md
+  - part: Distributed Systems, Security, and Linux Systems Programming
+    contents:
+    - content/31-distributed-security-systems/01-distributed-resilience-and-consensus.md
+    - content/31-distributed-security-systems/02-security-hardening-and-linux-systems.md
+  - part: AI and Machine Learning in Rust
+    contents:
+    - content/32-ai-in-rust/01-tensors-inference-and-ai-agents.md
 format:
   html:
     theme: auto

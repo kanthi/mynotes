@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 240" role="img" aria-label="Axum and Tower request lifecycle through middleware layers, extractors, handler, and IntoResponse" style="color-scheme:light">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#3b5b85"/></marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#c0392b"/></marker>
+  </defs>
+  <rect width="820" height="240" fill="#ffffff" rx="8"/>
+  <text x="410.0" y="30" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#1f2a36">Axum + Tower HTTP Request Pipeline (Zero-Macro Composable Layers)</text>
+  <rect x="25" y="70" width="140" height="100" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="95.0" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">hyper HTTP/1-2</text>
+  <text x="95.0" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Accepts TCP/TLS</text>
+  <text x="95.0" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Parses Request</text>
+  <rect x="195" y="70" width="175" height="100" rx="8" fill="#f4f7fb" stroke="#c0392b" stroke-width="2"/>
+  <text x="282.5" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Tower Layers</text>
+  <text x="282.5" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">TraceLayer + Timeout</text>
+  <text x="282.5" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">RateLimit + Auth</text>
+  <text x="282.5" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Compression</text>
+  <rect x="400" y="70" width="175" height="100" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="487.5" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Axum Extractors</text>
+  <text x="487.5" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">State&lt;Arc&lt;App&gt;&gt;</text>
+  <text x="487.5" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Path / Query / Json</text>
+  <text x="487.5" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Compile-time typed</text>
+  <rect x="605" y="70" width="190" height="100" rx="8" fill="#f4f7fb" stroke="#c0392b" stroke-width="2"/>
+  <text x="700.0" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Handler -&gt; Response</text>
+  <text x="700.0" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">async fn handler()</text>
+  <text x="700.0" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Result&lt;Json, ApiErr&gt;</text>
+  <text x="700.0" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">impl IntoResponse</text>
+  <line x1="165" y1="120" x2="195" y2="120" stroke="#3b5b85" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="180" y="110" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#3b5b85"></text>
+  <line x1="370" y1="120" x2="400" y2="120" stroke="#c0392b" stroke-width="2" marker-end="url(#arrow-accent)"/>
+  <text x="385" y="110" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#c0392b"></text>
+  <line x1="575" y1="120" x2="605" y2="120" stroke="#3b5b85" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="590" y="110" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#3b5b85"></text>
+  <text x="410" y="208" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" fill="#5a6b7d">Tower Service&lt;Request&gt; composes identically across Axum HTTP servers, Tonic gRPC, and Hyper clients.</text>
+</svg>

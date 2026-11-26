@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 235" role="img" aria-label="Rust async networking stack from OS socket through Tokio, rustls, codec framing, and application protocol" style="color-scheme:light">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#3b5b85"/></marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#c0392b"/></marker>
+  </defs>
+  <rect width="820" height="235" fill="#ffffff" rx="8"/>
+  <text x="410.0" y="30" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#1f2a36">Rust High-Throughput Networking Stack: OS Socket to Protocol Handler</text>
+  <rect x="25" y="70" width="155" height="100" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="102.5" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">OS Kernel Socket</text>
+  <text x="102.5" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">epoll / kqueue /</text>
+  <text x="102.5" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">io_uring readiness</text>
+  <text x="102.5" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">TCP / UDP / QUIC</text>
+  <rect x="215" y="70" width="165" height="100" rx="8" fill="#f4f7fb" stroke="#c0392b" stroke-width="2"/>
+  <text x="297.5" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Tokio + rustls</text>
+  <text x="297.5" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">AsyncRead/Write</text>
+  <text x="297.5" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Memory-safe TLS 1.3</text>
+  <text x="297.5" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Zero OpenSSL C ABI</text>
+  <rect x="415" y="70" width="175" height="100" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="502.5" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Codec &amp; Framing</text>
+  <text x="502.5" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">tokio_util::codec</text>
+  <text x="502.5" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">LengthDelimited</text>
+  <text x="502.5" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">bytes::BytesMut</text>
+  <rect x="625" y="70" width="170" height="100" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="710.0" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Protocol Handler</text>
+  <text x="710.0" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">hyper / quinn /</text>
+  <text x="710.0" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Custom RPC / Proxy</text>
+  <text x="710.0" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Bounded backpressure</text>
+  <line x1="180" y1="120" x2="215" y2="120" stroke="#3b5b85" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="197" y="110" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#3b5b85"></text>
+  <line x1="380" y1="120" x2="415" y2="120" stroke="#c0392b" stroke-width="2" marker-end="url(#arrow-accent)"/>
+  <text x="397" y="110" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#c0392b"></text>
+  <line x1="590" y1="120" x2="625" y2="120" stroke="#3b5b85" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="607" y="110" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#3b5b85"></text>
+  <text x="410" y="205" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" fill="#5a6b7d">TCP is a byte stream, not a message stream—always frame packets explicitly with length prefixes or delimiters.</text>
+</svg>
