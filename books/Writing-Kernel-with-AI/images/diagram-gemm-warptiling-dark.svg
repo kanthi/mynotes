@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 330" role="img" aria-label="GEMM warptiling hierarchy decomposing an output matrix from Grid to 128x128 Block Tile in shared memory, to 64x64 Warp Tiles, down to 8x8 Thread Register Tiles fed by float4 vectorized loads" color-scheme="dark">
+<rect width="820" height="330" fill="#11161d"/>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#7fa7d9"/></marker></defs>
+<text x="410" y="28" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="16" font-weight="700" fill="#e6edf5">GEMM 4-Level Tiling Hierarchy (HBM -> SMEM -> Registers)</text>
+<rect x="26" y="64" width="166" height="104" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="109" y="90" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="700" fill="#e6edf5">1. Grid (M x N)</text>
+<text x="109" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Global HBM</text>
+<text x="109" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">~2-3 TB/s</text>
+<text x="109" y="150" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#9fb0c3">float4 128-bit loads</text>
+<rect x="226" y="64" width="172" height="104" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="312" y="90" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="700" fill="#e6edf5">2. Block Tile</text>
+<text x="312" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">BM=128, BN=128</text>
+<text x="312" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Shared Memory</text>
+<text x="312" y="150" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#9fb0c3">~19 TB/s (double buf)</text>
+<rect x="432" y="64" width="166" height="104" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="515" y="90" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="700" fill="#e6edf5">3. Warp Tile</text>
+<text x="515" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">WM=64, WN=64</text>
+<text x="515" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">32-thread warp</text>
+<text x="515" y="150" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#9fb0c3">conflict-free SMEM</text>
+<rect x="632" y="58" width="162" height="116" rx="8" fill="#1a2330" stroke="#ff7b6b" stroke-width="2.2"/>
+<text x="713" y="88" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="700" fill="#e6edf5">4. Thread Tile</text>
+<text x="713" y="110" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">TM=8, TN=8 (64 FMA)</text>
+<text x="713" y="128" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Register File</text>
+<text x="713" y="148" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#ff7b6b">16 loads -> 64 FMAs</text>
+<line x1="192" y1="116" x2="224" y2="116" stroke="#7fa7d9" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="398" y1="116" x2="430" y2="116" stroke="#7fa7d9" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="598" y1="116" x2="630" y2="116" stroke="#7fa7d9" stroke-width="1.6" marker-end="url(#a)"/>
+<rect x="110" y="212" width="600" height="58" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="410" y="236" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" font-weight="700" fill="#e6edf5">Outer Product in Registers: regA[8] x regB[8] -> acc[8][8]</text>
+<text x="410" y="256" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#9fb0c3">arithmetic intensity jumps 4x per thread vs 1D tiling, hiding shared-memory latency</text>
+<text x="410" y="304" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" fill="#9fb0c3">each level amplifies data reuse before touching the slower memory tier below it</text>
+</svg>

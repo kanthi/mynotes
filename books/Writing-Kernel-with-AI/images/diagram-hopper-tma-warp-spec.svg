@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 320" role="img" aria-label="Hopper H100 warp-specialized pipeline showing Producer Warps issuing asynchronous TMA copies from HBM into a multi-stage SMEM ring buffer synchronized via mbarrier with Consumer Warp Groups executing WGMMA" color-scheme="light">
+<rect width="820" height="320" fill="#ffffff"/>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#3b5b85"/></marker></defs>
+<text x="410" y="28" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="16" font-weight="700" fill="#1f2a36">Hopper H100 Warp-Specialized TMA + WGMMA Pipeline</text>
+<rect x="26" y="64" width="136" height="84" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="94" y="96" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="700" fill="#1f2a36">Global HBM</text>
+<text x="94" y="116" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">2D/3D Tensors</text>
+<text x="94" y="134" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">3.35 TB/s</text>
+<rect x="200" y="64" width="160" height="84" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="280" y="92" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1f2a36">Producer Warp (TMA)</text>
+<text x="280" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">cp.async.bulk.tensor</text>
+<text x="280" y="132" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10" fill="#5a6b7d">bypasses register file</text>
+<rect x="398" y="58" width="166" height="96" rx="8" fill="#f4f7fb" stroke="#c0392b" stroke-width="2.2"/>
+<text x="481" y="86" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1f2a36">SMEM Ring Buffer</text>
+<text x="481" y="106" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Stages 0..3 (swizzled)</text>
+<text x="481" y="126" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#c0392b">mbarrier full / empty</text>
+<rect x="602" y="64" width="192" height="84" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="698" y="92" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1f2a36">Consumer Warp Groups</text>
+<text x="698" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">128 threads -> WGMMA</text>
+<text x="698" y="132" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10" fill="#5a6b7d">256 regs via setmaxnreg</text>
+<rect x="190" y="198" width="440" height="58" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="410" y="222" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" font-weight="700" fill="#1f2a36">Dynamic Register Reallocation (setmaxnreg.dec / inc)</text>
+<text x="410" y="242" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#5a6b7d">Producer warps drop to ~40 regs so Consumer math warps get up to 232+ regs</text>
+<line x1="162" y1="106" x2="198" y2="106" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="360" y1="106" x2="396" y2="106" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="564" y1="106" x2="600" y2="106" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<text x="410" y="292" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" fill="#5a6b7d">memory fetches overlap 100% behind continuous WGMMA tensor-core execution</text>
+</svg>

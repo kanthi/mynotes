@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 310" role="img" aria-label="Comparison of eager CUDA kernel launches with idle GPU bubbles between CPU launches versus CUDA Graph replay launching an entire captured DAG in one host call with zero inter-kernel bubbles" color-scheme="dark">
+<rect width="820" height="310" fill="#11161d"/>
+<text x="410" y="28" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="16" font-weight="700" fill="#e6edf5">Eager Stream Launches vs. CUDA Graph Replay</text>
+<rect x="28" y="54" width="764" height="96" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="46" y="76" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#e6edf5">Eager Execution (CPU launch-bound for small decode kernels)</text>
+<rect x="46" y="92" width="110" height="38" rx="5" fill="#11161d" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="101" y="115" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#e6edf5">K1 (RMSNorm)</text>
+<text x="186" y="115" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#ff7b6b">CPU gap</text>
+<rect x="218" y="92" width="110" height="38" rx="5" fill="#11161d" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="273" y="115" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#e6edf5">K2 (QKV GEMV)</text>
+<text x="358" y="115" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#ff7b6b">CPU gap</text>
+<rect x="390" y="92" width="110" height="38" rx="5" fill="#11161d" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="445" y="115" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#e6edf5">K3 (RoPE)</text>
+<text x="530" y="115" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#ff7b6b">CPU gap</text>
+<rect x="562" y="92" width="120" height="38" rx="5" fill="#11161d" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="622" y="115" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#e6edf5">K4 (Attention)</text>
+<rect x="28" y="170" width="764" height="96" rx="8" fill="#1a2330" stroke="#ff7b6b" stroke-width="2"/>
+<text x="46" y="192" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#e6edf5">CUDA Graph Replay (1 host launch -> GPU executes back-to-back)</text>
+<rect x="46" y="208" width="110" height="38" rx="5" fill="#11161d" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="101" y="231" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#e6edf5">K1 (RMSNorm)</text>
+<rect x="160" y="208" width="110" height="38" rx="5" fill="#11161d" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="215" y="231" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#e6edf5">K2 (QKV GEMV)</text>
+<rect x="274" y="208" width="110" height="38" rx="5" fill="#11161d" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="329" y="231" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#e6edf5">K3 (RoPE)</text>
+<rect x="388" y="208" width="120" height="38" rx="5" fill="#11161d" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="448" y="231" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#e6edf5">K4 (Attention)</text>
+<text x="645" y="231" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" font-weight="700" fill="#ff7b6b">wall-clock saved</text>
+<text x="410" y="294" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" fill="#9fb0c3">capture once with static shapes &amp; pointers; replay via cudaGraphLaunch with ~1 us host overhead</text>
+</svg>

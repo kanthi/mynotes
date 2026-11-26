@@ -6,7 +6,9 @@ title: Shared Memory Bank Conflicts
 
 ## Thesis
 
-On NVIDIA GPUs, **shared memory** is striped into **banks**. When threads in a warp hit the **same bank** with different addresses, accesses serialise — a **bank conflict**. Padding or changed layouts remove conflicts without changing algorithms.
+On NVIDIA GPUs, **shared memory** is striped into **32 four-byte banks** (`bank = (byte_addr / 4) % 32`). When threads in a warp hit the **same bank** with different addresses, accesses serialize into $k$-way **bank conflicts**. Inner-dimension padding (`+1`) or **XOR swizzling** (`col ^ row`) removes conflicts without changing algorithms.
+
+![Shared memory bank conflicts comparing a 32-way conflict on unpadded 32x32 column reads against conflict-free diagonal striping on padded 32x33 tiles or XOR swizzling.](../../images/diagram-smem-bank-conflicts.svg)
 
 ## Mental model
 

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 320" role="img" aria-label="NVIDIA Blackwell B200 architecture showing NVFP4 16-element micro-blocks with E4M3 scales flowing from HBM via TMA into SMEM, executed by single-thread-issued tcgen05 Tensor Cores into dedicated Tensor Memory TMEM" color-scheme="light">
+<rect width="820" height="320" fill="#ffffff"/>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#3b5b85"/></marker></defs>
+<text x="410" y="28" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="16" font-weight="700" fill="#1f2a36">Blackwell (B200) tcgen05, Dedicated TMEM &amp; NVFP4 Block Scaling</text>
+<rect x="26" y="62" width="184" height="90" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="118" y="88" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="700" fill="#1f2a36">NVFP4 Micro-Block</text>
+<text x="118" y="108" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">16 x E2M1 (4-bit)</text>
+<text x="118" y="126" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#c0392b">+ 1 x E4M3 block scale</text>
+<text x="118" y="142" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10" fill="#5a6b7d">+ per-tensor FP32 scale</text>
+<rect x="250" y="62" width="144" height="90" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="322" y="92" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="700" fill="#1f2a36">TMA -> SMEM</text>
+<text x="322" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">2-CTA multicast</text>
+<text x="322" y="132" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10" fill="#5a6b7d">8 TB/s HBM3e</text>
+<rect x="434" y="56" width="166" height="102" rx="8" fill="#f4f7fb" stroke="#c0392b" stroke-width="2.2"/>
+<text x="517" y="86" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" font-weight="700" fill="#1f2a36">tcgen05.mma</text>
+<text x="517" y="108" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#5a6b7d">1-thread async issue</text>
+<text x="517" y="126" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#5a6b7d">native FP4 scaling</text>
+<text x="517" y="144" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#c0392b">up to 256x256 tiles</text>
+<rect x="638" y="62" width="156" height="90" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="716" y="92" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="700" fill="#1f2a36">Dedicated TMEM</text>
+<text x="716" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">256 KB / SM</text>
+<text x="716" y="132" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10" fill="#5a6b7d">frees RF for epilogue</text>
+<rect x="160" y="198" width="500" height="58" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="410" y="222" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" font-weight="700" fill="#1f2a36">Why TMEM Matters: Accumulators Leave the Register File</text>
+<text x="410" y="242" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#5a6b7d">Epilogue warps read finished accumulators from TMEM while tcgen05 starts the next K-tile</text>
+<line x1="210" y1="107" x2="248" y2="107" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="394" y1="107" x2="432" y2="107" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="600" y1="107" x2="636" y2="107" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<text x="410" y="292" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" fill="#5a6b7d">decoupling MMA accumulation into TMEM breaks Hopper's 255-register-per-thread ceiling</text>
+</svg>
