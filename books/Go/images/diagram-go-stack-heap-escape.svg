@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 280" role="img" aria-label="Values whose lifetime stays within a function stay on the fast goroutine stack; values returned as pointers or boxed into interfaces escape to the GC-managed heap." color-scheme="light">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#2563eb"/></marker>
+<style>.t{font-family:ui-sans-serif,system-ui,sans-serif;font-size:15px;font-weight:700;fill:#1f2933}.l{font-family:ui-sans-serif,system-ui,sans-serif;font-size:12px;fill:#1f2933}.n{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;fill:#52606d}</style></defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text class="t" x="20" y="28">Go Stack Frame vs. Heap Escape Analysis</text>
+<rect x="20" y="55" width="200" height="95" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+<text class="l" x="120.0" y="90.5" text-anchor="middle">Compiler Escape Analysis</text>
+<text class="l" x="120.0" y="106.5" text-anchor="middle">go build -gcflags='-m'</text>
+<text class="l" x="120.0" y="122.5" text-anchor="middle">Proves pointer lifetime</text>
+<rect x="275" y="45" width="425" height="85" rx="8" fill="#e3f6e8" stroke="#15803d" stroke-width="1.4"/>
+<text class="l" x="487.5" y="83.5" text-anchor="middle">Goroutine Stack (2 KiB initial, grows dynamically)</text>
+<text class="l" x="487.5" y="99.5" text-anchor="middle">Local structs, non-escaping slices -&gt; freed on return (0 GC cost)</text>
+<rect x="275" y="160" width="425" height="95" rx="8" fill="#fde8e7" stroke="#b42318" stroke-width="1.4"/>
+<text class="l" x="487.5" y="195.5" text-anchor="middle">GC-Managed Heap (mcache -&gt; mcentral -&gt; mheap)</text>
+<text class="l" x="487.5" y="211.5" text-anchor="middle">Returned &amp;local, interface boxing, oversized slices</text>
+<text class="l" x="487.5" y="227.5" text-anchor="middle">Tracked by tri-color mark-sweep GC</text>
+<line x1="220" y1="85" x2="275" y2="85" stroke="#2563eb" stroke-width="1.6" marker-end="url(#ah)"/>
+<text class="n" x="247.5" y="79.0" text-anchor="middle">does not escape</text>
+<line x1="220" y1="125" x2="275" y2="195" stroke="#2563eb" stroke-width="1.6" marker-end="url(#ah)"/>
+<text class="n" x="247.5" y="154.0" text-anchor="middle">escapes to heap</text>
+
+</svg>

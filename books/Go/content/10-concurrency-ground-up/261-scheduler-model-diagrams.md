@@ -4,6 +4,8 @@ title: Scheduler Model with Diagrams
 
 # Scheduler Model with Diagrams
 
+![Go GMP Scheduler and Netpoller Lifecycle](../../images/diagram-go-gmp-netpoller.svg)
+
 ## Overview
 
 A teaching model of how Go runs many goroutines on few threads—enough to reason about blocking, GOMAXPROCS, and syscalls. For production-depth GMP, also read [Scheduler deep dive](../25-go-deep-dives/201-scheduler-gmp-deep-dive.md).

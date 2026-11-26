@@ -445,6 +445,12 @@ book:
       - content/07-gitops/02-flux-quickstart/02-cd-with-actions.md
       - content/07-gitops/02-flux-quickstart/03-flux-operator.md
       - content/07-gitops/02-flux-quickstart/04-future-of-gitops.md
+    - part: Platform & GitOps Projects
+      contents:
+      - content/07-gitops/03-multi-cluster-idp-argocd-crossplane.md
+      - content/07-gitops/04-gpu-inference-autoscaling-and-progressive-delivery.md
+      - content/07-gitops/05-supply-chain-helm-library-and-detection-as-code.md
+      - content/07-gitops/06-airgapped-byoc-offline-installer-and-flux-monorepo.md
   - part: Argo CD
     contents:
     - part: Concepts and Architecture

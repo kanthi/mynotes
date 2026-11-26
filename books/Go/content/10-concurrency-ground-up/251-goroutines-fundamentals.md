@@ -8,7 +8,7 @@ title: Goroutines Fundamentals
 
 A **goroutine** is a function executing independently under the Go runtime. The keyword `go` starts that execution; it does not create an OS thread by itself. Thousands of goroutines can multiplex onto far fewer threads.
 
-The order of ideas below follows the opening chapter of Anton Zhiyanov's [Gist of Go: Goroutines](https://antonz.org/go-concurrency/goroutines/). The programs are this book's. If you already use `async`/`await` in another language, leave that model at the door: a goroutine is not a promise you `await`, and `main` does not suspend until the calls you started come back.
+If you already use `async`/`await` in another language, leave that model at the door: a goroutine is not a promise you `await`, and `main` does not suspend until the calls you started come back.
 
 ## Sequential vs concurrent
 

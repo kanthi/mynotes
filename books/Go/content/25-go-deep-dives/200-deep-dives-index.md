@@ -52,6 +52,19 @@ If you are still learning syntax, finish Core, Memory, and Concurrency first.
 ### F — Production craft
 225 HTTP transport → 241 TLS → 242 slog handlers → 237 mistakes → 238 debugging → 240 reading source → 245 topic radar
 
+### G — Go Internals: Source Code to Assembly & Runtime (8-Module Track)
+
+| Module | Topics | Chapters |
+|--------|--------|----------|
+| **01. Go Thinks Simple Works Better** | What makes Go special, the Go way, design decisions, how Go runs code | [01 Why Go Exists](../01-foundations/01-why-go-exists.md), [01b Boring Philosophy](../01-foundations/01b-boring-philosophy.md), [248 Runtime Bootstrap](248-runtime-bootstrap.md) |
+| **02. Basic Data Types, Variables & Constants** | Integer bit-widths, IEEE-754 floats, 1-byte bool, pointers, vars/consts, `unsafe.Pointer`, addressable vs. unaddressable | [09b Machine Representation & Addressability](../02-core/09b-machine-representation-addressability.md), [23 Pointers](../03-memory/23-pointers.md), [02 Unsafe Code](../26-long-term-maintenance/02-unsafe-code.md) |
+| **03. Arrays, Slices, Strings & Maps** | Fixed-size arrays, slice headers, string immutability, Swiss map internals | [15–17 Core Data Structures](../02-core/15-arrays-slices.md), [205 Slice & Map Internals](205-slice-map-internals.md), [218 Swiss Maps](218-swiss-maps-maphash.md), [235 String/Byte Internals](235-string-byte-internals.md) |
+| **04. Structs, Generics & Interfaces** | Struct layout/alignment, `eface`/`iface` runtime mechanics, generic stencils & dictionaries | [25c Alignment](../03-memory/25c-escape-analysis-alignment.md), [204 Interface Representation](204-interface-representation.md), [207 Generics Implementation](207-generics-implementation.md) |
+| **05. How Does Go Code Turn into Assembly?** | Stages 1–7: AST, type checking, IR, optimizations, walk, SSA, arch assembly | [272 Compilation Pipeline Hands-On](272-go-compilation-pipeline-hands-on.md), [252 Compiler Frontend](252-compiler-frontend.md), [253 IR/SSA Backend](253-compiler-ir-ssa-backend.md), [230 ABI & Assembly](230-abi-assembly-nosplit.md) |
+| **06. Functionality** | `defer`, `panic`/`recover`, dead code elimination, inlining, devirtualization | [206 Defer, Panic & Stack](206-defer-panic-stack.md), [271 Walk, DCE & Devirtualization](271-compiler-walk-dce-devirtualization.md) |
+| **07. Memory** | Stack growth/shrinking, escape analysis, heap allocator, GC | [215 Stack Growth](215-stack-growth-copying.md), [25c Escape Analysis](../03-memory/25c-escape-analysis-alignment.md), [247 Memory Allocator](247-memory-allocator-deep-dive.md), [208 GC Internals](208-gc-internals-pacer.md) |
+| **08. Concurrency** | Channels, `select`, timers, startup, goroutine lifecycle, scheduler, I/O, netpoller, `sysmon` | [203 Channels & Select](203-channels-select-internals.md), [249 `selectgo`](249-selectgo-compiler-runtime.md), [214 Timers](214-timers-time-after-pitfalls.md), [201 GMP Scheduler](201-scheduler-gmp-deep-dive.md), [263 Goroutine Switch](263-goroutine-switch-mechanics.md), [213 Netpoller](213-netpoller-network-io.md), [239 Sysmon](239-sysmon-scavenger-runtime.md) |
+
 ## Full Chapter Map
 
 | # | Topic |
@@ -127,6 +140,7 @@ If you are still learning syntax, finish Core, Memory, and Concurrency first.
 | 269 | [`goroutineleak` pprof profile](269-goroutineleak-pprof.md) |
 | 270 | [Open-source architecture teardown: Kubernetes, `etcd`, and Prometheus in Go 1.27](270-oss-architecture-k8s-etcd-prometheus.md) |
 | 271 | [Compiler walk pass, dead code elimination, and devirtualization](271-compiler-walk-dce-devirtualization.md) |
+| 272 | [Inspecting the Go compilation pipeline: source to assembly](272-go-compilation-pipeline-hands-on.md) |
 
 ## Stack Diagram
 

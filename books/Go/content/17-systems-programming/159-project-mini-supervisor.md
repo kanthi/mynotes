@@ -1,60 +1,98 @@
 ---
-title: 'Project: Mini Process Supervisor'
+title: 'Project: Mini Process Supervisor (minisup)'
 ---
 
-# Project: Mini Process Supervisor
+# Project: Mini Process Supervisor (`minisup`)
 
-## Overview
+Build a lightweight process supervisor in Go that launches a child process in its own process group, restarts it with exponential backoff on unexpected exit, and forwards `SIGINT`/`SIGTERM` cleanly to the entire child process group on shutdown.
 
-Build **`minisup`**: run multiple child commands, restart on crash, forward signals, aggregate logs—a teaching systemd/overmind lite.
+## Lifecycle State Machine
 
-## Spec
-
-```yaml
-# procfile-ish
-web:   ./bin/web -addr :8080
-worker: ./bin/worker
+```text
+Start -> Spawn Child (Setpgid: true) -> Wait
+            ^                             |
+            |    (unexpected exit)        +---> ctx.Done() -> SIGTERM (-pgid) -> grace timeout -> SIGKILL (-pgid)
+            +-- Backoff (1s..30s) <-------+
 ```
 
-Or flags:
-
-```bash
-minisup -cmd "web=./web" -cmd "worker=./worker"
-```
-
-## Requirements
-
-1. Start all children with `Command`
-2. Prefix stdout/stderr lines with name
-3. On child exit ≠ 0 → restart with backoff (cap)
-4. SIGTERM → signal children, wait with deadline, then SIGKILL
-5. Exit when all stopped after shutdown
-
-## Signal fanout
+## Core Supervisor Loop
 
 ```go
-cmd := exec.Command(bin, args...)
-cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true} // Unix: kill group
-// On stop: syscall.Kill(-pgid, SIGTERM)
+package main
+
+import (
+	"context"
+	"log/slog"
+	"os"
+	"os/exec"
+	"os/signal"
+	"syscall"
+	"time"
+)
+
+func supervise(ctx context.Context, name string, args ...string) error {
+	backoff := time.Second
+	const maxBackoff = 30 * time.Second
+
+	for {
+		cmd := exec.Command(name, args...)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		// Put child in its own process group so we can signal the whole tree.
+		cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+
+		started := time.Now()
+		if err := cmd.Start(); err != nil {
+			return err
+		}
+		pgid := cmd.Process.Pid
+		slog.Info("child started", "pid", pgid, "cmd", name)
+
+		done := make(chan error, 1)
+		go func() { done <- cmd.Wait() }()
+
+		select {
+		case <-ctx.Done():
+			slog.Info("shutting down child process group", "pgid", pgid)
+			_ = syscall.Kill(-pgid, syscall.SIGTERM)
+			select {
+			case <-done:
+			case <-time.After(5 * time.Second):
+				slog.Warn("grace period expired, sending SIGKILL", "pgid", pgid)
+				_ = syscall.Kill(-pgid, syscall.SIGKILL)
+				<-done
+			}
+			return nil
+
+		case err := <-done:
+			if time.Since(started) > 30*time.Second {
+				backoff = time.Second // reset backoff after healthy run
+			}
+			slog.Warn("child exited, restarting", "err", err, "backoff", backoff)
+			select {
+			case <-ctx.Done():
+				return nil
+			case <-time.After(backoff):
+				backoff = min(backoff*2, maxBackoff)
+			}
+		}
+	}
+}
+
+func main() {
+	if len(os.Args) < 2 {
+		os.Exit(2)
+	}
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	if err := supervise(ctx, os.Args[1], os.Args[2:]...); err != nil {
+		slog.Error("supervisor failed", "err", err)
+		os.Exit(1)
+	}
+}
 ```
 
-## Log prefix
+## Verification
 
-```go
-cmd.Stdout = prefixWriter{name: "web", w: os.Stdout}
-```
-
-## Acceptance
-
-- [ ] Two children stay up
-- [ ] Kill one; it restarts
-- [ ] Ctrl-C stops both within 5s
-- [ ] Max restarts then give up with error
-
-## Stretch
-
-- Health: restart if TCP port fails dial
-- Procfile parser
-- Status UDS: `minisup status`
-
-Chapters: 141, 145, 150, 153.
+- Run `minisup sh -c 'echo hi; exit 1'` and observe exponential backoff restarts (`1s`, `2s`, `4s`).
+- Send `SIGINT` (`Ctrl+C`) and verify no orphan child processes remain (`ps -ef`).

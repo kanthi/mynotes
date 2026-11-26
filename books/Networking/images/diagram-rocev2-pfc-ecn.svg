@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 280" role="img" aria-label="Switch queue marks ECN CE bits when buffer crosses Kmin so sender DCQCN throttles rate before buffer reaches XOFF and triggers PFC PAUSE frames." color-scheme="light">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#2563eb"/></marker>
+<style>.t{font-family:ui-sans-serif,system-ui,sans-serif;font-size:15px;font-weight:700;fill:#1f2933}.l{font-family:ui-sans-serif,system-ui,sans-serif;font-size:12px;fill:#1f2933}.n{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;fill:#52606d}</style></defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text class="t" x="20" y="28">RoCEv2 Lossless Ethernet: ECN Marking Before PFC Pause</text>
+<rect x="20" y="60" width="155" height="80" rx="8" fill="#e0ecff" stroke="#2563eb" stroke-width="1.4"/>
+<text class="l" x="97.5" y="88.0" text-anchor="middle">GPU Sender (NIC)</text>
+<text class="l" x="97.5" y="104.0" text-anchor="middle">RoCEv2 UDP/4791</text>
+<text class="l" x="97.5" y="120.0" text-anchor="middle">DCQCN Rate Control</text>
+<rect x="225" y="45" width="260" height="110" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+<text class="l" x="355.0" y="80.0" text-anchor="middle">Leaf Switch Egress Queue</text>
+<text class="l" x="355.0" y="96.0" text-anchor="middle">Kmin..Kmax -&gt; Mark ECN (CE=1)</text>
+<text class="l" x="355.0" y="112.0" text-anchor="middle">XOFF Threshold -&gt; Send PFC PAUSE</text>
+<text class="l" x="355.0" y="128.0" text-anchor="middle">Prevents tail drops in all-reduce</text>
+<rect x="535" y="60" width="165" height="80" rx="8" fill="#e3f6e8" stroke="#15803d" stroke-width="1.4"/>
+<text class="l" x="617.5" y="88.0" text-anchor="middle">GPU Receiver (NIC)</text>
+<text class="l" x="617.5" y="104.0" text-anchor="middle">Echoes CNP packet</text>
+<text class="l" x="617.5" y="120.0" text-anchor="middle">back to GPU Sender</text>
+<rect x="195" y="190" width="330" height="65" rx="8" fill="#f5f7fa" stroke="#7b8794" stroke-width="1.4"/>
+<text class="l" x="360.0" y="218.5" text-anchor="middle">Healthy order: ECN + CNP throttles smoothly</text>
+<text class="l" x="360.0" y="234.5" text-anchor="middle">Last-resort safety net: PFC PAUSE (avoid head-of-line deadlock)</text>
+<line x1="175" y1="100" x2="225" y2="100" stroke="#2563eb" stroke-width="1.6" marker-end="url(#ah)"/>
+<text class="n" x="200.0" y="94.0" text-anchor="middle">RDMA</text>
+<line x1="485" y1="100" x2="535" y2="100" stroke="#2563eb" stroke-width="1.6" marker-end="url(#ah)"/>
+<text class="n" x="510.0" y="94.0" text-anchor="middle">ECN</text>
+<line x1="535" y1="130" x2="175" y2="185" stroke="#2563eb" stroke-width="1.6" marker-end="url(#ah)"/>
+<text class="n" x="355.0" y="151.5" text-anchor="middle">CNP throttle</text>
+
+</svg>

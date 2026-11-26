@@ -4,6 +4,8 @@ title: Stack Mechanics & Optimizations
 
 # Understanding Memory: Stack vs. Heap in Go
 
+![Go Stack Frame vs. Heap Escape Analysis](../../images/diagram-go-stack-heap-escape.svg)
+
 To write high-performance Go, you must understand where your variables live. Go abstracts memory management, but it doesn't eliminate the physics of hardware.
 
 ## The Two Worlds

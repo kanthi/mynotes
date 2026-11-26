@@ -73,6 +73,8 @@ content/05-services-and-security/03b-secrets-sops-vs-agenix.html	Choosing betwee
 content/05-services-and-security/03c-vault-integration.html	HashiCorp Vault Integration
 content/05-services-and-security/04-hardening.html	Host hardening patterns
 content/05-services-and-security/05-firewall-discipline.html	Firewall discipline
+content/05-services-and-security/05b-internet-routing-bird-bgp.html	Internet-scale routing with BIRD and BGP
+content/05-services-and-security/05c-nixos-router-bird-module-internals.html	NixOS Router: the typed BIRD module
 content/05-services-and-security/06-tls-front-door.html	TLS and reverse-proxy front door
 content/05-services-and-security/07-data-service.html	A data service pattern
 content/05-services-and-security/08-nixos-containers.html	NixOS containers
@@ -119,6 +121,7 @@ content/07-ops-and-fleet/13-backups.html	Backup story
 content/07-ops-and-fleet/14-auto-upgrade.html	Unattended upgrades (system.autoUpgrade)
 content/07-ops-and-fleet/15-read-an-update-before-switching.html	Read an Update Before You Switch: diff-closures, path-info and why-depends
 content/07-ops-and-fleet/15b-deployment-lifeline-tmux-et-btop.html	Deployment Lifeline and Rapid Patching: Spare Tunnels, Eternal Terminal, tmux, and btop
+content/07-ops-and-fleet/15c-nix-diff-between-revisions.html	Diffing NixOS configurations between revisions
 content/07-ops-and-fleet/16-is-my-flake-lock-stale.html	Is My flake.lock Stale? Lock Age, Branch Distance and End-of-Life Branches
 content/08-internals/00-index.html	Internals and currency
 content/08-internals/01-evaluator.html	The evaluator
@@ -208,6 +211,18 @@ content/16-misc/01-current-nix-and-nixos.html	Current Nix and NixOS
 content/16-misc/02-how-a-release-is-built.html	How a Release Is Built
 content/16-misc/03-minimal-iso-to-desktop.html	Minimal ISO to a Desktop
 content/16-misc/04-sleeping-builder.html	A Builder That Sleeps
+content/16-misc/05-nixcon-2025-field-guide.html	NixCon 2025 field guide
+content/16-misc/06-nixcon-2025-infrastructure-and-builds.html	NixCon 2025: Nix infrastructure and build internals
+content/16-misc/07-nixcon-2025-production-operations.html	NixCon 2025: operating NixOS in production
+content/16-misc/08-nixcon-2025-config-secrets-and-sandboxing.html	NixCon 2025: configuration patterns, secrets and sandboxing
+content/16-misc/09-nixcon-2025-deep-dives.html	NixCon 2025 deep dives
+content/16-misc/10-nixcon-2026-core-builds-and-stores.html	NixCon 2026: Nix core, builds and stores
+content/16-misc/11-nixcon-2026-operations-security-and-platforms.html	NixCon 2026: operations, security and platforms
+content/16-misc/12-nixcon-2024-highlights.html	NixCon 2024 highlights
+content/16-misc/13-nix-2-36-release-and-installer.html	Nix 2.36 and the official installer
+content/16-misc/14-installing-nixos-on-a-small-vps.html	Installing NixOS on a small VPS: a field report
+content/16-misc/15-restic-backups-field-report.html	Restic backups: a field report and the NixOS mapping
+content/16-misc/16-deploy-rs-field-notes.html	deploy-rs: field notes for my fleet
 content/99-projects/00-index.html	Projects index
 content/99-projects/01-derivation-hello-cli.html	Project 1: Hello CLI derivation
 content/99-projects/02-derivation-script-tool.html	Project 2: Script tool derivation

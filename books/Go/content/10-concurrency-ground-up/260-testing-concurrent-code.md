@@ -87,8 +87,29 @@ assertState()
 Prefer:
 
 - channel signal when state is ready
+- `t.Context()` (Go 1.24+) so test-scoped goroutines cancel automatically on test completion
 - polling with timeout only when API is legacy
-- `testing/synctest` bubbles when available (full runtime model: [synctest deep dive](../25-go-deep-dives/223-testing-synctest-bubbles.md))
+- `testing/synctest` bubbles (`synctest.Test` + `synctest.Wait`, Go 1.25+) for deterministic fake-clock tests (full runtime model: [synctest deep dive](../25-go-deep-dives/223-testing-synctest-bubbles.md))
+- `goroutineleak` pprof profile (Go 1.27+) to catch leaked blocked goroutines in CI ([goroutineleak pprof](../25-go-deep-dives/269-goroutineleak-pprof.md))
+
+### Deterministic Time with `testing/synctest`
+
+```go
+func TestTimeoutWithSynctest(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
+		defer cancel()
+
+		// Advances the bubble's fake clock immediately once all goroutines are durably blocked.
+		time.Sleep(5 * time.Second)
+		synctest.Wait()
+
+		if !errors.Is(ctx.Err(), context.DeadlineExceeded) {
+			t.Fatalf("got %v, want DeadlineExceeded", ctx.Err())
+		}
+	})
+}
+```
 
 ## Testing cancel paths
 

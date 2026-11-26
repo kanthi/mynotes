@@ -41,6 +41,12 @@ book:
     - content/02-networking-foundations/11-host-forwarding-and-routing-intro.md
     - content/02-networking-foundations/12-control-data-management-planes.md
     - content/02-networking-foundations/13-encrypted-dns-doh-dot.md
+    - content/02-networking-foundations/14-from-signals-to-frames.md
+    - content/02-networking-foundations/15-from-a-url-to-a-web-response.md
+    - content/02-networking-foundations/16-peer-discovery-and-piece-verification.md
+    - content/02-networking-foundations/17-cidr-subnetting-vlsm-worked.md
+    - content/02-networking-foundations/18-sockets-ports-nat-and-conntrack.md
+    - content/02-networking-foundations/19-how-a-host-gets-online-end-to-end.md
   - part: Layer 2
     contents:
     - content/03-layer-2/index.md
@@ -64,6 +70,7 @@ book:
     - content/04-ip-routing-services/07-vrf-and-policy-routing.md
     - content/04-ip-routing-services/08-linux-ecmp-nexthop-groups.md
     - content/04-ip-routing-services/09-multicast-distribution.md
+    - content/04-ip-routing-services/10-follow-a-connection-across-the-internet.md
   - part: Network Services
     contents:
     - content/04-network-services/index.md
@@ -134,6 +141,8 @@ book:
     - content/06-policy-qos-hardening/09-macsec-and-mka.md
     - content/06-policy-qos-hardening/10-rtbh-and-flowspec.md
     - content/06-policy-qos-hardening/11-ipv6-first-hop-security.md
+    - content/06-policy-qos-hardening/12-keys-identities-and-encryption-boundaries.md
+    - content/06-policy-qos-hardening/13-federated-login-and-api-authorization.md
   - part: Security Operations and NetOps
     contents:
     - content/06-security-operations/index.md
@@ -153,6 +162,7 @@ book:
     - content/06-security-operations/08-source-of-truth-templating-and-drift.md
     - content/06-security-operations/09-runbooks-and-incident-notes.md
     - content/06-security-operations/10-prechange-verification-and-streaming-telemetry.md
+    - content/06-security-operations/11-netops-ci-batfish-nornir-suzieq.md
   - part: Overlays and Tunnels
     contents:
     - content/07-a-overlays-tunnels/index.md
@@ -178,6 +188,9 @@ book:
     - content/07-a-overlays-tunnels/09-masque-connect-udp-ip.md
     - content/07-a-overlays-tunnels/10-mpls-label-switching.md
     - content/07-a-overlays-tunnels/10b-bgp-mpls-l3vpn.md
+    - content/07-a-overlays-tunnels/11-virtual-interfaces-and-sdn.md
+    - content/07-a-overlays-tunnels/12-onion-routing-and-observer-visibility.md
+    - content/07-a-overlays-tunnels/13-sdwan-multipath-steering-and-fec.md
   - part: Fabrics and Multi-Area
     contents:
     - content/07-b-fabrics-multi-area/index.md
@@ -189,6 +202,7 @@ book:
     - content/07-b-fabrics-multi-area/06-evpn-vxlan-fabric-design.md
     - content/07-b-fabrics-multi-area/07-bgp-unnumbered-clos.md
     - content/07-b-fabrics-multi-area/08-optics-hardware-and-ai-fabrics.md
+    - content/07-b-fabrics-multi-area/09-rocev2-lossless-ethernet-and-ai-fabrics.md
   - part: Cloud and Kubernetes Networking
     contents:
     - content/07-c-cloud-kubernetes-networking/index.md
@@ -197,6 +211,8 @@ book:
     - content/07-c-cloud-kubernetes-networking/03-kubernetes-services-and-dataplanes.md
     - content/07-c-cloud-kubernetes-networking/04-ingress-gateway-api-and-network-policy.md
     - content/07-c-cloud-kubernetes-networking/05-kubernetes-bgp-egress-and-multicluster.md
+    - content/07-c-cloud-kubernetes-networking/06-cloud-transit-vpn-and-privatelink.md
+    - content/07-c-cloud-kubernetes-networking/07-cilium-ebpf-cni-and-gateway-api.md
   - part: Programmable Dataplanes and Traffic Delivery
     contents:
     - content/07-d-dataplanes-and-traffic-delivery/index.md
@@ -376,6 +392,9 @@ book:
     - content/09-lab-workbook/65-rtbh-and-bgp-flowspec-mitigation.md
     - content/09-lab-workbook/66-streaming-telemetry-gnmic-prometheus.md
     - content/09-lab-workbook/67-ebpf-xdp-drop-and-tcp-bbr-netem.md
+    - content/09-lab-workbook/68-ipv4-fragments-on-loopback.md
+    - content/09-lab-workbook/69-tcp-and-udp-short-reads.md
+    - content/09-lab-workbook/70-certificate-path-and-service-name.md
   - part: Projects
     contents:
     - content/09-projects/index.md
@@ -385,6 +404,8 @@ book:
     - content/09-projects/04-edge-dual-home-lab.md
     - content/09-projects/05-clos-fabric-capstone.md
     - content/09-projects/06-incident-week-capstone.md
+    - content/09-projects/07-zero-trust-tailscale-mesh-automation.md
+    - content/09-projects/08-multi-cluster-cilium-clustermesh-lab.md
   - part: Command Reference
     contents:
     - content/10-command-reference/index.md

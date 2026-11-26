@@ -16,6 +16,7 @@ content/01-foundations/06-formatting-vetting-docs.html	Formatting, Vetting, and 
 content/01-foundations/07-dependency-management.html	Dependency Management
 content/01-foundations/08-workspaces-multimodule.html	Workspaces and Multi-Module Development
 content/02-core/09-predeclared-types.html	Predeclared Types
+content/02-core/09b-machine-representation-addressability.html	Machine Representation & Addressability
 content/02-core/10-zero-values.html	Zero Values and Initialization
 content/02-core/11-constants-literals.html	Constants and Literals
 content/02-core/12-variables-scope.html	Variables and Scope
@@ -120,8 +121,8 @@ content/09-cli-tools-in-go/315-shipping-version-completion.html	Shipping: Versio
 content/09-cli-tools-in-go/316-cli-cookbook-examples.html	CLI Cookbook: Stdlib and Cobra Examples
 content/09-cli-tools-in-go/317-project-network-cli-tools.html	Project: Network CLI Tools (Ping, DNS, Scan, Probe)
 content/09-cli-tools-in-go/318-project-network-security-mini-tools.html	Project: Simple Network Security Mini-Tools
-content/09-cli-tools-in-go/319-project-text-and-log-tools.html	Project: Text and Log CLI Tools
-content/09-cli-tools-in-go/320-project-http-debug-cli.html	Project: HTTP Debug CLI
+content/09-cli-tools-in-go/319-project-text-and-log-tools.html	Project: Text and Log Tools (textkit)
+content/09-cli-tools-in-go/320-project-http-debug-cli.html	Project: HTTP Debug CLI (httpdbg)
 content/09-cli-tools-in-go/321-cross-platform-cli-notes.html	Cross-Platform CLI Notes
 content/09-cli-tools-in-go/322-terminal-tty-raw-mode-bubble-tea.html	Terminal TTY Raw Mode, ANSI Rendering, and Bubble Tea Architecture
 content/09-cli-tools-in-go/323-command-trees-kong-cobra-completions.html	Command Trees, Zero-Alloc Flag Parsing, and Shell Completion Engines
@@ -130,6 +131,12 @@ content/09-cli-tools-in-go/326-cli-packaging-self-update-mldsa.html	CLI Packagin
 content/09-cli-tools-in-go/327-structured-cli-config-xdg-keychains.html	Structured CLI Configuration, XDG Base Directories, and Secret Keychains
 content/09-cli-tools-in-go/328-terminal-streaming-pagers-renderers.html	High-Throughput Terminal Streaming, Pagers, and Table-Markdown Renderers
 content/09-cli-tools-in-go/329-cli-plugin-architectures-go-plugin-wazero.html	Plugin Architectures for Go CLIs (go-plugin, wazero Wasm, and Native plugin Pitfalls)
+content/09-cli-tools-in-go/330-url-monitor-flag-cli.html	330. URL Monitor CLI: Basic & Advanced Features with flag
+content/09-cli-tools-in-go/331-url-monitor-cobra-structure.html	331. Structuring CLI Applications with Cobra
+content/09-cli-tools-in-go/332-cli-usability-and-interactivity.html	332. Enhancing CLI Usability and Interactivity
+content/09-cli-tools-in-go/333-testing-cobra-and-http-clis.html	333. Testing CLI Applications
+content/09-cli-tools-in-go/334-cli-error-handling-and-log-rotation.html	334. Error Handling & Logging in CLIs
+content/09-cli-tools-in-go/335-distributing-go-clis.html	335. Distributing Your CLI
 content/10-concurrency-ground-up/250-concurrency-ground-up-index.html	Concurrency From the Ground Up
 content/10-concurrency-ground-up/251-goroutines-fundamentals.html	Goroutines Fundamentals
 content/10-concurrency-ground-up/252-channels-complete.html	Channels Complete
@@ -187,7 +194,7 @@ content/13-network-systems/133-reverse-proxy-load-balancing.html	Reverse Proxy a
 content/13-network-systems/134-tls-clients-servers.html	TLS Clients and Servers
 content/13-network-systems/135-dns-resolution-patterns.html	DNS Resolution Patterns
 content/13-network-systems/136-http-transport-tuning.html	HTTP Transport Tuning
-content/13-network-systems/137-project-netcheck.html	Project: netcheck Toolkit
+content/13-network-systems/137-project-netcheck.html	Project: netcheck Network Diagnostic Toolkit
 content/14-network-performance/01-netpoller-and-goroutine-scaling.html	The Netpoller and Goroutine Scheduling
 content/14-network-performance/02-http-client-and-connection-pooling.html	HTTP Client and Connection Pooling
 content/14-network-performance/03-scaling-to-ten-thousand-connections.html	Scaling to Ten Thousand Concurrent Connections
@@ -241,7 +248,7 @@ content/17-systems-programming/155-syslog-and-ops-logging.html	Syslog, Journal, 
 content/17-systems-programming/156-project-systems-ops-toolkit.html	Project: Systems Ops Toolkit
 content/17-systems-programming/157-systemd-socket-activation.html	systemd Socket Activation
 content/17-systems-programming/158-linux-procfs-introspection.html	Linux procfs Introspection
-content/17-systems-programming/159-project-mini-supervisor.html	Project: Mini Process Supervisor
+content/17-systems-programming/159-project-mini-supervisor.html	Project: Mini Process Supervisor (minisup)
 content/17-systems-programming/160-linux-syscalls-vdso-io-uring.html	Linux Syscalls, vDSO Fast Paths, and io_uring vs. netpoll
 content/17-systems-programming/161-ebpf-cilium-ringbuf-uprobes.html	eBPF in Go, cilium/ebpf, Kernel Ring Buffers, and Go Uprobe Tracing
 content/17-systems-programming/162-linux-namespaces-cgroups-v2-containers.html	Linux Namespaces, Cgroups v2, pivot_root, and Container Runtimes in Go
@@ -267,7 +274,7 @@ content/19-observability-sre/164-sli-slo-error-budgets.html	SLIs, SLOs, and Erro
 content/19-observability-sre/165-health-readiness-probes.html	Health, Liveness, and Readiness Probes
 content/19-observability-sre/166-alerting-and-runbooks.html	Alerting and Runbooks
 content/19-observability-sre/166b-flight-recorder.html	Flight Recorder: Trace the Seconds Before an Incident
-content/19-observability-sre/167-project-instrumented-mini-service.html	Project: Instrumented Mini Service
+content/19-observability-sre/167-project-instrumented-mini-service.html	Project: Instrumented Mini-Service
 content/19-observability-sre/168-monitoring-alerting-system-design.html	Design Lab: Metrics Collection, Storage, and Alerting
 content/20-infrastructure/70-docker-multistage.html	Containerization (Docker)
 content/20-infrastructure/71-render-leapcell.html	Platform Guides: Render & Leapcell
@@ -291,7 +298,7 @@ content/22-security-hardening/175b-os-root-traversal-resistant-files.html	os.Roo
 content/22-security-hardening/175c-csrf-crossoriginprotection.html	CSRF Without Tokens: net/http CrossOriginProtection
 content/22-security-hardening/175d-error-boundaries-without-leaks.html	Error Boundaries: Wrap Inside, Translate at the Edge, Leak Nothing
 content/22-security-hardening/176-supply-chain-dependencies.html	Supply Chain and Dependencies
-content/22-security-hardening/177-project-secure-service-checklist.html	Project: Secure Service Checklist
+content/22-security-hardening/177-project-secure-service-checklist.html	Project: Secure Service Checklist & Hardened Skeleton
 content/22-security-hardening/178-goleash-package-policy.html	GoLeash: Package-Level Runtime Policy Enforcement
 content/22-security-hardening/179-runtime-secret-zeroization.html	runtime/secret Zeroization
 content/22-security-hardening/179b-ca-distrust-rebuild-your-binaries.html	When a CA Is Distrusted: Go 1.27.3's x509 Denylist and Rebuilding Binaries
@@ -303,6 +310,9 @@ content/23-performance-tooling/05-documentation.html	Documentation and APIs
 content/23-performance-tooling/06-toolexec-build-hooks.html	Joining the Go Build with -toolexec: Wrappers, Build-Cache Keys, and Compile-Time Instrumentation
 content/23-performance-tooling/07-pkgsite-api-client.html	The pkg.go.dev API: querying module metadata from Go programs
 content/23-performance-tooling/08-go-fix-modernizers.html	go fix modernizers: atomictypes, slices.Backward, embedlit, unsafe.Add, WaitGroup.Go
+content/23-performance-tooling/09-debugging-by-eye-and-panics.html	Debugging by Eye & Reading Panic Traces
+content/23-performance-tooling/10-interactive-debugging-delve-ide-docker.html	Interactive Debugging: Delve, VSCode, GoLand & Docker
+content/23-performance-tooling/11-gotraceui-and-pprof-workflows.html	Advanced Profiling: pprof list, Always-On pprof & gotraceui
 content/24-performance-engineering/180-performance-engineering-index.html	Performance Engineering Overview
 content/24-performance-engineering/181-benchmarking-profiling-workflow.html	Benchmarking and Profiling Workflow
 content/24-performance-engineering/182-memory-allocations-gc.html	Memory, Allocations, and GC
@@ -313,7 +323,7 @@ content/24-performance-engineering/186-pgo-and-build-flags.html	PGO and Producti
 content/24-performance-engineering/186b-simd-with-archsimd.html	SIMD Without Assembly: simd/archsimd (GOEXPERIMENT=simd)
 content/24-performance-engineering/186c-compress-flate-rewrite.html	Go 1.27 compress/flate Rewrite
 content/24-performance-engineering/186d-inside-pgo-compiler-internals.html	Inside PGO: Devirtualization, Inlining Budgets, and Loop Alignment
-content/24-performance-engineering/187-project-optimize-hot-endpoint.html	Project: Optimize a Hot Endpoint
+content/24-performance-engineering/187-project-optimize-hot-endpoint.html	Project: Optimize a Hot HTTP Endpoint
 content/24-performance-engineering/188-arena-allocators-bump-slabs-mmap.html	Arena Allocators, Bump-Pointer Slabs, Index Handles, and Off-Heap Mmap
 content/24-performance-engineering/189-string-interning-weak-caches.html	String Interning, Weak Pointers, and Zero-Leak Memory Caches
 content/24-performance-engineering/190-high-perf-caching-w-tinylfu-byte-slabs.html	High-Performance In-Memory Caching, W-TinyLFU, and Zero-GC Byte Slabs
@@ -391,6 +401,8 @@ content/25-go-deep-dives/267-gomaxprocs-and-p-counts.html	GOMAXPROCS, Ps, and Wh
 content/25-go-deep-dives/268-go-list-json-package-metadata.html	go list -json for Package Metadata
 content/25-go-deep-dives/269-goroutineleak-pprof.html	goroutineleak pprof Profile
 content/25-go-deep-dives/270-oss-architecture-k8s-etcd-prometheus.html	Open-Source Architecture Teardown — Kubernetes, etcd, and Prometheus in Go 1.27
+content/25-go-deep-dives/271-compiler-walk-dce-devirtualization.html	Compiler Walk Pass, Dead Code Elimination, and Devirtualization
+content/25-go-deep-dives/272-go-compilation-pipeline-hands-on.html	272. Inspecting the Go Compilation Pipeline: Source to Assembly
 content/26-long-term-maintenance/01-reflection-in-practice.html	Reflection in Practice
 content/26-long-term-maintenance/02-unsafe-code.html	Unsafe Code
 content/26-long-term-maintenance/03-cgo-and-ffi.html	Cgo and Foreign Function Interfaces
@@ -410,6 +422,49 @@ content/28-specialized/92-systems-programming.html	Systems Programming
 content/28-specialized/93-io-streaming.html	I/O and Streaming
 content/28-specialized/94-logging-observability.html	Logging and Observability
 content/28-specialized/95-adk-go-agents.html	ADK Go Agents (2.0)
+content/29-event-driven-dev/01-basic-async.html	01. Basic Async
+content/29-event-driven-dev/02-message-broker.html	02. Message Broker
+content/29-event-driven-dev/03-events.html	03. Events
+content/29-event-driven-dev/04-watermill-basics.html	04. Watermill Basics
+content/29-event-driven-dev/05-middlewares.html	05. Middlewares
+content/29-event-driven-dev/06-errors.html	06. Errors
+content/29-event-driven-dev/07-component-testing.html	07. Component Testing
+content/29-event-driven-dev/08-events-with-cqrs.html	08. Events with CQRS Pattern
+content/29-event-driven-dev/09-at-least-once-delivery.html	09. At Least Once Delivery
+content/29-event-driven-dev/10-outbox.html	10. Outbox
+content/29-event-driven-dev/11-commands-in-cqrs.html	11. Commands in CQRS Pattern
+content/29-event-driven-dev/12-read-models.html	12. Read Models
+content/29-event-driven-dev/13-message-ordering.html	13. Message Ordering
+content/29-event-driven-dev/14-data-lake.html	14. Data Lake
+content/29-event-driven-dev/15-internal-and-versioned-events.html	15. Internal and Versioned Events
+content/29-event-driven-dev/16-migrating-read-models.html	16. Migrating Read Models
+content/29-event-driven-dev/17-metrics-and-alerting.html	17. Metrics and Alerting
+content/29-event-driven-dev/18-tracing.html	18. Tracing
+content/29-event-driven-dev/19-fault-tolerance.html	19. Fault Tolerance
+content/29-event-driven-dev/20-sagas-and-process-managers.html	20. Sagas and Process Managers
+content/29-event-driven-dev/index.html	Intro
+content/30-ai-in-go/01-first-production-ai-app.html	01. Building Your First Production AI App
+content/30-ai-in-go/02-function-calling.html	02. Function Calling — Structured LLM Actions
+content/30-ai-in-go/03-vector-databases.html	03. Using Vector Databases
+content/30-ai-in-go/04-building-ai-agents.html	04. Building AI Agents
+content/30-ai-in-go/05-model-context-protocol.html	05. Model Context Protocol
+content/30-ai-in-go/index.html	Intro
+content/31-grpc-and-protobuf/01-protobuf-grpc-protoc.html	01. Introduction to Protobuf, gRPC & Protoc
+content/31-grpc-and-protobuf/02-simple-grpc-service.html	02. Building a Simple gRPC Service
+content/31-grpc-and-protobuf/03-grpc-streaming.html	03. gRPC Streaming
+content/31-grpc-and-protobuf/04-authentication-ssl-tls.html	04. Authentication, SSL/TLS
+content/31-grpc-and-protobuf/05-interceptors-metadata-authz.html	05. Interceptors, Metadata & Authorization
+content/31-grpc-and-protobuf/06-client-service-config-lb.html	06. Client Service Config & Load Balancing
+content/31-grpc-and-protobuf/07-testing-grpc-services.html	07. Testing gRPC Services
+content/31-grpc-and-protobuf/08-containerising-deploying-k8s.html	08. Containerising & Deploying to Kubernetes
+content/31-grpc-and-protobuf/09-buf-and-connectrpc.html	09. Using Buf to Manage Protobuf
+content/31-grpc-and-protobuf/index.html	Intro
+content/32-databases-and-architecture/01-pgx-and-sqlc.html	01. PostgreSQL with pgx/v5 and sqlc
+content/32-databases-and-architecture/02-migrations-and-sql-queues.html	02. Migrations, SQL Job Queues & SQLite WAL
+content/32-databases-and-architecture/03-clean-architecture-and-ddd.html	03. Clean Architecture & Pragmatic DDD in Go
+content/32-databases-and-architecture/04-durable-workflows-temporal.html	04. Durable Workflows with Temporal
+content/32-databases-and-architecture/05-realtime-sse-quic-webrtc.html	05. Real-Time & Edge Protocols: SSE, HTTP/3 QUIC & WebRTC
+content/32-databases-and-architecture/index.html	Intro
 content/99-projects/100a-k8s-event-watcher.html	027 Project 27: Kubernetes Event Watcher
 content/99-projects/100b-k8s-rollout-checker.html	028 Project 28: Kubernetes Rollout Checker
 content/99-projects/100c-terraform-plan-parser.html	029 Project 29: Terraform Plan Parser

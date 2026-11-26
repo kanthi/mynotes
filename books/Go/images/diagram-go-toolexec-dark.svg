@@ -61,7 +61,7 @@
   <text x="170.0" y="330.0" text-anchor="middle" class="label">5. store result under the action ID</text>
   <rect class="bay" x="360" y="300" width="320" height="104" rx="10"/>
   <text x="520" y="320" text-anchor="middle" class="label">Two rules every rewriting wrapper needs</text>
-  <text x="372" y="338" class="muted">1. same -V=full line as a plain build => same cache keys,</text>
+  <text x="372" y="338" class="muted">1. same -V=full line as a plain build =&gt; same cache keys,</text>
   <text x="386" y="352" class="muted">so plain and instrumented archives get mixed up.</text>
   <text x="386" y="366" class="muted">Fix: append your version (+ config hash) to the line.</text>
   <text x="372" y="380" class="muted">2. imports added by injected code must already be in</text>
