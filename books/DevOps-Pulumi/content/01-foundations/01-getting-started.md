@@ -4,308 +4,289 @@ title: Install the CLI, create a project, and run your first preview
 
 # Install the CLI, create a project, and run your first preview
 
-After reading this chapter, you will be able to install the Pulumi CLI on Linux, select and authenticate with a state backend, set up a minimal Python infrastructure project using standard virtual environments, inspect its generated entrypoints, run a safe preview, and manage resource lifecycles through execution and destruction.
+Getting productive with Pulumi starts with mastering the local loop: installing the CLI, choosing where stack state lives, scaffolding a reproducible Python virtual environment, and running `preview`, `up`, `refresh`, and `destroy` with confidence. This chapter walks through the mechanics behind each command and ends with a complete local lab that exercises drift, diffing, and teardown without touching a paid cloud account.
 
-## Learning goals
+## The infrastructure lifecycle at a glance
 
-- Install the Pulumi CLI on Linux using official repository scripts or package managers
-- Differentiate between Pulumi Cloud and self-managed (DIY) state backends
-- Bootstrap a Python Pulumi project and explain `Pulumi.yaml`, `requirements.txt`, and `__main__.py`
-- Initialize stack environments and run `pulumi preview` to inspect state changes before applying them
-- Execute the full infrastructure lifecycle using `pulumi up` and `pulumi destroy` safely
+Every Pulumi workflow revolves around a single durable artifact: the stack's **state checkpoint**. Commands either read that checkpoint, update it after mutating live infrastructure, or reconcile it against real-world drift.
 
-## Installing the Pulumi CLI on Linux
+![Pulumi infrastructure lifecycle showing pulumi new, pulumi preview, pulumi up, pulumi refresh, and pulumi destroy interacting with the stack state checkpoint.](../../images/diagram-pulumi-lifecycle.svg)
 
-Pulumi delivers infrastructure as code by running standard programming languages against a CLI binary (`pulumi`). The CLI translates your code into resource registrations, sends them to provider plugins (such as AWS, Azure, Google Cloud, or utility providers like Random), and records state transitions.
+| Command | Mutates cloud? | Mutates state? | Purpose |
+| :--- | :---: | :---: | :--- |
+| `pulumi new` | No | Initializes empty stack | Scaffolds `Pulumi.yaml`, runtime config, and entrypoint |
+| `pulumi preview` | No | No | Dry-run diff between program and last checkpoint |
+| `pulumi up` | Yes | Yes | Converges live resources to match the program |
+| `pulumi refresh` | No | Yes | Reads live provider state to capture out-of-band drift |
+| `pulumi destroy` | Yes | Yes | Deletes all managed resources in reverse DAG order |
 
-On Linux systems, you can install the Pulumi binary via the official installation script, through package managers, or by manually downloading release archives.
+## Installing the Pulumi CLI
 
-### Option 1: Official install script
+The `pulumi` binary bundles the CLI, the deployment engine, and plugin management. Language SDKs (`pulumi`, `pulumi-aws`, `pulumi-random`) are installed separately inside your project's package manager (`pip`, `uv`, `npm`, `go mod`).
 
-The primary method to install the latest CLI binary is running the official shell script:
+### Linux and macOS (official installer)
 
 ```bash
 curl -fsSL https://get.pulumi.com | sh
+export PATH="$HOME/.pulumi/bin:$PATH"
 ```
 
-The script installs the `pulumi` executable into `$HOME/.pulumi/bin`. To ensure the executable is accessible across your terminal sessions, append that directory to your system `PATH` in your shell configuration (`~/.bashrc` or `~/.zshrc`):
+Add the `export PATH=...` line to `~/.bashrc` or `~/.zshrc` so new shells find the binary automatically.
+
+### Homebrew (macOS and Linux)
 
 ```bash
-export PATH=$PATH:$HOME/.pulumi/bin
+brew install pulumi/tap/pulumi
 ```
 
-### Option 2: Package managers
-
-If your distribution manages packages via Homebrew or standard system repositories, install Pulumi directly:
-
-```bash
-# Using Homebrew on Linux
-brew install pulumi
-```
-
-### Verifying installation
-
-After installing, confirm the version and verify that the executable resolves properly:
+### Verify the binary and installed plugins
 
 ```bash
 pulumi version
+pulumi plugin ls
 ```
 
-This command prints the active version string (for example, `3.274.0`).
+`pulumi plugin ls` lists cached resource and language plugins under `~/.pulumi/plugins`. Whenever your program imports a provider package (such as `pulumi-random`), the CLI downloads the matching provider binary automatically during the first `preview` or `up`.
 
-## Backend selection and authentication
+## Choosing and authenticating a state backend
 
-Before managing infrastructure, Pulumi requires a **backend** to store stack state. State tracks the mapping between declared code resources and live backend infrastructure instances.
+Before you can create a stack, Pulumi needs a **backend** to store checkpoints and stack metadata. You select a backend with `pulumi login`.
 
-Pulumi supports two primary backend styles: **Pulumi Cloud** (managed service) and **Self-managed DIY backends** (local filesystem or cloud object storage).
-
-| Backend Type | Login Command | State Storage Location | Encryption & Secrets | Best Used For |
+| Backend | Command | Where state lives | Locking & history | Typical use case |
 | :--- | :--- | :--- | :--- | :--- |
-| **Pulumi Cloud** | `pulumi login` | Managed cloud service | Automatic managed key encryption | Production teams, shared state, audit logs |
-| **Local Filesystem** | `pulumi login file://~` | `~/.pulumi/workspaces` | Local passphrase or KMS | Local testing, single-user experiments |
-| **S3 / Blob Storage** | `pulumi login s3://my-bucket` | AWS S3 / GCS / Azure Blob | Customer-managed KMS or passphrase | Existing cloud storage policies without Pulumi Cloud |
+| **Pulumi Cloud** | `pulumi login` | Managed Pulumi Cloud (`app.pulumi.com`) | Transactional locking, audit logs, RBAC | Production teams and CI/CD |
+| **Local filesystem** | `pulumi login --local` (or `file://~`) | `~/.pulumi/stacks` | Local file lock only | Learning, offline labs, single-dev spikes |
+| **AWS S3 / GCS / Azure Blob** | `pulumi login s3://my-state-bucket` | Your cloud object store | Object-lock / lease file | Strict self-hosted compliance |
+| **PostgreSQL** | `pulumi login postgres://...` | Self-hosted Postgres | Database transactions | Air-gapped or on-prem teams |
 
-### Pulumi Cloud (Default)
-
-Running `pulumi login` without arguments opens a browser window or prompts for an access token to authenticate your terminal against the Pulumi Cloud service (`app.pulumi.com`).
-
-```bash
-pulumi login
-```
-
-Upon entering a valid personal or organization access token, Pulumi saves credential tokens into `~/.pulumi/credentials.json`.
-
-### DIY backends
-
-If your compliance model requires self-managed state or offline operations, specify a URI scheme pointing to local disk or remote object stores:
-
-```bash
-# Local filesystem backend
-pulumi login file://~
-
-# AWS S3 backend
-pulumi login s3://my-company-pulumi-state-bucket
-```
-
-To switch back to Pulumi Cloud later or query your current backend identity, use `pulumi whoami`:
+Check which backend and identity are currently active at any time:
 
 ```bash
 pulumi whoami -v
 ```
 
-## Creating a Python Pulumi project
+> [!TIP]
+> **Passphrase prompt on DIY backends**
+>
+> Self-managed backends (`--local`, `s3://`, `gs://`) encrypt stack secrets locally using a passphrase by default. For local labs, set `export PULUMI_CONFIG_PASSPHRASE="lab-passphrase"` in your shell so `preview` and `up` do not prompt interactively on every run. Never reuse a weak passphrase for production stacks — use KMS or Vault instead (covered in [Configuration and Secrets](03-configuration-and-secrets.md)).
 
-A Pulumi **project** is a directory containing a `Pulumi.yaml` manifest and executable source files. Project creation is driven by `pulumi new`.
+## Anatomy of a Python Pulumi project
 
-Create an empty working directory and launch the initialization wizard:
-
-```bash
-mkdir my-first-pulumi && cd my-first-pulumi
-pulumi new python --yes
-```
-
-The `--yes` flag accepts default configuration values for project name, description, and initial stack name (`dev`).
-
-### Generating a random provider project without cloud credentials
-
-To learn Pulumi without configuring AWS, Azure, or GCP credentials, create a project centered on utility resources like the `random` provider.
-
-Initialize a standard Python template using non-interactive flags:
-
-```bash
-pulumi new python \
-    --name demo-random \
-    --description "A minimal Python Pulumi project using the random provider" \
-    --stack dev \
-    --yes
-```
-
-This command sets up virtual environments, installs core SDK dependencies, creates configuration files, and creates an initial active stack named `dev`.
-
-## Understanding the project structure
-
-A standard Python Pulumi directory contains the following core files:
+Scaffolding a Python project with `pulumi new` creates a self-contained directory:
 
 ```text
-my-first-pulumi/
-├── Pulumi.yaml
-├── Pulumi.dev.yaml
-├── requirements.txt
-├── venv/
-└── __main__.py
+demo-random/
+├── Pulumi.yaml        # Project name, runtime, toolchain, optional backend URL
+├── Pulumi.dev.yaml    # Stack-specific config & encrypted secrets for `dev`
+├── requirements.txt   # Python SDK and provider packages
+├── venv/              # Isolated Python virtual environment
+└── __main__.py        # Entrypoint executed by the Python language host
 ```
 
-### The manifest: `Pulumi.yaml`
-
-`Pulumi.yaml` defines project-level metadata, runtime execution rules, and program entrypoints.
+### `Pulumi.yaml`
 
 ```yaml
 name: demo-random
 runtime:
   name: python
   options:
+    toolchain: pip
     virtualenv: venv
-description: A minimal Python Pulumi project using the random provider
+description: Minimal Python Pulumi project using the random provider
 ```
 
-Key fields include:
-- `name`: Unique identifier for the program. Used to namespace project outputs and configurations.
-- `runtime`: Defines language bindings (`python`, `nodejs`, `go`, `dotnet`, `java`, `yaml`). The optional `virtualenv` option tells Pulumi which Python virtual environment directory to activate automatically during CLI operations.
-- `description`: Freeform text summary of project purpose.
+Setting `options.virtualenv: venv` tells the Pulumi language host to invoke `./venv/bin/python` automatically, even if you forgot to run `source venv/bin/activate` in your terminal. You can also set `toolchain: uv` or `toolchain: poetry` if your team prefers those managers.
 
-### Python dependencies: `requirements.txt`
-
-The default `requirements.txt` includes the primary Pulumi Python SDK:
+### `requirements.txt`
 
 ```text
-pulumi>=3.0.0,<4.0.0
-pulumi-random>=4.0.0,<5.0.0
+pulumi>=3.100.0,<4.0.0
+pulumi-random>=4.16.0,<5.0.0
 ```
 
-Install these dependencies into your project virtual environment using standard Python package management tools:
+### `__main__.py`
 
-```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
-
-### Infrastructure code: `__main__.py`
-
-The entrypoint file `__main__.py` contains Python code that builds infrastructure declaratively. Replace the generated stub in `__main__.py` with code that generates a random password string and exports its result.
-
-<!-- file: __main__.py -->
 ```python
 import pulumi
 import pulumi_random as random
 
-# Declare a random password resource
-password = random.RandomPassword(
-    "api-token",
-    length=16,
+# Logical name "app-token" uniquely identifies this resource in state
+token = random.RandomPassword(
+    "app-token",
+    length=24,
     special=True,
-    override_special="_@#%"
+    override_special="_@#%",
 )
 
-# Export values to make them available to stack outputs
-pulumi.export("password_result", password.result)
+# Physical names get auto-suffixed unless you override them;
+# RandomPet generates readable identifiers for dev/staging environments
+label = random.RandomPet(
+    "env-label",
+    length=2,
+    separator="-",
+)
+
+pulumi.export("environment_label", label.id)
+pulumi.export("app_token", token.result)
 ```
 
-In this code:
-1. `random.RandomPassword` declares a high-entropy string resource managed by Pulumi.
-2. `"api-token"` is the **logical name** assigned inside Pulumi state.
-3. `pulumi.export` publishes calculated attributes to stack outputs when deployments complete.
+Notice the distinction between the **logical name** (`"app-token"`) and the **physical resource**. Pulumi tracks resources in state by their URN, which includes the logical name. Changing `"app-token"` to `"service-token"` tells Pulumi to create a brand-new resource and delete the old one unless you attach an `Alias`.
 
-## Initializing stacks: `pulumi stack init`
+## Reading `pulumi preview` like an operator
 
-A **stack** is an isolated deployment target of your project (e.g., `dev`, `staging`, `prod`). While `pulumi new` creates an initial stack automatically, you can create additional stacks using `pulumi stack init`:
+Always run `pulumi preview --diff` before applying changes to any shared environment. The diff symbols tell you the exact blast radius:
+
+| Symbol | Operation | Meaning |
+| :--- | :--- | :--- |
+| `+` | `create` | Resource exists in code, not in state — will be created |
+| `~` | `update` | Mutable property changed — updated in place with no downtime |
+| `+-` | `replace` | Immutable property changed — creates replacement and deletes old resource |
+| `-` | `delete` | Resource removed from code — will be destroyed |
+| `=` | `same` | No change detected against state |
+
+> [!WARNING]
+> **Watch for `+-` replacements on stateful resources**
+>
+> Changing a database engine version, subnet CIDR, or logical resource name can trigger a replacement (`+-`). By default Pulumi creates the new resource before deleting the old one (`create-before-replace`), except when a fixed physical name would collide — in which case it deletes first. Always inspect replacements carefully in `pulumi preview --diff`.
+
+## Multi-stack workflow and safe teardown
+
+One project can drive as many isolated stacks as you need:
 
 ```bash
-pulumi stack init staging
+pulumi stack init staging          # Create and select a new stack
+pulumi stack init prod             # Create and select prod
+pulumi stack ls                    # '*' marks the currently active stack
+pulumi stack select dev            # Switch back to dev
+pulumi stack output --json         # Machine-readable exported outputs
 ```
 
-To list all stacks registered under the current project:
+When an environment is no longer needed, destroy its live resources first and only then remove the empty stack metadata:
 
 ```bash
-pulumi stack ls
+pulumi destroy --yes               # Delete all managed resources in reverse order
+pulumi stack rm dev --yes          # Remove empty stack history and Pulumi.dev.yaml
 ```
 
-To select an active stack for subsequent CLI commands:
+> [!CAUTION]
+> Never pass `--force` to `pulumi stack rm` on a stack that still manages cloud resources. `--force` deletes the state record while leaving the live cloud infrastructure running and orphaned.
+
+## Common pitfalls for beginners
+
+### 1. Concatenating `Output[str]` with plain strings
+
+Resource attributes are asynchronous `Output` values, not plain Python strings:
+
+```python
+# WRONG: embeds an Output object warning instead of the actual secret value
+bad_url = "https://user:" + token.result + "@db.internal"
+
+# RIGHT: use Output.format() or .apply()
+good_url = pulumi.Output.format("https://user:{0}@db.internal", token.result)
+```
+
+### 2. Missing virtual environment packages
+
+If `pulumi preview` raises `ModuleNotFoundError: No module named 'pulumi_random'`, verify that `Pulumi.yaml` points `runtime.options.virtualenv` to the exact venv where you ran `pip install`.
+
+### 3. Editing state files by hand
+
+Never hand-edit JSON files under `~/.pulumi/stacks/` or S3. Use `pulumi state delete`, `pulumi state unprotect`, or `pulumi refresh` so Pulumi maintains referential integrity across dependencies.
+
+## Hands-on lab: complete local lifecycle (preview, up, update, replace, destroy)
+
+This lab walks you through every state transition (`+ create`, `~ update`, `+- replace`, and `- delete`) locally in under five minutes.
+
+### Step 1: Initialize the local workspace
 
 ```bash
-pulumi stack select dev
+mkdir -p ~/pulumi-labs/02-getting-started && cd ~/pulumi-labs/02-getting-started
+export PULUMI_CONFIG_PASSPHRASE="local-lab-passphrase"
+pulumi login --local
+
+pulumi new python \
+  --name lifecycle-lab \
+  --description "End-to-end Pulumi lifecycle lab" \
+  --stack dev \
+  --yes
+
+./venv/bin/pip install pulumi-random
 ```
 
-## Running your first preview (`pulumi preview`)
+### Step 2: Create initial resources (`+ create`)
 
-`pulumi preview` performs a dry run of your program. It executes your Python script, computes differences between declared code resources and existing state snapshot records, and lists proposed additions, updates, or deletions without modifying real-world resources.
+Write `__main__.py`:
 
-Run a preview against the `dev` stack:
+```python
+import pulumi
+import pulumi_random as random
+
+cluster_pet = random.RandomPet("cluster", length=2, separator="-")
+db_pass = random.RandomPassword(
+    "db-password",
+    length=20,
+    special=True,
+    override_special="!@#%",
+)
+
+pulumi.export("cluster_name", cluster_pet.id)
+pulumi.export("db_password", db_pass.result)
+```
+
+Preview and apply:
 
 ```bash
-pulumi preview
+pulumi preview --diff
+pulumi up --yes
+pulumi stack output
+pulumi stack output db_password --show-secrets
 ```
 
-During a preview:
-1. Pulumi launches the Python runtime and executes `__main__.py`.
-2. Provider plugins register requested resources against the engine core.
-3. The engine computes structural changes relative to existing state.
-4. Pulumi displays a summary table listing planned operations (`+ create`, `~ update`, `- delete`).
+Notice that `pulumi stack output` masks `db_password` as `[secret]`, while `--show-secrets` decrypts it on demand.
 
-## The deployment and destruction lifecycle
+### Step 3: Trigger a replacement (`+- replace`)
 
-Deploying infrastructure involves two complementary commands: `pulumi up` to create/converge resources, and `pulumi destroy` to tear down resources managed by the stack.
+Edit `__main__.py` to change `length=20` to `length=32` on `db_pass`, then run:
 
-### Applying infrastructure changes (`pulumi up`)
+```bash
+pulumi preview --diff
+```
 
-To apply proposed resource changes to your target environment, run `pulumi up`.
+Because a password's `length` is immutable, Pulumi plans `+- replace` for `db-password` while leaving `cluster` untouched (`= same`). Apply the change:
 
 ```bash
 pulumi up --yes
 ```
 
-When `pulumi up` runs:
-1. Pulumi performs a preview diff.
-2. The engine calls provider APIs to construct declared resources (`random:index:RandomPassword`).
-3. Upon success, resulting attributes (such as `result`) are saved to state.
-4. Top-level `pulumi.export` entries display in stdout output.
-
-To inspect exported stack values after deployment, use `pulumi stack output`:
+### Step 4: Inspect a second isolated stack (`staging`)
 
 ```bash
-pulumi stack output password_result --show-secrets
+pulumi stack init staging
+pulumi up --yes
+pulumi stack output cluster_name -s dev
+pulumi stack output cluster_name -s staging
 ```
 
-### Tearing down infrastructure (`pulumi destroy`)
+Both stacks run the exact same `__main__.py`, yet each generates and remembers its own independent `cluster_name` and `db_password`.
 
-When infrastructure is no longer required, remove all resources managed by the active stack using `pulumi destroy`.
-
-> [!WARNING]
-> `pulumi destroy` removes all live resources managed by the active stack; verify the active stack before confirming.
+### Step 5: Tear down both stacks cleanly
 
 ```bash
-pulumi destroy --yes
+pulumi destroy -s staging --yes && pulumi stack rm staging --yes
+pulumi destroy -s dev --yes && pulumi stack rm dev --yes
 ```
-
-Once all resources are removed from the live environment, delete the empty stack definition and its configuration history:
-
-```bash
-pulumi stack rm dev --yes
-```
-
-## Common mistakes and pitfalls
-
-Avoid these common issues when starting out with Pulumi in Python environments:
-
-### 1. Missing virtual environment activation
-If Pulumi fails to import `pulumi` or provider packages during `pulumi preview`, check `Pulumi.yaml`. Ensure `runtime.options.virtualenv` points to your active virtual environment folder (`venv`), or activate your virtual environment in your shell prior to executing CLI commands.
-
-### 2. Treating resource outputs as plain Python strings
-Pulumi resource properties are asynchronous `Output[T]` wrappers, not standard Python data types (`str`, `int`).
-
-```python
-# INCORRECT: Treating Output[str] as a standard string
-# This concatenates the string representation of the Output object, not its value.
-db_url = "https://" + password.result
-
-# CORRECT: Use apply() or Output.concat() to construct derived values
-db_url = password.result.apply(lambda pwd: f"https://admin:{pwd}@example.com")
-```
-
-### 3. Modifying state files manually
-Never manually edit `.json` state files created by DIY backends or downloaded via `pulumi stack export`. Direct state editing bypasses transaction validation and risks corrupting infrastructure mappings. Use `pulumi state` subcommands (`pulumi state delete`, `pulumi state unprotect`) if resource state corrections become necessary.
 
 ## Summary
 
-- The Pulumi CLI translates declarative code into concrete API actions using provider plugins.
-- `pulumi login` switches backend state targets between Pulumi Cloud and DIY options like `file://~` or `s3://`.
-- `pulumi new python` generates standard project skeletons consisting of `Pulumi.yaml`, `requirements.txt`, and `__main__.py`.
-- `pulumi preview` performs safe, dry-run diff computations comparing current code against saved stack state.
-- `pulumi up` executes infrastructure creation or updates; `pulumi destroy` tears down managed resources cleanly.
+- The Pulumi CLI drives the deployment engine, downloads provider plugins, and reads/writes stack checkpoints in your configured backend.
+- `Pulumi.yaml` pins your project name, language runtime, and virtual environment so runs stay reproducible across machines.
+- `pulumi preview --diff` reveals creates, in-place updates, replacements, and deletes before anything touches live infrastructure.
+- Always run `pulumi destroy` before `pulumi stack rm` so you never orphan live resources.
 
 ## Sources
 
-- [Pulumi Download and Installation Guide](https://www.pulumi.com/docs/install/)
-- [Pulumi Projects Concept Documentation](https://www.pulumi.com/docs/iac/concepts/projects/)
-- [Pulumi CLI Command Reference: `pulumi new`](https://www.pulumi.com/docs/iac/cli/commands/pulumi_new/)
-- [Pulumi CLI Command Reference: `pulumi preview`](https://www.pulumi.com/docs/iac/cli/commands/pulumi_preview/)
+- [Pulumi Installation Guide](https://www.pulumi.com/docs/install/)
+- [Pulumi Projects](https://www.pulumi.com/docs/iac/concepts/projects/)
+- [CLI Reference: `pulumi new`](https://www.pulumi.com/docs/iac/cli/commands/pulumi_new/)
+- [CLI Reference: `pulumi preview`](https://www.pulumi.com/docs/iac/cli/commands/pulumi_preview/)
+- [CLI Reference: `pulumi up`](https://www.pulumi.com/docs/iac/cli/commands/pulumi_up/)

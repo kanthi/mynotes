@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 320" role="img" aria-label="Pulumi Automation API architecture showing an application, internal CLI, or HTTP service driving LocalWorkspace and Stack objects which invoke the Pulumi CLI engine and stream typed events and outputs back" color-scheme="light">
+<rect width="820" height="320" fill="#ffffff"/>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#3b5b85"/></marker></defs>
+<text x="410" y="28" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="16" font-weight="700" fill="#1f2a36">Pulumi Automation API Control Plane</text>
+<rect x="26" y="66" width="176" height="80" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="114" y="94" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="700" fill="#1f2a36">Your App / Portal</text>
+<text x="114" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">CLI / FastAPI / Worker</text>
+<text x="114" y="132" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">inline or disk program</text>
+<rect x="242" y="58" width="214" height="96" rx="8" fill="#f4f7fb" stroke="#c0392b" stroke-width="2.2"/>
+<text x="349" y="86" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="700" fill="#1f2a36">Automation API SDK</text>
+<text x="349" y="106" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">LocalWorkspace + Stack</text>
+<text x="349" y="124" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">set_config() / preview()</text>
+<text x="349" y="140" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">up() / refresh() / destroy()</text>
+<rect x="496" y="66" width="144" height="80" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="568" y="98" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="700" fill="#1f2a36">Pulumi CLI</text>
+<text x="568" y="118" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">engine + plugins</text>
+<rect x="676" y="66" width="120" height="80" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="736" y="98" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="700" fill="#1f2a36">Cloud + State</text>
+<text x="736" y="118" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">multi-stack</text>
+<rect x="180" y="206" width="460" height="58" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="410" y="232" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" font-weight="700" fill="#1f2a36">UpResult: outputs[k].value, summary, on_event / on_output</text>
+<text x="410" y="250" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#5a6b7d">structured Python/Go objects instead of brittle shell stdout parsing</text>
+<line x1="202" y1="106" x2="240" y2="106" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="456" y1="106" x2="494" y2="106" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="640" y1="106" x2="674" y2="106" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="568" y1="146" x2="510" y2="204" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="260" y1="206" x2="150" y2="148" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<text x="410" y="296" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" fill="#5a6b7d">embed infrastructure orchestration directly inside software products and CI runners</text>
+</svg>

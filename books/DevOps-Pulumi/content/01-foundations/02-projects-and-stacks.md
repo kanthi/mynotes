@@ -185,18 +185,87 @@ After a refresh, the next `up` reverts out-of-band changes unless you also chang
 - Tag stacks (`pulumi stack tag set environment production`) so Pulumi Cloud can group them. Avoid the reserved prefixes `pulumi:`, `gitHub:` and `vcs:`.
 - On DIY backends: version the bucket, restrict who can write, and back it up. That bucket *is* your inventory.
 
-## Practice
+## Hands-on lab: wire two local projects with `StackReference`
 
-1. Sketch the project and stack layout for a system with a shared network, a database, and three services, across dev and production. How many stacks, and which references?
-2. Write the `StackReference` line a `services` program needs to read `vpcId` from the matching `infra` stack, and justify `require_output` over `get_output`.
-3. List what you must do yourself if you choose an S3 DIY backend instead of Pulumi Cloud.
+In this lab you will build two separate local projects — `infra` (producer) and `services` (consumer) — and pass live outputs across them on a local backend.
 
-## Recall card
+### Step 1: Create the producer project (`infra`)
 
-- Project = directory with `Pulumi.yaml` (name, runtime). Stack = one configured instance with its own state.
-- `org/project/stack` is the full name. DIY backends use the literal `organization`.
-- `pulumi.export` publishes; `StackReference.require_output` consumes.
-- Backend = Pulumi Cloud or DIY. `refresh` syncs state from reality, explicitly. `stack migrate` moves between backends.
+```bash
+pulumi login --local
+
+mkdir -p ~/pulumi-labs/03-stacks/infra && cd ~/pulumi-labs/03-stacks/infra
+pulumi new python --name infra --description "Shared foundation" --stack dev --yes
+./venv/bin/pip install pulumi-random
+```
+
+Replace `infra/__main__.py`:
+
+```python
+import pulumi
+import pulumi_random as random
+
+vpc_suffix = random.RandomId("vpc-suffix", byte_length=4)
+cluster = random.RandomPet("cluster", length=2, separator="-")
+
+pulumi.export("vpcId", vpc_suffix.hex.apply(lambda h: f"vpc-{h}"))
+pulumi.export("clusterName", cluster.id)
+```
+
+Deploy `infra`:
+
+```bash
+pulumi up --yes
+pulumi stack output --json
+```
+
+### Step 2: Create the consumer project (`services`)
+
+```bash
+mkdir -p ~/pulumi-labs/03-stacks/services && cd ~/pulumi-labs/03-stacks/services
+pulumi new python --name services --description "App services" --stack dev --yes
+```
+
+Replace `services/__main__.py`:
+
+```python
+import pulumi
+
+env = pulumi.get_stack()
+org = pulumi.get_organization()
+infra = pulumi.StackReference(f"{org}/infra/{env}")
+
+vpc_id = infra.require_output("vpcId")
+cluster_name = infra.require_output("clusterName")
+
+pulumi.export("attached_vpc", vpc_id)
+pulumi.export(
+    "service_fqdn",
+    pulumi.Output.format("api.{0}.svc.local", cluster_name),
+)
+```
+
+Deploy `services` and confirm it resolved outputs from `infra`:
+
+```bash
+pulumi up --yes
+pulumi stack output
+```
+
+### Step 3: Verify contract protection and clean up
+
+Try changing `require_output("vpcId")` to `require_output("vpc_id")` and run `pulumi preview`: observe that Pulumi fails immediately rather than silently deploying with `None`. Revert or tear down both stacks in reverse order (`services` first, then `infra`):
+
+```bash
+cd ~/pulumi-labs/03-stacks/services && pulumi destroy --yes && pulumi stack rm dev --yes
+cd ~/pulumi-labs/03-stacks/infra && pulumi destroy --yes && pulumi stack rm dev --yes
+```
+
+## Summary
+
+- Projects (`Pulumi.yaml`) hold shared infrastructure code; stacks (`Pulumi.<stack>.yaml` + state) isolate each environment.
+- Split large systems into layered projects connected by `StackReference.require_output` to shrink blast radius and speed up previews.
+- `pulumi refresh` explicitly reconciles out-of-band cloud drift; `pulumi stack export` + `pulumi state` subcommands handle safe repairs without manual JSON editing.
 
 ## Sources
 

@@ -4,132 +4,97 @@ title: 'Automation API: drive pulumi up from Python'
 
 # Automation API: drive pulumi up from Python
 
-After this page you can embed Pulumi deployments directly inside Python applications, manage stacks and workspaces programmatically using `LocalWorkspace` and `Stack`, run previews, updates, and destroys from code without calling the CLI binary directly, pass dynamic inline program functions, set stack configuration, and parse deployment outputs cleanly.
+Running `pulumi up` from a terminal or CI YAML works well when humans trigger deployments on a fixed set of stacks. It breaks down as soon as infrastructure becomes part of your software product: an internal developer portal that provisions ephemeral preview environments per pull request, a SaaS control plane that spins up isolated tenant clusters on sign-up, or a Python CLI that orchestrates five dependent stacks in sequence. The **Pulumi Automation API** turns the Pulumi deployment engine into a typed library inside your own application.
 
-## Thesis
+![Pulumi Automation API control plane showing an application or CLI driving LocalWorkspace and Stack objects over the Pulumi CLI engine and receiving structured UpResult outputs and live event streams.](../../images/diagram-pulumi-automation-api.svg)
 
-The standard workflow for Pulumi relies on shell invocation: an engineer or a CI/CD pipeline executes `pulumi preview` or `pulumi up` via CLI commands. While effective for traditional deployments, CLI-driven operations break down when infrastructure management must be embedded inside larger application workflows, SaaS platforms, developer portals, or dynamic orchestration systems.
+## CLI workflows vs. Automation API
 
-The Pulumi Automation API solves this problem by exposing the Pulumi engine as a standard programming library. Rather than executing shell scripts or wrapping CLI commands in subprocess calls, Python programs interact with infrastructure via strongly typed methods like `stack.up()` and `stack.destroy()`. This converts Pulumi from a CLI tool into an embedded deployment engine.
-
-## CLI vs. Automation API
-
-Executing Pulumi through standard CLI workflows differs fundamentally from using the Automation API across several architectural boundaries:
-
-| Dimension | Pulumi CLI | Automation API |
+| Dimension | Pulumi CLI | Automation API (`pulumi.automation`) |
 | :--- | :--- | :--- |
-| **Control plane** | Interactive terminal or shell scripts | Native application code (Python, Go, Node.js, .NET) |
-| **Program source** | Static disk files in a directory | Disk files, or dynamic inline Python functions |
-| **Configuration** | Static `Pulumi.<stack>.yaml` files | Programmatic configuration via typed methods |
-| **Output processing** | Raw CLI text stdout or JSON string parsing | Strongly typed output objects (`OutputValue`) |
-| **Concurrency** | Single process CLI executions | Multi-tenant background processing, queuing, and web APIs |
+| **Orchestrator** | Shell scripts and CI YAML steps | Native Python, Go, TypeScript, or .NET code |
+| **Program source** | Static project files on disk | Disk projects *or* dynamic inline functions |
+| **Configuration** | Manual `pulumi config set` / YAML edits | Programmatic `stack.set_config(...)` / `set_all_config(...)` |
+| **Results & logs** | Parsing stdout text or `--json` output | Typed `UpResult`, `PreviewResult`, `OutputValue`, `on_event` callbacks |
+| **Multi-stack orchestration** | Fragile bash chaining | Loops, retries, queues, HTTP endpoints, and structured error handling |
 
-Through the Automation API, infrastructure operations behave like standard SDK method calls, enabling automated testing, custom self-service portals, and runtime resource provisioning.
+> [!NOTE]
+> The Automation API still invokes the `pulumi` CLI binary under the hood. Ensure `pulumi` is installed on the host or container `PATH` (or configure `pulumi_command` on `LocalWorkspaceOptions`).
 
-## Key Abstractions: Workspace, Program, and Stack
+## Core abstractions: Workspace, Program, and Stack
 
-The Automation API centers on three core concepts:
+1. **`LocalWorkspace`**: Controls the execution environment — backend URL, environment variables, plugin installation (`install_plugin`), and working directory.
+2. **Program**: Either an **inline Python function** (`program=fn`) passed directly to `auto.create_or_select_stack(...)`, or a **disk-based Pulumi project** (`work_dir="./infra"`).
+3. **`Stack`**: Binds a workspace, project, and stack name together and exposes typed lifecycle methods: `preview()`, `up()`, `refresh()`, `destroy()`, `outputs()`, and `workspace.remove_stack()`.
 
-1. **Workspace**: Represents the environment where Pulumi operates. It handles plugin installation, backend state configuration, credentials, secrets providers, and environment variables. `LocalWorkspace` is the primary workspace implementation for local machine execution.
-2. **Program**: The Pulumi infrastructure code to be executed. This can be specified as a local file directory path (an existing Pulumi project) or directly as an inline Python function (`InlineProgram`).
-3. **Stack**: The isolated unit of deployment. A `Stack` instance binds a `Workspace` together with a `Program` and a specific stack name (e.g., `dev` or `prod`). All operations (`up`, `preview`, `destroy`, `refresh`) are executed against a `Stack` object.
+## Driving an inline program from Python
 
-## Defining an Inline Program
+Notice the exact Python import path: `from pulumi import automation as auto`. Because an inline program is a regular Python closure, it can capture runtime parameters cleanly without writing temporary YAML files.
 
-With standard Pulumi, code resides in a `__main__.py` file. The Automation API allows you to define infrastructure using standard Python functions passed directly to `create_or_select_stack`.
-
-The following script defines a small infrastructure program in Python and sets up a local workspace stack.
-
-<!-- file: auto-up.py -->
 ```python
-"""Drive Pulumi deployment using the Automation API with an inline program."""
+"""deploy_env.py — Create, preview, update, and inspect an inline stack."""
 import sys
-from pulumi_service import create_stack
+import pulumi
+from pulumi import automation as auto
+import pulumi_random as random
 
 
-def pulumi_program():
-    """Inline Pulumi program defining infrastructure resources."""
-    import pulumi
-    import pulumi_random as random
+def make_program(service_prefix: str, password_len: int):
+    """Return an inline Pulumi program parameterized by runtime inputs."""
+    def pulumi_program() -> None:
+        pet = random.RandomPet("env-name", length=2, separator="-")
+        secret = random.RandomPassword(
+            "service-token",
+            length=password_len,
+            special=False,
+        )
+        pulumi.export("env_fqdn", pet.id.apply(lambda p: f"{service_prefix}-{p}.local"))
+        pulumi.export("service_token", secret.result)
 
-    # Register a random pet name resource
-    pet = random.RandomPet("db-server-name", length=2, separator="-")
-
-    # Export outputs to the stack state
-    pulumi.export("server_name", pet.id)
+    return pulumi_program
 
 
-def main():
-    stack = create_stack("dev", pulumi_program)
-    print("Selecting and updating stack...")
+def deploy(stack_name: str, service_prefix: str = "app") -> dict[str, auto.OutputValue]:
+    stack = auto.create_or_select_stack(
+        stack_name=stack_name,
+        project_name="automation-demo",
+        program=make_program(service_prefix, password_len=24),
+    )
 
-    # Run preview
+    stack.workspace.install_plugin("random", "v4.16.0")
+
     preview_res = stack.preview(on_output=sys.stdout.write)
-    print(f"Preview change summary: {preview_res.change_summary}")
+    print("Planned changes:", preview_res.change_summary)
 
-    # Run update
     up_res = stack.up(on_output=sys.stdout.write)
-    print(f"Update summary: {up_res.summary.result}")
-
-    # Retrieve output value
-    server_name = up_res.outputs["server_name"].value
-    print(f"Deployed server name: {server_name}")
+    print("Update result:", up_res.summary.result)
+    return up_res.outputs
 
 
 if __name__ == "__main__":
-    main()
+    outputs = deploy("dev", service_prefix="billing")
+    for k, out in outputs.items():
+        display = "[secret]" if out.secret else out.value
+        print(f"  {k} = {display}")
 ```
 
-The underlying deployment engine configuration and stack creation logic are encapsulated in a helper module:
+## Streaming structured engine events (`on_event`)
 
-<!-- file: pulumi_service.py -->
+Instead of scraping stdout strings, attach an `on_event` callback to observe every resource transition (`pre`, `outputs`, `diagnostic`, `summary`) as typed objects:
+
 ```python
-"""Helper functions for managing Pulumi stacks via Automation API."""
-from typing import Callable
-from pulumi.auto import LocalWorkspace, Stack, ConfigValue
+from pulumi import automation as auto
 
 
-def create_stack(stack_name: str, program: Callable[[], None]) -> Stack:
-    """Create or select an existing Pulumi stack with inline program logic."""
-    project_name = "automation-demo"
+def log_resource_events(event: auto.EngineEvent) -> None:
+    if event.resource_outputs_event:
+        meta = event.resource_outputs_event.metadata
+        print(f"[EVENT] {meta.op.upper():8s} {meta.type} ({meta.urn.split('::')[-1]})")
+    elif event.diagnostic_event and event.diagnostic_event.severity == "error":
+        print(f"[ERROR] {event.diagnostic_event.message.strip()}")
 
-    # Initialize or load stack with inline program definition
-    stack = LocalWorkspace.create_or_select_stack(
-        stack_name=stack_name,
-        project_name=project_name,
-        program=program,
-    )
 
-    # Set up plugin dependencies
-    stack.workspace.install_plugin("random", "v4.16.0")
-
-    # Configure stack values programmatically
-    stack.set_config("aws:region", ConfigValue(value="us-west-2"))
-
-    return stack
-```
-
-### Code Walk-Through
-
-1. **`LocalWorkspace.create_or_select_stack`**: Instantiates a `Stack` object. If the stack `dev` under `automation-demo` does not exist, it creates it in the workspace backend; otherwise, it loads the existing state.
-2. **`program=pulumi_program`**: Accepts a zero-argument Python function containing resource allocations and `pulumi.export` statements.
-3. **`stack.workspace.install_plugin(...)`**: Automates provider plugin installation, ensuring the execution host has the correct binary providers downloaded prior to running updates.
-4. **`stack.set_config(...)`**: Sets project or provider configuration programmatically using `ConfigValue` objects without needing to edit YAML files manually.
-5. **`stack.preview()` and `stack.up()`**: Executes the deployment phases asynchronously or synchronously. The `on_output` parameter streams stdout directly to stdout streams or custom logger functions.
-6. **`up_res.outputs`**: Contains a dictionary of `OutputValue` objects exported by `pulumi.export` during program execution.
-
-## Executing Updates and Reading Outputs
-
-To run the script:
-
-```bash
-python auto-up.py
-```
-
-The execution output produced by the script above follows this structure:
-
-```text
-<<OUTPUT:auto-up-run>>
+up_res = stack.up(on_event=log_resource_events)
 ```
 
 ## Programmatic Destroy and Stack Teardown
@@ -142,20 +107,15 @@ The following script demonstrates automated destruction and removal of stack res
 ```python
 """Tear down resources programmatically using Automation API."""
 import sys
-from pulumi.auto import LocalWorkspace, Stack
-
-
-def empty_program():
-    """Empty program placeholder for selecting existing stacks."""
-    pass
+from pulumi import automation as auto
 
 
 def destroy_environment(stack_name: str, project_name: str):
     """Destroy all stack resources and remove state registration."""
-    stack = LocalWorkspace.select_stack(
+    stack = auto.select_stack(
         stack_name=stack_name,
         project_name=project_name,
-        program=empty_program,
+        program=lambda: None,
     )
 
     print(f"Destroying resources in stack '{stack_name}'...")
@@ -185,20 +145,16 @@ In addition to inline Python functions, `LocalWorkspace` can load standard Pulum
 ```python
 """Drive a file-based Pulumi project using LocalWorkspace."""
 import sys
-from pulumi.auto import LocalWorkspace, LocalWorkspaceOptions
+from pulumi import automation as auto
 
 
 def run_disk_project(project_dir: str, stack_name: str):
     """Load and deploy a standard Pulumi project from disk."""
-    # Configure workspace settings referencing target directory
-    opts = LocalWorkspaceOptions(
+    stack = auto.create_or_select_stack(
+        stack_name=stack_name,
         work_dir=project_dir,
     )
-
-    stack = LocalWorkspace.create_or_select_stack(
-        stack_name=stack_name,
-        opts=opts,
-    )
+    stack.set_config("aws:region", auto.ConfigValue(value="us-west-2"))
 
     print(f"Refreshing state for stack '{stack_name}'...")
     stack.refresh(on_output=sys.stdout.write)
@@ -206,8 +162,9 @@ def run_disk_project(project_dir: str, stack_name: str):
     print("Running update...")
     result = stack.up(on_output=sys.stdout.write)
 
-    for key, value in result.outputs.items():
-        print(f"Output: {key} = {value.value} (secret={value.is_secret})")
+    for key, out in result.outputs.items():
+        display = "[secret]" if out.secret else out.value
+        print(f"Output: {key} = {display}")
 
 
 if __name__ == "__main__":
@@ -216,14 +173,40 @@ if __name__ == "__main__":
 
 Setting `work_dir` points `LocalWorkspace` to a directory containing a valid `Pulumi.yaml` file, executing the infrastructure code defined in that project's entrypoint.
 
+## Hands-on lab: build a self-service ephemeral environment CLI
+
+In this lab you will run a self-contained Python script (`envctl.py`) that provisions and tears down isolated ephemeral stacks (`pr-101`, `pr-102`) on a local backend while streaming structured resource events.
+
+### Step 1: Set up the lab environment
+
+```bash
+pulumi login --local
+mkdir -p ~/pulumi-labs/08-automation-api && cd ~/pulumi-labs/08-automation-api
+python3 -m venv .venv && source .venv/bin/activate
+pip install "pulumi>=3.100,<4" "pulumi-random>=4.16"
+```
+
+### Step 2: Run the inline provisioning and teardown workflow
+
+Save the `deploy_env.py` and `auto-destroy.py` listings from earlier in this chapter into your lab directory and run:
+
+```bash
+python deploy_env.py
+python deploy_env.py    # Confirm idempotency: 0 resources changed on second run
+python auto-destroy.py  # Destroy live resources and remove stack registration
+```
+
+Verify that the first run creates two resources (`RandomPet` and `RandomPassword`), the second run reports zero changes, and the teardown removes both the resources and the stack metadata cleanly.
+
 ## Common Pitfalls
 
 | Pitfall | Cause | Solution |
 | :--- | :--- | :--- |
-| **Missing CLI Binary** | The Automation API still invokes the underlying `pulumi` CLI binary under the hood. | Ensure `pulumi` is installed in system `PATH` or specify `PULUMI_HOME` in workspace settings. |
-| **Uninstalled Plugins** | Provider plugins are not automatically inherited from other projects when running inline programs. | Call `stack.workspace.install_plugin(name, version)` explicitly before running `stack.up()`. |
-| **Stale State on Removal** | Calling `stack.workspace.remove_stack()` before calling `stack.destroy()`. | Always invoke `stack.destroy()` first to remove actual cloud resources before unregistering the stack. |
-| **Uncaptured Secrets** | Accessing `OutputValue.value` directly on secret outputs logs plaintext values in application outputs. | Inspect `OutputValue.is_secret` property before logging or printing stack outputs. |
+| **Wrong import path** | Importing `pulumi.auto` instead of `pulumi.automation` | Always use `from pulumi import automation as auto` |
+| **Missing CLI Binary** | The Automation API invokes the underlying `pulumi` CLI binary | Ensure `pulumi` is installed on `PATH` or set `pulumi_command` |
+| **Uninstalled Plugins** | Provider plugins are not auto-installed for inline programs | Call `stack.workspace.install_plugin(name, version)` before `stack.up()` |
+| **Stale State on Removal** | Calling `remove_stack()` before `stack.destroy()` | Always destroy live resources first before unregistering the stack |
+| **Uncaptured Secrets** | Logging `OutputValue.value` unconditionally | Check `out.secret` before logging or serializing outputs |
 
 ## Key takeaways
 

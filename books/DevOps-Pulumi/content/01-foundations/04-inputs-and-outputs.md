@@ -4,167 +4,241 @@ title: Inputs, Outputs and the Dependency Graph
 
 # Inputs, Outputs and the Dependency Graph
 
-A Pulumi program looks imperative: Python statements, run top to bottom. The infrastructure it describes is declarative: Pulumi decides what to create, in what order, and what to leave alone. The bridge between the two is a pair of types. **Inputs** are what you give a resource. **Outputs** are values the cloud reports back later. Every confusing moment for new Pulumi users ("why does my bucket name print as an object?") comes from treating an output as if it were already a value.
+A Pulumi program reads top to bottom like ordinary Python, yet the infrastructure it describes is asynchronous and declarative. The bridge between those two worlds is the pair of generic types `Input[T]` and `Output[T]`. Every confusing moment when learning Pulumi — why `print(bucket.id)` prints an object wrapper, why `f"https://{lb.dns_name}"` produces a warning, or why a resource mysteriously disappears from `pulumi preview` — comes from treating an `Output[T]` as if it were already a resolved plain value.
 
-## Learning goals
+![Pulumi dependency DAG showing VPC and RandomPassword created in parallel, feeding SecurityGroup and RDS Database, and combining in Output.all to export a secret connection string.](../../images/diagram-pulumi-outputs-dag.svg)
 
-- Distinguish inputs, resource outputs and stack outputs
-- Explain how passing an output into an input creates a dependency edge
-- Transform outputs with `apply`, `Output.all`, `Output.format`, `Output.concat` and the JSON helpers, and reach nested values by lifting
-- Recognise the "output used as a plain value" bug, and why resources must not be created inside `apply`
+## `Input[T]` vs. `Output[T]`
 
-## Inputs
-
-An input is an argument to a resource, usually one parameter of the underlying cloud API call. Every input of type `Input[T]` also accepts a plain `T`:
+Every resource constructor parameter has type `pulumi.Input[T]`, which accepts **either** a plain Python value `T` or an `Output[T]` produced by another resource:
 
 ```python
-import pulumi_random as random
-
-my_id = random.RandomId("mine", byte_length=8)   # 8 is a plain value used as an input
-```
-
-Python offers two spellings for object-shaped inputs: an `...Args` class or a dictionary typed as `...ArgsDict`. Both carry the same fields, and the dictionary form is shorter:
-
-```python
-import pulumi_aws as aws
-
-repo = aws.ecr.Repository(
-    "repo",
-    image_tag_mutability="MUTABLE",
-    image_scanning_configuration={"scan_on_push": True},
-)
-```
-
-## Outputs
-
-An output is a property the provider reports **after** the resource exists, such as an ID, an ARN, an endpoint or a generated password. Outputs behave like futures. During a first `pulumi up` the value is unknown until the cloud answers. During `pulumi preview` it may never be known.
-
-Pass an output straight into another resource's input and Pulumi records a dependency:
-
-```python
+import pulumi
 import pulumi_aws as aws
 import pulumi_random as random
 
-password = random.RandomPassword("password", length=16, special=True)
+# Plain Python values satisfy Input[T] directly
+db_password = random.RandomPassword("db-password", length=24, special=False)
 
+# Passing db_password.result (Output[str]) into password (Input[str])
+# wires an automatic dependency edge in the engine's DAG
 db = aws.rds.Instance(
-    "db",
-    instance_class="db.t3.micro",
-    allocated_storage=64,
-    engine="mysql",
-    username="someone",
-    password=password.result,      # output -> input: an edge in the graph
+    "primary-db",
+    instance_class="db.t4g.micro",
+    allocated_storage=20,
+    engine="postgres",
+    username="appuser",
+    password=db_password.result,
 )
 ```
 
-That edge tells Pulumi to create the password before the database, and on `destroy` to delete the database before the password. You wrote no ordering code. A program that wires outputs to inputs gets correct ordering for free, and `depends_on` is only for dependencies that no value carries.
+Passing an `Output` into an `Input` accomplishes two things simultaneously:
+1. **Value propagation**: Once the upstream resource finishes creating, the engine substitutes its resolved value into the downstream provider call.
+2. **DAG ordering**: The engine guarantees `db-password` is created before `primary-db` on `pulumi up`, and `primary-db` is deleted before `db-password` on `pulumi destroy`. Independent resources (such as a VPC and a `RandomPassword`) run in **parallel** automatically.
 
-Three similar names refer to different things:
+| Term | What it represents | Known during `preview`? |
+| :--- | :--- | :--- |
+| **Input (`Input[T]`)** | Argument passed into a resource constructor | Yes if plain; unknown if derived from a new resource's output |
+| **Resource Output (`Output[T]`)** | Property returned by a provider after create/update | Unknown on initial create; known on subsequent updates |
+| **Stack Output (`pulumi.export`)** | Value published at stack level for CLI or `StackReference` | Resolved at the end of `up` |
 
-| Term | What it is |
-|------|------------|
-| Input | An argument to a resource; accepts plain values or outputs |
-| Resource output | A property of a resource, known once the provider reports it |
-| Stack output | A value you `pulumi.export` at the end of a run for the CLI or a `StackReference` |
+## Transforming outputs without breaking the graph
 
-## Getting at the value
+Because an `Output[T]` is an asynchronous future carrying both **dependencies** and **secret tainting**, you transform it with SDK combinators rather than raw Python operators.
 
-Because an output is not yet a value, you can't use ordinary language operations on it. `print(bucket.id)` or `"https://" + lb.dns_name` doesn't do what you expect. The SDK supplies the tools instead.
-
-### `apply`: transform one output
-
-```python
-url = lb.dns_name.apply(lambda name: f"https://{name}")
-```
-
-The callback runs when the value is known and receives the plain value. Its return value becomes a new `Output`, which you can pass on as an input or export. Secret-ness and dependencies flow through.
-
-### `Output.all`: combine several
+### Single output: `.apply()`
 
 ```python
 import pulumi
 
-conn = pulumi.Output.all(server.name, database.name).apply(
-    lambda args: f"Server=tcp:{args[0]}.database.windows.net;initial catalog={args[1]};"
-)
+# Runs only once lb.dns_name is known; preserves dependencies & secretness
+base_url = lb.dns_name.apply(lambda host: f"https://{host}/v1")
+```
 
-# keyword form yields a dict
-conn = pulumi.Output.all(server=server.name, db=database.name).apply(
-    lambda a: f"Server=tcp:{a['server']}.database.windows.net;initial catalog={a['db']};"
+### Multiple outputs: `Output.all()`
+
+Pass outputs positionally (receiving a `list`) or by keyword (receiving a `dict` — much easier to read when combining three or more values):
+
+```python
+import pulumi
+
+# Keyword form avoids brittle index numbers like args[0], args[1], args[2]
+dsn = pulumi.Output.all(
+    host=db.address,
+    port=db.port,
+    pwd=db_password.result,
+).apply(
+    lambda v: f"postgres://appuser:{v['pwd']}@{v['host']}:{v['port']}/app"
 )
 ```
 
-### Helpers: skip the lambda
+### Ergonomic helpers: `format`, `concat`, `json_dumps`, and `json_loads`
 
-Most `apply` calls build a string or some JSON. The helpers do that directly and are easier to read:
+Most `.apply()` lambdas exist solely to interpolate strings or serialize JSON. Built-in helpers eliminate the boilerplate and accept `Output` values nested arbitrarily deep inside dicts and lists:
 
 ```python
-import json
 import pulumi
 
-url = pulumi.Output.format("https://{0}/api", lb.dns_name)
-arn_path = pulumi.Output.concat(bucket.arn, "/*")
+health_url = pulumi.Output.format("https://{0}/healthz", lb.dns_name)
+objects_arn = pulumi.Output.concat(bucket.arn, "/*")
 
-policy = pulumi.Output.json_dumps({
+# Output.json_dumps resolves nested Outputs automatically
+bucket_policy = pulumi.Output.json_dumps({
     "Version": "2012-10-17",
-    "Statement": [{
-        "Effect": "Allow",
-        "Principal": "*",
-        "Action": ["s3:GetObject"],
-        "Resource": [arn_path],          # outputs allowed inside the structure
-    }],
+    "Statement": [
+        {
+            "Sid": "AllowAppRead",
+            "Effect": "Allow",
+            "Principal": {"AWS": app_role.arn},
+            "Action": ["s3:GetObject", "s3:ListBucket"],
+            "Resource": [bucket.arn, objects_arn],
+        }
+    ],
 })
 
-parsed = pulumi.Output.json_loads(some_json_output)
+# Parse JSON outputs back into structured Outputs
+parsed_policy = pulumi.Output.json_loads(bucket_policy)
 ```
 
-`json_dumps` accepts a structure that has outputs nested inside it. A `json.dumps` inside an `apply` would make you resolve each one by hand first.
+### Property lifting
 
-### Lifting: reach into nested outputs
-
-Properties and indexes can be read straight off an output, with no `apply`. Pulumi "lifts" the access:
+You can access nested attributes and list elements directly on an `Output` without writing `.apply()`:
 
 ```python
-record_name = cert.domain_validation_options[0].resource_record_name
+# Equivalent to cert.domain_validation_options.apply(lambda opts: opts[0].resource_record_name)
+validation_record_name = cert.domain_validation_options[0].resource_record_name
 ```
 
-Without lifting this would be `cert.domain_validation_options.apply(lambda o: o[0].resource_record_name)`.
+## Two golden rules that eliminate 90% of Pulumi bugs
 
-## Two rules that prevent most bugs
+> [!CAUTION]
+> **Rule 1: Never treat an `Output` as a plain Python value**
+>
+> Writing `f"https://{lb.dns_name}"`, `if output == "prod":`, or `json.dumps({"arn": bucket.arn})` evaluates the wrapper object instead of the resolved value. Always use `Output.format()`, `Output.concat()`, `Output.json_dumps()`, or `.apply()`.
 
-**1. Never treat an output as a plain value.** Printing it, concatenating it with `+`, using it in an `if`, or formatting it with an f-string outside `apply` gives you the wrapper object, not the value. Python's `Output` warns when converted to a string, and the result ends up in resource names and tags looking like garbage. Use `apply`, `format`, `concat` or `json_dumps`.
+> [!WARNING]
+> **Rule 2: Never allocate resources inside `.apply()`**
+>
+> During `pulumi preview`, outputs from newly created resources are unknown, so `.apply()` callbacks **do not execute**. Any resource constructed inside `.apply()` is invisible during `preview` and then suddenly appears during `up` — breaking code review and diff trust. Drive resource counts and conditional branches from **stack configuration** (which is always known at preview time), not from another resource's output.
 
-**2. Don't create resources inside `apply` or `all`.** Pulumi's documentation says to avoid it wherever possible. Resources created in a callback don't appear in `pulumi preview` unless the value is already known, so the preview stops matching what `up` will do. Reviewers then approve a plan that leaves things out. If the *number* of resources depends on a value, read that value from configuration (known at preview), not from another resource's output.
+## Implicit edges vs. explicit `depends_on`
 
-## Resource identity
+Prefer implicit dependencies (passing `a.id` into `b`) whenever possible. Reach for `pulumi.ResourceOptions(depends_on=[...])` only when a cloud side-effect exists with no data flowing between the two resources — for example, waiting for an IAM role policy attachment before launching an ECS task that assumes that role:
 
-Wiring resources means passing *some* identifier, and the inputs differ in which one they want. A resource has four identities: its logical name (the first constructor argument), its physical name at the provider, its physical ID (`resource.id`), and its Pulumi URN. Many inputs want an ARN, an endpoint or a name instead of the ID. A type mismatch at preview usually means you passed the wrong identity. Check the input's documentation.
+```python
+service = aws.ecs.Service(
+    "api-service",
+    cluster=cluster.arn,
+    task_definition=task_def.arn,
+    opts=pulumi.ResourceOptions(depends_on=[role_policy_attachment]),
+)
+```
 
-## Diagnosis
+## Four identities every resource carries
 
-| Symptom | Cause | Fix |
-|---------|-------|-----|
-| A name or tag contains text about calling `__str__` on an `Output` | Output used in an f-string or `str()` | `Output.format`/`concat`, or build it in `apply` |
-| Preview shows fewer resources than `up` creates | Resources created inside `apply` | Drive counts from config. Create resources at top level |
-| Resources created in the wrong order | The dependency is not carried by any value | Pass the output as an input, or `depends_on` as a last resort |
-| Type error passing `bucket` where a string is expected | Passed the resource, not a property | `bucket.id`, `bucket.arn` or `bucket.bucket`, per the input's docs |
-| JSON policy has a placeholder where an ARN belongs | `json.dumps` on a structure containing outputs | `Output.json_dumps` |
+| Identity | Example | When to pass it |
+| :--- | :--- | :--- |
+| **Logical name** | `"primary-db"` | First constructor argument; tracks resource in Pulumi state |
+| **Physical name** | `"primary-db-a1b2c3d"` | Auto-suffixed by Pulumi to allow zero-downtime replacement |
+| **Physical ID (`resource.id`)** | `"vpc-0a1b2c3d4e"` | Provider-assigned handle required by most cross-resource references |
+| **URN (`resource.urn`)** | `"urn:pulumi:dev::app::aws:ec2/vpc:Vpc::main"` | Globally unique Pulumi state identifier (used by `pulumi state` and `Alias`) |
 
-## Practice
+## Troubleshooting guide
 
-1. Build an output URL `https://<dns>/health` from a load balancer's `dns_name` three ways: `apply`, `Output.format` and `Output.concat`. Which reads best?
-2. A colleague loops `for i in range(int(count_output))`. Explain why this fails and rewrite it to use config.
-3. Write an S3 bucket policy that references two buckets' ARNs, using only `Output.json_dumps`.
+| Symptom | Root cause | Fix |
+| :--- | :--- | :--- |
+| Tag or name contains `Calling __str__ on an Output[T]` | Used an `Output` in an f-string or `+` | Replace with `Output.format()` or `Output.concat()` |
+| `pulumi up` creates more resources than `pulumi preview` showed | Resources instantiated inside `.apply()` | Move resource creation to top level; branch on config |
+| `TypeError: Object of type Output is not JSON serializable` | Used stdlib `json.dumps()` instead of `Output.json_dumps()` | Switch to `pulumi.Output.json_dumps(...)` |
+| Wrong destroy order fails with "dependency violation" | Hidden cloud dependency not wired through an output | Add `opts=pulumi.ResourceOptions(depends_on=[...])` |
 
-## Recall card
+## Hands-on lab: explore DAG parallelism, `Output.all()`, and `Output.json_dumps()` locally
 
-- Inputs accept plain values or outputs. Outputs are future values reported by the provider.
-- Output to input means a dependency edge. Ordering for create and destroy is automatic.
-- `apply` handles one output, `Output.all` several, and `format`/`concat`/`json_dumps`/`json_loads` are the common shortcuts. Lifting reads nested fields.
-- Never treat an output as plain, and never create resources inside `apply`.
+In this lab you will build a local resource graph with two independent branches that execute in parallel, combine their outputs using `Output.all()` and `Output.json_dumps()`, and verify secret propagation.
+
+### Step 1: Initialize the lab project
+
+```bash
+export PULUMI_CONFIG_PASSPHRASE="local-lab-passphrase"
+pulumi login --local
+
+mkdir -p ~/pulumi-labs/05-outputs-dag && cd ~/pulumi-labs/05-outputs-dag
+pulumi new python --name dag-lab --description "Inputs, Outputs, and DAG lab" --stack dev --yes
+./venv/bin/pip install pulumi-random
+```
+
+### Step 2: Write `__main__.py`
+
+```python
+import pulumi
+import pulumi_random as random
+
+# Branch A and Branch B have no shared outputs -> created in parallel
+cluster_name = random.RandomPet("cluster-name", length=2, separator="-")
+vpc_id = random.RandomId("vpc-id", byte_length=4)
+
+# Downstream resource depends on BOTH branches via keepers
+app_secret = random.RandomPassword(
+    "app-secret",
+    length=24,
+    special=False,
+    keepers={
+        "cluster": cluster_name.id,
+        "vpc": vpc_id.hex,
+    },
+)
+
+# 1. Output.format() for clean string assembly
+endpoint = pulumi.Output.format("https://{0}.vpc-{1}.internal", cluster_name.id, vpc_id.hex)
+
+# 2. Output.json_dumps() handles nested Outputs directly
+service_manifest = pulumi.Output.json_dumps({
+    "cluster": cluster_name.id,
+    "vpc": pulumi.Output.concat("vpc-", vpc_id.hex),
+    "endpoint": endpoint,
+})
+
+# 3. Output.all() with keyword arguments (tainted secret because app_secret.result is secret)
+connection_bundle = pulumi.Output.all(
+    url=endpoint,
+    token=app_secret.result,
+).apply(lambda v: f"{v['url']}?token={v['token']}")
+
+pulumi.export("endpoint", endpoint)
+pulumi.export("service_manifest", service_manifest)
+pulumi.export("connection_bundle", connection_bundle)
+```
+
+### Step 3: Deploy and inspect the dependency graph
+
+```bash
+pulumi preview --diff
+pulumi up --yes
+pulumi stack output
+pulumi stack output connection_bundle --show-secrets
+```
+
+Inspect the recorded dependencies in state to verify `app-secret` lists both `cluster-name` and `vpc-id`:
+
+```bash
+pulumi stack export | python3 -m json.tool | grep -A 6 '"dependencies"'
+```
+
+### Step 4: Clean up
+
+```bash
+pulumi destroy --yes && pulumi stack rm dev --yes
+```
+
+## Summary
+
+- `Input[T]` accepts plain values or `Output[T]`; passing an output into an input automatically wires the create/destroy DAG.
+- Use `.apply()`, `Output.all(k=...)`, `Output.format()`, `Output.concat()`, and `Output.json_dumps()` to compose outputs without losing dependency tracking or secret tainting.
+- Never coerce an `Output` to `str` outside `.apply()`, and never allocate resources inside `.apply()` callbacks.
 
 ## Sources
 
-- Pulumi, [Inputs and outputs](https://www.pulumi.com/docs/iac/concepts/inputs-outputs/)
-- Pulumi, [Accessing single output values with apply](https://www.pulumi.com/docs/iac/concepts/inputs-outputs/apply/)
-- Pulumi, [Accessing multiple output values with all](https://www.pulumi.com/docs/iac/concepts/inputs-outputs/all/)
+- [Inputs and Outputs](https://www.pulumi.com/docs/iac/concepts/inputs-outputs/)
+- [Accessing Outputs with `apply`](https://www.pulumi.com/docs/iac/concepts/inputs-outputs/apply/)
+- [Combining Outputs with `all`](https://www.pulumi.com/docs/iac/concepts/inputs-outputs/all/)
+- [Resource Options (`depends_on`)](https://www.pulumi.com/docs/iac/concepts/resources/options/dependson/)

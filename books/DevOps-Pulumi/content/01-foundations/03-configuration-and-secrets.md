@@ -4,14 +4,9 @@ title: Configuration and Secrets
 
 # Configuration and Secrets
 
-A stack differs from its siblings in exactly two places: its state and its **configuration**. Configuration is how one program becomes a `t3.micro` in dev and a `m7i.large` in production without a single `if`. Some of that configuration is a password, and Pulumi's **secrets** system makes sure the password is encrypted in every place it travels to, not just the file you typed it into. Examples use Python.
+A single Pulumi program deploys a `t3.micro` instance in `dev` and a multi-AZ `m7i.large` cluster in `production` without branching on stack names because **configuration** is separated from code. When a configuration value is sensitive — a database password, webhook signing key, or API token — Pulumi's **secrets** subsystem encrypts it in the stack file, encrypts it inside state checkpoints, masks it in CLI output, and automatically **taints** every derived output so secrets cannot accidentally leak downstream.
 
-## Learning goals
-
-- Set, read and structure stack configuration, and explain key namespaces
-- Choose between `get`, `require` and the `*_secret` variants, and between stack-level and project-level config
-- Explain how secret-ness propagates through outputs, and where it does not (resource IDs, `apply` callbacks)
-- Pick and change a secrets provider, including for DIY backends
+![How Pulumi encrypts secrets with a secrets provider into Pulumi.prod.yaml, decrypts them in memory during deployment, and taints derived outputs and state.](../../images/diagram-pulumi-secrets-flow.svg)
 
 ## Configuration: per-stack key/value pairs
 
@@ -235,19 +230,116 @@ This re-encrypts config and state. If you'd rather not commit stack files at all
 - Use one KMS key or ESC environment per trust boundary (prod versus non-prod), and restrict decrypt rights accordingly.
 - Rotate by setting the new value with `--secret` and running `up`. Changing the *provider* is a separate operation (`change-secrets-provider`).
 
-## Practice
+## Hands-on lab: structured config, secret tainting, and verifying ciphertext in state
 
-1. Design config for a service with region, instance count, a list of allowed CIDRs, and a database password. Which keys go project-level, which stack-level, and which are secret?
-2. A colleague creates a token with `random.RandomString` and marks `result` secret. What is still exposed, and what do you change?
-3. Your team moves from Pulumi Cloud to an S3 DIY backend. What happens to secrets, and which provider would you pick?
+In this lab you will configure typed project defaults, structured per-stack config, and an encrypted secret on a local backend, then verify in the exported state JSON that secret tainting protected derived outputs.
 
-## Recall card
+### Step 1: Scaffold the project and set project-level typed defaults
 
-- `Pulumi.<stack>.yaml` holds per-stack config (commit it). `Pulumi.yaml` `config:` holds shared, plaintext, typed defaults.
-- No-colon keys belong to the project. `Config("ns")` reads other namespaces.
-- `require` fails loudly, `get` returns None, and `*_secret` keeps the marking.
-- Secret-ness propagates through outputs, except inside `apply` callbacks and resource IDs.
-- Use `--secrets-provider` at `stack init` and `stack change-secrets-provider` later. A passphrase is a key you must not lose.
+```bash
+pulumi login --local
+
+mkdir -p ~/pulumi-labs/04-config-secrets && cd ~/pulumi-labs/04-config-secrets
+pulumi new python --name config-lab --description "Config and secrets lab" --stack dev --yes
+./venv/bin/pip install pulumi-random
+```
+
+Update `Pulumi.yaml` to add typed project defaults:
+
+```yaml
+name: config-lab
+runtime:
+  name: python
+  options:
+    virtualenv: venv
+description: Config and secrets lab
+config:
+  tier:
+    type: string
+    default: development
+  replicaCount:
+    type: integer
+    default: 1
+```
+
+### Step 2: Set structured config and an encrypted secret
+
+```bash
+pulumi config set --path 'service.host' 'db.dev.internal'
+pulumi config set --path 'service.port' 5432
+pulumi config set --secret apiSecret 'lab-signing-value'
+cat Pulumi.dev.yaml
+```
+
+Confirm that `apiSecret` appears as a `secure:` ciphertext blob in `Pulumi.dev.yaml`, never plaintext.
+
+### Step 3: Write `__main__.py` demonstrating secret tainting
+
+```python
+import pulumi
+import pulumi_random as random
+
+cfg = pulumi.Config()
+tier = cfg.require("tier")
+replicas = cfg.require_int("replicaCount")
+svc = cfg.require_object("service")
+api_secret = cfg.require_secret("apiSecret")
+
+# Generated password (already marked secret by RandomPassword)
+db_pass = random.RandomPassword("db-pass", length=20, special=False)
+
+# Combining plaintext host + port + secret password produces a SECRET Output
+service_dsn = pulumi.Output.format(
+    "https://{0}:{1}/{2}?pw={3}",
+    svc["host"],
+    svc["port"],
+    tier,
+    db_pass.result,
+)
+
+# Combining two secrets via Output.all() stays secret
+combined_token = pulumi.Output.all(api_secret, db_pass.result).apply(
+    lambda pair: f"token-{pair[0]}-{len(pair[1])}"
+)
+
+pulumi.export("tier", tier)
+pulumi.export("replicas", replicas)
+pulumi.export("service_dsn", service_dsn)
+pulumi.export("combined_token", combined_token)
+```
+
+### Step 4: Deploy and verify encryption in state
+
+```bash
+pulumi up --yes
+pulumi stack output
+```
+
+`service_dsn` and `combined_token` both print as `[secret]`. Now inspect the raw state checkpoint to prove that `lab-signing-value` does **not** appear anywhere in plaintext:
+
+```bash
+pulumi stack export | grep -i "lab-signing-value" || echo "Confirmed: encrypted in state!"
+```
+
+Finally, verify schema validation by trying an invalid type:
+
+```bash
+pulumi config set replicaCount "not-an-int"
+pulumi preview   # Fails immediately with a type mismatch error
+```
+
+### Step 5: Clean up
+
+```bash
+pulumi config set replicaCount 2
+pulumi destroy --yes && pulumi stack rm dev --yes
+```
+
+## Summary
+
+- Store environment-specific knobs in committed `Pulumi.<stack>.yaml` files and shared plaintext defaults (with type checks) in `Pulumi.yaml`.
+- Always read encrypted keys with `require_secret()` / `get_secret()` so secret tainting propagates through every derived output and into state.
+- Never store sensitive strings in resource IDs (use `RandomPassword`, not `RandomString`), and choose KMS or Vault over passphrases for production DIY backends.
 
 ## Sources
 

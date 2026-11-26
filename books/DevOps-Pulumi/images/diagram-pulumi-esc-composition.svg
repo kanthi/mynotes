@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 340" role="img" aria-label="Pulumi ESC composition showing shared base defaults, dynamic AWS OIDC login, and external secret stores merged into an app/prod environment consumed by Pulumi stacks, esc run commands, and CI/CD pipelines" color-scheme="light">
+<rect width="820" height="340" fill="#ffffff"/>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#3b5b85"/></marker></defs>
+<text x="410" y="28" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="16" font-weight="700" fill="#1f2a36">Pulumi ESC Environment Composition</text>
+<rect x="28" y="56" width="210" height="60" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="133" y="82" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" font-weight="700" fill="#1f2a36">org/base-defaults</text>
+<text x="133" y="100" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#5a6b7d">shared tags, regions, URLs</text>
+<rect x="28" y="136" width="210" height="60" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="133" y="162" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" font-weight="700" fill="#1f2a36">fn::open::aws-login</text>
+<text x="133" y="180" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#5a6b7d">short-lived OIDC tokens</text>
+<rect x="28" y="216" width="210" height="60" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="133" y="242" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" font-weight="700" fill="#1f2a36">fn::open::aws-secrets</text>
+<text x="133" y="260" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#5a6b7d">Secrets Manager / Vault</text>
+<rect x="296" y="114" width="224" height="104" rx="8" fill="#f4f7fb" stroke="#c0392b" stroke-width="2.2"/>
+<text x="408" y="144" text-anchor="middle" font-family="ui-monospace,monospace" font-size="13" font-weight="700" fill="#1f2a36">ESC: app/prod</text>
+<text x="408" y="166" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">imports + overrides</text>
+<text x="408" y="184" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">pulumiConfig + envVars</text>
+<text x="408" y="202" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#5a6b7d">evaluated on open</text>
+<rect x="578" y="56" width="214" height="60" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="685" y="82" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" font-weight="700" fill="#1f2a36">Pulumi Stacks</text>
+<text x="685" y="100" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#5a6b7d">environment: [app/prod]</text>
+<rect x="578" y="136" width="214" height="60" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="685" y="162" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" font-weight="700" fill="#1f2a36">esc run -- cmd</text>
+<text x="685" y="180" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#5a6b7d">local dev &amp; scripts</text>
+<rect x="578" y="216" width="214" height="60" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="685" y="242" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" font-weight="700" fill="#1f2a36">CI / CD Runners</text>
+<text x="685" y="260" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#5a6b7d">zero static cloud keys</text>
+<line x1="238" y1="86" x2="294" y2="142" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="238" y1="166" x2="294" y2="166" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="238" y1="246" x2="294" y2="190" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="520" y1="142" x2="576" y2="86" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="520" y1="166" x2="576" y2="166" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="520" y1="190" x2="576" y2="246" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<text x="410" y="314" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" fill="#5a6b7d">rotate once in ESC; every stack, CLI session, and pipeline inherits fresh values</text>
+</svg>

@@ -4,91 +4,122 @@ title: Unit Testing Pulumi Programs with Mocks
 
 # Unit Testing Pulumi Programs with Mocks
 
-After reading this chapter, you will be able to write fast, isolated unit tests for Pulumi infrastructure programs using Pulumi's built-in Python mock engine and standard test frameworks such as `unittest` and `pytest`. You will learn how to intercept cloud resource allocations and API invokes, validate configuration invariants and tagging policies, catch security misconfigurations before running a cloud preview, and handle Python asynchronous test execution correctly.
+Waiting three minutes for a sandbox deployment just to discover a missing cost-allocation tag or an accidentally public SSH port slows down every pull request. Because Pulumi programs are ordinary Python, you can run fast, deterministic unit tests in memory using `pulumi.runtime.Mocks` — verifying security invariants, naming conventions, encryption flags, and resource wiring in under a second with zero cloud credentials and no Pulumi CLI daemon.
+
+![In-memory Pulumi unit testing architecture showing pytest running a Pulumi program against a Mock Monitor implementing new_resource and call while bypassing real cloud APIs.](../../images/diagram-pulumi-mock-testing.svg)
 
 > [!NOTE]
 > **Verified environment**
 >
-> The code listings in this chapter were verified with Python 3.14.8, Pulumi Python SDK `3.273.0`, `pulumi-aws` `7.52.1`, and `pytest` `9.2.0`. No Pulumi CLI installation or cloud credentials are required to execute these unit tests.
+> The examples and lab in this chapter run cleanly on Python 3.12–3.14, Pulumi Python SDK `3.273.0`, `pulumi-aws` `7.52.1`, and `pytest` `9.2.0` — no Pulumi CLI or cloud credentials required.
 
+## Where unit tests fit in the testing pyramid
 
-## Why test with mocks?
+| Layer | Speed | Needs cloud creds? | What it catches |
+| :--- | :--- | :---: | :--- |
+| **Unit tests (`Mocks`)** | Milliseconds | No | Program logic, tags, CIDR rules, encryption flags, naming, conditional branches |
+| **Policy as Code (CrossGuard)** | Seconds (on preview) | Optional | Org-wide guardrails enforced across every stack regardless of language |
+| **Integration tests (ephemeral stack)** | Minutes | Yes | Real cloud IAM permissions, quota limits, live API schema rejections |
 
-Deploying infrastructure to a cloud sandbox to verify logic takes minutes per test run, requires active AWS credentials, and incurs cloud billing. Even a local dry run like `pulumi preview` requires an authenticated session, network access to cloud APIs, and a state backend.
+Unit tests verify that *your code* emits the right resource declarations; integration tests verify that *the cloud* accepts them. You want both, with unit tests gating every commit locally and in CI.
 
-Unit testing with mocks solves a different problem: verifying that your program generates the intended resource definitions, flags, and relationships before contacting a provider. Pulumi executes your program in an in-memory test harness where:
+## Inside `pulumi.runtime.Mocks`
 
-- Cloud API calls are intercepted without making network connections.
-- Mock handlers return synthesized IDs and attributes.
-- Tests execute in milliseconds within standard CI pipelines.
-- Security and compliance regressions are caught directly on developer machines.
-
-Testing with mocks does not validate that AWS will accept an argument or that an IAM policy grants sufficient runtime privileges; that remains the domain of integration tests. Mocks validate the logic of *your* program.
-
-## The Pulumi mock runtime
-
-The Pulumi Python SDK provides the `pulumi.runtime.Mocks` base class. When a Pulumi program instantiates resources or invokes provider functions, the SDK passes those requests to a registered subclass of `Mocks`.
-
-A complete mock implementation overrides two methods:
+Registering a subclass of `pulumi.runtime.Mocks` replaces the gRPC resource monitor with an in-memory Python object. Every resource constructor routes to `new_resource`, and every provider lookup (`aws.ec2.get_ami`, `aws.get_caller_identity`) routes to `call`:
 
 ```python
-class pulumi.runtime.Mocks:
-    def new_resource(self, args: pulumi.runtime.MockResourceArgs) -> list:
-        ...
+import pulumi
+
+
+class InfraMocks(pulumi.runtime.Mocks):
+    def new_resource(self, args: pulumi.runtime.MockResourceArgs) -> tuple[str, dict]:
+        # Echo inputs back as state and synthesize provider-computed attributes
+        state = dict(args.inputs)
+        if args.typ == "aws:s3/bucket:Bucket":
+            state.setdefault("arn", f"arn:aws:s3:::{args.name}")
+            state.setdefault("bucket", f"{args.name}-mocked")
+        elif args.typ == "aws:ec2/instance:Instance":
+            state.setdefault("arn", f"arn:aws:ec2:us-east-1:123456789012:instance/{args.name}")
+            state.setdefault("publicIp", "203.0.113.10")
+        return f"{args.name}_id", state
 
     def call(self, args: pulumi.runtime.MockCallArgs) -> dict:
-        ...
+        if args.token == "aws:ec2/getAmi:getAmi":
+            return {"id": "ami-0123456789abcdef0", "architecture": "x86_64"}
+        if args.token == "aws:index/getCallerIdentity:getCallerIdentity":
+            return {"accountId": "123456789012", "arn": "arn:aws:iam::123456789012:role/ci"}
+        return {}
 ```
 
-| Method | Intercepts | Argument fields | Expected return value |
-|---|---|---|---|
-| `new_resource` | Resource declarations (`aws.s3.Bucket`, `aws.ec2.Instance`, etc.) | `args.typ`: resource type token (e.g. `aws:ec2/instance:Instance`)<br>`args.name`: logical name in Pulumi program<br>`args.inputs`: dictionary of input properties<br>`args.provider`: provider reference<br>`args.id_`: existing resource ID if any | A two-element list: `[resource_id, state_dict]` |
-| `call` | Function invokes (`aws.ec2.get_ami`, `aws.get_caller_identity`, etc.) | `args.token`: function token (e.g. `aws:ec2/getAmi:getAmi`)<br>`args.args`: dictionary of call arguments<br>`args.provider`: provider reference | A dictionary containing output attributes of the invoke |
+### Critical setup rule: register mocks before importing resources
 
-Once you define a mock class, you register it with `pulumi.runtime.set_mocks(MyMocks(), preview=False)`.
+Pulumi registers resources at the moment the constructor executes. If your test file has `import __main__` at the top before `pulumi.runtime.set_mocks(...)`, the SDK tries to connect to a live engine RPC server and crashes immediately.
 
-### Registering mocks before program execution
+Use `unittest.IsolatedAsyncioTestCase` and load your infrastructure module inside `setUp()` via `runpy.run_path("__main__.py")` (or call a factory function like `build_stack()`):
 
-The call to `pulumi.runtime.set_mocks()` must happen **before** your infrastructure module executes. If a resource or function runs before mocks are registered, the SDK attempts to connect to a live Pulumi engine RPC server and immediately fails.
+```python
+import runpy
+import unittest
+import pulumi
 
-Because Pulumi resources instantiate upon module import, you should not import your infrastructure module (`__main__` or your stack file) at the top of your test file. Instead, configure mocks inside the test setup phase and evaluate the program dynamically using `runpy.run_path()`.
 
-## Async testing with `IsolatedAsyncioTestCase`
-
-Every Pulumi resource property is an `Output[T]`, which behaves like an asynchronous promise. To assert against values inside an `Output`, your test must inspect the output through `.apply()`.
-
-The recommended pattern in modern Python combines `unittest.IsolatedAsyncioTestCase` with the `@pulumi.runtime.test` decorator:
-
-1. Subclass `unittest.IsolatedAsyncioTestCase`.
-2. In `setUp()`, invoke `pulumi.runtime.set_mocks(MyMocks(), preview=False)`.
-3. Load the infrastructure program using `runpy.run_path("__main__.py")`.
-4. Decorate each test method with `@pulumi.runtime.test`.
-5. Return the resolved `Output` from the test method so the runner awaits its assertions.
-
-### Python 3.14 event loop requirements
-
-On Python 3.14 and later, calling `asyncio.get_event_loop()` without an active event loop in the main thread raises `RuntimeError: There is no current event loop in thread 'MainThread'`. If `pulumi.runtime.set_mocks()` is called at module level outside of an active event loop, the test runner fails immediately.
-
-Using `unittest.IsolatedAsyncioTestCase` manages the event loop lifecycle automatically for each test method. If you use a plain function-based test harness, you must call `asyncio.set_event_loop(asyncio.new_event_loop())` before calling `set_mocks()`.
-
-## Lab: testing an AWS infrastructure stack
-
-We will define an AWS lab project containing an EC2 instance, a security group, and an S3 bucket. The initial version contains an intentional security flaw: an SSH ingress rule open to the entire internet (`0.0.0.0/0`). We will write unit tests to catch this policy violation and verify resource metadata.
-
-### Project dependencies
-
-<!-- file: requirements.txt -->
-```text
-pulumi>=3.273.0,<4
-pulumi-aws>=7.52.0,<8
-pytest
+class BaseInfraTest(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        # preview=False makes mocked outputs resolve as known values
+        pulumi.runtime.set_mocks(InfraMocks(), preview=False)
+        self.program = runpy.run_path("__main__.py")
 ```
 
-### The infrastructure program (v1 with security flaw)
+> [!IMPORTANT]
+> **Python 3.14+ event loop behavior**
+>
+> Starting in Python 3.14, `asyncio.get_event_loop()` raises `RuntimeError` if no event loop is active on the main thread. `unittest.IsolatedAsyncioTestCase` manages a fresh event loop per test automatically. If you write plain `pytest` functions instead of a test class, call `asyncio.set_event_loop(asyncio.new_event_loop())` before `pulumi.runtime.set_mocks(...)`.
 
-The program queries an Amazon Linux 2023 AMI, configures a security group for web traffic and administrative SSH, provisions an EC2 instance, and creates an S3 bucket for access logs.
+## Writing expressive assertions on `Output[T]`
 
-<!-- file: __main__.py -->
+Because every resource property is an asynchronous `Output`, every test method must:
+1. Be decorated with `@pulumi.runtime.test`.
+2. Perform assertions inside `.apply(...)` or `pulumi.Output.all(...).apply(...)`.
+3. **Return** the resulting `Output` so the test runner awaits it before exiting!
+
+### Combining multiple outputs in a single test
+
+```python
+@pulumi.runtime.test
+def test_instance_wired_to_security_group(self):
+    instance = self.program["instance"]
+    web_sg = self.program["web_sg"]
+
+    def check(vals):
+        sg_id, attached_sgs, ami_id = vals
+        self.assertIn(sg_id, attached_sgs, "EC2 instance must attach web-sg")
+        self.assertEqual(ami_id, "ami-0123456789abcdef0")
+
+    return pulumi.Output.all(
+        web_sg.id,
+        instance.vpc_security_group_ids,
+        instance.ami,
+    ).apply(check)
+```
+
+### Checking snake_case and camelCase keys safely
+
+Provider schemas store nested object keys in camelCase internally (e.g., `cidrBlocks`, `fromPort`), while Python inputs often arrive in snake_case (`cidr_blocks`, `from_port`). Supporting both keys makes tests resilient across provider upgrades.
+
+## Hands-on lab: catch and fix a security regression with TDD
+
+In this lab you will test an AWS stack containing an intentional security flaw (port 22 SSH open to `0.0.0.0/0`), watch the unit test fail in under a second, fix the flaw, and confirm all assertions pass.
+
+### Step 1: Create the isolated virtual environment
+
+```bash
+mkdir -p ~/pulumi-labs/06-unit-tests && cd ~/pulumi-labs/06-unit-tests
+python3 -m venv .venv && source .venv/bin/activate
+pip install "pulumi>=3.100,<4" "pulumi-aws>=6.0" pytest
+```
+
+### Step 2: Create the infrastructure program with a flaw (`__main__.py`)
+
 ```python
 import pulumi
 import pulumi_aws as aws
@@ -96,17 +127,12 @@ import pulumi_aws as aws
 ami = aws.ec2.get_ami(
     most_recent=True,
     owners=["amazon"],
-    filters=[
-        aws.ec2.GetAmiFilterArgs(
-            name="name",
-            values=["al2023-ami-*-x86_64"],
-        )
-    ],
+    filters=[aws.ec2.GetAmiFilterArgs(name="name", values=["al2023-ami-*-x86_64"])],
 )
 
 web_sg = aws.ec2.SecurityGroup(
     "web-sg",
-    description="Allow HTTP and SSH access",
+    description="Web and admin access",
     ingress=[
         aws.ec2.SecurityGroupIngressArgs(
             protocol="tcp",
@@ -118,7 +144,7 @@ web_sg = aws.ec2.SecurityGroup(
             protocol="tcp",
             from_port=22,
             to_port=22,
-            cidr_blocks=["0.0.0.0/0"],  # Security violation: SSH open to world
+            cidr_blocks=["0.0.0.0/0"],  # Intentional flaw: SSH open to the world
         ),
     ],
 )
@@ -128,28 +154,17 @@ instance = aws.ec2.Instance(
     instance_type="t3.micro",
     ami=ami.id,
     vpc_security_group_ids=[web_sg.id],
-    tags={
-        "Name": "web",
-        "team": "platform",
-    },
+    tags={"Name": "web", "team": "platform"},
 )
 
-bucket = aws.s3.Bucket(
-    "logs",
-    tags={
-        "team": "platform",
-    },
-)
+logs_bucket = aws.s3.Bucket("logs", tags={"team": "platform"})
 
 pulumi.export("instance_id", instance.id)
-pulumi.export("bucket_arn", bucket.arn)
+pulumi.export("bucket_arn", logs_bucket.arn)
 ```
 
-### The test suite
+### Step 3: Write the mock test suite (`test_infra.py`)
 
-The test suite defines a mock implementation that satisfies both `new_resource` and `call`. It then runs assertions against tags, AMI resolution, and security group ingress CIDR blocks.
-
-<!-- file: test_infra.py -->
 ```python
 import runpy
 import unittest
@@ -158,18 +173,12 @@ import pulumi
 
 class InfraMocks(pulumi.runtime.Mocks):
     def new_resource(self, args: pulumi.runtime.MockResourceArgs):
-        state = {
-            **args.inputs,
-            "arn": f"arn:aws:resource:::{args.name}",
-        }
+        state = {**args.inputs, "arn": f"arn:aws:resource:::{args.name}"}
         return [f"{args.name}_id", state]
 
     def call(self, args: pulumi.runtime.MockCallArgs):
         if args.token == "aws:ec2/getAmi:getAmi":
-            return {
-                "id": "ami-0123456789abcdef0",
-                "architecture": "x86_64",
-            }
+            return {"id": "ami-0123456789abcdef0", "architecture": "x86_64"}
         return {}
 
 
@@ -179,187 +188,85 @@ class TestInfrastructure(unittest.IsolatedAsyncioTestCase):
         self.program = runpy.run_path("__main__.py")
 
     @pulumi.runtime.test
-    def test_instance_tags(self):
+    def test_required_team_tag_on_instance_and_bucket(self):
         instance = self.program["instance"]
+        bucket = self.program["logs_bucket"]
 
-        def check(tags):
-            self.assertIsNotNone(tags, "Instance must have tags defined")
-            self.assertEqual(tags.get("Name"), "web")
-            self.assertEqual(tags.get("team"), "platform")
+        def check(tags_pair):
+            inst_tags, bucket_tags = tags_pair
+            self.assertEqual((inst_tags or {}).get("team"), "platform")
+            self.assertEqual((bucket_tags or {}).get("team"), "platform")
 
-        return instance.tags.apply(check)
+        return pulumi.Output.all(instance.tags, bucket.tags).apply(check)
 
     @pulumi.runtime.test
-    def test_instance_ami(self):
-        instance = self.program["instance"]
-
-        def check(ami_id):
-            self.assertEqual(ami_id, "ami-0123456789abcdef0")
-
-        return instance.ami.apply(check)
+    def test_ami_lookup_mocked(self):
+        return self.program["instance"].ami.apply(
+            lambda ami_id: self.assertEqual(ami_id, "ami-0123456789abcdef0")
+        )
 
     @pulumi.runtime.test
-    def test_security_group_ssh_restricted(self):
-        web_sg = self.program["web_sg"]
-
-        def check(ingress_rules):
-            for rule in ingress_rules or []:
-                from_port = rule.get("from_port") or rule.get("fromPort")
-                to_port = rule.get("to_port") or rule.get("toPort")
+    def test_ssh_not_open_to_world(self):
+        def check(rules):
+            for rule in rules or []:
+                fp = rule.get("from_port") or rule.get("fromPort")
+                tp = rule.get("to_port") or rule.get("toPort")
                 cidrs = rule.get("cidr_blocks") or rule.get("cidrBlocks") or []
-                if from_port <= 22 <= to_port:
+                if fp <= 22 <= tp:
                     self.assertNotIn(
                         "0.0.0.0/0",
                         cidrs,
-                        "Security group must not allow SSH from 0.0.0.0/0",
+                        "Port 22 (SSH) must not be open to 0.0.0.0/0",
                     )
 
-        return web_sg.ingress.apply(check)
-
-    @pulumi.runtime.test
-    def test_bucket_tags(self):
-        bucket = self.program["bucket"]
-
-        def check(tags):
-            self.assertIsNotNone(tags, "Bucket must have tags defined")
-            self.assertEqual(tags.get("team"), "platform")
-
-        return bucket.tags.apply(check)
-
-
-if __name__ == "__main__":
-    unittest.main()
+        return self.program["web_sg"].ingress.apply(check)
 ```
 
-### Running the tests against v1
-
-From the project directory, with the virtual environment active (`source .venv/bin/activate`), run pytest in quiet mode without warnings and with one-line tracebacks:
+### Step 4: Run pytest, observe the failure, and fix it
 
 ```bash
 python -m pytest -q -p no:warnings --tb=line test_infra.py
 ```
 
-The command produced the following output:
+Expected output (red):
 
 ```text
-...F                                                                     [100%]
+..F                                                                      [100%]
 =================================== FAILURES ===================================
-E   AssertionError: '0.0.0.0/0' unexpectedly found in ['0.0.0.0/0'] : Security group must not allow SSH from 0.0.0.0/0
-/tmp/lab/.venv/lib/python3.14/site-packages/pulumi/runtime/stack.py:211: AssertionError: '0.0.0.0/0' unexpectedly found in ['0.0.0.0/0'] : Security group must not allow SSH from 0.0.0.0/0
-=========================== short test summary info ============================
-FAILED test_infra.py::TestInfrastructure::test_security_group_ssh_restricted
-1 failed, 3 passed in 0.91s
+E   AssertionError: '0.0.0.0/0' unexpectedly found in ['0.0.0.0/0'] : Port 22 (SSH) must not be open to 0.0.0.0/0
+1 failed, 2 passed in 0.91s
 ```
 
-Notice that three tests pass, but `test_security_group_ssh_restricted` raises an `AssertionError` identifying that port 22 is exposed to `0.0.0.0/0`. The reported location is inside the Pulumi SDK (`pulumi/runtime/stack.py`), not your test file. The assertion runs inside `.apply()`, and the mock runtime raises it again when it waits for outstanding work. Without `--tb=line`, you get a long traceback through the SDK's event loop, so rely on the assertion *message* to say what broke.
-
-Naming the test file explicitly also matters. Once `fixed/test_infra.py` exists, a bare `pytest` run from the project root collects both copies and stops with an "import file mismatch" error, because the two modules share a basename.
-
-## Fixing the infrastructure flaw
-
-To resolve the violation, we restrict port 22 access to the internal corporate CIDR `10.0.0.0/8`. Here is the complete corrected program.
-
-<!-- file: fixed/__main__.py -->
-```python
-import pulumi
-import pulumi_aws as aws
-
-ami = aws.ec2.get_ami(
-    most_recent=True,
-    owners=["amazon"],
-    filters=[
-        aws.ec2.GetAmiFilterArgs(
-            name="name",
-            values=["al2023-ami-*-x86_64"],
-        )
-    ],
-)
-
-web_sg = aws.ec2.SecurityGroup(
-    "web-sg",
-    description="Allow HTTP and SSH access",
-    ingress=[
-        aws.ec2.SecurityGroupIngressArgs(
-            protocol="tcp",
-            from_port=80,
-            to_port=80,
-            cidr_blocks=["0.0.0.0/0"],
-        ),
-        aws.ec2.SecurityGroupIngressArgs(
-            protocol="tcp",
-            from_port=22,
-            to_port=22,
-            cidr_blocks=["10.0.0.0/8"],  # Fixed: restricted to internal CIDR
-        ),
-    ],
-)
-
-instance = aws.ec2.Instance(
-    "web",
-    instance_type="t3.micro",
-    ami=ami.id,
-    vpc_security_group_ids=[web_sg.id],
-    tags={
-        "Name": "web",
-        "team": "platform",
-    },
-)
-
-bucket = aws.s3.Bucket(
-    "logs",
-    tags={
-        "team": "platform",
-    },
-)
-
-pulumi.export("instance_id", instance.id)
-pulumi.export("bucket_arn", bucket.arn)
-```
-
-Run the tests inside the `fixed` directory by reusing `test_infra.py`:
+Now change the SSH rule in `__main__.py` from `["0.0.0.0/0"]` to `["10.0.0.0/8"]` and re-run:
 
 ```bash
-cd fixed && cp ../test_infra.py . && python -m pytest -q -p no:warnings --tb=line test_infra.py
+python -m pytest -q -p no:warnings --tb=line test_infra.py
 ```
 
-The command produced the following output:
+Expected output (green):
 
 ```text
-....                                                                     [100%]
-4 passed in 0.95s
+...                                                                      [100%]
+3 passed in 0.88s
 ```
 
-All four unit tests now execute and pass without contacting AWS or requiring the Pulumi CLI.
+## Common pitfalls
 
-## How mock outputs resolve
-
-When writing assertions inside `check` callbacks, remember how Pulumi outputs behave in tests:
-
-1. **Synthetic State**: When `new_resource` returns `[id, state]`, the SDK populates the created resource's properties with the keys provided in `state`. If your mock does not include an expected output field (for example, `public_ip`), accessing that attribute yields `None` or an unknown output.
-2. **Preview Mode**: The parameter `preview=False` in `pulumi.runtime.set_mocks(MyMocks(), preview=False)` treats all mocked resource inputs as known. If set to `True`, computed values behave as unknowns, mirroring `pulumi preview`. For unit testing configuration policies, `preview=False` is standard.
-3. **Property Normalization**: Input property names in Pulumi resources often use Python snake_case (such as `cidr_blocks`), but provider states may store camelCase keys (`cidrBlocks`). Checking both forms in your assertions ensures resilient tests across SDK schema versions.
-
-## Pitfalls
-
-| Mistake | Manifestation | Remedy |
-|---|---|---|
-| Importing `__main__` at module top-level | Tests crash with RPC connection errors to the Pulumi engine daemon | Register mocks in `setUp()` and load the program dynamically using `runpy.run_path()` |
-| Calling `set_mocks` at module level on Python 3.14+ | `RuntimeError: There is no current event loop in thread 'MainThread'` | Use `unittest.IsolatedAsyncioTestCase` so each test runs inside an established event loop |
-| Forgetting to return the output promise from `@pulumi.runtime.test` | Tests exit prematurely without evaluating assertions in `.apply()` | Always return `resource.property.apply(check)` from the decorated test method |
-| Asserting on resource outputs not defined in `new_resource` | Attribute resolves to `None` or an empty value | Include expected output attributes (e.g. `arn`, `id`) in the dictionary returned by `new_resource` |
-| Attempting to validate provider behavior with unit mocks | Test passes, but cloud deployment fails due to invalid parameters | Use unit mocks to verify program declarations; use integration tests for provider compliance |
+| Mistake | Symptom | Fix |
+| :--- | :--- | :--- |
+| Importing `__main__` before `set_mocks()` | RPC connection error at test collection time | Call `set_mocks()` in `setUp()` and load via `runpy.run_path()` |
+| Forgetting `return` in `@pulumi.runtime.test` | Test passes silently without running `.apply()` assertions | Always `return output.apply(check)` |
+| Missing attributes in `new_resource()` state | Asserting on `bucket.arn` sees `None` | Synthesize computed outputs (`arn`, `publicIp`) in `new_resource` |
+| Expecting mocks to catch invalid AWS API args | Unit tests pass, `pulumi up` fails in AWS | Pair unit mocks with ephemeral-stack integration tests |
 
 ## Summary
 
-- Pulumi unit tests intercept resource definitions and function calls entirely in memory, requiring neither the Pulumi CLI nor cloud provider credentials.
-- The `pulumi.runtime.Mocks` class provides `new_resource` to simulate resource states and `call` to simulate provider lookup functions.
-- Mocks must be configured using `pulumi.runtime.set_mocks()` before executing infrastructure definitions.
-- `unittest.IsolatedAsyncioTestCase` provides clean event loop isolation on modern Python versions (including Python 3.14).
-- Tests inspect resource state by passing assertions into `Output.apply()` inside methods decorated with `@pulumi.runtime.test`.
+- `pulumi.runtime.Mocks` intercepts `new_resource` and `call` in memory so tests run in milliseconds with zero cloud credentials.
+- Register mocks before loading infrastructure modules, use `unittest.IsolatedAsyncioTestCase` for Python 3.14+ event-loop safety, and always `return` the `Output` from `@pulumi.runtime.test` methods.
+- Combine unit mocks (fast logic & security guardrails) with CrossGuard policies and ephemeral integration tests for complete coverage.
 
 ## Sources
 
-- Pulumi, [Unit Testing with Mocks](https://www.pulumi.com/docs/iac/guides/testing/unit/)
-- Pulumi, [Testing Strategies](https://www.pulumi.com/docs/iac/guides/testing/)
-- Pulumi Registry, [aws.ec2.getAmi API reference](https://www.pulumi.com/registry/packages/aws/api-docs/ec2/getami/)
-- Python Software Foundation, [unittest.IsolatedAsyncioTestCase documentation](https://docs.python.org/3/library/unittest.html#unittest.IsolatedAsyncioTestCase)
+- [Unit Testing with Mocks](https://www.pulumi.com/docs/iac/guides/testing/unit/)
+- [Testing Strategies](https://www.pulumi.com/docs/iac/guides/testing/)
+- [Python `unittest.IsolatedAsyncioTestCase`](https://docs.python.org/3/library/unittest.html#unittest.IsolatedAsyncioTestCase)

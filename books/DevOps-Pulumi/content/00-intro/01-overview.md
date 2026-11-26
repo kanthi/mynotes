@@ -4,135 +4,239 @@ title: What Pulumi is (and is not)
 
 # What Pulumi is (and is not)
 
-After this page you can explain what Pulumi is, name the four pieces every deployment uses (program, project, stack, backend/state), and say how those pieces differ from a shell script that calls cloud APIs or from a tool that only speaks a domain-specific language. Later foundations pages cover install, projects, stacks, config, inputs and outputs, tests, and components in depth. This page is the map, not the walkthrough.
+Modern cloud infrastructure fails less often from missing cloud features than from drift, copy-pasted configuration, and untested glue code. Pulumi addresses this by combining a declarative **desired-state engine** with **general-purpose programming languages** (Python, TypeScript, Go, .NET, Java) as well as declarative YAML and HCL. You write ordinary code that constructs resource objects; the Pulumi CLI runs your code, diffs the resulting resource graph against recorded **state**, and invokes provider plugins to converge live infrastructure.
 
-## Thesis
+By the end of this chapter, you will be able to trace how a Pulumi program executes across the language host, gRPC deployment engine, provider plugins, and state backend — and distinguish clearly between what Pulumi solves and what remains your responsibility.
 
-Pulumi is an infrastructure-as-code platform: you write a program in a general-purpose language (Python, TypeScript, Go, .NET, Java) or in YAML/HCL, declare the cloud resources you want, and the CLI drives a deployment engine that creates, updates, or deletes them until the live world matches the program. The engine records what it did in **state** stored in a **backend**. Each independently configured copy of the program is a **stack**.
+## How the engine actually works
 
-That combination — ordinary languages, typed SDKs, a CLI, and durable state — is the product. Everything else in this book is a refinement of those four ideas.
+When you run `pulumi up`, your Python or Go code does **not** talk directly to AWS or Kubernetes APIs. Instead, Pulumi separates *declaring intent* from *mutating infrastructure* across four cooperating processes linked over gRPC.
 
-## Mental model
+![Pulumi execution architecture showing user program, language host, gRPC deployment engine, state backend, and resource provider plugins.](../../images/diagram-pulumi-architecture.svg)
 
-```text
-  you write a program          CLI runs it                 cloud APIs change
-  (Python / TS / Go / …)  →  language host + engine  →  providers create/update/delete
-         │                            │
-         │                            ▼
-         │                     state in a backend
-         │                  (Pulumi Cloud or DIY)
-         ▼
-   Pulumi.yaml chooses runtime + project name
-   stacks (dev / staging / prod) isolate config + state
-```
+1. **Language host**: Executes your program inside its native runtime (`python`, `node`, `go`, etc.). Each time your code instantiates a resource class, the SDK sends a `RegisterResource` RPC to the deployment engine and immediately receives an asynchronous `Output` handle.
+2. **Deployment engine**: Loads the stack's previous **state checkpoint** from the backend, compares the desired graph emitted by your program against recorded state, and computes a minimal, parallelizable execution plan (a directed acyclic graph, or DAG).
+3. **Resource provider plugins**: Standalone binaries (such as `pulumi-resource-aws` or `pulumi-resource-random`) that implement a uniform CRUD contract (`Check`, `Diff`, `Create`, `Read`, `Update`, `Delete`) against a specific cloud or SaaS API.
+4. **State backend and secrets provider**: Durable storage (Pulumi Cloud, S3, GCS, Azure Blob, PostgreSQL, or local disk) that records every resource's URN, provider ID, inputs, outputs, and encrypted secrets.
 
-| Piece | What it is | What breaks if you get it wrong |
-|-------|------------|----------------------------------|
-| **Program** | Source that constructs resource objects | Wrong properties → wrong cloud objects |
-| **Project** | Directory with `Pulumi.yaml` (runtime + name) | Wrong runtime → the language host never starts |
-| **Stack** | One isolated instance of the program | Selecting `prod` while editing `dev` config |
-| **Backend / state** | Record of what already exists | Lost or shared state → duplicate or orphan resources |
-| **Provider** | Plugin that talks to one cloud or service | Missing credentials → every create fails |
+> [!IMPORTANT]
+> **Implicit ordering through data flow**
+>
+> You rarely write manual sleep loops or explicit ordering directives. Whenever you pass an output of Resource A (such as `vpc.id` or `sg.id`) as an input to Resource B, the engine records a directed dependency edge. Creates run in topological order with maximum parallelism; `pulumi destroy` walks the exact reverse order.
 
-Pulumi tracks dependencies between resources from the values you pass (an instance that receives a security-group id depends on that group). The engine uses those edges to order creates and deletes and to parallelize where it can.
+## The five nouns every deployment uses
 
-## What Pulumi is
+| Noun | What it is | What breaks if you misunderstand it |
+| :--- | :--- | :--- |
+| **Program** | Source code that constructs resource objects and exports outputs | Wrong property or missing dependency produces wrong cloud state |
+| **Project** | A directory anchored by `Pulumi.yaml` (name + runtime metadata) | Wrong runtime or virtualenv prevents the language host from starting |
+| **Stack** | One isolated, independently configured instance (`dev`, `staging`, `prod`) | Running `up` against `prod` while testing a `dev` change |
+| **Backend & State** | The durable checkpoint mapping logical URNs to live cloud IDs | Lost or concurrently mutated state creates duplicate or orphaned resources |
+| **Provider** | The plugin binary that translates engine RPCs into cloud API calls | Missing cloud credentials or IAM roles fail every provider call |
 
-From the concepts documentation:
+## Multi-language by design: one engine, many SDKs
 
-- **Multi-language.** TypeScript/JavaScript, Python, Go, .NET, Java, Pulumi YAML, and HCL are first-class. The same AWS security group and instance can be declared in any of them; the engine sees the same resource graph.
-- **SDK + CLI + engine.** The language SDK constructs resources. The CLI (`pulumi up`, `pulumi preview`, …) orchestrates. The deployment engine diffs desired state against recorded state and calls providers.
-- **Optional managed backend.** Pulumi Cloud stores state, adds access control, secrets, policy, and drift detection. The open-source CLI also works with self-managed backends (S3, Azure Blob, GCS, local files).
-- **Open source core.** The CLI and SDKs are free and open source; Pulumi Cloud is the optional hosted service.
+Because the deployment engine speaks a language-neutral gRPC protocol, the same infrastructure graph can be authored in Python, TypeScript, or Go. All three programs below declare an AWS security group and an EC2 instance wired together by `group.id`.
 
-A minimal Python sketch (AWS) looks like this — the point is the shape, not a runnable lab:
+### Python
 
-<!-- file: sketch.py -->
 ```python
 import pulumi
 import pulumi_aws as aws
 
 group = aws.ec2.SecurityGroup(
     "web-sg",
-    description="Enable HTTP access",
-    ingress=[
-        {
-            "protocol": "tcp",
-            "from_port": 80,
-            "to_port": 80,
-            "cidr_blocks": ["0.0.0.0/0"],
-        }
-    ],
+    description="Allow inbound HTTP",
+    ingress=[{
+        "protocol": "tcp",
+        "from_port": 80,
+        "to_port": 80,
+        "cidr_blocks": ["0.0.0.0/0"],
+    }],
 )
 
 server = aws.ec2.Instance(
     "web-server",
     ami="ami-0319ef1a70c93d5c8",
-    instance_type="t2.micro",
+    instance_type="t3.micro",
     vpc_security_group_ids=[group.id],
 )
 
 pulumi.export("public_ip", server.public_ip)
-pulumi.export("public_dns", server.public_dns)
 ```
 
-`group.id` is an **output**. Passing it into the instance wires a dependency: the group is created before the instance. Exports become stack outputs you can read from the CLI or from another stack.
+### TypeScript
+
+```ts
+import * as pulumi from "@pulumi/pulumi";
+import * as aws from "@pulumi/aws";
+
+const group = new aws.ec2.SecurityGroup("web-sg", {
+    description: "Allow inbound HTTP",
+    ingress: [{ protocol: "tcp", fromPort: 80, toPort: 80, cidrBlocks: ["0.0.0.0/0"] }],
+});
+
+const server = new aws.ec2.Instance("web-server", {
+    ami: "ami-0319ef1a70c93d5c8",
+    instanceType: "t3.micro",
+    vpcSecurityGroupIds: [group.id],
+});
+
+export const publicIp = server.publicIp;
+```
+
+### Go
+
+```go
+package main
+
+import (
+	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/ec2"
+	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+)
+
+func main() {
+	pulumi.Run(func(ctx *pulumi.Context) error {
+		group, err := ec2.NewSecurityGroup(ctx, "web-sg", &ec2.SecurityGroupArgs{
+			Description: pulumi.String("Allow inbound HTTP"),
+			Ingress: ec2.SecurityGroupIngressArray{
+				&ec2.SecurityGroupIngressArgs{
+					Protocol:   pulumi.String("tcp"),
+					FromPort:   pulumi.Int(80),
+					ToPort:     pulumi.Int(80),
+					CidrBlocks: pulumi.StringArray{pulumi.String("0.0.0.0/0")},
+				},
+			},
+		})
+		if err != nil {
+			return err
+		}
+
+		server, err := ec2.NewInstance(ctx, "web-server", &ec2.InstanceArgs{
+			Ami:                 pulumi.String("ami-0319ef1a70c93d5c8"),
+			InstanceType:        pulumi.String("t3.micro"),
+			VpcSecurityGroupIds: pulumi.StringArray{group.ID()},
+		})
+		if err != nil {
+			return err
+		}
+
+		ctx.Export("public_ip", server.PublicIp)
+		return nil
+	})
+}
+```
+
+Notice that across all three languages, the resource graph sent to the engine is identical: two custom resources (`aws:ec2/securityGroup:SecurityGroup` and `aws:ec2/instance:Instance`), one dependency edge from `group.id`, and one stack export.
 
 ## What Pulumi is not
 
-| Mistaken for | Reality |
-|--------------|---------|
-| A shell script that calls `aws` / `az` / `gcloud` | Scripts are imperative and usually forget what they created. Pulumi is declarative over a state file: re-running converges. |
-| "Just Terraform with Python syntax" | Pulumi can use HCL and can bridge providers, but the programming model is the language SDK (classes, functions, real package managers), not a DSL with a foreign expression language. |
-| A replacement for your cloud console | You still need accounts, IAM, and provider credentials. Pulumi drives APIs; it does not replace billing or identity. |
-| A guarantee that preview equals apply | Preview is best-effort. Some providers resolve values only at apply time; always read the plan, and treat apply as the source of truth. |
-| Something that invents credentials | Providers need the same env vars, profiles, or OIDC setup your CLI tools need. Missing creds fail at preview/up, not at `pulumi new`. |
+| Common misconception | Reality |
+| :--- | :--- |
+| **"A wrapper around `aws` / `gcloud` shell scripts"** | Shell scripts are imperative and stateless; re-running them fails or duplicates objects. Pulumi reconciles desired state against a durable checkpoint. |
+| **"Just Terraform rewritten in Python"** | Pulumi can bridge Terraform providers and even run HCL, but its programming model gives you native classes, package managers, linters, and in-memory unit tests rather than a restricted DSL. |
+| **"A substitute for IAM or cloud governance"** | Pulumi calls cloud APIs using your identity (OIDC, AWS profile, service account). It enforces zero cloud permissions that your credentials do not already hold. |
+| **"A guarantee that `preview` equals `up`"** | Preview is a best-effort dry run. Cloud-assigned values (VPC IDs, load balancer DNS names, IAM propagation) only resolve during `up`. |
+| **"Free abstraction without blast radius"** | A three-line Python `for` loop can still provision 50 NAT gateways. Code reuse increases leverage in both directions — review both the source code and the preview diff. |
 
-## How the pieces show up day to day
+## The daily operator loop
 
-1. **Author** a program in a project directory.
-2. **Select** a stack (`dev`, `staging`, `production`, or a feature stack).
-3. **Preview** the diff against that stack's state.
-4. **Up** to apply, or **refresh** if the cloud drifted outside Pulumi.
-5. **Destroy** when the stack should go away (and only then).
+Every stack follows the same five-step rhythm:
 
-Config and secrets are per-stack. Inputs and outputs carry values between resources and between stacks. Component resources group children under one parent type. Unit tests mock the engine so you can assert on the resource graph without touching a cloud. Each of those topics has its own foundations page; you do not need them to understand the overview.
+1. **Author** resource declarations and reusable components in your project.
+2. **Select** the target stack (`dev`, `staging`, `prod`, or an ephemeral PR stack).
+3. **Preview** (`pulumi preview`) to inspect creates (`+`), updates (`~`), replacements (`+-`), and deletes (`-`).
+4. **Converge** (`pulumi up`) to apply changes, or **reconcile** (`pulumi refresh`) when out-of-band console edits occurred.
+5. **Tear down** (`pulumi destroy`) ephemeral environments once they are no longer needed.
 
-## Common mistakes
+## Common pitfalls to avoid early
 
-- **One state file, many humans, no locking story.** A DIY backend without locking invites two applies at once. Pulumi Cloud handles this; DIY backends need you to configure it.
-- **Treating stacks as branches of the code.** Stacks share the program; they differ in config and state. Feature work usually means a new stack or a branch of the *code*, not a fork of state.
-- **Editing state by hand.** Export/import and `pulumi state` exist for disasters. Day-to-day fixes belong in the program plus `up`, or in `refresh` when the cloud moved first.
-- **Assuming language features equal cloud features.** A Python `for` loop that creates 50 buckets still creates 50 remote objects and 50 state entries. Abstraction in code does not reduce cloud cost by itself.
+- **Sharing a DIY state file without locking.** Two engineers running `pulumi up` against an unlocked S3 or local state file can corrupt checkpoints. Pulumi Cloud locks automatically; DIY backends require explicit locking and access controls.
+- **Confusing Git branches with stacks.** Stacks share one program and vary by config and state. Creating a new branch does not automatically isolate state unless you also select a separate stack.
+- **Hand-editing state JSON.** Manual edits bypass schema invariants. Use `pulumi refresh`, `pulumi state`, or `pulumi import` instead.
+- **Over-engineering dynamic control flow.** Infrastructure code should stay boring and readable. Deep metaprogramming makes `pulumi preview` harder to reason about during incident response.
 
+## Hands-on lab: inspect a Pulumi resource graph without a cloud account
 
-## A tiny glossary you will keep meeting
+In this lab you will inspect how Pulumi turns Python declarations into a concrete resource graph and state checkpoint using only the local filesystem backend and `pulumi_random` — no AWS or GCP credentials required.
 
-- **Resource.** One cloud object (or logical object) with a type token, a logical name in the program, and properties.
-- **Provider.** The plugin that implements create/read/update/delete for a family of types (`aws`, `azure-native`, `random`, …).
-- **Output.** A value that may not be known until apply time (an allocated id, a DNS name). You pass outputs into other resources; you cannot treat them like plain strings without `apply` (covered in inputs/outputs).
-- **Preview / up / destroy / refresh.** Plan; apply; delete stack resources; reconcile state with the live cloud.
-- **Stack reference.** One stack reading another stack's exports — how you split "network" from "app" without copying ids by hand.
+### Step 1: Switch to a local backend and scaffold a project
 
-## Why languages matter here
+```bash
+mkdir -p ~/pulumi-labs/01-overview && cd ~/pulumi-labs/01-overview
+pulumi login --local
+pulumi new python \
+  --name overview-lab \
+  --description "Inspect Pulumi's resource graph locally" \
+  --stack dev \
+  --yes
+```
 
-Because the program is real Python (or Go, or TypeScript), you get ordinary packaging, ordinary tests, and ordinary editor support. That is the point of Pulumi relative to a pure DSL: reuse modules, share libraries inside a company, and unit-test the resource graph with mocks. The cost is discipline — a clever loop can still create hundreds of expensive objects — so reviews look at both the code and the preview.
+### Step 2: Install `pulumi-random` and declare linked resources
 
-## Where to go next in foundations
+Add `pulumi-random` to `requirements.txt` and install it inside the project's virtual environment:
 
-Install the CLI and run a first preview. Then learn projects and stacks (where state lives), configuration and secrets (per-stack values), inputs and outputs (dependencies), unit testing with mocks, and component resources (typed groups of children). Skip ahead only if you already have a working CLI and a backend login.
+```bash
+./venv/bin/pip install pulumi-random
+```
 
+Replace `__main__.py` with a small two-resource graph where `RandomString` depends on `RandomPet` via `keepers`:
+
+```python
+import pulumi
+import pulumi_random as random
+
+service_name = random.RandomPet(
+    "service-name",
+    length=2,
+    separator="-",
+)
+
+api_key = random.RandomPassword(
+    "service-api-key",
+    length=24,
+    special=False,
+    keepers={"service": service_name.id},
+)
+
+pulumi.export("service_name", service_name.id)
+pulumi.export("api_key", api_key.result)
+```
+
+### Step 3: Preview, deploy, and inspect the state graph
+
+```bash
+pulumi preview
+pulumi up --yes
+pulumi stack --show-urns
+```
+
+Observe three details in the output:
+1. `service-name` is created before `service-api-key` because `keepers={"service": service_name.id}` created a dependency edge.
+2. `api_key` prints as `[secret]` in stack outputs automatically because `RandomPassword.result` is marked secret by the provider.
+3. Export the raw checkpoint and inspect the `dependencies` array on `service-api-key`:
+
+```bash
+pulumi stack export | python3 -m json.tool | grep -A 6 '"dependencies"'
+```
+
+### Step 4: Clean up
+
+```bash
+pulumi destroy --yes
+pulumi stack rm dev --yes
+```
 
 ## Summary
 
-- Pulumi declares cloud resources in ordinary languages (or YAML/HCL), then converges live infrastructure to that declaration through a CLI, an engine, and providers.
-- **Project** (program + `Pulumi.yaml`), **stack** (isolated instance), and **backend/state** (what already exists) are the three nouns you must keep straight.
-- It is not a shell script, not "credentials included," and not a promise that preview is identical to apply.
-- The rest of the foundations material builds on this map: install and first preview, then projects/stacks, config, inputs/outputs, tests, and components.
+- Pulumi separates **intent** (your program in a language host) from **execution** (the gRPC deployment engine + provider plugins + state backend).
+- Passing a resource's output into another resource's input automatically builds the dependency DAG for both creation and destruction.
+- **Project**, **stack**, **state**, **backend**, and **provider** are the five core concepts; every later chapter builds directly on them.
 
 ## Sources
 
-- [Pulumi concepts](https://www.pulumi.com/docs/iac/concepts/)
+- [Pulumi Concepts](https://www.pulumi.com/docs/iac/concepts/)
+- [How Pulumi Works](https://www.pulumi.com/docs/iac/concepts/how-pulumi-works/)
 - [Projects](https://www.pulumi.com/docs/iac/concepts/projects/)
 - [Stacks](https://www.pulumi.com/docs/iac/concepts/stacks/)
-- [State and backends](https://www.pulumi.com/docs/iac/concepts/state-and-backends/)
+- [State and Backends](https://www.pulumi.com/docs/iac/concepts/state-and-backends/)

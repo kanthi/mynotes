@@ -4,352 +4,282 @@ title: Component Resources
 
 # Component Resources
 
-After this page you can group related resources into a typed Python component resource, parent its children correctly, know which resource options reach those children, expose a secret output, validate arguments before anything is registered, unit-test the component with Pulumi's mocks, and rename it later without replacing what it manages.
+As infrastructure codebases grow, teams inevitably wrap repeated resource patterns — an encrypted S3 bucket plus public-access block, a service's credentials, or a hardened EKS namespace. A plain Python helper function eliminates copy-paste, but Pulumi never sees the grouping: every resource lands flat under the stack root. Subclassing `pulumi.ComponentResource` turns that pattern into a first-class architectural unit with its own type token, parent-child ownership tree, inherited resource options, and clean refactor path via aliases.
 
-## Thesis
+![Pulumi ComponentResource hierarchy showing the Stack root parenting acme:index:ServiceCredentials, which parents RandomPet and RandomPassword via parent=self and publishes outputs with register_outputs.](../../images/diagram-pulumi-component-tree.svg)
 
-As infrastructure programs expand, instantiating low-level cloud primitives repeatedly leads to duplication, inconsistent security defaults, and brittle code. A plain Python function that returns resources lets you reuse code, but Pulumi itself never sees the grouping: the resources land flat in the stack, with nothing in the state or the CLI that ties them together.
+## Helper functions vs. `ComponentResource`
 
-Component resources solve this by inheriting from `pulumi.ComponentResource`. They introduce a custom type token into the resource graph, group child resources under a single parent identity, and give you one object to pass options to and to unit-test.
-
-## Why components? (vs functions returning resources)
-
-When structuring reusable infrastructure constructs, developers often start by wrapping resource definitions inside standard Python functions. While simple, helper functions have structural limitations compared to `ComponentResource` classes.
-
-```python
-# Helper function approach
-def create_service_credentials(name: str, service: str):
-    user = random.RandomPet(f"{name}-user", length=2)
-    pwd = random.RandomPassword(f"{name}-password", length=24)
-    return user, pwd
-```
-
-Comparing the two approaches across key architectural dimensions highlights why custom component resources are preferred for reusable infrastructure patterns:
-
-| Aspect | Helper function | Component resource |
+| Dimension | Plain Python function | `pulumi.ComponentResource` |
 | :--- | :--- | :--- |
-| **State** | Each resource sits directly under the stack | One parent entry with the children nested under it |
-| **CLI tree view** | A flat list | A subtree under the component |
-| **Options** | Pass `opts` to every resource yourself | Several options set on the component (such as `providers` and `protect`) are inherited by its children |
-| **Type identity** | None; you get back a tuple | Its own type token, such as `acme:index:ServiceCredentials` |
-| **Child-wide changes** | Edit every call site | `transforms` on the component can rewrite each child as it registers |
+| **State & CLI tree** | Flat list directly under `pulumi:pulumi:Stack` | Collapsible subtree under a typed parent node |
+| **Option inheritance** | Must thread `opts` manually into every child | `providers`, `protect`, `retain_on_delete`, `aliases`, `transforms` propagate automatically |
+| **Type identity** | None (returns a raw tuple/dict) | Custom type token (e.g., `acme:index:ServiceCredentials`) |
+| **Cross-language sharing** | Python only | Can be packaged as a **Multi-Language Component (MLC)** for TS, Go, .NET, Java |
 
-Helper functions leave child resources floating at the root level of the Pulumi stack graph. A component gives them an owner, so previews and diffs read in the same units you think in.
+## Anatomy of a type token and child URN
 
-## The type token
-
-Every Pulumi resource has a type token of the form `package:module:type`. Pulumi's own component guide uses `index` as the module for a component defined at the top level of a package, and this page follows that convention:
+Every component declares a type token in the form `<package>:index:<ComponentName>` (for example, `acme:index:ServiceCredentials`). When a child resource specifies `opts=pulumi.ResourceOptions(parent=self)`, Pulumi embeds the component's type token into the child's URN separated by `$`:
 
 ```text
-<package>:index:<ComponentName>
+urn:pulumi:dev::billing::acme:index:ServiceCredentials$random:index/randomPet:RandomPet::api-user
 ```
 
-So in `acme:index:ServiceCredentials`, `acme` is your package or organisation namespace, `index` is the module, and `ServiceCredentials` is the type name.
+That `$` hierarchy is what lets `pulumi up` render a clean indented tree and lets `protect=True` on the component guard every child inside it.
 
-The type token is part of the component's URN. Every child's URN contains it too, as you will see in the test output below. Change the token after deploying and Pulumi sees a new component with new children: it plans to create those and delete the old ones, unless you add an alias (covered later on this page).
+## Building a production-grade `ComponentResource`
 
-## The component
+A well-designed component does five things consistently:
+1. Validates inputs upfront in a typed `Args` dataclass before registering any resource.
+2. Calls `super().__init__(type_token, name, None, opts)`.
+3. Parents every child with `opts=pulumi.ResourceOptions(parent=self)` and prefixes every child's logical name with `f"{name}-..."` so multiple instances never collide.
+4. Marks sensitive outputs explicitly with `pulumi.Output.secret(...)`.
+5. Finishes the constructor with `self.register_outputs({...})` to signal completion and persist component outputs in state.
 
-The following module defines `ServiceCredentials`, a component resource grouping a random pet name and password generation for a target service.
-
-<!-- file: credentials.py -->
 ```python
-"""A component resource that groups the random resources one service needs."""
+"""credentials.py — Reusable ComponentResource for service credentials."""
+from dataclasses import dataclass
 import pulumi
 import pulumi_random as random
 
 
+@dataclass(frozen=True)
 class ServiceCredentialsArgs:
-    def __init__(self, service: str, password_length: int = 24):
-        if password_length < 16:
+    service: str
+    password_length: int = 24
+    prefix: str = ""
+
+    def __post_init__(self) -> None:
+        if not self.service.strip():
+            raise ValueError("service must be a non-empty string")
+        if self.password_length < 16:
             raise ValueError("password_length must be at least 16")
-        self.service = service
-        self.password_length = password_length
 
 
 class ServiceCredentials(pulumi.ComponentResource):
     username: pulumi.Output[str]
     password: pulumi.Output[str]
+    connection_uri: pulumi.Output[str]
 
-    def __init__(self, name: str, args: ServiceCredentialsArgs,
-                 opts: pulumi.ResourceOptions | None = None):
+    def __init__(
+        self,
+        name: str,
+        args: ServiceCredentialsArgs,
+        opts: pulumi.ResourceOptions | None = None,
+    ) -> None:
         super().__init__("acme:index:ServiceCredentials", name, None, opts)
 
-        child = pulumi.ResourceOptions(parent=self)
+        child_opts = pulumi.ResourceOptions(parent=self)
 
-        suffix = random.RandomPet(f"{name}-user", length=2, separator="-",
-                                  opts=child)
-        password = random.RandomPassword(f"{name}-password",
-                                         length=args.password_length,
-                                         special=False, opts=child)
+        self.pet = random.RandomPet(
+            f"{name}-user",
+            length=2,
+            separator="-",
+            opts=child_opts,
+        )
+        self.raw_password = random.RandomPassword(
+            f"{name}-password",
+            length=args.password_length,
+            special=False,
+            opts=child_opts,
+        )
 
-        self.pet = suffix
-        self.username = suffix.id.apply(lambda pet: f"{args.service}-{pet}")
-        self.password = pulumi.Output.secret(password.result)
+        prefix = f"{args.prefix}-" if args.prefix else ""
+        self.username = self.pet.id.apply(lambda pet: f"{prefix}{args.service}-{pet}")
+        self.password = pulumi.Output.secret(self.raw_password.result)
+        self.connection_uri = pulumi.Output.format(
+            "https://{0}:{1}@{2}.svc.internal",
+            self.username,
+            self.password,
+            args.service,
+        )
 
         self.register_outputs({
             "username": self.username,
             "password": self.password,
+            "connection_uri": self.connection_uri,
         })
 ```
 
-### Code Walk-Through
+> [!WARNING]
+> **Never omit `self.register_outputs({...})`**
+>
+> Calling `register_outputs` at the end of `__init__` (even with `{}` when there are no outputs) tells the Pulumi engine that the component has finished registering its children and records its outputs in state. Leaving it out drops component-level outputs and can confuse visualization and stack inspection.
 
-1. **Argument Class (`ServiceCredentialsArgs`)**: Holds the component's inputs and validates them before any resource exists. A `password_length` below 16 raises `ValueError` right away.
-2. **Component Inheritance (`pulumi.ComponentResource`)**: The component extends `ComponentResource` and sets its outputs as class-level type annotations (`pulumi.Output[str]`).
-3. **`super().__init__` Call**: Initializes the underlying Pulumi resource engine with the type token `"acme:index:ServiceCredentials"`, the logical resource name, no input properties (`None`), and optional `pulumi.ResourceOptions`.
-4. **Parenting Child Resources**: `child = pulumi.ResourceOptions(parent=self)` creates a shared options instance. Passing `opts=child` to `random.RandomPet` and `random.RandomPassword` nests them under this component instance.
-5. **Dynamic Naming**: Child resource logical names are dynamically formatted using `f"{name}-user"` and `f"{name}-password"`. With hard-coded child names, a second instance in the same stack would try to register duplicate URNs.
-6. **Secret Output Wrappers**: `pulumi.Output.secret(password.result)` marks the generated output as sensitive, so Pulumi encrypts it in the state and masks it in CLI output.
-7. **`self.register_outputs(...)`**: Tells Pulumi the component has finished registering its children and records its outputs.
+## Which `ResourceOptions` propagate to children?
 
-## `register_outputs` and what breaks without it
+Because a `ComponentResource` is a logical grouping rather than a cloud provider resource, only specific options pass down automatically to children:
 
-Pulumi's component guide puts it this way: calling `register_outputs` at the end of the constructor "signals Pulumi that the process of creating the component resource has completed". The dictionary you pass is stored as the component's outputs in the stack state. The child resources have their own state and are not affected.
+| Option on Component | Inherited by children? | Notes |
+| :--- | :---: | :--- |
+| `providers` | Yes | Prefer `providers=[...]` over singular `provider=` on components |
+| `protect`, `retain_on_delete` | Yes | Protects the entire subtree with a single flag |
+| `aliases`, `deleted_with` | Yes | Component rename carries children automatically |
+| `transforms` | Yes | Lets callers inject tags or `ignore_changes` across all children |
+| `depends_on` | No | Set on specific children or pass through `Args` |
+| `ignore_changes`, `custom_timeouts`, `replace_on_changes` | No | Apply via a component `transform` |
 
-Call it at the end of every component constructor, even with an empty dictionary. Leave it out and Pulumi has no explicit signal that the component is finished, and the component's outputs are never recorded.
-
-## Options that do and do not apply
-
-A component has no cloud provider behind it, so options that change provider behaviour have no direct effect on the component itself. Pulumi's resource options reference lists which options a component passes on to its children:
-
-| Option set on the component | Inherited by its children? |
-| :--- | :--- |
-| `providers`, `provider` | Yes (but `provider` has no effect on the component itself; Pulumi recommends `providers` for components) |
-| `protect`, `retain_on_delete` | Yes |
-| `aliases`, `deleted_with` | Yes |
-| `transforms` | Yes |
-| `depends_on` | No |
-| `ignore_changes`, `custom_timeouts`, `replace_on_changes`, `hooks` | No |
-
-For an option that is not inherited, set it on the children yourself, or use a transform on the component to add it to each child as that child registers:
+### Using `transforms` to apply non-inherited options across children
 
 ```python
-# Add ignore_changes to every RandomPassword created under the component
+import pulumi
+from credentials import ServiceCredentials, ServiceCredentialsArgs
+
+
 def ignore_password_length(args: pulumi.ResourceTransformArgs):
     if args.type_ == "random:index/randomPassword:RandomPassword":
         return pulumi.ResourceTransformResult(
             props=args.props,
             opts=pulumi.ResourceOptions.merge(
-                args.opts, pulumi.ResourceOptions(ignore_changes=["length"])),
+                args.opts,
+                pulumi.ResourceOptions(ignore_changes=["length"]),
+            ),
         )
     return None
 
-creds = ServiceCredentials(
-    "api", ServiceCredentialsArgs(service="billing"),
-    opts=pulumi.ResourceOptions(transforms=[ignore_password_length]))
+
+billing_creds = ServiceCredentials(
+    "billing",
+    ServiceCredentialsArgs(service="billing", password_length=32),
+    opts=pulumi.ResourceOptions(
+        protect=True,
+        transforms=[ignore_password_length],
+    ),
+)
 ```
 
-## Visualizing the resource tree
+## Refactoring components without downtime using `Alias`
 
-`pulumi up` draws the component as a parent with its children indented beneath it:
+Changing a component's type token or moving a child under a new parent changes its URN, which makes Pulumi plan a destructive replace (`+-`). Add `pulumi.Alias` to tell the engine that the new URN refers to the same existing resource:
 
-```text
-Type                                 Name            Status
-pulumi:pulumi:Stack                  my-project-dev
-└─ acme:index:ServiceCredentials     api             created
-   ├─ random:index:RandomPet         api-user        created
-   └─ random:index:RandomPassword    api-password    created
+```python
+# Renaming acme:index:LegacyCreds -> acme:index:ServiceCredentials with zero replacements
+merged_opts = pulumi.ResourceOptions.merge(
+    opts,
+    pulumi.ResourceOptions(
+        aliases=[pulumi.Alias(type_="acme:index:LegacyCreds")]
+    ),
+)
+super().__init__("acme:index:ServiceCredentials", name, None, merged_opts)
 ```
 
-A child's URN records the hierarchy by putting its parent's type token in front of its own type, joined with `$`:
+Because `aliases` inherit down to children, aliasing the component's old type token preserves every child resource's state automatically. Always run `pulumi preview --diff` and confirm `0 replaced` before applying.
 
-```text
-urn:pulumi:stack::project::acme:index:ServiceCredentials$random:index/randomPet:RandomPet::api-user
+## Multi-Language Components (MLCs)
+
+If your platform team writes hardened components in Python or Go while product teams consume them in TypeScript or .NET, you can expose your `ComponentResource` over Pulumi's schema-driven gRPC plugin protocol as a **Multi-Language Component**. Consumers install a generated SDK package in their native language while your component logic runs in one canonical codebase.
+
+## Hands-on lab: build and unit-test `ServiceCredentials`
+
+In this lab you will create `credentials.py` above and run a `pytest` suite that verifies URN hierarchy, secret tainting on `connection_uri`, boundary validation, and Python 3.14 event-loop safety.
+
+### Step 1: Set up the lab directory
+
+```bash
+mkdir -p ~/pulumi-labs/07-components && cd ~/pulumi-labs/07-components
+python3 -m venv .venv && source .venv/bin/activate
+pip install "pulumi>=3.100,<4" "pulumi-random>=4.16" pytest
 ```
 
-## Testing component resources
+Save the `ServiceCredentials` module above as `credentials.py`.
 
-Unit testing component resources requires mocking the Pulumi runtime engine calls.
+### Step 2: Create the unit test suite (`test_credentials.py`)
 
-### Complete Test Suite
-
-The following listing tests the `ServiceCredentials` component without calling any real cloud endpoints.
-
-<!-- file: test_credentials.py -->
 ```python
 import asyncio
-
 import pulumi
+import pytest
 
-# Python 3.14 no longer creates an event loop on demand; Pulumi's mocks need one.
+# Required on Python 3.14+ before set_mocks() when not using IsolatedAsyncioTestCase
 asyncio.set_event_loop(asyncio.new_event_loop())
 
 
-class Mocks(pulumi.runtime.Mocks):
-    calls = []
+class ComponentMocks(pulumi.runtime.Mocks):
+    recorded: list[tuple[str, str, bool]] = []
 
     def new_resource(self, args: pulumi.runtime.MockResourceArgs):
-        Mocks.calls.append((args.typ, args.name, args.custom))
+        ComponentMocks.recorded.append((args.typ, args.name, args.custom))
         outputs = dict(args.inputs)
-        if args.typ == "random:index/randomPet:RandomPet":
-            return [f"{args.name}_id", outputs]
         if args.typ == "random:index/randomPassword:RandomPassword":
-            outputs["result"] = "x" * int(args.inputs["length"])
+            outputs["result"] = "s" * int(args.inputs["length"])
         return [f"{args.name}_id", outputs]
 
     def call(self, args: pulumi.runtime.MockCallArgs):
         return {}
 
 
-pulumi.runtime.set_mocks(Mocks(), preview=False)
+pulumi.runtime.set_mocks(ComponentMocks(), preview=False)
 
-import pytest  # noqa: E402
 from credentials import ServiceCredentials, ServiceCredentialsArgs  # noqa: E402
 
 
 @pulumi.runtime.test
-def test_children_are_parented_to_the_component():
-    creds = ServiceCredentials("api", ServiceCredentialsArgs(service="billing"))
+def test_urn_hierarchy_and_prefix():
+    creds = ServiceCredentials(
+        "api",
+        ServiceCredentialsArgs(service="billing", prefix="prod"),
+    )
 
-    def check(args):
-        urn, pet_urn, username = args
-        print("component URN:", urn)
-        print("child URN:    ", pet_urn)
-        print("username:     ", username)
-        for typ, name, custom in Mocks.calls:
-            print(f"registered {typ} name={name} custom={custom}")
-        assert urn.endswith("acme:index:ServiceCredentials::api")
-        assert pet_urn.endswith("::acme:index:ServiceCredentials$random:index/randomPet:RandomPet::api-user")
-        assert username == "billing-api-user_id"
+    def check(vals):
+        comp_urn, pet_urn, username = vals
+        assert comp_urn.endswith("::acme:index:ServiceCredentials::api")
+        assert "::acme:index:ServiceCredentials$random:index/randomPet:RandomPet::api-user" in pet_urn
+        assert username == "prod-billing-api-user_id"
 
+    # Wait on both component AND child outputs to avoid race conditions
     return pulumi.Output.all(creds.urn, creds.pet.urn, creds.username).apply(check)
 
 
 @pulumi.runtime.test
-def test_password_is_secret_and_long_enough():
-    creds = ServiceCredentials("db", ServiceCredentialsArgs(service="orders",
-                                                            password_length=32))
+def test_connection_uri_inherits_secretness():
+    creds = ServiceCredentials(
+        "db",
+        ServiceCredentialsArgs(service="orders", password_length=16),
+    )
 
-    def check(args):
-        password, is_secret = args
-        assert len(password) == 32
-        assert is_secret
+    def check(vals):
+        pwd, uri_is_secret = vals
+        assert len(pwd) == 16
+        assert uri_is_secret is True
 
-    return pulumi.Output.all(creds.password,
-                             pulumi.Output.from_input(
-                                 creds.password).is_secret()).apply(check)
+    return pulumi.Output.all(
+        creds.password,
+        pulumi.Output.from_input(creds.connection_uri).is_secret(),
+    ).apply(check)
 
 
-def test_short_passwords_are_rejected():
+def test_validation_rejects_short_passwords():
     with pytest.raises(ValueError, match="at least 16"):
-        ServiceCredentialsArgs(service="x", password_length=8)
+        ServiceCredentialsArgs(service="orders", password_length=12)
 ```
 
-### Two Critical Testing Pitfalls
+### Step 3: Run the tests
 
-#### 1. Python 3.14 Event Loop Initialization
-Since Python 3.14, `asyncio.get_event_loop()` raises `RuntimeError` when there is no current event loop, instead of creating one. Pulumi's mock setup asks for the current loop, so on Python 3.14 the tests fail before they start unless one has been set. Here is `python -m pytest -q -s test_credentials.py` with the `set_event_loop` line removed:
-```text
-    raise RuntimeError('There is no current event loop in thread %r.'
-E   RuntimeError: There is no current event loop in thread 'MainThread'.
-ERROR test_credentials.py - RuntimeError: There is no current event loop in t...
-1 error in 0.18s
+```bash
+python -m pytest -q -s test_credentials.py
 ```
 
-To resolve this, explicitly instantiate and set an event loop before invoking `set_mocks`:
-```python
-asyncio.set_event_loop(asyncio.new_event_loop())
-```
+All three tests pass in under a second, proving both parent-child URN nesting (`custom=False` for the component, `custom=True` for its children) and end-to-end secret propagation.
 
-#### 2. Race Conditions in Mock Assertions
-In the first version of the test, the `apply` hung off `creds.urn` alone. It ran as soon as the component's URN resolved, before the children had registered, so `Mocks.calls` held only the component. Wait on child outputs as well before you inspect what was registered:
-```python
-return pulumi.Output.all(creds.urn, creds.pet.urn, creds.username).apply(check)
-```
+## Common pitfalls
 
-### Running the Tests
-
-The versions used (`python -c "import sys, pulumi, pytest; print(sys.version.split()[0], pulumi.__version__, pytest.__version__)"`):
-```text
-Python 3.14.8
-pulumi                                   3.273.0
-pulumi-random                            4.21.6
-pytest                                   9.2.0
-```
-
-Run the suite with `python -m pytest -q -s test_credentials.py`:
-```text
-component URN: urn:pulumi:stack::project::pulumi:pulumi:Stack$acme:index:ServiceCredentials::api
-child URN:     urn:pulumi:stack::project::acme:index:ServiceCredentials$random:index/randomPet:RandomPet::api-user
-username:      billing-api-user_id
-registered acme:index:ServiceCredentials name=api custom=False
-registered random:index/randomPet:RandomPet name=api-user custom=True
-...
-3 passed in 0.11s
-exit status: 0
-```
-
-In the output, `Mocks.new_resource` sees both kinds of resource:
-- The **component resource** (`custom=False`, type `acme:index:ServiceCredentials`).
-- The **child resources** (`custom=True`, types `random:index/randomPet:RandomPet` and `random:index/randomPassword:RandomPassword`).
-
-## Evolving a component resource
-
-Components get renamed and reorganised. Each of those changes alters URNs, and a changed URN looks to Pulumi like a delete and a create unless you tell it otherwise.
-
-### Using Aliases for Component Renames
-
-If a component's name or type token changes, give the old identity as an alias:
-
-```python
-# Alias old component type token to prevent recreation during updates
-alias_option = pulumi.Alias(type_="acme:index:OldServiceCredentials")
-super().__init__(
-    "acme:index:ServiceCredentials",
-    name,
-    None,
-    opts=pulumi.ResourceOptions.merge(opts, pulumi.ResourceOptions(aliases=[alias_option]))
-)
-```
-
-### State Migrations for Child Restructuring
-
-When a child moves to a different parent, alias its old parent. `pulumi.Alias(parent=...)` accepts either a resource or a URN string:
-
-```python
-child_alias = pulumi.Alias(parent=old_parent_urn)  # URN string of the old parent
-suffix = random.RandomPet(
-    f"{name}-user",
-    length=2,
-    opts=pulumi.ResourceOptions(parent=self, aliases=[child_alias])
-)
-```
-
-An alias tells Pulumi that the new URN is the same resource it already tracks, so it updates the state instead of replacing the resource. Aliases set on a component are inherited by its children, so a component rename carries the children with it. Run `pulumi preview` and check for zero replacements before you `up`.
-
-## Common mistakes
-
-| Anti-Pattern / Error | Consequence | Correct Pattern |
+| Mistake | Consequence | Fix |
 | :--- | :--- | :--- |
-| Omitting `parent=self` on child resources | Children sit at the stack root and inherit nothing from the component | Pass `opts=pulumi.ResourceOptions(parent=self)` to every child |
-| Hard-coding child logical names | Duplicate URN errors when instantiating multiple instances of the component | Prefix child names with the component instance name (`f"{name}-child"`) |
-| Forgetting `self.register_outputs({...})` | Pulumi gets no explicit signal that the component is done, and its outputs are not recorded | Call `self.register_outputs(...)` at the end of the constructor |
-| Passing `provider=` to a component | No effect on the component itself | Use `providers=[my_provider]` (or a map) on components |
-| Changing type token without an `Alias` | Pulumi recreates component and all nested child resources | Pass old type tokens in `aliases=[Alias(type_="...")]` |
-| Asserting `Mocks.calls` without waiting on children | Test runs before child resources register in mock list | Include child outputs in `Output.all(...)` before asserting calls |
+| Omitting `parent=self` on children | Children register flat under stack; `protect` and `aliases` do not apply | Pass `opts=pulumi.ResourceOptions(parent=self)` to every child |
+| Hard-coding child logical names (`"user"`) | Duplicate URN error when creating two instances | Prefix every child name with `f"{name}-..."` |
+| Forgetting `self.register_outputs(...)` | Component outputs are never persisted in state | Call `self.register_outputs({...})` at end of `__init__` |
+| Asserting on mock call logs after only `comp.urn` resolves | Race condition: children may not have registered yet | Await child outputs together in `Output.all(...)` |
 
-## Practice
+## Summary
 
-1. Modify `credentials.py` to add an optional `prefix` string argument to `ServiceCredentialsArgs`. If supplied, prepend the prefix to `username`. Add a unit test in `test_credentials.py` asserting that prefixes format correctly.
-2. Add a `connection_string` output built with `pulumi.Output.format`, check that it stays secret, and include it in `register_outputs`.
-3. Write a test showing that `password_length=16` (the boundary) is accepted and gives a 16-character password under the mocks.
-
-## Key takeaways
-
-- Components subclass `pulumi.ComponentResource` and group related child infrastructure resources into a typed abstraction.
-- Use type tokens of the form `<package>:index:<Name>`. Changing one changes every URN under it, so add an alias when you do.
-- Child resources must specify `parent=self` and incorporate `name` into their logical names to preserve hierarchy and prevent URN collisions.
-- End every constructor with `self.register_outputs(...)`.
-- `providers`, `protect`, `aliases` and `transforms` reach the children; `depends_on` and `ignore_changes` do not, so use a transform for those.
-- Under mocks, `new_resource` sees the component (`custom=False`) as well as its children (`custom=True`). Python 3.14+ test suites must set an `asyncio` event loop explicitly before calling `set_mocks`.
+- `ComponentResource` turns recurring infrastructure patterns into typed, hierarchical units with automatic option inheritance.
+- Always validate inputs upfront, parent children with `parent=self`, namespace child names with `name`, and call `self.register_outputs(...)`.
+- Use `transforms` for non-inherited child options and `pulumi.Alias` for zero-downtime component renames.
 
 ## Sources
 
-- Pulumi, [Build a Component](https://www.pulumi.com/docs/iac/guides/building-extending/components/build-a-component/)
-- Pulumi, [Component Resources Concept Guide](https://www.pulumi.com/docs/iac/concepts/components/)
-- Pulumi, [Resource options (and component resources)](https://www.pulumi.com/docs/iac/concepts/resources/options/#resource-options-and-component-resources)
-- Pulumi, [Transforms](https://www.pulumi.com/docs/iac/concepts/resources/options/transforms/)
-- Pulumi, [Resource Aliases Guide](https://www.pulumi.com/docs/iac/concepts/resources/options/aliases/)
-- Pulumi, [Unit Testing Pulumi Programs](https://www.pulumi.com/docs/iac/guides/testing/unit/)
-- Python Documentation, [asyncio Event Loop Changes in Python 3.14](https://docs.python.org/3.14/library/asyncio-eventloop.html#asyncio.get_event_loop)
+- [Component Resources](https://www.pulumi.com/docs/iac/concepts/components/)
+- [Build a Component](https://www.pulumi.com/docs/iac/guides/building-extending/components/build-a-component/)
+- [Resource Options for Components](https://www.pulumi.com/docs/iac/concepts/resources/options/#resource-options-and-component-resources)
+- [Resource Aliases](https://www.pulumi.com/docs/iac/concepts/resources/options/aliases/)
+- [Transforms](https://www.pulumi.com/docs/iac/concepts/resources/options/transforms/)
