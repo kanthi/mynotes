@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 240" role="img" aria-label="Memory layout comparison of Rust String, borrowed &amp;str slice, and static string literal" style="color-scheme:light">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#3b5b85"/>
+    </marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#c0392b"/>
+    </marker>
+  </defs>
+  <rect width="820" height="240" fill="#ffffff" rx="8"/>
+  <text x="410.0" y="30" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#1f2a36">Memory Layout: String vs. &amp;str vs. &amp;'static str</text>
+  <rect x="30" y="65" width="220" height="115" rx="8" fill="#f4f7fb" stroke="#c0392b" stroke-width="2"/>
+  <text x="140.0" y="89" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">String (Owned, 24 B)</text>
+  <text x="140.0" y="109" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">ptr -&gt; Heap buffer</text>
+  <text x="140.0" y="125" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">len: 5, cap: 8</text>
+  <text x="140.0" y="141" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Growable via push_str</text>
+  <text x="140.0" y="157" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Owns heap memory</text>
+  <rect x="300" y="65" width="220" height="115" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="410.0" y="89" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">&amp;str (Borrowed, 16 B)</text>
+  <text x="410.0" y="109" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">ptr -&gt; UTF-8 slice</text>
+  <text x="410.0" y="125" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">len: 5 (no capacity)</text>
+  <text x="410.0" y="141" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Points to Heap or Binary</text>
+  <text x="410.0" y="157" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Zero-cost slicing</text>
+  <rect x="570" y="65" width="220" height="115" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="680.0" y="89" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Read-Only Binary (.rodata)</text>
+  <text x="680.0" y="109" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Literal: "hello"</text>
+  <text x="680.0" y="125" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Lives for 'static</text>
+  <text x="680.0" y="141" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Baked into executable</text>
+  <text x="680.0" y="157" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Never freed</text>
+  <line x1="300" y1="145" x2="250" y2="145" stroke="#3b5b85" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="275" y="165" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#3b5b85">borrows</text>
+  <line x1="520" y1="122" x2="570" y2="122" stroke="#3b5b85" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="545" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#3b5b85">or literal</text>
+  <text x="410" y="218" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" fill="#5a6b7d">Accept &amp;str in function parameters so callers can pass &amp;String, &amp;str slices, or string literals without allocating.</text>
+</svg>

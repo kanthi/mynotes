@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 240" role="img" aria-label="Rust ownership move semantics showing stack String header transfer to heap buffer" style="color-scheme:light">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#3b5b85"/>
+    </marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#c0392b"/>
+    </marker>
+  </defs>
+  <rect width="820" height="240" fill="#ffffff" rx="8"/>
+  <text x="410.0" y="30" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#1f2a36">Rust Ownership &amp; Move Semantics: Stack Header vs. Heap Buffer</text>
+  <rect x="30" y="65" width="220" height="115" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="140.0" y="89" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">s1: String (Moved)</text>
+  <text x="140.0" y="109" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">ptr: 0x7f10... (invalidated)</text>
+  <text x="140.0" y="125" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">len: 5</text>
+  <text x="140.0" y="141" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">cap: 5</text>
+  <text x="140.0" y="157" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Compiler forbids use!</text>
+  <rect x="300" y="65" width="220" height="115" rx="8" fill="#f4f7fb" stroke="#c0392b" stroke-width="2"/>
+  <text x="410.0" y="89" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">s2: String (New Owner)</text>
+  <text x="410.0" y="109" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">ptr: 0x7f10...</text>
+  <text x="410.0" y="125" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">len: 5</text>
+  <text x="410.0" y="141" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">cap: 5</text>
+  <text x="410.0" y="157" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Calls Drop on scope exit</text>
+  <rect x="570" y="65" width="220" height="115" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="680.0" y="89" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Heap Allocation (0x7f10)</text>
+  <text x="680.0" y="109" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">['h','e','l','l','o']</text>
+  <text x="680.0" y="125" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Single allocation</text>
+  <text x="680.0" y="141" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Zero deep copy on move</text>
+  <text x="680.0" y="157" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Freed exactly once</text>
+  <line x1="250" y1="122" x2="300" y2="122" stroke="#c0392b" stroke-width="2" marker-end="url(#arrow-accent)"/>
+  <text x="275" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#c0392b">move</text>
+  <line x1="520" y1="122" x2="570" y2="122" stroke="#3b5b85" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="545" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#3b5b85">owns</text>
+  <text x="410" y="218" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" fill="#5a6b7d">Move copies 24 stack bytes and invalidates s1 statically—preventing double-free with zero runtime overhead.</text>
+</svg>

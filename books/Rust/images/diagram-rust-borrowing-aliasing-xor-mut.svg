@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 270" role="img" aria-label="Rust borrowing rules comparing multiple shared references versus one exclusive mutable reference" style="color-scheme:light">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#3b5b85"/>
+    </marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#c0392b"/>
+    </marker>
+  </defs>
+  <rect width="820" height="270" fill="#ffffff" rx="8"/>
+  <text x="410.0" y="30" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#1f2a36">Rust Borrowing Invariant: Aliasing XOR Mutability</text>
+  <rect x="30" y="65" width="360" height="155" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="210.0" y="89" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Shared Borrows (&amp;T) — Many Readers</text>
+  <text x="210.0" y="109" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">&amp;T allows unlimited concurrent readers</text>
+  <text x="210.0" y="125" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Data cannot be mutated through &amp;T</text>
+  <text x="210.0" y="141" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Zero data races: readers never see partial writes</text>
+  <text x="210.0" y="157" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Copyable reference; expires at last use (NLL)</text>
+  <rect x="430" y="65" width="360" height="155" rx="8" fill="#f4f7fb" stroke="#c0392b" stroke-width="2"/>
+  <text x="610.0" y="89" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Exclusive Borrow (&amp;mut T) — Single Writer</text>
+  <text x="610.0" y="109" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Only ONE active &amp;mut T may exist at a time</text>
+  <text x="610.0" y="125" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">No other &amp;T or &amp;mut T may overlap its lifetime</text>
+  <text x="610.0" y="141" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Enables LLVM noalias optimizations</text>
+  <text x="610.0" y="157" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Prevents iterator invalidation at compile time</text>
+  <text x="410" y="250" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" fill="#5a6b7d">Non-Lexical Lifetimes (NLL) end a borrow at its last actual use, not at the closing brace }.</text>
+</svg>

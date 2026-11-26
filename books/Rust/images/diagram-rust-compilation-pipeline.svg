@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 200" role="img" aria-label="Rust compiler pipeline from AST macro expansion through HIR, MIR borrow checking, LLVM IR, and native binary" style="color-scheme:light">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#3b5b85"/>
+    </marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#c0392b"/>
+    </marker>
+  </defs>
+  <rect width="820" height="200" fill="#ffffff" rx="8"/>
+  <text x="410.0" y="30" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#1f2a36">The rustc Compilation Pipeline: Source to Machine Code</text>
+  <rect x="25" y="75" width="135" height="95" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="92.5" y="99" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Parse &amp; Macros</text>
+  <text x="92.5" y="119" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">AST + macro</text>
+  <text x="92.5" y="135" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">expansion</text>
+  <rect x="185" y="75" width="135" height="95" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="252.5" y="99" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">HIR &amp; Typeck</text>
+  <text x="252.5" y="119" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Desugaring,</text>
+  <text x="252.5" y="135" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">trait solving</text>
+  <rect x="345" y="75" width="145" height="95" rx="8" fill="#f4f7fb" stroke="#c0392b" stroke-width="2"/>
+  <text x="417.5" y="99" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">MIR &amp; Borrowck</text>
+  <text x="417.5" y="119" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">CFG, NLL borrow</text>
+  <text x="417.5" y="135" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">check, drop flags</text>
+  <rect x="515" y="75" width="135" height="95" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="582.5" y="99" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Codegen IR</text>
+  <text x="582.5" y="119" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Monomorphize</text>
+  <text x="582.5" y="135" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">LLVM IR / Cranelift</text>
+  <rect x="675" y="75" width="120" height="95" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="735.0" y="99" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Binary</text>
+  <text x="735.0" y="119" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Object + LLD</text>
+  <text x="735.0" y="135" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Native ELF/MachO</text>
+  <line x1="160" y1="122" x2="185" y2="122" stroke="#3b5b85" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="172" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#3b5b85"></text>
+  <line x1="320" y1="122" x2="345" y2="122" stroke="#c0392b" stroke-width="2" marker-end="url(#arrow-accent)"/>
+  <text x="332" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#c0392b"></text>
+  <line x1="490" y1="122" x2="515" y2="122" stroke="#3b5b85" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="502" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#3b5b85"></text>
+  <line x1="650" y1="122" x2="675" y2="122" stroke="#3b5b85" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="662" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#3b5b85"></text>
+</svg>

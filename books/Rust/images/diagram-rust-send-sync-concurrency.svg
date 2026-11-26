@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 235" role="img" aria-label="Rust concurrency model showing Send ownership transfer across a bounded channel between threads" style="color-scheme:light">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#3b5b85"/>
+    </marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#c0392b"/>
+    </marker>
+  </defs>
+  <rect width="820" height="235" fill="#ffffff" rx="8"/>
+  <text x="410.0" y="30" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#1f2a36">Rust Fearless Concurrency: Send, Sync, and Channel Ownership Transfer</text>
+  <rect x="30" y="70" width="210" height="105" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="135.0" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Producer Thread</text>
+  <text x="135.0" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Creates Job struct</text>
+  <text x="135.0" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">tx.send(job) MOVES</text>
+  <text x="135.0" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">ownership out</text>
+  <rect x="305" y="70" width="210" height="105" rx="8" fill="#f4f7fb" stroke="#c0392b" stroke-width="2"/>
+  <text x="410.0" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Bounded Channel</text>
+  <text x="410.0" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">sync_channel(cap)</text>
+  <text x="410.0" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Provides backpressure</text>
+  <text x="410.0" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Requires Job: Send</text>
+  <rect x="580" y="70" width="210" height="105" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="685.0" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Consumer Thread</text>
+  <text x="685.0" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">rx.recv() receives</text>
+  <text x="685.0" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">exclusive ownership</text>
+  <text x="685.0" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Zero shared mutation</text>
+  <line x1="240" y1="122" x2="305" y2="122" stroke="#c0392b" stroke-width="2" marker-end="url(#arrow-accent)"/>
+  <text x="272" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#c0392b">move</text>
+  <line x1="515" y1="122" x2="580" y2="122" stroke="#3b5b85" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="547" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#3b5b85">recv</text>
+  <text x="410" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" fill="#5a6b7d">Send = safe to move across threads; Sync = safe to share &amp;T across threads. Rc&lt;T&gt; is neither; Arc&lt;T&gt; is both.</text>
+</svg>
