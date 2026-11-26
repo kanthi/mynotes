@@ -61,3 +61,14 @@ See [NixOS tests](../07-ops-and-fleet/08-nixos-tests.md), [More tests](../07-ops
 ## Embedded products
 
 "Nix as a solution to embedded Linux" (Óli) describes building the Katla synthesizer: dev environment, CI/CD, kernel optimisations and cross-platform compilation for a team spread across the world. The lesson is the same as the OTA talk: one flake builds the image, the dev shell and the CI check.
+## Fleet Operations Pipeline Diagram & Generation Rollback Lab
+
+![Production NixOS fleet operations pipeline from flake eval to binary cache and canary switch](../../images/diagram-nixos-fleet-ops-pipeline.svg)
+
+Inspect active and historical system generations and preview differences between two generations before promoting a rollout:
+
+```bash
+# List recent system generations and compare package deltas
+nix-env --list-generations -p /nix/var/nix/profiles/system 2>/dev/null | tail -n 5 || true
+nix store diff-closures /nix/var/nix/profiles/system-*-link 2>/dev/null | tail -n 20 || true
+```

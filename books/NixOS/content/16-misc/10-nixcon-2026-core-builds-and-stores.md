@@ -56,3 +56,21 @@ Compare with [Binary caches](../10-cicd/01-binary-caches.md): a cache copies who
 - [ ] Ephemeral CI machines fetch only what they use (substituter proximity or lazy store)
 - [ ] Release artefacts rebuilt in a clean environment before shipping
 - [ ] Dev shells re-tested against the new `nix develop` interface
+## Early-Cutoff Diagram & Content-Addressed Derivation Experiment
+
+![Input-addressed versus content-addressed Nix derivations preventing cascading rebuilds](../../images/diagram-nixos-ca-derivations.svg)
+
+Compare an input-addressed derivation against `__contentAddressed = true`:
+
+```nix
+# Enabling content-addressed output on a single derivation
+pkgs.stdenv.mkDerivation {
+  pname = "ca-demo";
+  version = "1.0";
+  __contentAddressed = true;
+  outputHashMode = "recursive";
+  outputHashAlgo = "sha256";
+  dontUnpack = true;
+  installPhase = "mkdir -p $out && echo hello > $out/msg.txt";
+}
+```

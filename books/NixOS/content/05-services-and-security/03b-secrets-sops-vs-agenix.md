@@ -43,3 +43,14 @@ One secret system per fleet; document recipients in the flake README.
 
 - https://github.com/Mic92/sops-nix
 - https://github.com/ryantm/agenix
+## Architecture Diagram & Runtime Secret Permission Audit Lab
+
+![NixOS secrets lifecycle from encrypted Git files through /nix/store to tmpfs /run/secrets decryption](../../images/diagram-nixos-secrets-sops-agenix.svg)
+
+Verify on any NixOS host that runtime secrets live strictly on a memory-backed `tmpfs` mount with `0400` permissions rather than inside `/nix/store`:
+
+```bash
+# Confirm /run/secrets is tmpfs-backed and never world-readable
+findmnt /run/secrets 2>/dev/null || echo "/run/secrets not configured on this host"
+ls -la /run/secrets 2>/dev/null | head -n 10 || true
+```

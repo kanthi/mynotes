@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 230" role="img" aria-label="Nix store metadata normalization stripping timestamps, permissions, and ownership before NAR hashing" style="color-scheme:dark">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#7fa7d9"/></marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#ff7b6b"/></marker>
+  </defs>
+  <rect width="820" height="230" fill="#11161d" rx="8"/>
+  <text x="410.0" y="30" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#e6edf5">Nix Store Metadata Normalization for Bit-for-Bit Reproducible NAR Hashes</text>
+  <rect x="30" y="70" width="210" height="105" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="2"/>
+  <text x="135.0" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#e6edf5">Build Output (Sandbox)</text>
+  <text x="135.0" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">No network, fixed /build</text>
+  <text x="135.0" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">SOURCE_DATE_EPOCH=315532800</text>
+  <text x="135.0" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Deterministic locale</text>
+  <rect x="295" y="70" width="230" height="105" rx="8" fill="#1a2330" stroke="#ff7b6b" stroke-width="2"/>
+  <text x="410.0" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#e6edf5">NAR Normalization</text>
+  <text x="410.0" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Zeroes mtimes -&gt; 1970</text>
+  <text x="410.0" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Normalizes 0444 / 0555</text>
+  <text x="410.0" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Strips UID/GID/xattrs</text>
+  <rect x="580" y="70" width="210" height="105" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="2"/>
+  <text x="685.0" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#e6edf5">Immutable Store Path</text>
+  <text x="685.0" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Deterministic SHA-256</text>
+  <text x="685.0" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Safe binary substitution</text>
+  <text x="685.0" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">across any builder</text>
+  <line x1="240" y1="122" x2="295" y2="122" stroke="#7fa7d9" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="267" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#7fa7d9">pack</text>
+  <line x1="525" y1="122" x2="580" y2="122" stroke="#ff7b6b" stroke-width="2" marker-end="url(#arrow-accent)"/>
+  <text x="552" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#ff7b6b">hash</text>
+</svg>

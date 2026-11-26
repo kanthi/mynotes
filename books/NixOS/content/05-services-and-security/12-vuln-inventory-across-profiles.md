@@ -63,3 +63,14 @@ Track roots explicitly, GC on a schedule, and fail deploys when a scanner finds 
 - Nix manual: garbage collection / profiles
 - NixOS VEX / vulnerability tracking discussions in nixpkgs
 - Software supply-chain SBOM practices for Nix closures
+## Closure-to-SBOM Diagram & Runtime Dependency Audit Lab
+
+![Generating an exact runtime CycloneDX SBOM and vulnerability inventory from a NixOS closure](../../images/diagram-nixos-sbom-vuln-closure.svg)
+
+List the exact runtime package closure of the active system profile and count distinct store derivations:
+
+```bash
+# Inspect exact runtime closure size on a NixOS host
+nix-store -qR /run/current-system 2>/dev/null | wc -l || echo "Run on a NixOS system"
+nix path-info -Sh /run/current-system 2>/dev/null || true
+```

@@ -52,3 +52,20 @@ Pin flakes (`flake.lock`), hash fixed-output derivations, and treat NAR hashing 
 - Nix manual: reproducible builds / `nix hash` / flakes locking
 - [reproducible-builds.org](https://reproducible-builds.org/) (broader context)
 - Nix NAR discussion in Nixpkgs / Nix internals docs
+## Normalization Pipeline Diagram & NAR Determinism Lab
+
+![Nix store metadata normalization stripping timestamps, permissions, and ownership before NAR hashing](../../images/diagram-nixos-derivation-normalization.svg)
+
+Confirm that two directories with identical file contents but different modification timestamps produce the exact same Nix NAR hash:
+
+```bash
+mkdir -p /tmp/nar-a /tmp/nar-b
+echo "deterministic" > /tmp/nar-a/file.txt
+echo "deterministic" > /tmp/nar-b/file.txt
+touch -t 202001010000 /tmp/nar-a/file.txt
+touch -t 202601010000 /tmp/nar-b/file.txt
+
+# Both directories yield identical NAR hashes if nix is installed
+nix hash path /tmp/nar-a 2>/dev/null && nix hash path /tmp/nar-b 2>/dev/null || echo "Run on a host with Nix CLI"
+rm -rf /tmp/nar-a /tmp/nar-b
+```

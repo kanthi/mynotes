@@ -54,3 +54,22 @@ Enumerate systems once; put every package and shell inside the loop.
 ## Sources
 
 - Nix flakes manual
+## Multi-Arch Matrix Diagram & Runnable Flake Evaluation Lab
+
+![Multi-architecture Nix flake fan-out across x86_64-linux, aarch64-linux, and aarch64-darwin](../../images/diagram-nixos-multiarch-flake.svg)
+
+Use a zero-dependency `forAllSystems` helper in `flake.nix` so every package, formatter, and devShell evaluates cleanly across Linux and macOS:
+
+```nix
+let
+  systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" ];
+  forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f nixpkgs.legacyPackages.${system});
+in
+{
+  devShells = forAllSystems (pkgs: {
+    default = pkgs.mkShell {
+      packages = with pkgs; [ git jq ripgrep ];
+    };
+  });
+}
+```

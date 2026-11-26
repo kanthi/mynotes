@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 230" role="img" aria-label="Production NixOS fleet operations pipeline from flake eval to binary cache and canary switch" style="color-scheme:dark">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#7fa7d9"/></marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#ff7b6b"/></marker>
+  </defs>
+  <rect width="820" height="230" fill="#11161d" rx="8"/>
+  <text x="410.0" y="30" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#e6edf5">NixOS Production Fleet Pipeline: Build Once, Cache, Canary, Switch</text>
+  <rect x="25" y="70" width="165" height="100" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="2"/>
+  <text x="107.5" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#e6edf5">CI Eval &amp; Build</text>
+  <text x="107.5" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">nix flake check</text>
+  <text x="107.5" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Builds toplevel</text>
+  <text x="107.5" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">on fast builder</text>
+  <rect x="225" y="70" width="175" height="100" rx="8" fill="#1a2330" stroke="#ff7b6b" stroke-width="2"/>
+  <text x="312.5" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#e6edf5">Binary Cache</text>
+  <text x="312.5" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Attic / Harmonia</text>
+  <text x="312.5" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Signed .narinfo</text>
+  <text x="312.5" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Zero target builds</text>
+  <rect x="435" y="70" width="165" height="100" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="2"/>
+  <text x="517.5" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#e6edf5">Canary Group</text>
+  <text x="517.5" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">deploy-rs / colmena</text>
+  <text x="517.5" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Magic rollback</text>
+  <text x="517.5" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Health gate</text>
+  <rect x="635" y="70" width="160" height="100" rx="8" fill="#1a2330" stroke="#ff7b6b" stroke-width="2"/>
+  <text x="715.0" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#e6edf5">Fleet Rollout</text>
+  <text x="715.0" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Atomic symlink swap</text>
+  <text x="715.0" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Bootloader fallback</text>
+  <text x="715.0" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Zero config drift</text>
+  <line x1="190" y1="120" x2="225" y2="120" stroke="#7fa7d9" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="207" y="110" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#7fa7d9"></text>
+  <line x1="400" y1="120" x2="435" y2="120" stroke="#ff7b6b" stroke-width="2" marker-end="url(#arrow-accent)"/>
+  <text x="417" y="110" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#ff7b6b"></text>
+  <line x1="600" y1="120" x2="635" y2="120" stroke="#7fa7d9" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="617" y="110" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#7fa7d9"></text>
+</svg>
