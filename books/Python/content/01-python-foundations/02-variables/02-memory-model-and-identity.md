@@ -180,3 +180,30 @@ print(t)        # (1, [2, 3, 4])
 - CPython Internal Source: `Objects/longobject.c` (small integer cache definition).
 - Python Documentation: `copy` module (*Shallow and deep copy operations*).
 - PEP 8: *Programming Recommendations (Comparisons to singletons like None)*.
+## Architecture Diagram & Reference-Count Inspection Lab
+
+![CPython name bindings, PyObject reference counting, and cyclic garbage collector](../../../images/diagram-python-memory-refcount-gc.svg)
+
+Run this lab to watch `sys.getrefcount()` increment on aliasing and observe cyclic garbage collection reclaim a self-referential container:
+
+```python
+import gc
+import sys
+import weakref
+
+data = [1, 2, 3]
+alias = data
+# getrefcount adds 1 temporary reference for its own parameter
+print("refcount with data + alias:", sys.getrefcount(data) - 1)
+del alias
+print("refcount after del alias:  ", sys.getrefcount(data) - 1)
+
+# Create a reference cycle that refcounting alone cannot free
+node_a, node_b = {}, {}
+node_a["next"], node_b["next"] = node_b, node_a
+ref = weakref.ref(node_a)
+del node_a, node_b
+print("Alive before gc.collect():", ref() is not None)
+gc.collect()
+print("Alive after gc.collect(): ", ref() is not None)
+```

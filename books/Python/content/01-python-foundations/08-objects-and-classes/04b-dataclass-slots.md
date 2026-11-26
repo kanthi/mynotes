@@ -73,3 +73,32 @@ Use `slots=True` for high-cardinality records (events, rows, AST nodes). Keep un
 
 - [Python docs: dataclasses](https://docs.python.org/3/library/dataclasses.html)
 - [PEP 681](https://peps.python.org/pep-0681/) (dataclass transforms; related tooling)
+## Architecture Diagram & Memory Footprint Benchmark Lab
+
+![Memory layout of standard dataclass with __dict__ versus slots=True fixed struct](../../../images/diagram-python-dataclass-slots-layout.svg)
+
+Measure the real memory delta between default `__dict__` dataclasses and `slots=True` across 50,000 instances using `tracemalloc`:
+
+```python
+import tracemalloc
+from dataclasses import dataclass
+
+@dataclass
+class RegularPoint:
+    x: float
+    y: float
+    z: float
+
+@dataclass(slots=True)
+class SlottedPoint:
+    x: float
+    y: float
+    z: float
+
+for cls in (RegularPoint, SlottedPoint):
+    tracemalloc.start()
+    pts = [cls(float(i), float(i), float(i)) for i in range(50_000)]
+    current, _ = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    print(f"{cls.__name__:<14}: {current / 1024 / 1024:.2f} MiB for {len(pts)} instances")
+```

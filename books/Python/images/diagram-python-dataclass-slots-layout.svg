@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 240" role="img" aria-label="Memory layout of standard dataclass with __dict__ versus slots=True fixed struct" style="color-scheme:light">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#3b5b85"/></marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#c0392b"/></marker>
+  </defs>
+  <rect width="820" height="240" fill="#ffffff" rx="8"/>
+  <text x="410.0" y="30" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#1f2a36">Instance Memory Layout: Default __dict__ vs. @dataclass(slots=True)</text>
+  <rect x="30" y="65" width="360" height="145" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="210.0" y="89" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Standard Dataclass (Dynamic __dict__)</text>
+  <text x="210.0" y="109" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Instance header (48 B) + ptr to __dict__</text>
+  <text x="210.0" y="125" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Per-instance hash table (~104+ B overhead)</text>
+  <text x="210.0" y="141" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Allows dynamic attribute assignment</text>
+  <text x="210.0" y="157" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Higher memory across millions of objects</text>
+  <rect x="430" y="65" width="360" height="145" rx="8" fill="#f4f7fb" stroke="#c0392b" stroke-width="2"/>
+  <text x="610.0" y="89" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">@dataclass(slots=True) (Fixed Offsets)</text>
+  <text x="610.0" y="109" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Instance header + inline pointer slots</text>
+  <text x="610.0" y="125" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Zero per-instance __dict__ allocation</text>
+  <text x="610.0" y="141" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Faster C-struct offset attribute lookup</text>
+  <text x="610.0" y="157" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">35-60% lower RAM for large collections</text>
+</svg>

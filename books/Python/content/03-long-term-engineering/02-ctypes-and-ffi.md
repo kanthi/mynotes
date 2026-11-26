@@ -179,3 +179,20 @@ If you truly must call libc, isolate it behind one function, pass `bytes`, and t
 1. In `c_int_size.py`, set `table.value = 3` and print it again.
 2. In `ticket_struct.py`, add a `status` field as `c_int` (`0` open, `1` paid) and print it.
 3. Rewrite Case 2’s print using the dataclass from Case 3 — no ctypes.
+## Architecture Diagram & Safe C ABI Calling Lab
+
+![CPython ctypes FFI marshaling boundary into native C shared library](../../images/diagram-python-ctypes-ffi-boundary.svg)
+
+Invoke the native system math library (`libm`) via `ctypes` with explicit `argtypes` and `restype` declarations:
+
+```python
+import ctypes
+from ctypes.util import find_library
+
+libm_name = find_library("m")
+if libm_name:
+    libm = ctypes.CDLL(libm_name)
+    libm.hypot.argtypes = [ctypes.c_double, ctypes.c_double]
+    libm.hypot.restype = ctypes.c_double
+    print("C libm hypot(3.0, 4.0) =", libm.hypot(3.0, 4.0))
+```

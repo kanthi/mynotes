@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 230" role="img" aria-label="Python LEGB scope resolution order and closure cell objects" style="color-scheme:dark">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#7fa7d9"/></marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#ff7b6b"/></marker>
+  </defs>
+  <rect width="820" height="230" fill="#11161d" rx="8"/>
+  <text x="410.0" y="30" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#e6edf5">Python LEGB Scope Resolution and Closure Cell Captures</text>
+  <rect x="30" y="70" width="165" height="95" rx="8" fill="#1a2330" stroke="#ff7b6b" stroke-width="2"/>
+  <text x="112.5" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#e6edf5">L: Local</text>
+  <text x="112.5" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Current function</text>
+  <text x="112.5" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">FAST locals array</text>
+  <rect x="230" y="70" width="165" height="95" rx="8" fill="#1a2330" stroke="#ff7b6b" stroke-width="2"/>
+  <text x="312.5" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#e6edf5">E: Enclosing</text>
+  <text x="312.5" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Outer fn cells</text>
+  <text x="312.5" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">fn.__closure__</text>
+  <rect x="430" y="70" width="165" height="95" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="2"/>
+  <text x="512.5" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#e6edf5">G: Global</text>
+  <text x="512.5" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Module __dict__</text>
+  <text x="512.5" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">global x</text>
+  <rect x="630" y="70" width="160" height="95" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="2"/>
+  <text x="710.0" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#e6edf5">B: Built-in</text>
+  <text x="710.0" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">builtins module</text>
+  <text x="710.0" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">len, sum, ValueError</text>
+  <line x1="195" y1="117" x2="230" y2="117" stroke="#7fa7d9" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="212" y="108" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#7fa7d9">miss</text>
+  <line x1="395" y1="117" x2="430" y2="117" stroke="#7fa7d9" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="412" y="108" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#7fa7d9">miss</text>
+  <line x1="595" y1="117" x2="630" y2="117" stroke="#7fa7d9" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="612" y="108" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#7fa7d9">miss</text>
+  <text x="410" y="200" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" fill="#9fb0c3">Closures capture cell pointers (late binding), not snapshots of loop variables.</text>
+</svg>

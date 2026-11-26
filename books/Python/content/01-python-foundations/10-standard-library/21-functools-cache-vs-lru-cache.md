@@ -59,3 +59,20 @@ Default to `lru_cache(maxsize=…)` with a number you can defend. Use `cache` on
 ## Sources
 
 - [functools — Python 3.15 docs](https://docs.python.org/3.15/library/functools.html)
+## Architecture Diagram & Eviction Instrumentation Lab
+
+![functools lru_cache O(1) hash map and doubly linked list eviction architecture](../../../images/diagram-python-lru-cache-eviction.svg)
+
+Watch `cache_info()` track hits, misses, and LRU evictions when `maxsize` is exceeded:
+
+```python
+from functools import lru_cache
+
+@lru_cache(maxsize=3)
+def square(n: int) -> int:
+    return n * n
+
+for val in [1, 2, 3, 1, 4, 2]:
+    square(val)
+    print(f"square({val}) -> {square.cache_info()}")
+```

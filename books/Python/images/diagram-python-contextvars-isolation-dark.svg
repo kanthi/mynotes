@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 235" role="img" aria-label="Python ContextVar per-task copy-on-spawn isolation versus threading.local" style="color-scheme:dark">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#7fa7d9"/></marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#ff7b6b"/></marker>
+  </defs>
+  <rect width="820" height="235" fill="#11161d" rx="8"/>
+  <text x="410.0" y="30" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#e6edf5">Request-Scoped State: ContextVar Isolation Across Concurrent Async Tasks</text>
+  <rect x="30" y="65" width="210" height="110" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="2"/>
+  <text x="135.0" y="89" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#e6edf5">Event Loop (1 Thread)</text>
+  <text x="135.0" y="109" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">threading.local() FAILS:</text>
+  <text x="135.0" y="125" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">shared across all tasks</text>
+  <text x="135.0" y="141" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">on the same OS thread</text>
+  <rect x="300" y="65" width="220" height="110" rx="8" fill="#1a2330" stroke="#ff7b6b" stroke-width="2"/>
+  <text x="410.0" y="89" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#e6edf5">Task 1 (req-101)</text>
+  <text x="410.0" y="109" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">ContextVar copy #1</text>
+  <text x="410.0" y="125" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">request_id = 'req-101'</text>
+  <text x="410.0" y="141" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Isolated across awaits</text>
+  <rect x="580" y="65" width="210" height="110" rx="8" fill="#1a2330" stroke="#ff7b6b" stroke-width="2"/>
+  <text x="685.0" y="89" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#e6edf5">Task 2 (req-202)</text>
+  <text x="685.0" y="109" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">ContextVar copy #2</text>
+  <text x="685.0" y="125" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">request_id = 'req-202'</text>
+  <text x="685.0" y="141" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Zero cross-talk</text>
+  <line x1="240" y1="120" x2="300" y2="120" stroke="#ff7b6b" stroke-width="2" marker-end="url(#arrow-accent)"/>
+  <text x="270" y="110" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#ff7b6b">copy_context</text>
+  <line x1="520" y1="120" x2="580" y2="120" stroke="#7fa7d9" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="550" y="110" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#7fa7d9">isolated</text>
+  <text x="410" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" fill="#9fb0c3">asyncio.create_task() snapshots the active Context using a structural HAMT map in O(1).</text>
+</svg>

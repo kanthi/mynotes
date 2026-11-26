@@ -161,3 +161,46 @@ If memory footprint is paramount, compress long non-branching sequences into sin
 
 1. Add a `delete(word: str) -> bool` method to `Trie` that unsets `is_terminal` and deletes child branches that have no other terminal descendants.
 2. Build an in-memory spell-check validator that flags whether an input word exists in a dictionary and suggests words sharing a prefix.
+## Architecture Diagram & Prefix Autocomplete Lab
+
+![Trie prefix tree showing shared character edges for cat, car, and card](../../images/diagram-python-trie-prefix-tree.svg)
+
+Test an $O(L)$ prefix autocomplete query over a compact `Trie`:
+
+```python
+class TrieNode:
+    __slots__ = ("children", "is_end")
+    def __init__(self) -> None:
+        self.children: dict[str, TrieNode] = {}
+        self.is_end: bool = False
+
+class Trie:
+    def __init__(self) -> None:
+        self.root = TrieNode()
+
+    def insert(self, word: str) -> None:
+        node = self.root
+        for ch in word:
+            node = node.children.setdefault(ch, TrieNode())
+        node.is_end = True
+
+    def autocomplete(self, prefix: str) -> list[str]:
+        node = self.root
+        for ch in prefix:
+            if ch not in node.children:
+                return []
+            node = node.children[ch]
+        results: list[str] = []
+        def dfs(cur: TrieNode, path: str) -> None:
+            if cur.is_end:
+                results.append(path)
+            for ch, nxt in sorted(cur.children.items()):
+                dfs(nxt, path + ch)
+        dfs(node, prefix)
+        return results
+
+t = Trie()
+for w in ["cat", "car", "card", "care", "dog"]:
+    t.insert(w)
+print("Prefix 'car':", t.autocomplete("car"))
+```

@@ -171,3 +171,24 @@ Because closure cells hold strong references, an inner function will keep an ent
 - Python Language Reference: *Section 4.1: Naming and Binding (Cell objects)*.
 - PEP 227: *Statically Nested Scopes*.
 - Python Standard Library: `functools.partial`.
+## Architecture Diagram & Closure Cell Inspection Lab
+
+![Python LEGB scope resolution order and closure cell objects](../../../images/diagram-python-legb-closure-cells.svg)
+
+Inspect `__closure__` cells directly and compare the classic late-binding loop trap against an early-bound default parameter:
+
+```python
+# Late binding trap: every lambda shares the same loop cell `i`
+late = [lambda: i for i in range(3)]
+# Early binding fix: default argument captures each iteration's value
+early = [lambda i=i: i for i in range(3)]
+
+print("Late-bound outputs: ", [fn() for fn in late])   # [2, 2, 2]
+print("Early-bound outputs:", [fn() for fn in early])  # [0, 1, 2]
+
+def make_adder(offset: int):
+    return lambda x: x + offset
+
+add10 = make_adder(10)
+print("Captured cell value:", add10.__closure__[0].cell_contents)
+```

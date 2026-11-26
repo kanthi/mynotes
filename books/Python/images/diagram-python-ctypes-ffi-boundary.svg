@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 235" role="img" aria-label="CPython ctypes FFI marshaling boundary into native C shared library" style="color-scheme:light">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#3b5b85"/></marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#c0392b"/></marker>
+  </defs>
+  <rect width="820" height="235" fill="#ffffff" rx="8"/>
+  <text x="410.0" y="30" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#1f2a36">CPython ctypes FFI Boundary: Marshaling PyObjects to Native C ABI</text>
+  <rect x="30" y="70" width="210" height="105" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="135.0" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Python Code</text>
+  <text x="135.0" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">argtypes = [c_double]</text>
+  <text x="135.0" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">restype = c_double</text>
+  <text x="135.0" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Explicit C signatures</text>
+  <rect x="300" y="70" width="220" height="105" rx="8" fill="#f4f7fb" stroke="#c0392b" stroke-width="2"/>
+  <text x="410.0" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">ctypes / libffi</text>
+  <text x="410.0" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Unboxes PyFloat -&gt; double</text>
+  <text x="410.0" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Releases GIL during call</text>
+  <text x="410.0" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Invokes C calling conv</text>
+  <rect x="580" y="70" width="210" height="105" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="685.0" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Native Library (.so/.dylib)</text>
+  <text x="685.0" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">libm / libc / Rust cdylib</text>
+  <text x="685.0" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Runs at bare-metal speed</text>
+  <text x="685.0" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Returns C primitive/ptr</text>
+  <line x1="240" y1="122" x2="300" y2="122" stroke="#3b5b85" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="270" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#3b5b85">marshal</text>
+  <line x1="520" y1="122" x2="580" y2="122" stroke="#c0392b" stroke-width="2" marker-end="url(#arrow-accent)"/>
+  <text x="550" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#c0392b">C ABI</text>
+  <text x="410" y="210" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" fill="#5a6b7d">Always declare argtypes and restype; missing restype truncates 64-bit pointers to 32-bit c_int.</text>
+</svg>

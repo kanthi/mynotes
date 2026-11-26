@@ -78,3 +78,32 @@ Request ids, tenants, and trace context go in `ContextVar`s (or structured conte
 
 - [contextvars — Python 3.15 docs](https://docs.python.org/3.15/library/contextvars.html)
 - PEP 567
+## Architecture Diagram & Concurrent Task Isolation Lab
+
+![Python ContextVar per-task copy-on-spawn isolation versus threading.local](../../../images/diagram-python-contextvars-isolation.svg)
+
+Prove that two interleaved coroutines on the same event-loop thread keep their `request_id` isolated without passing it through helper function signatures:
+
+```python
+import asyncio
+from contextvars import ContextVar
+
+request_id: ContextVar[str] = ContextVar("request_id", default="none")
+
+async def log_step(step: str) -> None:
+    await asyncio.sleep(0.01)
+    print(f"[{request_id.get()}] {step}")
+
+async def handle_request(rid: str) -> None:
+    token = request_id.set(rid)
+    try:
+        await log_step("auth")
+        await log_step("query")
+    finally:
+        request_id.reset(token)
+
+async def main() -> None:
+    await asyncio.gather(handle_request("req-101"), handle_request("req-202"))
+
+asyncio.run(main())
+```
