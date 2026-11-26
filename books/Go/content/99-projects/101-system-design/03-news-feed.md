@@ -37,3 +37,28 @@ In Go, load candidate IDs in bounded pages, batch-fetch posts, and recheck curre
 Publish once, replay the outbox twice, and assert one feed entry per reader. Pause the worker, keep publishing, and demonstrate eventual catch-up without unbounded heap growth. Delete or privatize a post while it remains cached and assert it cannot be returned.
 
 Insert posts between page requests and verify stable keyset pagination without repeated items in the unchanged dataset. Document that a live feed is not a frozen snapshot unless you add a snapshot boundary. Measure publish latency, fan-out backlog age, database rows read per page, and p99 feed latency under one celebrity author. Explain when the hybrid design improves those measurements and what consistency it sacrifices.
+## Hybrid Fan-Out Architecture Diagram & Go Fan-Out Router Lab
+
+![Hybrid news feed fan-out architecture combining push fan-out-on-write and pull fan-out-on-read](../../../images/diagram-go-newsfeed-fanout.svg)
+
+Model the hybrid fan-out threshold check in Go so regular accounts push to follower timelines while high-fanout accounts merge lazily on read:
+
+```go
+package main
+
+import "fmt"
+
+const celebrityThreshold = 50_000
+
+func publishPost(author string, followers int) string {
+	if followers >= celebrityThreshold {
+		return fmt.Sprintf("%s (%d followers) -> fan-out-on-read (merge at query time)", author, followers)
+	}
+	return fmt.Sprintf("%s (%d followers) -> fan-out-on-write (push to Redis timelines)", author, followers)
+}
+
+func main() {
+	fmt.Println(publishPost("alice", 420))
+	fmt.Println(publishPost("mega_star", 1_200_000))
+}
+```

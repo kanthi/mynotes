@@ -37,3 +37,45 @@ The first version requires both accounts on one database so the operation can be
 Start account A with 100 synthetic units and B with zero. Run 100 concurrent requests transferring 3 units each, with unique request IDs. Exactly 33 can succeed if no other operations run; A ends at 1 and B at 99. Replay every request, and verify balances do not change.
 
 Crash between inserting the debit and credit before commit, then confirm rollback leaves neither visible. Compare cached balances with ledger sums, and assert every transfer balances to zero. Test reverse-direction concurrent transfers, duplicate IDs with changed amounts, overflow, cancellation, and reconciliation after a lost commit response.
+## Double-Entry Ledger Diagram & Zero-Sum Invariant Lab
+
+![Digital wallet double-entry ledger with idempotency key and atomic debit-credit transaction](../../../images/diagram-go-digital-wallet-ledger.svg)
+
+Verify the core invariant of every production wallet: every transfer appends paired debit/credit ledger entries whose net sum is always zero, guarded by an idempotency key:
+
+```go
+package main
+
+import "fmt"
+
+type Entry struct {
+	Account string
+	Delta   int64
+}
+
+type Ledger struct {
+	seen    map[string]bool
+	entries []Entry
+}
+
+func (l *Ledger) Transfer(idemKey, from, to string, cents int64) bool {
+	if l.seen[idemKey] || cents <= 0 {
+		return false
+	}
+	l.seen[idemKey] = true
+	l.entries = append(l.entries, Entry{from, -cents}, Entry{to, +cents})
+	return true
+}
+
+func main() {
+	l := &Ledger{seen: map[string]bool{}}
+	fmt.Println("First attempt:", l.Transfer("tx-100", "alice", "bob", 5000))
+	fmt.Println("Retry attempt:", l.Transfer("tx-100", "alice", "bob", 5000))
+	var sum int64
+	for _, e := range l.entries {
+		sum += e.Delta
+	}
+	fmt.Printf("Entries=%d, NetZeroSum=%d
+", len(l.entries), sum)
+}
+```

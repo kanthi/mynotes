@@ -38,3 +38,40 @@ Do not hold database locks while waiting for an external payment API. Persist st
 ## Evidence
 
 Race 100 Go clients for one remaining room over two nights. Assert exactly one successful hold and no negative availability. Test a missing inventory date, duplicate confirmation, expiry racing confirmation, cancellation replay, and a database failure on the second night. Query inventory after every scenario and compare it with active reservation rows. Measure lock waits and deadlocks before considering partitioning across hotels.
+## Concurrency Control Diagram & Optimistic CAS Lab
+
+![Hotel reservation concurrency control comparing optimistic version CAS versus pessimistic row locks](../../../images/diagram-go-hotel-booking-locking.svg)
+
+Simulate optimistic Compare-And-Swap (`version`) inventory updates in Go so two concurrent bookings for the last room can never both succeed:
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+type RoomInventory struct {
+	mu      sync.Mutex
+	avail   int
+	version int
+}
+
+func (r *RoomInventory) BookCAS(expectedVer int) bool {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if r.version != expectedVer || r.avail <= 0 {
+		return false
+	}
+	r.avail--
+	r.version++
+	return true
+}
+
+func main() {
+	inv := &RoomInventory{avail: 1, version: 1}
+	fmt.Println("Guest A (ver 1):", inv.BookCAS(1))
+	fmt.Println("Guest B (ver 1):", inv.BookCAS(1)) // Stale version rejected!
+}
+```

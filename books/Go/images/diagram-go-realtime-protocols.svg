@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 230" role="img" aria-label="Comparison of real-time transport protocols in Go: SSE, WebSockets, QUIC WebTransport, and WebRTC" style="color-scheme:light">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#3b5b85"/></marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#c0392b"/></marker>
+  </defs>
+  <rect width="820" height="230" fill="#ffffff" rx="8"/>
+  <text x="410.0" y="30" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#1f2a36">Real-Time Protocols in Go: Choosing Between SSE, WebSockets, QUIC, and WebRTC</text>
+  <rect x="25" y="65" width="175" height="125" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="112.5" y="89" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">SSE (HTTP/1-2)</text>
+  <text x="112.5" y="109" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Server -&gt; Client</text>
+  <text x="112.5" y="125" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Auto-reconnect</text>
+  <text x="112.5" y="141" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Proxy friendly</text>
+  <text x="112.5" y="157" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Live feeds &amp; AI</text>
+  <rect x="225" y="65" width="175" height="125" rx="8" fill="#f4f7fb" stroke="#c0392b" stroke-width="2"/>
+  <text x="312.5" y="89" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">WebSockets</text>
+  <text x="312.5" y="109" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Full-duplex TCP</text>
+  <text x="312.5" y="125" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Low frame overhead</text>
+  <text x="312.5" y="141" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Chat &amp; trading</text>
+  <text x="312.5" y="157" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">coder/websocket</text>
+  <rect x="425" y="65" width="175" height="125" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="512.5" y="89" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">QUIC / HTTP3</text>
+  <text x="512.5" y="109" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">UDP multiplexed</text>
+  <text x="512.5" y="125" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Zero HoL blocking</text>
+  <text x="512.5" y="141" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Connection migrate</text>
+  <text x="512.5" y="157" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">quic-go</text>
+  <rect x="625" y="65" width="170" height="125" rx="8" fill="#f4f7fb" stroke="#c0392b" stroke-width="2"/>
+  <text x="710.0" y="89" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">WebRTC (pion)</text>
+  <text x="710.0" y="109" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">P2P / SFU media</text>
+  <text x="710.0" y="125" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">SRTP + DataChannel</text>
+  <text x="710.0" y="141" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Sub-100ms audio/</text>
+  <text x="710.0" y="157" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">video &amp; gaming</text>
+</svg>

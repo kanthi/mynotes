@@ -28,3 +28,36 @@ internal/
 
 - [29. EventDrivenDev](../29-event-driven-dev/index.md)
 - [82. SOLID Design in Go](../21-security/82-solid-design.md)
+## Dependency Inversion Diagram & Consumer-Defined Port Lab
+
+![Go Clean Architecture and Hexagonal Ports and Adapters dependency inversion](../../images/diagram-go-clean-architecture-ports.svg)
+
+In idiomatic Go, define small interfaces in the **consumer (domain/use-case) package** so business logic can be unit-tested in microseconds with an in-memory map:
+
+```go
+package billing
+
+import (
+	"context"
+	"errors"
+)
+
+type Invoice struct {
+	ID          string
+	AmountCents int64
+}
+
+// Port defined by the consumer, not the database package
+type InvoiceStore interface {
+	Save(ctx context.Context, inv Invoice) error
+}
+
+type Service struct{ store InvoiceStore }
+
+func (s *Service) Issue(ctx context.Context, inv Invoice) error {
+	if inv.AmountCents <= 0 {
+		return errors.New("amount must be positive")
+	}
+	return s.store.Save(ctx, inv)
+}
+```

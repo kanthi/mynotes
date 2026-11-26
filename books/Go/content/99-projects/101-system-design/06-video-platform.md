@@ -37,3 +37,39 @@ Estimate storage as source bytes plus rendition bytes times retention and replic
 Kill the worker halfway through a rendition, redeliver the job, and confirm no manifest refers to missing segments. Run old and new processing generations concurrently and assert only the new one can publish. Test source deletion during processing, unsupported media, encoder timeout, and a private video requested through a stale cached URL.
 
 Record time-to-ready, transcode queue age, bytes per rendition, playback startup latency, and origin bandwidth. Extend with resumable uploads and adaptive renditions only after the publication and retry invariants pass.
+## Transcoding DAG Diagram & Bounded Go Worker-Pool Lab
+
+![Video platform upload and adaptive bitrate transcoding DAG pipeline to CDN edge](../../../images/diagram-go-video-transcoding-dag.svg)
+
+Fan out adaptive bitrate renditions across a bounded Go worker pool using `sync.WaitGroup`:
+
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+func main() {
+	renditions := []string{"1080p", "720p", "480p", "360p"}
+	jobs := make(chan string, len(renditions))
+	for _, r := range renditions {
+		jobs <- r
+	}
+	close(jobs)
+
+	var wg sync.WaitGroup
+	for w := 1; w <= 2; w++ {
+		wg.Add(1)
+		go func(id int) {
+			defer wg.Done()
+			for profile := range jobs {
+				fmt.Printf("worker-%d transcoded %s HLS segment
+", id, profile)
+			}
+		}(w)
+	}
+	wg.Wait()
+}
+```
