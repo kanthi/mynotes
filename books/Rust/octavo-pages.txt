@@ -16,7 +16,7 @@ content/02-language-basics/05-control-flow-if-loop-while-for.html	Control Flow: 
 content/02-language-basics/05b-nonzero-types.html	NonZero Integer Types
 content/02-language-basics/06-summary.html	Summary
 content/03-ownership/01-what-is-ownership-and-why-it-exists.html	What is Ownership and Why Does It Exist?
-content/03-ownership/02-stack-vs-heap-memory-in-rust.html	Stack vs Heap Memory in Rust
+content/03-ownership/02-stack-vs-heap-memory-in-rust.html	Stack vs. Heap Memory and Move Semantics in Rust
 content/03-ownership/03-move-semantics-explained.html	Move Semantics Explained
 content/03-ownership/04-copy-types-and-clone.html	Copy Types and Clone
 content/03-ownership/05-the-drop-trait-and-resource-cleanup.html	The Drop Trait and Resource Cleanup
@@ -42,7 +42,7 @@ content/06-modules-and-crates/04-crates-packages-and-cargo-workspaces.html	Crate
 content/06-modules-and-crates/05-re-exporting-and-organizing-large-projects.html	Re-exporting and Organizing Large Projects
 content/06-modules-and-crates/06-summary.html	Summary
 content/07-collections-and-strings/01-vec-and-dynamic-arrays.html	Vec and Dynamic Arrays
-content/07-collections-and-strings/02-string-vs-str-deep-dive.html	String vs &str Deep Dive
+content/07-collections-and-strings/02-string-vs-str-deep-dive.html	String vs. &str Deep Dive
 content/07-collections-and-strings/03-hashmap-and-btreemap-for-key-value-storage.html	HashMap and BTreeMap for Key-Value Storage
 content/07-collections-and-strings/03b-hashmap-hashers-and-hash-flooding.html	HashMap Hashers and Hash Flooding: Why the Default Is SipHash
 content/07-collections-and-strings/03c-bbtree-concurrent-ordered-map.html	bbtree: a concurrent ordered map (and unsync BTreeMap drop-in)
@@ -54,7 +54,7 @@ content/08-project-1-task-manager/02-testing-the-task-manager.html	Testing the T
 content/08-project-1-task-manager/03-benchmarking-the-task-manager.html	Benchmarking the Task Manager
 content/08-project-1-task-manager/04-deploying-the-task-manager.html	Deploying the Task Manager
 content/09-error-handling/01-unrecoverable-errors-with-panic.html	Unrecoverable Errors with panic!
-content/09-error-handling/02-recoverable-errors-with-result.html	Recoverable Errors with Result
+content/09-error-handling/02-recoverable-errors-with-result.html	Recoverable Errors with Result and the ? Operator
 content/09-error-handling/03-the-option-type-for-absent-values.html	The Option Type for Absent Values
 content/09-error-handling/04-propagating-errors-with-the-question-operator.html	Propagating Errors with the ? Operator
 content/09-error-handling/05-custom-error-types-and-thiserror.html	Custom Error Types and thiserror
@@ -71,7 +71,7 @@ content/10-generics-and-traits/05d-cow-borrow-or-own.html	Cow — Borrow When Yo
 content/10-generics-and-traits/05e-phantomdata-and-typestate.html	PhantomData and the Type-State Pattern: Protocol States the Compiler Enforces
 content/10-generics-and-traits/05f-newtype-pattern.html	The Newtype Pattern: Zero-Cost Type Safety, Validated Values and the Orphan Rule
 content/10-generics-and-traits/06-summary.html	Summary
-content/11-lifetimes/01-what-lifetimes-are-and-are-not.html	What Lifetimes Are (and Are Not)
+content/11-lifetimes/01-what-lifetimes-are-and-are-not.html	What Lifetimes Are and Are Not
 content/11-lifetimes/02-the-lifetime-elision-rules.html	The Lifetime Elision Rules
 content/11-lifetimes/03-annotating-lifetimes-in-functions-and-structs.html	Annotating Lifetimes in Functions and Structs
 content/11-lifetimes/04-lifetime-bounds-on-traits.html	Lifetime Bounds on Traits
@@ -79,7 +79,7 @@ content/11-lifetimes/05-advanced-lifetime-patterns.html	Advanced Lifetime Patter
 content/11-lifetimes/05b-variance-and-subtyping.html	Variance: Why `&mut` Makes Lifetimes Rigid
 content/11-lifetimes/06-summary.html	Summary
 content/12-smart-pointers/01-box-for-heap-allocation.html	Box for Heap Allocation
-content/12-smart-pointers/02-reference-counting-with-rc-and-arc.html	Reference Counting with Rc and Arc
+content/12-smart-pointers/02-reference-counting-with-rc-and-arc.html	Reference Counting with Rc, Arc, and Interior Mutability
 content/12-smart-pointers/03-interior-mutability-with-refcell.html	Interior Mutability with RefCell
 content/12-smart-pointers/04-cell-and-mutex-for-shared-state.html	Cell and Mutex for Shared State
 content/12-smart-pointers/05-weak-references-and-breaking-cycles.html	Weak References and Breaking Cycles
@@ -116,7 +116,7 @@ content/13-iterators-and-closures/iterator-cookbook/15-itertools.html	The iterto
 content/13-iterators-and-closures/iterator-cookbook/16-when-not-to-use-iterators.html	When Not to Use Iterators
 content/13-iterators-and-closures/iterator-cookbook/17-exercises.html	Exercises
 content/14-concurrency/01-spawning-threads-with-std-thread.html	Spawning Threads with std::thread
-content/14-concurrency/02-message-passing-with-channels.html	Message Passing with Channels
+content/14-concurrency/02-message-passing-with-channels.html	Message Passing with Channels and Scoped Threads
 content/14-concurrency/03-shared-state-with-mutex-and-rwlock.html	Shared State with Mutex and RwLock
 content/14-concurrency/03b-rwlock-vs-mutex-and-locks-across-await.html	RwLock Is Not a Faster Mutex: Lock Choice by Measurement, and Locks Across .await
 content/14-concurrency/04-atomic-operations-for-lock-free-code.html	Atomic Operations for Lock-Free Code
@@ -156,7 +156,7 @@ content/18-testing-and-deployment/05b-msrv-rust-version-and-the-msrv-aware-resol
 content/18-testing-and-deployment/05c-build-scripts-supply-chain.html	build.rs Runs As You: Build Scripts and the Supply Chain
 content/18-testing-and-deployment/05d-cargo-min-publish-age.html	Cargo min-publish-age: dependency cooldowns against fresh crates.io publishes
 content/18-testing-and-deployment/06-summary.html	Summary
-content/19-rust-ecosystem/01-serde-serialization-and-deserialization.html	serde: Serialization and Deserialization
+content/19-rust-ecosystem/01-serde-serialization-and-deserialization.html	Serde Serialization and Deserialization
 content/19-rust-ecosystem/02-clap-command-line-argument-parsing.html	clap: Command-Line Argument Parsing
 content/19-rust-ecosystem/03-reqwest-http-client.html	reqwest: HTTP Client
 content/19-rust-ecosystem/04-axum-web-framework.html	axum: Web Framework
@@ -192,7 +192,7 @@ content/21-webassembly/07-wasm-performance.html	Performance Considerations
 content/21-webassembly/08-server-side-webassembly.html	Server-Side WebAssembly
 content/21-webassembly/09-publishing-and-distribution.html	Publishing and Distribution
 content/21-webassembly/10-summary.html	Summary
-content/22-embedded-rust/01-understanding-no-std.html	Understanding no_std
+content/22-embedded-rust/01-understanding-no-std.html	Understanding no_std and Bare-Metal Rust
 content/22-embedded-rust/02-choosing-a-target-cortex-m.html	Choosing a Target: Cortex-M
 content/22-embedded-rust/03-writing-an-embedded-application-blinking-an-led.html	Writing an Embedded Application: Blinking an LED
 content/22-embedded-rust/04-memory-management-without-a-heap.html	Memory Management Without a Heap
@@ -244,4 +244,20 @@ content/25-rust-atomics-and-locks/07-understanding-the-processor.html	Understand
 content/25-rust-atomics-and-locks/08-operating-system-primitives.html	Operating System Primitives
 content/25-rust-atomics-and-locks/09-building-our-own-locks.html	Building Our Own Locks
 content/25-rust-atomics-and-locks/10-ideas-and-inspiration.html	Ideas and Inspiration
+content/26-networking-and-sockets/01-tcp-udp-and-framing.html	TCP, UDP, and Binary Framing in Rust
+content/26-networking-and-sockets/02-tls-rustls-and-quic.html	Memory-Safe TLS with rustls and QUIC with quinn
+content/26-networking-and-sockets/03-reverse-proxies-and-load-balancers.html	Reverse Proxies and Load Balancers in Rust
+content/27-backend-web-axum/01-axum-routing-extractors-and-state.html	Backend APIs with Axum: Routing, Extractors, and State
+content/27-backend-web-axum/02-tower-middleware-auth-and-rate-limiting.html	Tower Middleware, Authentication, and Rate Limiting
+content/27-backend-web-axum/03-websockets-sse-and-graceful-shutdown.html	WebSockets, Server-Sent Events, and Graceful Shutdown
+content/28-databases-and-storage/01-sqlx-postgres-and-connection-pooling.html	PostgreSQL, SQLx, and Connection Pooling
+content/28-databases-and-storage/02-redis-caching-and-embedded-storage.html	Redis Caching, Stampede Prevention, and Embedded Storage
+content/28-databases-and-storage/03-building-a-log-structured-kv-store.html	Building a Log-Structured Key-Value Store (Mini-Bitcask)
+content/29-grpc-and-event-driven/01-tonic-grpc-and-protobuf.html	gRPC and Protobuf Services with Tonic
+content/29-grpc-and-event-driven/02-event-driven-kafka-nats-and-outbox.html	Event-Driven Systems: Kafka, NATS, and the Transactional Outbox
+content/30-observability-and-sre/01-structured-tracing-metrics-and-otel.html	Structured Tracing, Metrics, and OpenTelemetry
+content/30-observability-and-sre/02-profiling-zero-copy-and-deployment.html	Profiling, Zero-Copy Buffers, and Distroless Deployment
+content/31-distributed-security-systems/01-distributed-resilience-and-consensus.html	Distributed Resilience, Consistent Hashing, and Consensus
+content/31-distributed-security-systems/02-security-hardening-and-linux-systems.html	Security Hardening, Cryptography, and Linux Systems Programming
+content/32-ai-in-rust/01-tensors-inference-and-ai-agents.html	AI and Machine Learning Engineering in Rust
 index.html	Rust

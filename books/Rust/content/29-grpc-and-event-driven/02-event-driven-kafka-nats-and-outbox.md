@@ -1,5 +1,5 @@
 ---
-title: Event-Driven Systems: Kafka, NATS, and the Transactional Outbox
+title: "Event-Driven Systems: Kafka, NATS, and the Transactional Outbox"
 ---
 
 # Event-Driven Systems: Kafka, NATS, and the Transactional Outbox
