@@ -6,6 +6,8 @@ title: Testing, Validation, Formatting, and Policy Enforcement
 
 A plan a human reads is the most important test. The commands in this chapter exist so that human never has to spend the review on indentation, a missing variable, or a security group open to the world. Sentinel is not one of those commands on OpenTofu.
 
+![OpenTofu validation, testing, and policy pyramid from static fmt and validate to mocked tofu test unit runs, OPA/Conftest plan checks, and ephemeral apply tests.](../../images/diagram-opentofu-testing-pyramid.svg)
+
 ## Learning goals
 
 - Run `tofu fmt` and `tofu validate` as a gate, not as a suggestion
@@ -111,10 +113,102 @@ Checkov still says "terraform" for the framework name because the file format is
 
 Triage the first run. A hundred historical findings are not a gate. Turn the gate on for severity you will actually fix, and file the rest. A scanner that fails every build teaches people to ignore scanners. Pin the scanner version the same way you pin OpenTofu, so a rule change is a commit.
 
+## Concrete OPA Rego guardrail for plan JSON
+
+Save this policy in `policy/guardrails.rego` to block any plan that deletes more than 5 resources without an explicit waiver or exposes SSH (`port 22`) to `0.0.0.0/0`:
+
+```rego
+package main
+
+import rego.v1
+
+# Block overly destructive plans
+deny contains msg if {
+  deletes := [rc | some rc in input.resource_changes; "delete" in rc.change.actions]
+  count(deletes) > 5
+  msg := sprintf("Plan deletes %d resources (max 5 without break-glass waiver)", [count(deletes)])
+}
+
+# Block public SSH ingress rules on AWS security groups
+deny contains msg if {
+  some rc in input.resource_changes
+  rc.type == "aws_security_group"
+  some rule in rc.change.after.ingress
+  rule.from_port <= 22
+  rule.to_port >= 22
+  "0.0.0.0/0" in rule.cidr_blocks
+  msg := sprintf("%s opens SSH (port 22) to 0.0.0.0/0", [rc.address])
+}
+```
+
+## Hands-on lab: run `tofu fmt`, `tofu validate`, `tofu test`, and OPA plan checks locally
+
+### Step 1: Create a testable module (`main.tf`) and test file (`tests/pet.tftest.hcl`)
+
+```hcl
+# main.tf
+terraform {
+  required_version = "~> 1.13.0"
+  required_providers {
+    random = { source = "hashicorp/random", version = "~> 3.7" }
+  }
+}
+
+variable "pet_length" {
+  type    = number
+  default = 2
+  validation {
+    condition     = var.pet_length >= 1 && var.pet_length <= 4
+    error_message = "pet_length must be between 1 and 4."
+  }
+}
+
+resource "random_pet" "service" {
+  length = var.pet_length
+}
+
+output "name" {
+  value = random_pet.service.id
+}
+```
+
+```hcl
+# tests/pet.tftest.hcl
+run "valid_length_plan" {
+  command = plan
+  variables { pet_length = 3 }
+  assert {
+    condition     = random_pet.service.length == 3
+    error_message = "Expected pet length 3."
+  }
+}
+
+run "reject_invalid_length" {
+  command         = plan
+  variables       { pet_length = 9 }
+  expect_failures = [var.pet_length]
+}
+```
+
+### Step 2: Execute the full static + test + plan-JSON check
+
+```bash
+mkdir -p ~/tofu-labs/11-testing/tests && cd ~/tofu-labs/11-testing
+tofu fmt -check -recursive
+tofu init -backend=false
+tofu validate
+tofu test
+tofu plan -out=tfplan && tofu show -json tfplan > plan.json
+```
+
+If `conftest` is installed, evaluate `plan.json` against `policy/guardrails.rego`:
+
+```bash
+conftest test plan.json --policy policy/
+```
+
 ## Summary
 
-- `tofu fmt -check` and `tofu validate` run in CI after `tofu init -backend=false`
-- Pre-commit is the fast path. The pipeline is the authority
-- `tofu test` asserts the module contract. Plan tests need no cloud
-- Sentinel does not run on OpenTofu. OPA/Conftest evaluates the plan JSON
-- Trivy config or Checkov catches known-bad configuration. tfsec's rules live on in that lineage
+- `tofu fmt -check` and `tofu validate` run in CI after `tofu init -backend=false`.
+- `tofu test` verifies module contracts and `expect_failures` with zero cloud credentials.
+- Sentinel does not run on OpenTofu; pair **OPA / Conftest** (org Rego rules on `plan.json`) with **Trivy** or **Checkov** (known cloud misconfigurations).

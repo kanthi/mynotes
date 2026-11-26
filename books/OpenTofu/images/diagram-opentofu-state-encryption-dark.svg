@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 320" role="img" aria-label="OpenTofu client-side state encryption showing plaintext state and plan encrypted in-process with AES-GCM via KMS, OpenBao, or PBKDF2 key providers before upload to a locked, versioned remote backend" color-scheme="dark">
+<rect width="820" height="320" fill="#11161d"/>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#7fa7d9"/></marker></defs>
+<text x="410" y="28" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="16" font-weight="700" fill="#e6edf5">OpenTofu Client-Side State &amp; Plan Encryption</text>
+<rect x="28" y="64" width="176" height="72" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="116" y="92" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="700" fill="#e6edf5">Plaintext in RAM</text>
+<text x="116" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">state JSON + tfplan</text>
+<rect x="252" y="56" width="218" height="88" rx="8" fill="#1a2330" stroke="#ff7b6b" stroke-width="2.2"/>
+<text x="361" y="86" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="700" fill="#e6edf5">encryption { aes_gcm }</text>
+<text x="361" y="106" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">enforced = true</text>
+<text x="361" y="124" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#9fb0c3">encrypts before upload</text>
+<rect x="520" y="64" width="272" height="72" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="656" y="92" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="700" fill="#e6edf5">Remote Backend (Ciphertext)</text>
+<text x="656" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">S3 use_lockfile + versioning + SSE</text>
+<rect x="220" y="198" width="282" height="62" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="361" y="224" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="700" fill="#e6edf5">Key Provider</text>
+<text x="361" y="244" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">aws_kms / gcp_kms / openbao / pbkdf2</text>
+<line x1="204" y1="100" x2="250" y2="100" stroke="#7fa7d9" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="470" y1="100" x2="518" y2="100" stroke="#7fa7d9" stroke-width="1.6" marker-end="url(#a)"/>
+<text x="494" y="90" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">TLS</text>
+<line x1="361" y1="198" x2="361" y2="146" stroke="#7fa7d9" stroke-width="1.6" marker-end="url(#a)"/>
+<text x="410" y="294" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" fill="#9fb0c3">storage admins see only ciphertext; fallback blocks allow zero-downtime key rotation</text>
+</svg>

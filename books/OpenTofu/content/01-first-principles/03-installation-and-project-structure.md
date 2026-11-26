@@ -136,10 +136,34 @@ A `.gitignore` that encodes that list belongs in the first commit, before the fi
 
 `TF_VAR_name` environment variables fill variable `name`. Prefer them for secrets. Chapter 12 is the full rule. Chapter 5 is how variables are declared so that path works.
 
+## Starter `.gitignore` for every OpenTofu repository
+
+Commit this `.gitignore` before your very first `tofu init`:
+
+```gitignore
+# Local provider binaries and module caches
+.terraform/
+
+# State files and backups (never commit)
+*.tfstate
+*.tfstate.*
+
+# Saved plans (can contain sensitive values)
+*.tfplan
+tfplan
+
+# Crash logs and local secret overrides
+crash.log
+crash.*.log
+*.auto.tfvars
+override.tf
+override.tf.json
+.terraformrc
+terraform.rc
+```
+
 ## Summary
 
-- Pin 1.13.2 with mise, the release image, or an installer, then run `tofu version`
-- `~> 1.13.0` keeps the series and refuses the next one
-- One root module is enough until the example applies cleanly twice
-- Names of `.tf` files are a human convention. The lock file and the version pin are not
-- State, plans, and `.terraform/` stay out of git
+- Pin `1.13.2` with `mise`, the container image, or `.terraform-version`, then verify with `tofu version`.
+- `required_version = "~> 1.13.0"` enforces the series pin; commit `.terraform.lock.hcl` alongside your `.tf` files.
+- Keep `.terraform/`, `*.tfstate*`, and `*.tfplan` out of Git from commit zero.

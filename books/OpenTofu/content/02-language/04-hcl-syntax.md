@@ -121,10 +121,54 @@ OpenTofu 1.13 adds two functions aimed at that wall, still settling toward a sta
 
 `try(expr, fallback)` catches errors in expressions. It also catches typos. Prefer a type constraint over `try` when the failure is a mistake you want to see.
 
+## Hands-on lab: practice `for`, `try`, and `convert` in `tofu console`
+
+You do not need a cloud account to master HCL expressions. Use `tofu console` to evaluate collection transforms and catch type pitfalls interactively.
+
+### Step 1: Create an expression playground (`main.tf`)
+
+```hcl
+locals {
+  services = [
+    { name = "api", port = 8080, public = true },
+    { name = "worker", port = 9090, public = false },
+    { name = "admin", port = 8443, public = true },
+  ]
+
+  # Convert a list of objects into a map keyed by stable service name for for_each
+  service_map = {
+    for svc in local.services : svc.name => svc
+  }
+
+  # Filter only public endpoints
+  public_ports = {
+    for name, svc in local.service_map : name => svc.port
+    if svc.public
+  }
+
+  # Group service names by visibility using ellipsis (...)
+  by_visibility = {
+    for svc in local.services : (svc.public ? "public" : "private") => svc.name...
+  }
+}
+```
+
+### Step 2: Evaluate expressions in `tofu console`
+
+```bash
+mkdir -p ~/tofu-labs/04-hcl-syntax && cd ~/tofu-labs/04-hcl-syntax
+echo 'local.service_map["api"].port' | tofu console
+echo 'local.public_ports' | tofu console
+echo 'local.by_visibility' | tofu console
+echo 'try(local.service_map["missing"].port, 443)' | tofu console
+echo 'convert(jsondecode("{\"replicas\": \"3\"}"), object({ replicas = number }))' | tofu console
+```
+
+Observe how `service_map` gives stable map keys (safe for `for_each`), `by_visibility` groups multiple values per key with `...`, and `convert()` turns a JSON string `"3"` into a typed `number`.
+
 ## Summary
 
-- Blocks have a type, labels, and arguments. Names of files do not change that
-- Unquoted references are values. Quoted references are strings
-- `for` builds collections. `dynamic` builds nested blocks. Stable keys keep state stable
-- `null` unsets an optional argument. Unknown values cannot size `count`
-- 1.13's `convert` and `assumenotnull` are hints to the planner, checked again at apply
+- Blocks have a type, labels, and arguments; filenames are purely for human readability.
+- Unquoted references evaluate to values; quoted references are literal strings.
+- `for` expressions reshape lists into stable-key maps for `for_each`; `dynamic` generates repeated nested blocks only when repetition is data-driven.
+- `null` omits optional arguments; unknown values cannot size `count` or `for_each` keys without OpenTofu 1.13's `convert` / `assume...` hints.

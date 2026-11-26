@@ -6,6 +6,8 @@ title: 'Modules: Building Reusable Infrastructure Components'
 
 A module is a directory of configuration that can be called with inputs and returns outputs. The root module is the one you apply. Everything else is a child. This chapter is how to draw that line so a module stays reusable without becoming a second programming language.
 
+![OpenTofu root module and child module composition showing the root owning backend and providers while passing explicit inputs and wiring outputs between network, database, and service child modules.](../../images/diagram-opentofu-module-tree.svg)
+
 ## Learning goals
 
 - Call a local child module and read its outputs
@@ -127,10 +129,90 @@ Versioned releases apply to modules other teams call. Tag semver. A changelog sa
 
 **Defaults that create cost.** A default of `true` on "create a NAT gateway per zone" surprises a caller in a lab account. Defaults should be the safe, small choice. Production opts in.
 
+## Hands-on lab: compose a reusable child module with `for_each`
+
+In this lab you will create a reusable child module (`modules/service_id`) and stamp out three isolated service identities from a root module using `for_each`.
+
+### Step 1: Create the child module (`modules/service_id/`)
+
+```hcl
+# modules/service_id/variables.tf
+variable "service_name" {
+  type = string
+}
+
+variable "word_count" {
+  type    = number
+  default = 2
+}
+```
+
+```hcl
+# modules/service_id/main.tf
+resource "random_pet" "this" {
+  length = var.word_count
+  prefix = var.service_name
+}
+
+resource "random_id" "suffix" {
+  byte_length = 2
+}
+```
+
+```hcl
+# modules/service_id/outputs.tf
+output "fqdn" {
+  description = "Stable generated internal hostname for the service."
+  value       = "${random_pet.this.id}-${random_id.suffix.hex}.svc.local"
+}
+```
+
+### Step 2: Call the child module from the root (`main.tf`)
+
+```hcl
+terraform {
+  required_version = "~> 1.13.0"
+  required_providers {
+    random = { source = "hashicorp/random", version = "~> 3.7" }
+  }
+}
+
+locals {
+  services = {
+    api     = { words = 2 }
+    billing = { words = 3 }
+    worker  = { words = 2 }
+  }
+}
+
+module "service_ids" {
+  source   = "./modules/service_id"
+  for_each = local.services
+
+  service_name = each.key
+  word_count   = each.value.words
+}
+
+output "service_endpoints" {
+  value = { for k, m in module.service_ids : k => m.fqdn }
+}
+```
+
+### Step 3: Initialize, apply, and inspect module addresses
+
+```bash
+mkdir -p ~/tofu-labs/08-modules/modules/service_id && cd ~/tofu-labs/08-modules
+tofu init
+tofu apply -auto-approve
+tofu state list
+tofu output service_endpoints
+tofu destroy -auto-approve
+```
+
+Observe how `tofu state list` groups every child resource cleanly under `module.service_ids["api"]`, `module.service_ids["billing"]`, and `module.service_ids["worker"]`.
+
 ## Summary
 
-- The root owns the backend and the state. Children own a reusable graph
-- Inputs and outputs are the API. Resource addresses are not
-- Pin registry versions and git refs. A branch is not a pin
-- Compose a few modules at the root. Do not build a framework
-- A module that looks up its own dependencies hides the thing the plan should show
+- Root modules own state, backends, and provider configs; child modules own cohesive, reusable resource graphs.
+- Inputs and outputs are the module's public contract — never reach into internal child resource addresses.
+- Pin registry versions and Git tags/commits (never floating branches), and compose shallow module trees at the root.

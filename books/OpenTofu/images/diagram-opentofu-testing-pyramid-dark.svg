@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 330" role="img" aria-label="OpenTofu testing and policy pyramid from fast static checks tofu fmt and validate, to mocked tofu test unit runs, to OPA and Conftest plan JSON policy gates, to ephemeral apply integration tests" color-scheme="dark">
+<rect width="820" height="330" fill="#11161d"/>
+<text x="410" y="28" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="16" font-weight="700" fill="#e6edf5">OpenTofu Validation, Testing &amp; Policy Layers</text>
+<rect x="210" y="52" width="400" height="50" rx="8" fill="#1a2330" stroke="#ff7b6b" stroke-width="2"/>
+<text x="410" y="74" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#e6edf5">4. Ephemeral Apply Tests (tofu test command = apply)</text>
+<text x="410" y="92" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">real cloud sandbox, IAM &amp; API validation (minutes)</text>
+<rect x="150" y="114" width="520" height="50" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="410" y="136" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#e6edf5">3. Plan Policy &amp; Security Scans (OPA / Conftest + Trivy / Checkov)</text>
+<text x="410" y="154" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">evaluates plan.json against org Rego guardrails (seconds)</text>
+<rect x="90" y="176" width="640" height="50" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="410" y="198" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#e6edf5">2. Unit &amp; Contract Tests (tofu test + mock_provider / override_data)</text>
+<text x="410" y="216" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">verifies locals, naming, outputs, expect_failures with zero creds</text>
+<rect x="30" y="238" width="760" height="50" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="410" y="260" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#e6edf5">1. Static Hygiene (tofu fmt -check + tofu init -backend=false + tofu validate)</text>
+<text x="410" y="278" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">instant syntax, reference, and type checks on every commit</text>
+<text x="410" y="314" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" fill="#9fb0c3">run cheapest checks on every commit; reserve cloud apply tests for contract changes</text>
+</svg>

@@ -6,6 +6,8 @@ title: CI/CD Integration, GitOps, and Automation Workflows
 
 The production habit is: a commit produces a plan, a human approves the plan, and `tofu apply` runs that plan file. This chapter is that pipeline on GitHub Actions, the same shape on other CI systems, and what GitOps does and does not mean for OpenTofu.
 
+![Production OpenTofu CI/CD pipeline showing pull request fmt, validate, test, plan, OPA/Trivy gates, human approval, and protected main-branch apply using OIDC short-lived roles.](../../images/diagram-opentofu-gitops-pipeline.svg)
+
 ## Learning goals
 
 - Split plan and apply so the applied plan is the reviewed plan
@@ -118,11 +120,37 @@ What actually speeds a large root:
 
 State locking already serialises applies of one root. Do not also serialise unrelated roots. They have different locks. Parallel pipelines across roots are safe. Parallel pipelines against one state are the lock doing its job: the second waits or fails.
 
+## Hands-on lab: script an automated destroy-gate check on a saved plan
+
+In CI, never rely solely on humans scrolling past a `-` symbol in a 400-line plan log. Inspect the JSON representation of `tfplan` programmatically and fail the job automatically whenever a plan proposes deletions without an explicit override:
+
+```bash
+# Inside any initialized OpenTofu root:
+tofu plan -out=tfplan -no-color
+tofu show -json tfplan > plan.json
+
+python3 - << 'EOF'
+import json, os, sys
+
+with open("plan.json", encoding="utf-8") as fh:
+    plan = json.load(fh)
+
+destroys = [
+    rc["address"]
+    for rc in plan.get("resource_changes", [])
+    if "delete" in rc.get("change", {}).get("actions", [])
+]
+
+if destroys and os.environ.get("ALLOW_DESTROY") != "true":
+    print("BLOCKED: plan proposes destroying resources:", ", ".join(destroys))
+    sys.exit(1)
+print(f"Gate passed ({len(destroys)} destroy actions).")
+EOF
+```
+
 ## Summary
 
-- Pull requests plan. The protected branch applies the plan it just created
-- Pin OpenTofu to 1.13.2 in the workflow. Assume a role. Do not store a cloud key
-- GitLab, Jenkins, and Azure DevOps use the same stages
-- Argo CD and Flux reconcile Kubernetes. A pipeline or a tofu controller reconciles OpenTofu
-- Approval sits between plan and apply. A destroy is a louder approval
-- Speed comes from smaller roots and fewer false edges, not from a larger parallelism number
+- Pull requests run static checks, `tofu test`, `tofu plan`, and OPA/Trivy gates; only the protected `main` branch runs `tofu apply` behind a human approval gate.
+- Pin OpenTofu to `1.13.2` and authenticate with short-lived OIDC roles — zero static cloud keys.
+- Argo CD and Flux reconcile Kubernetes workloads; a CI pipeline or `tofu-controller` reconciles OpenTofu.
+- Scale plan speed by splitting large roots and removing coarse module-level `depends_on` edges rather than cranking `-parallelism`.

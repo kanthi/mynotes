@@ -102,10 +102,48 @@ Account-level tools that only scan and suggest imports are fine as a map. They a
 
 When the legacy object cannot be imported because the provider has no import for that type, you are stuck with a one-time recreation or with leaving it unmanaged. Recreate only when you can afford the replacement. Write that down. A provisioner is not the bridge across a missing import.
 
+## Hands-on lab: import an existing object and generate HCL with `-generate-config-out`
+
+You can practice the declarative `import` workflow locally using the `hashicorp/random` provider's `random_pet` resource (whose import ID is simply the pet string itself).
+
+### Step 1: Declare only the `import` block (`main.tf`)
+
+```hcl
+terraform {
+  required_version = "~> 1.13.0"
+  required_providers {
+    random = { source = "hashicorp/random", version = "~> 3.7" }
+  }
+}
+
+import {
+  to = random_pet.legacy_service
+  id = "legacy-blue-otter"
+}
+```
+
+### Step 2: Generate configuration and inspect the plan
+
+```bash
+mkdir -p ~/tofu-labs/10-import && cd ~/tofu-labs/10-import
+tofu init
+tofu plan -generate-config-out=generated.tf
+cat generated.tf
+```
+
+Review `generated.tf`, trim any noisy defaults you do not need, then apply the import and verify that the next plan is completely empty:
+
+```bash
+tofu apply -auto-approve
+tofu plan   # Expect: No changes. Your infrastructure matches the configuration.
+```
+
+### Step 3: Clean up
+
+Remove the `import` block (now that state owns `random_pet.legacy_service`), verify `tofu plan` is still empty, then run `tofu destroy -auto-approve`.
+
 ## Summary
 
-- Provisioners run and forget. Resource arguments are corrected on the next plan
-- OpenTofu 1.13's file and remote-exec provisioners do not speak WinRM
-- If a script remains, it is idempotent, it fails loudly, and it has a removal date
-- Import with a reviewed `import` block, then edit configuration until the plan is empty
-- Generated HCL is a draft. Migrate one group at a time, and do not share ownership with the console
+- Provisioners run and forget; resource arguments are reconciled on every plan. OpenTofu 1.13 removes WinRM from `file` and `remote-exec`.
+- Use reviewed `import` blocks plus `tofu plan -generate-config-out=generated.tf`, trim the generated HCL, and verify an empty follow-up plan before removing the `import` block.
+- Migrate legacy estates one cohesive group at a time and never share write ownership with manual console edits.

@@ -6,6 +6,8 @@ title: Ephemeral Values and Write-Only Attributes
 
 Chapter 12 said it plainly: assume state is a secret store. `sensitive = true` hides a value from the terminal, and state encryption protects the file, but the secret is still *in* the file. OpenTofu 1.11 added a third option. An **ephemeral** value exists only for the duration of one `tofu` command and is never written to state or to a saved plan. This chapter covers the whole family on the pinned OpenTofu 1.13.2, and the rules that make it safe.
 
+![OpenTofu ephemeral value flow showing an ephemeral source evaluated in memory and passed to a provider or write-only attribute while state and plan store null and only the version trigger.](../../images/diagram-opentofu-ephemeral-flow.svg)
+
 ## Learning goals
 
 - Tell apart sensitive, encrypted and ephemeral values, and know when you need each
@@ -162,11 +164,39 @@ The official [ephemerality usage example](https://opentofu.org/docs/language/eph
 - Audit existing modules for `random_password` and similar resources whose result is stored in state, and for secrets passed through ordinary variables. Those are the migration candidates.
 - Remember the companion version argument in reviews: a pull request that changes a secret source without bumping it does nothing.
 
-## Practice
+## Hands-on lab: verify ephemeral boundary enforcement locally
 
-1. Take a module that passes a database password through a normal `sensitive` variable to a normal argument. List each place the password is stored today (state, plan files, CI artefacts).
-2. Rewrite it with an ephemeral variable and the provider's write-only argument, and add a version variable. Note which stored places disappear.
-3. Try to expose the password as a root output and read the error. Then expose it from a child module with `ephemeral = true` and consume it in a provider block.
+Test OpenTofu's compile-time ephemerality guard locally without any cloud credentials:
+
+```hcl
+# main.tf
+terraform {
+  required_version = "~> 1.13.0"
+}
+
+variable "api_token" {
+  type      = string
+  ephemeral = true
+  sensitive = true
+}
+
+locals {
+  # Automatically inherits ephemerality
+  auth_header = "Bearer ${var.api_token}"
+}
+
+# Uncommenting this block triggers a plan-time error because root outputs persist in state:
+# output "leaked_header" {
+#   value = local.auth_header
+# }
+```
+
+```bash
+mkdir -p ~/tofu-labs/12a-ephemeral && cd ~/tofu-labs/12a-ephemeral
+TF_VAR_api_token="ephemeral-demo-token" tofu validate
+```
+
+Uncomment `output "leaked_header"` and run `tofu validate` again to observe OpenTofu rejecting any attempt to leak an ephemeral value into persisted state.
 
 ## Recall card
 

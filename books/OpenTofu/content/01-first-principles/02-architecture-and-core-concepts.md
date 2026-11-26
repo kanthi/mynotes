@@ -6,6 +6,8 @@ title: Architecture and Core Concepts
 
 Six words carry the rest of the book: configuration, plan, state, provider, resource, data source. This chapter defines them before any cloud account appears.
 
+![OpenTofu core execution architecture showing HCL configuration files loaded by tofu core, state backend and lock, gRPC provider plugins, and target APIs.](../../images/diagram-opentofu-architecture.svg)
+
 ## Learning goals
 
 - Separate what you write from what `tofu` does
@@ -70,13 +72,15 @@ Data sources land in state too, as a cache of the last read. They are not a seco
 
 ## Summary
 
-- You declare the end state. OpenTofu computes the API calls
-- Init fetches plugins. Plan diffs. Apply changes. Destroy deletes what state tracks
-- Providers speak APIs. Resources are the objects. State remembers their ids
-- A data source reads. It does not own the object
-- A second apply is empty only when the world still matches the configuration and the state
+- You declare desired end state in HCL; OpenTofu builds the dependency graph and asks provider plugins to converge live reality.
+- `tofu init` fetches plugins and writes `.terraform.lock.hcl`; `tofu plan` refreshes and diffs; `tofu apply` mutates and updates state; `tofu destroy` deletes tracked objects in reverse order.
+- Resources own remote objects; data sources only read them; state remembers provider IDs and attributes (including sensitive ones).
 
-## A configuration that is only these ideas
+## Hands-on lab: observe plan, apply, idempotency, and replacement locally
+
+This lab exercises the entire OpenTofu execution model on your machine using `hashicorp/random` — no cloud account required.
+
+### Step 1: Create the configuration (`main.tf`)
 
 ```hcl
 terraform {
@@ -85,18 +89,58 @@ terraform {
   required_providers {
     random = {
       source  = "hashicorp/random"
-      version = "~> 3.6"
+      version = "~> 3.7"
     }
   }
 }
 
-resource "random_pet" "service" {
-  length = 2
+resource "random_id" "cluster" {
+  byte_length = 4
 }
 
-output "name" {
-  value = random_pet.service.id
+resource "random_pet" "service" {
+  length = 2
+  # Referencing random_id.cluster.hex creates an implicit dependency edge
+  keepers = {
+    cluster_id = random_id.cluster.hex
+  }
+}
+
+output "cluster_hex" {
+  description = "Short hexadecimal cluster identifier."
+  value       = random_id.cluster.hex
+}
+
+output "service_name" {
+  description = "Human-readable service name tied to the cluster ID."
+  value       = "${random_pet.service.id}-${random_id.cluster.hex}"
 }
 ```
 
-`tofu init`, `tofu plan`, and `tofu apply` against that file are the whole execution model with no account attached.
+### Step 2: Initialize, save a plan, and apply it
+
+```bash
+mkdir -p ~/tofu-labs/02-architecture && cd ~/tofu-labs/02-architecture
+tofu init
+tofu plan -out=tfplan
+tofu apply tfplan
+tofu output
+```
+
+Notice that `random_id.cluster` is created before `random_pet.service` because `keepers` references `random_id.cluster.hex`.
+
+### Step 3: Verify idempotency and inspect state
+
+```bash
+tofu plan                    # Expect: No changes. Your infrastructure matches the configuration.
+tofu state list
+tofu state show random_pet.service
+```
+
+Now change `byte_length = 4` to `byte_length = 6` in `main.tf` and run `tofu plan`: observe `-/+` replacement propagating from `random_id.cluster` down to `random_pet.service` via `keepers`.
+
+### Step 4: Clean up
+
+```bash
+tofu destroy -auto-approve
+```

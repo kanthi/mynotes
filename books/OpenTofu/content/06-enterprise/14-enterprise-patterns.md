@@ -105,11 +105,33 @@ Three patterns cover most estates this book is willing to call production. They 
 
 What all three refuse: a single state for every environment, a shared admin key, an apply from a laptop as the normal path, and an upgrade with no plan attached.
 
+## Concrete governance artifacts: `CODEOWNERS` and upgrade checklist
+
+```text
+# .github/CODEOWNERS
+/modules/              @acme/platform-team
+/policy/               @acme/security-team @acme/platform-team
+/roots/network-*/      @acme/network-team
+/roots/billing-prod/   @acme/billing-leads @acme/platform-team
+```
+
+### Safe version-bump runbook (one axis per PR)
+
+```bash
+# PR 1: OpenTofu binary bump only (e.g., 1.13.1 -> 1.13.2)
+mise use opentofu@1.13.2
+tofu init
+tofu plan -detailed-exitcode   # Expect exit code 0 (empty plan)
+
+# PR 2: Provider minor/patch bump only (separate commit)
+tofu init -upgrade
+git diff .terraform.lock.hcl
+tofu plan -detailed-exitcode   # Inspect every diff before merging
+```
+
 ## Summary
 
-- Split roots by credential and blast radius, including on-premises sites
-- Teams own roots. A platform team owns shared modules and policy
-- Dev, staging, and prod are separate states. Promotion moves a module pin
-- Upgrade OpenTofu and providers in separate commits, on a supported series
-- Log at info first. Trace is a reproduction tool, and it leaks values
-- A production pattern has a locked backend, a role per root, and a plan in the pipeline
+- Split roots by credential and blast radius, including on-premises sites.
+- Application teams own their roots; platform teams own versioned modules and Rego policy.
+- Separate dev, staging, and prod into independent states and promote by advancing a pinned module version.
+- Upgrade OpenTofu, providers, and modules in separate commits with verified empty or reviewed plans.

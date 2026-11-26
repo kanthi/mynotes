@@ -143,11 +143,35 @@ Commit `.terraform.lock.hcl`. A pipeline that runs `tofu init -upgrade` on every
 
 Provider major versions are allowed to change arguments and to force resource replacement. Schedule them. The OpenTofu pin and the provider pin move in separate commits so a bad plan has one cause.
 
+## Hands-on lab: lock multi-platform provider checksums locally
+
+When developers run macOS ARM64 laptops and CI runs Linux AMD64 containers, lock both platforms into `.terraform.lock.hcl` in one command:
+
+```bash
+mkdir -p ~/tofu-labs/06-providers && cd ~/tofu-labs/06-providers
+cat << 'EOF' > versions.tf
+terraform {
+  required_version = "~> 1.13.0"
+  required_providers {
+    random = { source = "hashicorp/random", version = "~> 3.7" }
+  }
+}
+EOF
+
+tofu init
+tofu providers lock \
+  -platform=linux_amd64 \
+  -platform=linux_arm64 \
+  -platform=darwin_arm64
+
+tofu providers
+grep -E 'provider |version |h1:' .terraform.lock.hcl
+```
+
+Confirm `.terraform.lock.hcl` now records checksums for both Linux and macOS so CI `tofu init` never fails on missing platform hashes.
+
 ## Summary
 
-- Providers are plugins. Credentials come from the environment, not from the `.tf` file
-- Required, optional, and computed describe who is allowed to set an argument
-- AWS, Azure, and GCP sketches share a shape: explicit name, no embedded secret, owned by this state
-- Data sources read objects this state does not own
-- Aliases are extra configurations you pass into modules on purpose
-- The lock file is the pin. The constraint is only the allowed range
+- Providers are plugins whose credentials come from the environment or workload identity, never hardcoded in `.tf` files.
+- Data sources read objects owned elsewhere; resources own lifecycle and state.
+- Pass provider aliases explicitly into child modules, and commit a multi-platform `.terraform.lock.hcl`.

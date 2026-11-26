@@ -29,6 +29,19 @@ OpenTofu 1.13 and Terraform 1.17 are different tools that share an ancestor. Pin
 
 ## From first principles to production
 
-You define the end state in HCL. Providers make it true. State remembers the ids. Modules give that definition a boundary other people can call. Tests and policy keep the boundary honest. The pipeline is the only routine way the state is allowed to change.
+You define the end state in HCL. Providers make it true. State remembers the IDs. Modules give that definition a boundary other people can call. Tests and policy keep the boundary honest. The pipeline is the only routine way the state is allowed to change.
+
+## Quick command reference (OpenTofu 1.13.2)
+
+| Goal | Command |
+| :--- | :--- |
+| Format and validate in CI | `tofu fmt -check -recursive && tofu init -backend=false && tofu validate` |
+| Run unit & contract tests | `tofu test` (or `tofu test -filter=tests/mocks.tftest.hcl`) |
+| Save a reviewable plan | `tofu plan -out=tfplan && tofu show -json tfplan > plan.json` |
+| Apply the exact reviewed plan | `tofu apply tfplan` |
+| Force single-resource recreation | `tofu apply -replace=<address>` |
+| Import & generate draft HCL | `tofu plan -generate-config-out=generated.tf` |
+| Pull encrypted/remote state backup | `tofu state pull > backup.tfstate` |
+| Upgrade lock file for multiple OS/arch | `tofu providers lock -platform=linux_amd64 -platform=darwin_arm64` |
 
 That is the whole arc. The next apply should be boring.

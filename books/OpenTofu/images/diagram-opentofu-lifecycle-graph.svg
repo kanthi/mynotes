@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 320" role="img" aria-label="OpenTofu resource replacement lifecycle comparing default destroy-then-create against create_before_destroy and showing prevent_destroy guarding stateful resources" color-scheme="light">
+<rect width="820" height="320" fill="#ffffff"/>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#3b5b85"/></marker></defs>
+<text x="410" y="28" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="16" font-weight="700" fill="#1f2a36">Resource Replacement &amp; Lifecycle Guards</text>
+<rect x="28" y="58" width="366" height="92" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="211" y="82" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="700" fill="#1f2a36">Default Replacement (-/+)</text>
+<rect x="46" y="96" width="144" height="40" rx="6" fill="#ffffff" stroke="#c0392b" stroke-width="1.5"/>
+<text x="118" y="121" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#1f2a36">1. Destroy old</text>
+<rect x="232" y="96" width="144" height="40" rx="6" fill="#ffffff" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="304" y="121" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#1f2a36">2. Create new</text>
+<line x1="190" y1="116" x2="230" y2="116" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<rect x="426" y="58" width="366" height="92" rx="8" fill="#f4f7fb" stroke="#c0392b" stroke-width="2"/>
+<text x="609" y="82" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" font-weight="700" fill="#1f2a36">create_before_destroy = true (+/-)</text>
+<rect x="444" y="96" width="144" height="40" rx="6" fill="#ffffff" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="516" y="121" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#1f2a36">1. Create new</text>
+<rect x="630" y="96" width="144" height="40" rx="6" fill="#ffffff" stroke="#c0392b" stroke-width="1.5"/>
+<text x="702" y="121" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#1f2a36">2. Destroy old</text>
+<line x1="588" y1="116" x2="628" y2="116" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<rect x="28" y="182" width="366" height="80" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="211" y="210" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" font-weight="700" fill="#1f2a36">prevent_destroy = true</text>
+<text x="211" y="232" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#5a6b7d">aborts any plan that would delete a stateful resource</text>
+<rect x="426" y="182" width="366" height="80" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="609" y="210" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" font-weight="700" fill="#1f2a36">ignore_changes = [tags]</text>
+<text x="609" y="232" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#5a6b7d">ignores specific attributes owned by external controllers</text>
+<text x="410" y="296" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" fill="#5a6b7d">use moved blocks for renames and -replace for intentional single-resource recreation</text>
+</svg>

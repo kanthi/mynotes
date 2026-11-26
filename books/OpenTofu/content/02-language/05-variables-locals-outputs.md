@@ -6,6 +6,8 @@ title: Variables, Locals, and Outputs
 
 Variables are the module's arguments. Locals are its private names. Outputs are the only values a parent should read. This chapter is that contract.
 
+![OpenTofu variable precedence and module dataflow from defaults, TF_VAR, tfvars, and CLI flags through var, local, resource, and output.](../../images/diagram-opentofu-hcl-dataflow.svg)
+
 ## Learning goals
 
 - Declare a variable with a type, a default, and a validation
@@ -115,10 +117,87 @@ The same rule applies sideways. Two root modules do not read each other's variab
 
 Document the contract next to the variables: units, whether null is allowed, and what the module will create. A variable named `name` that sometimes is a prefix is how two teams apply two different conventions into one account.
 
+## Hands-on lab: variable precedence, validation, and module contracts
+
+In this lab you will test variable validation, verify precedence between defaults, `TF_VAR_`, `terraform.tfvars`, and `-var`, and wire a parent-child module contract locally.
+
+### Step 1: Create `variables.tf`, `main.tf`, and `outputs.tf`
+
+```hcl
+# variables.tf
+variable "environment" {
+  description = "Deployment tier (dev, staging, or prod)."
+  type        = string
+  default     = "dev"
+
+  validation {
+    condition     = contains(["dev", "staging", "prod"], var.environment)
+    error_message = "environment must be one of: dev, staging, prod."
+  }
+}
+
+variable "pet_length" {
+  description = "Number of words in the generated pet name."
+  type        = number
+  default     = 2
+
+  validation {
+    condition     = var.pet_length >= 1 && var.pet_length <= 4
+    error_message = "pet_length must be between 1 and 4."
+  }
+}
+```
+
+```hcl
+# main.tf
+terraform {
+  required_version = "~> 1.13.0"
+  required_providers {
+    random = { source = "hashicorp/random", version = "~> 3.7" }
+  }
+}
+
+locals {
+  name_prefix = "acme-${var.environment}"
+}
+
+resource "random_pet" "service" {
+  length = var.pet_length
+  prefix = local.name_prefix
+}
+```
+
+```hcl
+# outputs.tf
+output "service_name" {
+  description = "Prefixed service identifier."
+  value       = random_pet.service.id
+}
+```
+
+### Step 2: Test precedence and validation failures
+
+```bash
+mkdir -p ~/tofu-labs/05-vars-locals && cd ~/tofu-labs/05-vars-locals
+tofu init
+
+# 1. Default wins (environment = "dev", pet_length = 2)
+tofu plan
+
+# 2. TF_VAR_ overrides default
+TF_VAR_environment=staging tofu plan
+
+# 3. -var overrides TF_VAR_
+TF_VAR_environment=staging tofu plan -var="environment=prod" -var="pet_length=3"
+
+# 4. Validation rejects invalid input immediately
+tofu plan -var="environment=qa"
+```
+
+Confirm that `-var="environment=qa"` fails at plan time with your custom `error_message`.
+
 ## Summary
 
-- Variables are the inputs, typed and validated. Sensitive only redacts the UI
-- tfvars assign values. The pipeline should name the file it passes
-- Locals name expressions. They are not a back door for inputs
-- Outputs are the only supported way out of a module
-- Parents pass variables and read outputs. They do not reach into child resources
+- Variables are typed, validated module inputs; `sensitive = true` redacts terminal output but does not encrypt state.
+- Precedence flows from defaults → `TF_VAR_*` → `terraform.tfvars` → `*.auto.tfvars` → `-var-file` → `-var`.
+- Locals hold private transformations; outputs are the only supported public interface between modules.

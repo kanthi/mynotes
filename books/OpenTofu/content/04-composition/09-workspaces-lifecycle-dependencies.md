@@ -6,6 +6,8 @@ title: Workspaces, Lifecycle Rules, and Dependencies
 
 These are the controls that change what a plan is allowed to do: which state you are in, whether a resource may be destroyed, and which edges the graph waits for. They are also easy to use as a substitute for a layout you should have drawn in chapter 14.
 
+![OpenTofu resource replacement lifecycle comparing default destroy-then-create against create_before_destroy and showing prevent_destroy and ignore_changes guards.](../../images/diagram-opentofu-lifecycle-graph.svg)
+
 ## Learning goals
 
 - Explain a workspace as a separate state, not a separate configuration
@@ -96,10 +98,66 @@ tofu apply -replace=random_pet.service
 
 Replace when the object is wrong in a way the configuration cannot express: a virtual machine whose user-data ran once and failed, a secret that was issued and must be reissued. Do not replace as a substitute for understanding a drift. If the configuration is wrong, fix the configuration. If the world is wrong and the configuration is right, replace.
 
+## Hands-on lab: test workspaces, `create_before_destroy`, `prevent_destroy`, and `-replace`
+
+In this lab you will exercise isolated workspaces, observe `+/-` create-before-destroy ordering, verify `prevent_destroy` blocking a deletion plan, and force recreation with `-replace`.
+
+### Step 1: Create `main.tf`
+
+```hcl
+terraform {
+  required_version = "~> 1.13.0"
+  required_providers {
+    random = { source = "hashicorp/random", version = "~> 3.7" }
+  }
+}
+
+resource "random_pet" "service" {
+  length = 2
+  prefix = terraform.workspace
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "random_id" "critical_key" {
+  byte_length = 8
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+output "service_name" {
+  value = random_pet.service.id
+}
+```
+
+### Step 2: Exercise workspaces, `-replace`, and `prevent_destroy`
+
+```bash
+mkdir -p ~/tofu-labs/09-lifecycle && cd ~/tofu-labs/09-lifecycle
+tofu init
+tofu workspace new sandbox
+tofu apply -auto-approve
+
+# Force replacement of only random_pet.service (notice +/- create-before-destroy)
+tofu apply -replace=random_pet.service -auto-approve
+
+# Attempt destroy: OpenTofu refuses because critical_key has prevent_destroy = true
+tofu destroy
+```
+
+Remove `prevent_destroy = true` from `main.tf` to clean up cleanly:
+
+```bash
+tofu destroy -auto-approve
+tofu workspace select default && tofu workspace delete sandbox
+```
+
 ## Summary
 
-- A workspace is another state for the same configuration. Select it explicitly
-- Separate roots when accounts, credentials, or blast radius differ
-- `prevent_destroy` and `create_before_destroy` are promises about replacement. `ignore_changes` is a list, not `all`
-- References build the graph. `depends_on` is for edges a reference cannot see
-- `-replace` forces recreation. `-target` is a recovery hatch followed by a full plan
+- A workspace is another state for the same configuration; separate roots whenever accounts, credentials, or blast radius differ.
+- `create_before_destroy` swaps replacement order (`+/-`), `prevent_destroy` blocks accidental deletion, and `ignore_changes` should name specific fields rather than `all`.
+- Implicit attribute references build the DAG; use `-replace` for targeted recreation and `-target` only for recovery followed by a full plan.

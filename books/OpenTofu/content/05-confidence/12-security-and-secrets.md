@@ -98,10 +98,93 @@ State encryption does not remove the need for access logs. It changes what a sto
 | A plan file as a build artifact | The artifact store becomes a second state bucket | Encrypt or delete. Do not keep plans next to unrelated logs |
 | Shared `default` workspace | The production apply runs wherever the CLI last sat | Separate roots, or an explicit `workspace select` that fails closed |
 
+## Concrete IAM & OIDC policy blueprints
+
+### Least-privilege state prefix policy (separate from infrastructure permissions)
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ListOnlyThisStatePrefix",
+      "Effect": "Allow",
+      "Action": ["s3:ListBucket"],
+      "Resource": "arn:aws:s3:::acme-tofu-state-prod",
+      "Condition": {
+        "StringLike": { "s3:prefix": ["roots/billing-prod/*"] }
+      }
+    },
+    {
+      "Sid": "ReadWriteStateAndLockfile",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"],
+      "Resource": [
+        "arn:aws:s3:::acme-tofu-state-prod/roots/billing-prod/terraform.tfstate",
+        "arn:aws:s3:::acme-tofu-state-prod/roots/billing-prod/terraform.tfstate.tflock"
+      ]
+    }
+  ]
+}
+```
+
+### GitHub Actions OIDC trust policy (scoped strictly to the `production` environment)
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::123456789012:oidc-provider/token.actions.githubusercontent.com"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+          "token.actions.githubusercontent.com:sub": "repo:acme/infra:environment:production"
+        }
+      }
+    }
+  ]
+}
+```
+
+## Hands-on lab: verify why `sensitive = true` is not encryption
+
+In this quick local lab you will prove that `sensitive = true` masks CLI output while still writing plaintext into unencrypted state — motivating both client-side state encryption (Chapter 7) and ephemeral values (Chapter 12a).
+
+```hcl
+# main.tf
+terraform {
+  required_version = "~> 1.13.0"
+  required_providers {
+    random = { source = "hashicorp/random", version = "~> 3.7" }
+  }
+}
+
+resource "random_password" "db" {
+  length  = 24
+  special = false
+}
+
+output "db_password" {
+  value     = random_password.db.result
+  sensitive = true
+}
+```
+
+```bash
+mkdir -p ~/tofu-labs/12-security && cd ~/tofu-labs/12-security
+tofu init && tofu apply -auto-approve
+tofu output db_password                  # Prints: (sensitive value)
+grep -A 2 '"result":' terraform.tfstate  # Shows the plaintext password in unencrypted state!
+tofu destroy -auto-approve
+```
+
 ## Summary
 
-- State and plans hold secrets. TLS, server-side encryption, client-side encryption, and IAM are four different controls
-- Credentials come from a role the pipeline assumes. They are not file contents
-- One apply role per root, plus a tight state policy
-- Git, the pipeline, and cloud audit logs together are the audit trail. The CLI is not
-- A leaked key is rotated. It is not merely deleted in the next commit
+- State and plans hold secrets; TLS, server-side encryption, client-side encryption, and scoped backend IAM are four distinct, complementary controls.
+- Authenticate pipelines with short-lived OIDC / workload-identity roles scoped to one root module — never static keys in files.
+- Git history, CI approval logs, backend access logs, and cloud audit logs together form your compliance audit trail.

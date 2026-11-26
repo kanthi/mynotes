@@ -59,13 +59,35 @@ Stay on Terraform when a system you already pay for requires the Terraform binar
 
 Do not run both binaries against the same state. Pick one per state file, pin it in `.terraform-version` or your runtime manager, and review the plan under that pin.
 
+## Hands-on lab: verify binary pin and `.tofu` file precedence
+
+OpenTofu 1.8+ recognizes the `.tofu` file extension for OpenTofu-only features (such as `encryption` or `convert`/`assume...` functions) so a Terraform binary will not attempt to parse them.
+
+```bash
+mkdir -p ~/tofu-labs/01-story && cd ~/tofu-labs/01-story
+tofu version
+
+cat << 'EOF' > main.tofu
+terraform {
+  required_version = "~> 1.13.0"
+}
+
+output "engine" {
+  value = convert("opentofu-1.13", string)
+}
+EOF
+
+tofu init && tofu apply -auto-approve
+tofu output engine
+tofu destroy -auto-approve
+```
+
 ## Summary
 
-- OpenTofu is the MPL fork of Terraform's 1.5-era CLI, hosted by the Linux Foundation
-- The BSL change on 10 August 2023 is why the fork exists
-- Shared language is not shared version numbers. This book pins 1.13.2
-- State encryption is an OpenTofu feature. Sentinel and HCP Terraform are not
-- One state file, one binary
+- OpenTofu is the MPL 2.0 fork of Terraform's 1.5-era CLI, hosted by the Linux Foundation and accepted into the CNCF sandbox.
+- Shared language does not mean shared version numbers; this book pins **1.13.2** (supported until 1 August 2027).
+- Client-side state encryption, `.tofu` files, provider `for_each`, `enabled`, and `convert`/`assume...` are OpenTofu features; Sentinel and HCP Terraform are not.
+- Never run both `tofu` and `terraform` against the same state file.
 
 ## Sources
 

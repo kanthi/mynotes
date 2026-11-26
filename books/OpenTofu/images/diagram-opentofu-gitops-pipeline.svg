@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 310" role="img" aria-label="OpenTofu CI/CD pipeline showing pull request checks with fmt, validate, plan, OPA policy and Trivy scan, human approval gate, and main branch apply using OIDC short-lived credentials" color-scheme="light">
+<rect width="820" height="310" fill="#ffffff"/>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#3b5b85"/></marker></defs>
+<text x="410" y="28" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="16" font-weight="700" fill="#1f2a36">Production OpenTofu CI/CD Pipeline</text>
+<rect x="24" y="72" width="144" height="74" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="96" y="100" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1f2a36">1. Pull Request</text>
+<text x="96" y="120" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">fmt + validate</text>
+<text x="96" y="136" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">tofu test</text>
+<rect x="196" y="72" width="160" height="74" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="276" y="100" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1f2a36">2. Plan + Policy</text>
+<text x="276" y="120" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">tofu plan -out</text>
+<text x="276" y="136" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">OPA + Trivy</text>
+<rect x="384" y="68" width="146" height="82" rx="8" fill="#f4f7fb" stroke="#c0392b" stroke-width="2.2"/>
+<text x="457" y="100" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1f2a36">3. Human Gate</text>
+<text x="457" y="120" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#5a6b7d">review diff &amp;</text>
+<text x="457" y="136" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#5a6b7d">merge to main</text>
+<rect x="558" y="72" width="236" height="74" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="676" y="100" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1f2a36">4. Apply (Protected Env)</text>
+<text x="676" y="120" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">OIDC role -> tofu apply tfplan</text>
+<text x="676" y="136" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#5a6b7d">locked encrypted remote state</text>
+<rect x="196" y="196" width="430" height="54" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="411" y="219" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1f2a36">OIDC Short-Lived Cloud Role (One Role Per Root)</text>
+<text x="411" y="237" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">zero static IAM keys; separate plan and apply trust policies</text>
+<line x1="168" y1="109" x2="194" y2="109" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="356" y1="109" x2="382" y2="109" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="530" y1="109" x2="556" y2="109" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="300" y1="196" x2="276" y2="148" stroke="#3b5b85" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#a)"/>
+<line x1="540" y1="196" x2="620" y2="148" stroke="#3b5b85" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#a)"/>
+<text x="410" y="284" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" fill="#5a6b7d">PRs never apply; protected main branch applies reviewed plan with pinned tofu 1.13.2</text>
+</svg>

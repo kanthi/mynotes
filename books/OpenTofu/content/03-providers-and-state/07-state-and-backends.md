@@ -6,6 +6,8 @@ title: State Management and Backends
 
 State is the memory of object ids. A backend is where that memory lives and how it is locked. This chapter moves the pet example's local file to a design you can hand to a second operator.
 
+![OpenTofu client-side state and plan encryption using AES-GCM with KMS, OpenBao, or PBKDF2 before uploading to a locked, versioned remote backend.](../../images/diagram-opentofu-state-encryption.svg)
+
 ## Learning goals
 
 - Say what a state file stores, including values marked sensitive
@@ -152,11 +154,81 @@ Leave the block in place through one release so every state has applied it, then
 
 Never edit state JSON by hand unless you are following a documented recovery and you have a copy of the previous bytes. The CLI subcommands (`state rm`, `state mv`, `import`, `force-unlock`) exist so the serial number and the checksum stay consistent.
 
+## Hands-on lab: enable client-side AES-GCM state encryption locally
+
+OpenTofu's client-side state encryption works on *any* backend — including a local directory. In this lab you will encrypt `terraform.tfstate` and `tfplan` in-process with PBKDF2 + AES-GCM and verify that the raw state file on disk contains only ciphertext.
+
+### Step 1: Create `main.tf` with enforced client-side encryption
+
+```hcl
+terraform {
+  required_version = "~> 1.13.0"
+  required_providers {
+    random = { source = "hashicorp/random", version = "~> 3.7" }
+  }
+
+  encryption {
+    key_provider "pbkdf2" "lab" {
+      passphrase = var.state_passphrase
+    }
+
+    method "aes_gcm" "lab" {
+      keys = key_provider.pbkdf2.lab
+    }
+
+    state {
+      method   = method.aes_gcm.lab
+      enforced = true
+    }
+
+    plan {
+      method   = method.aes_gcm.lab
+      enforced = true
+    }
+  }
+}
+
+variable "state_passphrase" {
+  description = "Passphrase (minimum 16 characters) for PBKDF2 state encryption."
+  type        = string
+  sensitive   = true
+}
+
+resource "random_pet" "secret_service" {
+  length = 3
+}
+
+output "service" {
+  value = random_pet.secret_service.id
+}
+```
+
+### Step 2: Apply with `TF_VAR_state_passphrase` and inspect the ciphertext
+
+```bash
+mkdir -p ~/tofu-labs/07-state-encryption && cd ~/tofu-labs/07-state-encryption
+export TF_VAR_state_passphrase="correct-horse-battery-staple-lab"
+tofu init
+tofu plan -out=tfplan
+tofu apply tfplan
+```
+
+Now inspect `terraform.tfstate` directly on disk:
+
+```bash
+cat terraform.tfstate
+```
+
+You will see `"meta"`, `"encrypted_data"`, and `"encryption_version"` — **not** the pet name or resource attributes! Trying `TF_VAR_state_passphrase="wrong-passphrase-1234" tofu plan` fails immediately with a decryption error.
+
+### Step 3: Clean up
+
+```bash
+tofu destroy -auto-approve
+```
+
 ## Summary
 
-- State stores ids and attributes, including sensitive ones, in full
-- A remote backend with a lock and versioning is the minimum for two operators
-- Server-side encryption and OpenTofu's client-side encryption solve different problems. Production can use both
-- Remote state consumers depend on outputs only
-- Migrate with a backup, an empty plan, and pipelines paused
-- Unlock only a dead lock. Restore state from a version, do not hand-edit it
+- State stores provider IDs and attributes (including sensitive values) in full.
+- Production requires a locked, versioned remote backend (`use_lockfile = true` on S3 in OpenTofu 1.10+); client-side `encryption { ... enforced = true }` protects state and plan bytes even from storage admins.
+- Migrate backends with a pulled backup, paused pipelines, and an empty verification plan; never hand-edit state JSON.
