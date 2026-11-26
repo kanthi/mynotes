@@ -101,3 +101,25 @@ Orthogonal/unitary transforms preserve $\|\cdot\|_2$ and have $\kappa_2=1$. Hous
 ## Summary
 
 This part upgrades linear algebra from row reduction to spectral geometry and stable computation—the language of modern data and scientific computing.
+## SVD Geometry Diagram & Power-Iteration Singular Value Lab
+
+![Singular Value Decomposition A = U Sigma V^T geometric action on vectors](../../images/diagram-maths-svd-decomposition.svg)
+
+Estimate the dominant singular value $\sigma_1$ of a matrix $A$ using pure-Python power iteration on $A^T A$:
+
+```python
+import math
+
+A = [[3.0, 1.0], [1.0, 3.0]]
+v = [1.0, 0.0]
+for _ in range(30):
+    # w = A^T (A v)
+    av = [sum(A[i][j] * v[j] for j in range(2)) for i in range(2)]
+    w = [sum(A[j][i] * av[j] for j in range(2)) for i in range(2)]
+    norm = math.hypot(*w)
+    v = [x / norm for x in w]
+
+av = [sum(A[i][j] * v[j] for j in range(2)) for i in range(2)]
+sigma1 = math.hypot(*av)
+print(f"Dominant singular value sigma_1 = {sigma1:.6f} (exact: 4.0)")
+```

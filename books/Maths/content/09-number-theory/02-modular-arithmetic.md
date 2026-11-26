@@ -101,3 +101,21 @@ Unique solution: `x ≡ 23 (mod 105)`.
 ## Summary
 
 Modular arithmetic lets you perform large integer computation safely and quickly. Together with Euclid and CRT, it forms a core algorithmic toolkit.
+## Modular Inverse Diagram & Extended Euclidean Lab
+
+![Modular arithmetic ring and Extended Euclidean Algorithm computing modular inverse](../../images/diagram-maths-modular-clock-inverse.svg)
+
+Compute Bezout coefficients $(x, y)$ such that $ax + ny = \gcd(a, n)$ and derive the modular inverse $a^{-1} mod n$:
+
+```python
+def egcd(a: int, b: int) -> tuple[int, int, int]:
+    if b == 0:
+        return a, 1, 0
+    g, x1, y1 = egcd(b, a % b)
+    return g, y1, x1 - (a // b) * y1
+
+g, x, _ = egcd(17, 3120)
+inv = x % 3120
+assert g == 1 and (17 * inv) % 3120 == 1
+print(f"17^-1 mod 3120 = {inv} (RSA private exponent demo)")
+```

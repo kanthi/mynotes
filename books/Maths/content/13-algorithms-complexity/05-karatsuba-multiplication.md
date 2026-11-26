@@ -68,3 +68,26 @@ Teach the three-product identity first; implement with a clear base case; only t
 
 - Karatsuba & Ofman (1962), multiplication algorithm
 - Modern big-integer library design notes (GMP threshold tables)
+## Divide-and-Conquer Diagram & Recursive Karatsuba Lab
+
+![Karatsuba divide-and-conquer multiplication reducing 4 products to 3](../../images/diagram-maths-karatsuba-recursion.svg)
+
+Implement recursive Karatsuba multiplication in Python and verify exactness on 256-bit integers:
+
+```python
+def karatsuba(x: int, y: int) -> int:
+    if x < 10 or y < 10:
+        return x * y
+    m = max(x.bit_length(), y.bit_length()) // 2
+    high_x, low_x = x >> m, x & ((1 << m) - 1)
+    high_y, low_y = y >> m, y & ((1 << m) - 1)
+
+    z0 = karatsuba(low_x, low_y)
+    z2 = karatsuba(high_x, high_y)
+    z1 = karatsuba(low_x + high_x, low_y + high_y) - z2 - z0
+    return (z2 << (2 * m)) + (z1 << m) + z0
+
+a, b = 10**40 + 73, 10**40 + 91
+assert karatsuba(a, b) == a * b
+print("Karatsuba exact match verified!")
+```

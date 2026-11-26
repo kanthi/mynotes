@@ -72,3 +72,37 @@ Size from $(n,p)$ with the standard formulae, store $m$ and $k$ with the filter,
 
 - Bloom, "Space/Time Trade-offs in Hash Coding with Allowable Errors" (1970)
 - Broder & Mitzenmacher survey on network applications of Bloom filters
+## Bit-Array Architecture Diagram & False-Positive Rate Lab
+
+![Bloom filter k independent hash functions setting bits in an m-bit array](../../images/diagram-maths-bloom-filter-bits.svg)
+
+Simulate a compact Bloom filter in pure Python and compare the empirical false-positive rate against the theoretical formula $(1 - e^{-kn/m})^k$:
+
+```python
+import hashlib, math
+
+class BloomFilter:
+    def __init__(self, m: int, k: int) -> None:
+        self.m, self.k = m, k
+        self.bits = bytearray(m)
+
+    def _hashes(self, item: str):
+        for i in range(self.k):
+            digest = hashlib.sha256(f"{i}:{item}".encode()).digest()
+            yield int.from_bytes(digest[:8], "big") % self.m
+
+    def add(self, item: str) -> None:
+        for idx in self._hashes(item):
+            self.bits[idx] = 1
+
+    def __contains__(self, item: str) -> bool:
+        return all(self.bits[idx] for idx in self._hashes(item))
+
+bf = BloomFilter(m=2048, k=4)
+for i in range(250):
+    bf.add(f"key-{i}")
+
+fp = sum(1 for i in range(250, 1250) if f"key-{i}" in bf) / 1000
+theoretical = (1 - math.exp(-4 * 250 / 2048)) ** 4
+print(f"Empirical FP={fp:.4f} | Theoretical FP={theoretical:.4f}")
+```

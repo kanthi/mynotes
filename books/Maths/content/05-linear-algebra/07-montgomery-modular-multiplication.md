@@ -42,3 +42,28 @@ Learn it to read crypto code; call audited libraries for production.
 ## Sources
 
 - Montgomery 1985; HAC §14.3
+## Montgomery Domain Diagram & Python REDC Verification Lab
+
+![Montgomery modular multiplication domain conversion avoiding expensive division](../../images/diagram-maths-montgomery-domain.svg)
+
+Verify Montgomery reduction (`REDC`) against standard modular multiplication in pure Python:
+
+```python
+def montgomery_mul(a: int, b: int, n: int, r_bits: int) -> int:
+    r = 1 << r_bits
+    mask = r - 1
+    n_prime = (-pow(n, -1, r)) & mask
+
+    def redc(t: int) -> int:
+        m = ((t & mask) * n_prime) & mask
+        u = (t + m * n) >> r_bits
+        return u - n if u >= n else u
+
+    r2 = (r * r) % n
+    a_m = redc(a * r2)
+    b_m = redc(b * r2)
+    return redc(redc(a_m * b_m))
+
+assert montgomery_mul(12345, 67890, 1000003, 24) == (12345 * 67890) % 1000003
+print("Montgomery REDC verified exact match!")
+```

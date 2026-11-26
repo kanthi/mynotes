@@ -75,3 +75,24 @@ For pairwise-coprime moduli, compute $M$, each $M_i$, each inverse, sum, reduce 
 
 - Ireland & Rosen, *A Classical Introduction to Modern Number Theory* (CRT chapter)
 - Any abstract algebra text: $\mathbb{Z}/M\mathbb{Z} \cong \prod \mathbb{Z}/m_i\mathbb{Z}$
+## CRT Decomposition Diagram & Python Reconstruction Lab
+
+![Chinese Remainder Theorem splitting modulo pq into parallel mod p and mod q computations](../../images/diagram-maths-crt-reconstruction.svg)
+
+Reconstruct a unique integer from pairwise coprime moduli using Python's built-in modular inverse `pow(m, -1, mod)`:
+
+```python
+def crt(remainders: list[int], moduli: list[int]) -> int:
+    prod = 1
+    for m in moduli:
+        prod *= m
+    total = 0
+    for r, m in zip(remainders, moduli):
+        p = prod // m
+        total += r * p * pow(p, -1, m)
+    return total % prod
+
+x = crt([2, 3, 2], [3, 5, 7])
+assert x == 23 and x % 3 == 2 and x % 5 == 3 and x % 7 == 2
+print("CRT solution:", x)
+```
