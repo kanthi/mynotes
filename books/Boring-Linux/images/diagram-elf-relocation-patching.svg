@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 235" role="img" aria-label="ELF relocation patching flow combining r_offset, r_info symbol/type, and r_addend" style="color-scheme:light">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#3b5b85"/></marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#c0392b"/></marker>
+  </defs>
+  <rect width="820" height="235" fill="#ffffff" rx="8"/>
+  <text x="410.0" y="30" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#1f2a36">ELF64 Relocation Application: Patching Target Bytes from Elf64_Rela</text>
+  <rect x="25" y="70" width="185" height="105" rx="8" fill="#f4f7fb" stroke="#c0392b" stroke-width="2"/>
+  <text x="117.5" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Elf64_Rela Entry</text>
+  <text x="117.5" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">r_offset: target addr</text>
+  <text x="117.5" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">r_info: (SYM&lt;&lt;32)|TYPE</text>
+  <text x="117.5" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">r_addend: signed bias</text>
+  <rect x="245" y="70" width="170" height="105" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="330.0" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Symbol Lookup</text>
+  <text x="330.0" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">S = symtab[SYM].value</text>
+  <text x="330.0" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">P = place (r_offset)</text>
+  <text x="330.0" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">A = r_addend</text>
+  <rect x="450" y="70" width="165" height="105" rx="8" fill="#f4f7fb" stroke="#c0392b" stroke-width="2"/>
+  <text x="532.5" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Formula Eval</text>
+  <text x="532.5" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">PC32: S + A - P</text>
+  <text x="532.5" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">64:   S + A</text>
+  <text x="532.5" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">RELATIVE: B + A</text>
+  <rect x="650" y="70" width="145" height="105" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="722.5" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Patched Image</text>
+  <text x="722.5" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Writes 32/64-bit</text>
+  <text x="722.5" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">resolved address</text>
+  <text x="722.5" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">at target r_offset</text>
+  <line x1="210" y1="122" x2="245" y2="122" stroke="#3b5b85" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="227" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#3b5b85"></text>
+  <line x1="415" y1="122" x2="450" y2="122" stroke="#c0392b" stroke-width="2" marker-end="url(#arrow-accent)"/>
+  <text x="432" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#c0392b"></text>
+  <line x1="615" y1="122" x2="650" y2="122" stroke="#3b5b85" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="632" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#3b5b85"></text>
+</svg>

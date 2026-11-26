@@ -298,6 +298,35 @@ book:
     - content/39-networking-in-linux/14-virtual-networking-overlays-containers-and-tc-ebpf.md
     - content/39-networking-in-linux/15-network-troubleshooting-packet-forensics-and-observability.md
     - content/39-networking-in-linux/16-capstone-hands-on-enterprise-linux-network-lab.md
+  - part: 'ELF: A Complete Technical Reference for Systems Programmers'
+    contents:
+    - content/41-elf-a-complete-technical-reference-for-systems-programmers/00-introduction.md
+    - content/41-elf-a-complete-technical-reference-for-systems-programmers/01-origins-and-design.md
+    - content/41-elf-a-complete-technical-reference-for-systems-programmers/02-elf-at-a-glance.md
+    - content/41-elf-a-complete-technical-reference-for-systems-programmers/03-the-elf-header.md
+    - content/41-elf-a-complete-technical-reference-for-systems-programmers/04-sections-and-section-header-table.md
+    - content/41-elf-a-complete-technical-reference-for-systems-programmers/05-segments-and-program-header-table.md
+    - content/41-elf-a-complete-technical-reference-for-systems-programmers/06-symbol-tables.md
+    - content/41-elf-a-complete-technical-reference-for-systems-programmers/07-relocations.md
+    - content/41-elf-a-complete-technical-reference-for-systems-programmers/08-string-tables-and-names.md
+    - content/41-elf-a-complete-technical-reference-for-systems-programmers/09-dynamic-section-and-dynamic-linking.md
+    - content/41-elf-a-complete-technical-reference-for-systems-programmers/10-hash-tables-and-symbol-lookup.md
+    - content/41-elf-a-complete-technical-reference-for-systems-programmers/11-plt-got-and-lazy-binding.md
+    - content/41-elf-a-complete-technical-reference-for-systems-programmers/12-position-independent-code-and-pie.md
+    - content/41-elf-a-complete-technical-reference-for-systems-programmers/13-thread-local-storage.md
+    - content/41-elf-a-complete-technical-reference-for-systems-programmers/14-constructors-destructors-and-initialization.md
+    - content/41-elf-a-complete-technical-reference-for-systems-programmers/15-linker-scripts-and-custom-sections.md
+    - content/41-elf-a-complete-technical-reference-for-systems-programmers/16-from-source-to-binary-lifecycle.md
+    - content/41-elf-a-complete-technical-reference-for-systems-programmers/17-the-dynamic-linker-and-loader.md
+    - content/41-elf-a-complete-technical-reference-for-systems-programmers/18-executing-an-elf-binary.md
+    - content/41-elf-a-complete-technical-reference-for-systems-programmers/19-notes-and-metadata.md
+    - content/41-elf-a-complete-technical-reference-for-systems-programmers/20-gnu-and-linux-extensions.md
+    - content/41-elf-a-complete-technical-reference-for-systems-programmers/21-architecture-specific-x86-64.md
+    - content/41-elf-a-complete-technical-reference-for-systems-programmers/22-architecture-specific-aarch64.md
+    - content/41-elf-a-complete-technical-reference-for-systems-programmers/23-tools-and-practical-analysis.md
+    - content/41-elf-a-complete-technical-reference-for-systems-programmers/24-an-elf-parser-and-inspector.md
+    - content/41-elf-a-complete-technical-reference-for-systems-programmers/25-elf-security.md
+    - content/41-elf-a-complete-technical-reference-for-systems-programmers/26-advanced-topics.md
 format:
   html:
     theme: auto

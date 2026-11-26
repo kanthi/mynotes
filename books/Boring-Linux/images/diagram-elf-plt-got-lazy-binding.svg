@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 245" role="img" aria-label="ELF PLT and GOT lazy binding first-call resolution versus subsequent direct jump" style="color-scheme:light">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#3b5b85"/></marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#c0392b"/></marker>
+  </defs>
+  <rect width="820" height="245" fill="#ffffff" rx="8"/>
+  <text x="410.0" y="30" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#1f2a36">PLT &amp; GOT Lazy Binding: First Call via ld.so vs. Direct Subsequent Calls</text>
+  <rect x="25" y="70" width="155" height="100" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="102.5" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Caller (.text)</text>
+  <text x="102.5" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">call printf@plt</text>
+  <text x="102.5" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">PC-relative jump</text>
+  <text x="102.5" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">into .plt stub</text>
+  <rect x="215" y="70" width="170" height="100" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="300.0" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">PLT Stub (.plt)</text>
+  <text x="300.0" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">jmp *GOT[printf]</text>
+  <text x="300.0" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">1st call falls back</text>
+  <text x="300.0" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">push reloc_idx</text>
+  <rect x="420" y="70" width="175" height="100" rx="8" fill="#f4f7fb" stroke="#c0392b" stroke-width="2"/>
+  <text x="507.5" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">GOT (.got.plt)</text>
+  <text x="507.5" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Initially -&gt; PLT+6</text>
+  <text x="507.5" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Patched -&gt; libc</text>
+  <text x="507.5" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">printf address!</text>
+  <rect x="630" y="70" width="165" height="100" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="712.5" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">ld.so Resolver</text>
+  <text x="712.5" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">_dl_runtime_resolve</text>
+  <text x="712.5" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Finds symbol in</text>
+  <text x="712.5" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">libc &amp; updates GOT</text>
+  <line x1="180" y1="120" x2="215" y2="120" stroke="#3b5b85" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="197" y="110" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#3b5b85">call</text>
+  <line x1="385" y1="120" x2="420" y2="120" stroke="#c0392b" stroke-width="2" marker-end="url(#arrow-accent)"/>
+  <text x="402" y="110" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#c0392b">indirect</text>
+  <line x1="595" y1="120" x2="630" y2="120" stroke="#3b5b85" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="612" y="110" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#3b5b85">1st only</text>
+  <text x="410" y="212" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" fill="#5a6b7d">With Full RELRO (DT_BIND_NOW), ld.so resolves all GOT entries at startup and marks .got read-only.</text>
+</svg>
