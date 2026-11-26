@@ -6,7 +6,7 @@ title: The Filesystem Hierarchy Standard and Its Variants
 
 Every Linux distribution organizes its files within a unified single-rooted hierarchical directory tree (`/`). The conventions governing where binaries, libraries, configuration files, and state directories reside are defined by the **Filesystem Hierarchy Standard (FHS)**, maintained by the Linux Foundation.
 
-```
+```text
 /
 ├── bin -> usr/bin          # Essential binaries (symlinked in modern layouts)
 ├── sbin -> usr/bin         # System binaries (symlinked in modern layouts)
@@ -53,7 +53,44 @@ lrwxrwxrwx 1 root root 7 lib -> usr/lib
 lrwxrwxrwx 1 root root 9 lib64 -> usr/lib64
 ```
 
+![Linux FHS and Usr-Merge architecture](../../images/diagram-linux-fhs-usrmerge.svg)
+
 ### Advantages of the Usr-Merge
+
 1. **Simplified `$PATH`:** Developers and scripts no longer have to worry whether a binary is located in `/bin`, `/sbin`, `/usr/bin`, or `/usr/sbin`.
 2. **Snapshotting and Immutable System Roots:** The entire operating system binary state is contained within `/usr`. This allows `/usr` to be mounted strictly read-only, verified via `dm-verity`, or updated atomically as an OSTree or Btrfs subvolume.
 3. **Clean Factory Resets:** Because `/usr` holds vendor-supplied defaults and `/etc` holds user overrides, resetting a machine to factory state can be as simple as wiping `/etc` and `/var`.
+
+## Stateless Configuration: Vendor Defaults vs. Admin Overrides
+
+Modern distributions take usr-merge one step further by separating **vendor defaults** in `/usr/lib` (or `/usr/share/factory`) from **local administrator overrides** in `/etc`. Tools like `systemd-tmpfiles` and `systemd-sysusers` reconstruct `/var`, `/run`, and `/etc/passwd` on boot from declarative drop-ins stored under `/usr/lib/tmpfiles.d/` and `/usr/lib/sysusers.d/`.
+
+| Directory | Lifecycle | Ownership | Mount Policy in Immutable Distros |
+| :--- | :--- | :--- | :--- |
+| `/usr` | OS image release | Distribution vendor | Read-only (`ro`, optional `dm-verity`) |
+| `/etc` | Persistent across updates | Local administrator | Read-write overlay or declarative symlinks |
+| `/var` | Persistent runtime state | Services & logs | Read-write dedicated subvolume/partition |
+| `/run` | Volatile per-boot | Init & daemons | `tmpfs` in RAM (`nosuid,nodev`) |
+
+## Hands-On Lab: Audit Your Host's FHS and Usr-Merge Layout
+
+Run this read-only audit on any Linux host or container to see how your current distribution maps top-level symlinks, mount points, and pseudo-filesystems:
+
+```bash
+# 1. Check whether top-level binary and library paths are usr-merged symlinks
+for dir in /bin /sbin /lib /lib64; do
+  if [ -e "$dir" ]; then
+    ls -ld "$dir"
+  fi
+done
+
+# 2. Inspect active virtual and physical mounts across /, /usr, /run, /proc, /sys
+findmnt -o TARGET,SOURCE,FSTYPE,OPTIONS / /usr /run /dev /proc /sys 2>/dev/null
+
+# 3. Compare vendor systemd units vs. administrator overrides
+echo "Vendor units: $(find /usr/lib/systemd/system -maxdepth 1 -type f 2>/dev/null | wc -l)"
+echo "Admin overrides: $(find /etc/systemd/system -maxdepth 1 -type f 2>/dev/null | wc -l)"
+```
+
+> [!TIP]
+> When designing your own BYOL rootfs in [Chapter 13](../13-capstone-project/05-core-packages-into-target-rootfs.md), create `/usr/bin` and `/usr/lib` first and immediately symlink `/bin -> usr/bin`, `/sbin -> usr/bin`, and `/lib -> usr/lib` before installing a single package. Retrofitting usr-merge after packages are installed risks colliding files.

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 330" role="img" aria-label="Linux monolithic kernel architecture showing user space applications calling glibc or musl over the syscall boundary into kernel space scheduler, memory manager, VFS, network stack, and loadable device drivers above hardware" color-scheme="dark">
+<rect width="820" height="330" fill="#11161d"/>
+<text x="410" y="28" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="16" font-weight="700" fill="#e6edf5">Linux Monolithic Kernel &amp; Syscall Boundary</text>
+<rect x="28" y="48" width="764" height="58" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="410" y="72" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="700" fill="#e6edf5">User Space (Ring 3 / EL0): Shells, Daemons, Containers, glibc / musl</text>
+<text x="410" y="92" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">syscall / svc #0 -> read(), write(), openat(), mmap(), clone3(), io_uring_enter()</text>
+<line x1="28" y1="122" x2="792" y2="122" stroke="#ff7b6b" stroke-width="2" stroke-dasharray="6,4"/>
+<text x="410" y="138" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" font-weight="700" fill="#ff7b6b">PRIVILEGE BOUNDARY (Ring 3 -> Ring 0)</text>
+<rect x="28" y="148" width="764" height="92" rx="8" fill="#1a2330" stroke="#ff7b6b" stroke-width="2"/>
+<text x="410" y="170" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="700" fill="#e6edf5">Kernel Space (Ring 0 / EL1) — Single Address Space + Loadable Modules (.ko)</text>
+<rect x="44" y="182" width="136" height="44" rx="6" fill="#11161d" stroke="#7fa7d9"/>
+<text x="112" y="209" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#e6edf5">Scheduler (EEVDF)</text>
+<rect x="192" y="182" width="136" height="44" rx="6" fill="#11161d" stroke="#7fa7d9"/>
+<text x="260" y="209" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#e6edf5">Memory (MM/Slab)</text>
+<rect x="340" y="182" width="136" height="44" rx="6" fill="#11161d" stroke="#7fa7d9"/>
+<text x="408" y="209" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#e6edf5">VFS + ext4/btrfs</text>
+<rect x="488" y="182" width="136" height="44" rx="6" fill="#11161d" stroke="#7fa7d9"/>
+<text x="556" y="209" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#e6edf5">Net Stack / eBPF</text>
+<rect x="636" y="182" width="140" height="44" rx="6" fill="#11161d" stroke="#7fa7d9"/>
+<text x="706" y="209" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#e6edf5">Device Drivers</text>
+<rect x="28" y="256" width="764" height="44" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="410" y="283" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" font-weight="700" fill="#e6edf5">Hardware: CPU Cores, MMU, NVMe, NICs, GPUs, ACPI / Device Tree</text>
+</svg>

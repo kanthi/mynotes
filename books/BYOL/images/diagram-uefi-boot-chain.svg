@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 300" role="img" aria-label="Linux UEFI boot chain from hardware power-on and UEFI firmware reading the FAT32 ESP, to bootloader GRUB or systemd-boot loading vmlinuz and initramfs, mounting real rootfs via switch_root, and launching PID 1 init" color-scheme="light">
+<rect width="820" height="300" fill="#ffffff"/>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#3b5b85"/></marker></defs>
+<text x="410" y="28" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="16" font-weight="700" fill="#1f2a36">Linux Boot Chain: Power-On to Login Shell</text>
+<rect x="24" y="68" width="128" height="76" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="88" y="96" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1f2a36">1. UEFI / BIOS</text>
+<text x="88" y="116" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#5a6b7d">POST + ACPI</text>
+<text x="88" y="132" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#5a6b7d">reads FAT32 ESP</text>
+<rect x="178" y="68" width="134" height="76" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="245" y="96" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1f2a36">2. Bootloader</text>
+<text x="245" y="116" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#5a6b7d">GRUB / sd-boot</text>
+<text x="245" y="132" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#5a6b7d">or UKI EFISTUB</text>
+<rect x="338" y="64" width="136" height="84" rx="8" fill="#f4f7fb" stroke="#c0392b" stroke-width="2.2"/>
+<text x="406" y="94" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1f2a36">3. Linux Kernel</text>
+<text x="406" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#5a6b7d">decompresses</text>
+<text x="406" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#c0392b">mounts tmpfs</text>
+<rect x="500" y="68" width="136" height="76" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="568" y="96" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1f2a36">4. initramfs</text>
+<text x="568" y="116" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#5a6b7d">LUKS + NVMe mod</text>
+<text x="568" y="132" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#5a6b7d">exec switch_root</text>
+<rect x="662" y="68" width="132" height="76" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="728" y="96" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1f2a36">5. PID 1 Init</text>
+<text x="728" y="116" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#5a6b7d">systemd / OpenRC</text>
+<text x="728" y="132" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#5a6b7d">services -> login</text>
+<line x1="152" y1="106" x2="176" y2="106" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="312" y1="106" x2="336" y2="106" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="474" y1="106" x2="498" y2="106" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="636" y1="106" x2="660" y2="106" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<rect x="130" y="186" width="560" height="52" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="410" y="210" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" font-weight="700" fill="#1f2a36">Kernel Command Line: root=UUID=... rw quiet console=ttyS0 init=/sbin/init</text>
+<text x="410" y="228" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#5a6b7d">if PID 1 exits or rootfs fails to mount, the kernel immediately halts with a panic</text>
+</svg>

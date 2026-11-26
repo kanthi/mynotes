@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 320" role="img" aria-label="Comparison of Linux PID 1 init architectures: systemd parallel socket-activated DAG with cgroups v2, OpenRC shell dependency graph, and s6/runit minimal supervision tree" color-scheme="dark">
+<rect width="820" height="320" fill="#11161d"/>
+<text x="410" y="28" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="16" font-weight="700" fill="#e6edf5">Linux PID 1 Init Architectures Compared</text>
+<rect x="26" y="56" width="244" height="202" rx="8" fill="#1a2330" stroke="#ff7b6b" stroke-width="2"/>
+<text x="148" y="82" text-anchor="middle" font-family="ui-monospace,monospace" font-size="13" font-weight="700" fill="#e6edf5">systemd (Unit DAG)</text>
+<text x="148" y="106" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#9fb0c3">Declarative .service / .socket</text>
+<text x="148" y="128" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#9fb0c3">Parallel socket activation</text>
+<text x="148" y="150" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#9fb0c3">cgroups v2 process tracking</text>
+<text x="148" y="172" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#9fb0c3">journald + udevd + resolved</text>
+<text x="148" y="220" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#ff7b6b">Fedora / Debian / Arch / NixOS</text>
+<rect x="288" y="56" width="244" height="202" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="410" y="82" text-anchor="middle" font-family="ui-monospace,monospace" font-size="13" font-weight="700" fill="#e6edf5">OpenRC (Runlevels)</text>
+<text x="410" y="106" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#9fb0c3">POSIX shell init scripts</text>
+<text x="410" y="128" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#9fb0c3">need / use / after deps</text>
+<text x="410" y="150" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#9fb0c3">Optional supervise-daemon</text>
+<text x="410" y="172" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#9fb0c3">Modular &amp; musl-friendly</text>
+<text x="410" y="220" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#7fa7d9">Alpine / Gentoo</text>
+<rect x="550" y="56" width="244" height="202" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="672" y="82" text-anchor="middle" font-family="ui-monospace,monospace" font-size="13" font-weight="700" fill="#e6edf5">s6 / runit (Supervision)</text>
+<text x="672" y="106" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#9fb0c3">Tiny C binaries (~KB)</text>
+<text x="672" y="128" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#9fb0c3">1 supervisor per daemon</text>
+<text x="672" y="150" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#9fb0c3">Foreground processes only</text>
+<text x="672" y="172" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#9fb0c3">Zero PID-file races</text>
+<text x="672" y="220" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#7fa7d9">Void / Artix / Containers</text>
+<text x="410" y="292" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" fill="#9fb0c3">PID 1 adopts orphans, reaps zombies, and defines how every service starts, logs, and recovers</text>
+</svg>

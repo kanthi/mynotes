@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 310" role="img" aria-label="Two-pass cross-toolchain bootstrap showing Pass 1 Binutils and freestanding GCC building Linux headers and target libc, followed by Pass 2 full GCC and libstdc++ isolated from the host OS" color-scheme="light">
+<rect width="820" height="310" fill="#ffffff"/>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#3b5b85"/></marker></defs>
+<text x="410" y="28" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="16" font-weight="700" fill="#1f2a36">Two-Pass Cross-Toolchain Bootstrap (Breaking Host Contamination)</text>
+<rect x="24" y="64" width="136" height="74" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="92" y="92" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1f2a36">1. Binutils Pass 1</text>
+<text x="92" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#5a6b7d">cross as / ld</text>
+<text x="92" y="128" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#5a6b7d">--with-sysroot</text>
+<rect x="184" y="64" width="138" height="74" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="253" y="92" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1f2a36">2. GCC Pass 1</text>
+<text x="253" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#5a6b7d">C-only, no libc</text>
+<text x="253" y="128" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#5a6b7d">--without-headers</text>
+<rect x="346" y="60" width="146" height="82" rx="8" fill="#f4f7fb" stroke="#c0392b" stroke-width="2.2"/>
+<text x="419" y="88" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1f2a36">3. Headers + libc</text>
+<text x="419" y="108" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#5a6b7d">Linux UAPI headers</text>
+<text x="419" y="126" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#c0392b">glibc / musl -> sysroot</text>
+<rect x="516" y="64" width="134" height="74" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="583" y="92" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1f2a36">4. GCC Pass 2</text>
+<text x="583" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#5a6b7d">C + C++ + libstdc++</text>
+<text x="583" y="128" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#5a6b7d">linked to new libc</text>
+<rect x="674" y="64" width="122" height="74" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="735" y="92" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1f2a36">5. Clean Chroot</text>
+<text x="735" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#5a6b7d">zero host /lib</text>
+<text x="735" y="128" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#5a6b7d">self-hosted OS</text>
+<line x1="160" y1="101" x2="182" y2="101" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="322" y1="101" x2="344" y2="101" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="492" y1="101" x2="514" y2="101" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="650" y1="101" x2="672" y2="101" stroke="#3b5b85" stroke-width="1.6" marker-end="url(#a)"/>
+<rect x="130" y="188" width="560" height="58" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="1.5"/>
+<text x="410" y="212" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" font-weight="700" fill="#1f2a36">Sanity Gate: readelf -l a.out | grep 'program interpreter'</text>
+<text x="410" y="232" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#5a6b7d">must resolve to your target dynamic linker (ld-linux / ld-musl), never the host's /lib64</text>
+<text x="410" y="282" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" fill="#5a6b7d">bootstrap breaks the circular dependency between compiler and C library cleanly</text>
+</svg>

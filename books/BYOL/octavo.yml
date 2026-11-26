@@ -116,6 +116,12 @@ book:
     - content/13-capstone-project/07-iso-creation-and-testing.md
     - content/13-capstone-project/08-documentation-branding-publishing.md
     - content/13-capstone-project/09-troubleshooting-capstone-project-issues.md
+  - part: 'Chapter 14: Building a Declarative Distribution with NixOS'
+    contents:
+    - content/14-declarative-nixos-distribution/01-functional-store-and-generations.md
+    - content/14-declarative-nixos-distribution/02-flakes-modules-and-custom-os-profiles.md
+    - content/14-declarative-nixos-distribution/03-building-custom-nixos-isos-and-appliances.md
+    - content/14-declarative-nixos-distribution/04-declarative-testing-and-fleet-deployment.md
   - part: Conclusion & References
     contents:
     - content/99-afterword/01-conclusion-the-road-ahead.md

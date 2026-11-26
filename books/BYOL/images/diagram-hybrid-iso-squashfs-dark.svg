@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 310" role="img" aria-label="Hybrid live Linux ISO image layout created by xorriso combining MBR BIOS boot code, FAT32 EFI System Partition image, vmlinuz and initramfs, and compressed SquashFS rootfs mounted under an OverlayFS RAM upperdir" color-scheme="dark">
+<rect width="820" height="310" fill="#11161d"/>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#7fa7d9"/></marker></defs>
+<text x="410" y="28" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="16" font-weight="700" fill="#e6edf5">Hybrid Live ISO Layout &amp; OverlayFS Runtime Mount</text>
+<rect x="28" y="54" width="764" height="86" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="46" y="76" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#e6edf5">Hybrid ISO9660 Image (xorriso — boots on USB, Optical, BIOS &amp; UEFI)</text>
+<rect x="46" y="88" width="132" height="38" rx="5" fill="#11161d" stroke="#7fa7d9"/>
+<text x="112" y="111" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#e6edf5">MBR / GPT</text>
+<rect x="190" y="88" width="160" height="38" rx="5" fill="#11161d" stroke="#7fa7d9"/>
+<text x="270" y="111" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#e6edf5">efiboot.img (FAT)</text>
+<rect x="362" y="88" width="180" height="38" rx="5" fill="#11161d" stroke="#7fa7d9"/>
+<text x="452" y="111" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#e6edf5">vmlinuz + initrd</text>
+<rect x="554" y="88" width="220" height="38" rx="5" fill="#11161d" stroke="#ff7b6b" stroke-width="1.8"/>
+<text x="664" y="111" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" font-weight="700" fill="#ff7b6b">rootfs.squashfs (RO)</text>
+<rect x="120" y="176" width="240" height="64" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="240" y="202" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" font-weight="700" fill="#e6edf5">lowerdir: SquashFS (RO)</text>
+<text x="240" y="222" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#9fb0c3">zstd-compressed OS image</text>
+<rect x="460" y="176" width="240" height="64" rx="8" fill="#1a2330" stroke="#ff7b6b" stroke-width="2"/>
+<text x="580" y="202" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" font-weight="700" fill="#e6edf5">upperdir: tmpfs (RAM RW)</text>
+<text x="580" y="222" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#9fb0c3">captures live writes on the fly</text>
+<line x1="664" y1="126" x2="290" y2="174" stroke="#7fa7d9" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="410" y="280" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" fill="#9fb0c3">OverlayFS merges read-only SquashFS + writable tmpfs into a live / before switch_root</text>
+</svg>

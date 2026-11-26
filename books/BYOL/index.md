@@ -34,7 +34,7 @@ Building an operating system distribution is one of the most intellectually rewa
 
 ## The Trajectory of This Book
 
-This curriculum spans 13 rigorous chapters and a comprehensive Capstone Project, divided into logical engineering phases:
+This curriculum spans 14 rigorous chapters, combining a from-scratch Capstone Project with a declarative NixOS distribution track:
 
 1. **Foundations & Architecture (Chapters 1–2):** Explore what truly defines a distribution, deconstruct the Filesystem Hierarchy Standard (FHS) and its modern variants (e.g., usr-merge, immutable root filesystems), dissect the monolithic Linux kernel architecture, and master the `.config` workflow.
 2. **The Toolchain & Boot Stack (Chapters 3–4):** Build a cross-compilation compiler stack from scratch (binutils, GCC/Clang, glibc vs. musl) using a two-pass bootstrap, trace the boot sequence from reset vector to login prompt, configure bootloaders (GRUB, systemd-boot), and construct custom early-userspace initramfs archives.
@@ -42,6 +42,7 @@ This curriculum spans 13 rigorous chapters and a comprehensive Capstone Project,
 4. **User Experience, Security & Mastering (Chapters 8–10):** Stand up modern display stacks (X11 vs. Wayland compositor architecture), harden the system with Linux namespaces, cgroups, SELinux/AppArmor, LUKS full-disk encryption, nftables, and eBPF, and master bootable hybrid ISOs using `xorriso` and SquashFS.
 5. **Infrastructure & Release Engineering (Chapters 11–12):** Deploy automated containerized build environments (`systemd-nspawn`, Docker), examine carrier-grade build networks (Debian `buildd`, Fedora `Koji`), establish rolling vs. LTS release policies, and manage CVE backporting workflows.
 6. **The Capstone Project (Chapter 13):** Integrate every component into an end-to-end production distribution: build the toolchain, cross-compile the kernel, assemble the rootfs, package essential utilities, configure the bootloader, generate a bootable ISO, and verify execution inside QEMU/KVM virtualized test harnesses.
+7. **Declarative Distributions with NixOS (Chapter 14):** Contrast imperative assembly with functional, content-addressed OS engineering—building custom NixOS profiles with Flakes and the Module System, compiling live ISOs and `disko`-partitioned appliances, running multi-VM `runNixOSTest` suites, and rolling out atomic generations across fleets.
 
 ---
 

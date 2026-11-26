@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 300" role="img" aria-label="Measured and Secure Boot chain of trust from UEFI Platform Key PK and KEK/db verifying a signed Unified Kernel Image UKI, measuring PCRs into TPM 2.0 to unseal LUKS2 full-disk encryption and dm-verity rootfs" color-scheme="dark">
+<rect width="820" height="300" fill="#11161d"/>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#7fa7d9"/></marker></defs>
+<text x="410" y="28" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="16" font-weight="700" fill="#e6edf5">Cryptographic Chain of Trust: Secure Boot + TPM2 + LUKS2</text>
+<rect x="24" y="64" width="144" height="78" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="96" y="92" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#e6edf5">UEFI Firmware</text>
+<text x="96" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#9fb0c3">PK -> KEK -> db</text>
+<text x="96" y="128" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10" fill="#9fb0c3">verifies PE sig</text>
+<rect x="196" y="60" width="174" height="86" rx="8" fill="#1a2330" stroke="#ff7b6b" stroke-width="2.2"/>
+<text x="283" y="88" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#e6edf5">Signed UKI (.efi)</text>
+<text x="283" y="108" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#9fb0c3">kernel + initrd + cmdline</text>
+<text x="283" y="126" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#ff7b6b">1 signed PE binary</text>
+<rect x="398" y="64" width="166" height="78" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="481" y="92" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#e6edf5">TPM 2.0 PCRs</text>
+<text x="481" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#9fb0c3">PCR 0,7,11 match</text>
+<text x="481" y="128" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10" fill="#9fb0c3">unseals LUKS key</text>
+<rect x="592" y="64" width="202" height="78" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="693" y="92" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700" fill="#e6edf5">LUKS2 + dm-verity</text>
+<text x="693" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#9fb0c3">encrypted /var &amp; /home</text>
+<text x="693" y="128" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10" fill="#9fb0c3">hash-verified /usr</text>
+<line x1="168" y1="103" x2="194" y2="103" stroke="#7fa7d9" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="370" y1="103" x2="396" y2="103" stroke="#7fa7d9" stroke-width="1.6" marker-end="url(#a)"/>
+<line x1="564" y1="103" x2="590" y2="103" stroke="#7fa7d9" stroke-width="1.6" marker-end="url(#a)"/>
+<rect x="130" y="186" width="560" height="52" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="1.5"/>
+<text x="410" y="210" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" font-weight="700" fill="#e6edf5">Tampering with cmdline (e.g. init=/bin/sh) changes PCRs and breaks UKI signature</text>
+<text x="410" y="228" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" fill="#9fb0c3">TPM refuses to release the LUKS2 volume key, stopping evil-maid attacks cold</text>
+</svg>
