@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 230" role="img" aria-label="Multi-kernel bare-metal host orchestration across isolated hardware partitions" style="color-scheme:dark">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#7fa7d9"/></marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#ff7b6b"/></marker>
+  </defs>
+  <rect width="820" height="230" fill="#11161d" rx="8"/>
+  <text x="410.0" y="30" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#e6edf5">Multi-Kernel Bare-Metal Lifecycle: Hardware Partitioning &amp; Rolling Updates</text>
+  <rect x="30" y="70" width="205" height="105" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="2"/>
+  <text x="132.5" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#e6edf5">Host Control Plane</text>
+  <text x="132.5" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">CPU pinning &amp; NUMA</text>
+  <text x="132.5" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">SR-IOV VF assignment</text>
+  <text x="132.5" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Health monitoring</text>
+  <rect x="295" y="70" width="230" height="105" rx="8" fill="#1a2330" stroke="#ff7b6b" stroke-width="2"/>
+  <text x="410.0" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#e6edf5">Isolated Kernel Slots</text>
+  <text x="410.0" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Kernel A (v6.6 LTS)</text>
+  <text x="410.0" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Kernel B (v6.12 Next)</text>
+  <text x="410.0" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Independent reboot</text>
+  <rect x="585" y="70" width="205" height="105" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="2"/>
+  <text x="687.5" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#e6edf5">Drain &amp; Cutover</text>
+  <text x="687.5" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Shift traffic to B</text>
+  <text x="687.5" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Patch &amp; verify A</text>
+  <text x="687.5" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Zero fleet downtime</text>
+  <line x1="235" y1="122" x2="295" y2="122" stroke="#7fa7d9" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="265" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#7fa7d9">assign</text>
+  <line x1="525" y1="122" x2="585" y2="122" stroke="#ff7b6b" stroke-width="2" marker-end="url(#arrow-accent)"/>
+  <text x="555" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#ff7b6b">drain</text>
+</svg>

@@ -47,3 +47,19 @@ The exact source stanza depends on how the repository is published. The [Ubuntu 
 If `apt update` reports a signature error, preserve the exact message and check the source URL, key identity, release metadata, clock and snapshot completeness. An expired release, wrong key and corrupted metadata require different fixes. If installation fails with an unavailable dependency, compare the candidate versions and architecture with the snapshot manifest; copying only the requested package rarely captures the full dependency closure.
 
 Draw a supply route from upstream to the isolated host and mark the trust check and responsible owner at each crossing. Describe how you would test a stale or incomplete snapshot without changing a production host.
+## Air-Gapped Supply Chain Diagram & Local Repository Verification Lab
+
+![Offline air-gapped Linux package mirror and GPG verification workflow](../../../images/diagram-bl-offline-mirror-flow.svg)
+
+Verify package integrity offline using deterministic SHA-256 manifests before promoting a tarball or `.deb`/`.rpm` mirror across an air-gapped boundary:
+
+```bash
+mkdir -p /tmp/bl-offline-repo
+printf "sample-pkg-v1.0
+" > /tmp/bl-offline-repo/app-1.0.tar
+(cd /tmp/bl-offline-repo && sha256sum app-1.0.tar > SHA256SUMS)
+
+# On the air-gapped side, verify exact digest before installation
+(cd /tmp/bl-offline-repo && sha256sum -c SHA256SUMS)
+rm -rf /tmp/bl-offline-repo
+```

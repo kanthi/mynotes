@@ -50,3 +50,14 @@ When retiring or repurposing bare-metal hardware:
 - **Workload Migration**: Reallocate instances to newer hardware architectures.
 - **Device Unbinding and Sanitization**: Unbind PCIe devices from VFIO, return them to standard kernel drivers, and execute cryptographic ATA/NVMe Sanitize commands (`nvme format /dev/nvmeX --ses=2`) to permanently purge data.
 - **Firmware Reset**: Clear NVRAM boot variables, disable custom Secure Boot keys, and reset BMC credentials before hardware return.
+## Multi-Kernel Lifecycle Diagram & CPU/NUMA Pinning Verification Lab
+
+![Multi-kernel bare-metal host orchestration across isolated hardware partitions](../../images/diagram-bl-multikernel-lifecycle.svg)
+
+Inspect NUMA topology and isolated CPU sets before assigning dedicated cores to separate kernel instances or microVMs:
+
+```bash
+# Inspect NUMA nodes, CPU core layout, and kernel boot isolation flags
+lscpu | grep -E 'Model name|NUMA|CPU\(s\):|Thread|Core' 2>/dev/null || true
+grep -oE '(isolcpus|nohz_full|rcu_nocbs)=[^ ]+' /proc/cmdline 2>/dev/null || echo "No static CPU isolation flags set"
+```

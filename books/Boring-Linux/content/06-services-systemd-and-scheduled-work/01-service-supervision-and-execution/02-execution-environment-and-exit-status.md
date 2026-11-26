@@ -41,3 +41,16 @@ For the lab server, compare the process context with the unit properties and rep
 ## Worked diagnosis and practice
 
 Suppose a service reports `status=200/CHDIR`. Inspect the effective working directory and journal, determine whether the path exists and is accessible to the service's identity, and fix the documented path or permissions at their owning layer. Re-run a client test after restart. If the status instead indicates an executable or permission failure, follow that evidence rather than changing unrelated paths. Record the lab unit's effective execution context and explain why an environment variable is unsuitable for a password.
+## Architecture Diagram & Exit-Status Inspection Lab
+
+![systemd service execution environment, cgroup isolation, and exit status mapping](../../../images/diagram-bl-systemd-exec-env.svg)
+
+Inspect the exact environment, cgroup limits, and last exit status of any running service—and test transient unit execution with `systemd-run`:
+
+```bash
+# 1. Inspect resolved execution environment and exit code of a unit
+systemctl show sshd.service -p ExecMainCode -p ExecMainStatus -p Environment -p MemoryCurrent 2>/dev/null || true
+
+# 2. Run a one-shot transient service with explicit exit status classification
+systemd-run --user --wait --collect /bin/sh -c 'echo "PID=$$ PATH=$PATH"; exit 0' 2>/dev/null || echo "Requires active user systemd session"
+```

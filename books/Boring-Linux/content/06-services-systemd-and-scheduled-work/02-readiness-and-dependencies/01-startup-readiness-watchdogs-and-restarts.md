@@ -45,3 +45,30 @@ A high restart count suggests examining the first failure, not merely resetting 
 ## Worked diagnosis and practice
 
 A dependent unit starts after a web service but its first request fails. Inspect the web unit's type and startup logs, listener and client response; `After=` on a `Type=exec` service provides ordering through execution, not proof that the web server is ready. Use the application's supported readiness protocol or design retries with bounded timeouts. Record the lab service's type, restart policy and HTTP response, and explain what each tells you and what it cannot establish.
+## Architecture Diagram & Readiness + Watchdog Blueprint
+
+![systemd sd_notify readiness and watchdog restart loop](../../../images/diagram-bl-watchdog-readiness.svg)
+
+Use `Type=notify` paired with `WatchdogSec=` and `StartLimitBurst=` so dependent services wait until sockets are actually bound and hung daemons restart automatically without entering an infinite crash loop:
+
+```ini
+[Unit]
+Description=Boring Production Worker
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=notify
+ExecStart=/usr/local/bin/boring-worker
+WatchdogSec=30s
+Restart=on-failure
+RestartSec=2s
+```
+
+### Hands-On Lab: Verify Restart Backoff and Journal Logs
+
+```bash
+# Inspect restart counts and watchdog timestamps on active units
+systemctl show --property=NRestarts,WatchdogUSec,Result systemd-journald.service 2>/dev/null || true
+journalctl -u systemd-journald.service -n 10 --no-pager 2>/dev/null || true
+```

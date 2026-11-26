@@ -57,3 +57,14 @@ An administrator installs a fixed kernel image but the scanner still sees the ol
 ## Practice and recall
 
 Record running and installed kernels before and after the lab reboot. Identify one reason a version string is insufficient to establish security status and one reason a fallback kernel is not a substitute for a tested restore.
+## Kernel Patching Strategy Diagram & Reboot-Required Audit Lab
+
+![Linux kernel update lifecycle comparing kexec fast reboot and ftrace livepatch](../../../images/diagram-bl-kernel-livepatch.svg)
+
+Compare your running kernel release against installed `/boot` images to detect whether a security update is still pending a reboot:
+
+```bash
+echo "Running kernel: $(uname -r)"
+ls -1 /boot/vmlinuz-* 2>/dev/null || echo "No /boot/vmlinuz-* on this host"
+[ -f /var/run/reboot-required ] && cat /var/run/reboot-required || echo "No Debian reboot-required flag present"
+```

@@ -46,3 +46,18 @@ Throughout this guide, structural definitions and disk layouts follow standardiz
 - **Disk Geometry Assumptions**: Unless specified otherwise, examples assume a standard $4\text{ KiB}$ block size ($4096\text{ bytes}$), representing the ubiquitous default across modern Linux distributions on x86_64 and ARM64 architectures.
 - **Shell Commands**: Terminal commands are formatted as standard bash sessions. Administrative commands requiring root or elevated capabilities are prefixed with `sudo`.
 - **System Call & C Snippets**: Kernel data structures match the upstream Linux kernel source tree under `fs/ext4/` and `include/linux/ext4_fs.h`.
+## On-Disk Architecture Diagram & Loopback Inspection Lab
+
+![ext4 on-disk block group layout showing superblock, inode table, extents, and JBD2 journal](../../images/diagram-bl-ext4-on-disk-layout.svg)
+
+Inspect a real ext4 superblock, block-group geometry, and journal features safely on a small loopback image in `/tmp` without touching any host partition:
+
+```bash
+# 1. Create a 64 MiB sparse file and format it as ext4 (Linux)
+truncate -s 64M /tmp/bl-ext4-lab.img
+mkfs.ext4 -q -L BL_EXT4_LAB /tmp/bl-ext4-lab.img
+
+# 2. Inspect superblock geometry, inode size, and enabled features
+dumpe2fs -h /tmp/bl-ext4-lab.img | grep -E 'Block size|Inode size|Filesystem features|Journal inode'
+rm -f /tmp/bl-ext4-lab.img
+```
