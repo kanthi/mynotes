@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 230" role="img" aria-label="Packet dataplane latency comparison across Linux kernel sk_buff, XDP eBPF, and DPDK kernel bypass" style="color-scheme:dark">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#7fa7d9"/></marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#ff7b6b"/></marker>
+  </defs>
+  <rect width="820" height="230" fill="#11161d" rx="8"/>
+  <text x="410.0" y="30" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#e6edf5">High-Speed Dataplanes: Kernel sk_buff vs. XDP (eBPF) vs. DPDK Bypass</text>
+  <rect x="30" y="65" width="225" height="125" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="2"/>
+  <text x="142.5" y="89" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#e6edf5">Standard Kernel Stack</text>
+  <text x="142.5" y="109" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">NIC -&gt; sk_buff -&gt; netfilter</text>
+  <text x="142.5" y="125" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Full TCP/IP + iptables</text>
+  <text x="142.5" y="141" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">~1-3 Mpps per core</text>
+  <text x="142.5" y="157" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Best compatibility</text>
+  <rect x="295" y="65" width="230" height="125" rx="8" fill="#1a2330" stroke="#ff7b6b" stroke-width="2"/>
+  <text x="410.0" y="89" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#e6edf5">XDP (eBPF in Driver)</text>
+  <text x="410.0" y="109" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Runs BEFORE sk_buff alloc</text>
+  <text x="410.0" y="125" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">XDP_DROP / XDP_TX / REDIRECT</text>
+  <text x="410.0" y="141" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">~15-24 Mpps per core</text>
+  <text x="410.0" y="157" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Coexists with Linux stack</text>
+  <rect x="565" y="65" width="225" height="125" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="2"/>
+  <text x="677.5" y="89" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#e6edf5">DPDK (Userspace Poll)</text>
+  <text x="677.5" y="109" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Bypasses kernel completely</text>
+  <text x="677.5" y="125" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Poll-mode driver (100% CPU)</text>
+  <text x="677.5" y="141" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">40-100+ Mpps line rate</text>
+  <text x="677.5" y="157" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Dedicated NIC required</text>
+</svg>

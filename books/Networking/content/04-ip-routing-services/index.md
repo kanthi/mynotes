@@ -25,3 +25,26 @@ After routing fundamentals, follow [one TCP connection across three autonomous s
 | [Linux ECMP: Nexthop Objects, Hash Policies and Resilient Groups](08-linux-ecmp-nexthop-groups.md) | `08-linux-ecmp-nexthop-groups.md` |
 | [Multicast Membership and Distribution Trees](09-multicast-distribution.md) | `09-multicast-distribution.md` |
 | [Follow a Connection Across the Internet](10-follow-a-connection-across-the-internet.md) | `10-follow-a-connection-across-the-internet.md` |
+## Longest Prefix Match (LPM) Diagram & Python FIB Simulator Lab
+
+![IP Longest Prefix Match lookup in kernel FIB selecting most specific CIDR route](../../images/diagram-net-lpm-routing-table.svg)
+
+Simulate kernel Longest Prefix Match (LPM) routing lookup across overlapping CIDR entries in Python:
+
+```python
+import ipaddress
+
+fib = [
+    (ipaddress.ip_network("0.0.0.0/0"),    "gw-default"),
+    (ipaddress.ip_network("10.24.0.0/16"), "eth1-campus"),
+    (ipaddress.ip_network("10.24.5.0/24"), "eth2-rack5"),
+]
+
+def lookup(dst_ip: str) -> str:
+    ip = ipaddress.ip_address(dst_ip)
+    matches = [(net.prefixlen, nh) for net, nh in fib if ip in net]
+    return max(matches, key=lambda x: x[0])[1]
+
+for ip in ["8.8.8.8", "10.24.9.1", "10.24.5.19"]:
+    print(f"{ip:<12} -> {lookup(ip)}")
+```

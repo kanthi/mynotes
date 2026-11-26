@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 230" role="img" aria-label="IP Longest Prefix Match lookup in kernel FIB selecting most specific CIDR route" style="color-scheme:dark">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#7fa7d9"/></marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#ff7b6b"/></marker>
+  </defs>
+  <rect width="820" height="230" fill="#11161d" rx="8"/>
+  <text x="410.0" y="30" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#e6edf5">IP Forwarding Engine: Longest Prefix Match (LPM) in the Kernel FIB</text>
+  <rect x="30" y="70" width="205" height="105" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="2"/>
+  <text x="132.5" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#e6edf5">Incoming Packet</text>
+  <text x="132.5" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Dst IP: 10.24.5.19</text>
+  <text x="132.5" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">TTL decremented -1</text>
+  <text x="132.5" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Header checksum</text>
+  <rect x="295" y="70" width="240" height="105" rx="8" fill="#1a2330" stroke="#ff7b6b" stroke-width="2"/>
+  <text x="415.0" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#e6edf5">Routing Table (FIB)</text>
+  <text x="415.0" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">0.0.0.0/0 -&gt; gw-inet</text>
+  <text x="415.0" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">10.24.0.0/16 -&gt; eth1</text>
+  <text x="415.0" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">10.24.5.0/24 -&gt; eth2 (WIN!)</text>
+  <rect x="595" y="70" width="195" height="105" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="2"/>
+  <text x="692.5" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#e6edf5">Next-Hop Resolution</text>
+  <text x="692.5" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">ARP/NDP resolves MAC</text>
+  <text x="692.5" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Rewrites L2 header</text>
+  <text x="692.5" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Egress out eth2</text>
+  <line x1="235" y1="122" x2="295" y2="122" stroke="#ff7b6b" stroke-width="2" marker-end="url(#arrow-accent)"/>
+  <text x="265" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#ff7b6b">LPM</text>
+  <line x1="535" y1="122" x2="595" y2="122" stroke="#7fa7d9" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="565" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#7fa7d9">/24</text>
+</svg>
