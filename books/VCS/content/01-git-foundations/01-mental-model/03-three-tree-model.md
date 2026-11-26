@@ -71,4 +71,24 @@ git diff              # working tree vs index
 git diff --staged     # index vs HEAD
 ```
 
+![Git three-tree model showing working tree, index staging area, and HEAD repository](../../../images/diagram-vcs-three-trees.svg)
+
 If `git diff` is empty and `git diff --staged` is not, the next commit already contains the change. If both are empty and `status` still lists a file, it is untracked — `git add` it.
+
+## Hands-On Lab: Observe All Three Trees Diverging Simultaneously
+
+Create a single file that holds three different versions across HEAD, the index, and the working tree at the same time:
+
+```bash
+mkdir -p /tmp/vcs-trees-lab && cd /tmp/vcs-trees-lab
+git init -b main
+echo "version-1 (HEAD)" > state.txt && git add state.txt && git commit -m "v1"
+echo "version-2 (Index)" > state.txt && git add state.txt
+echo "version-3 (Working Tree)" > state.txt
+
+# Compare each pair of trees
+git diff                 # Working Tree vs Index
+git diff --staged        # Index vs HEAD
+git diff HEAD            # Working Tree vs HEAD
+git ls-files --stage     # Inspect the exact blob hash currently in .git/index
+```

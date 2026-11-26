@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 275" role="img" aria-label="Git three-tree model showing working tree, index staging area, and HEAD repository" style="color-scheme:dark">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7fa7d9"/>
+    </marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#ff7b6b"/>
+    </marker>
+  </defs>
+  <rect width="820" height="275" fill="#11161d" rx="8"/>
+  <text x="410.0" y="30" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#e6edf5">Git Three-Tree Architecture: Working Tree, Index, and HEAD</text>
+  <rect x="30" y="70" width="210" height="120" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="2"/>
+  <text x="135.0" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#e6edf5">Working Tree</text>
+  <text x="135.0" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Files on disk</text>
+  <text x="135.0" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Unstaged edits</text>
+  <text x="135.0" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">git diff (WT vs Index)</text>
+  <rect x="305" y="70" width="210" height="120" rx="8" fill="#1a2330" stroke="#ff7b6b" stroke-width="2"/>
+  <text x="410.0" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#e6edf5">Index (.git/index)</text>
+  <text x="410.0" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Staging area snapshot</text>
+  <text x="410.0" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Next commit tree</text>
+  <text x="410.0" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">git diff --staged</text>
+  <rect x="580" y="70" width="210" height="120" rx="8" fill="#1a2330" stroke="#7fa7d9" stroke-width="2"/>
+  <text x="685.0" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#e6edf5">HEAD (Object Store)</text>
+  <text x="685.0" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">Committed snapshots</text>
+  <text x="685.0" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">.git/objects (immutable)</text>
+  <text x="685.0" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#9fb0c3">git show HEAD</text>
+  <line x1="240" y1="110" x2="305" y2="110" stroke="#7fa7d9" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="272" y="102" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#7fa7d9">git add</text>
+  <line x1="515" y1="110" x2="580" y2="110" stroke="#ff7b6b" stroke-width="2" marker-end="url(#arrow-accent)"/>
+  <text x="547" y="102" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#ff7b6b">git commit</text>
+  <line x1="580" y1="155" x2="515" y2="155" stroke="#7fa7d9" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="547" y="174" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#7fa7d9">reset --mixed</text>
+  <line x1="305" y1="155" x2="240" y2="155" stroke="#7fa7d9" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="272" y="174" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#7fa7d9">git restore</text>
+  <path d="M 685 190 L 685 235 L 135 235 L 135 190" fill="none" stroke="#ff7b6b" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#arrow-accent)"/>
+  <text x="410" y="253" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#ff7b6b">git checkout / git switch / git reset --hard (updates Index + Working Tree)</text>
+</svg>

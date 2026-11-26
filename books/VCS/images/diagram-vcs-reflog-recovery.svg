@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 240" role="img" aria-label="Git reflog recovery flow showing how dangling commits are rescued from .git/logs/HEAD" style="color-scheme:light">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#3b5b85"/>
+    </marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#c0392b"/>
+    </marker>
+  </defs>
+  <rect width="820" height="240" fill="#ffffff" rx="8"/>
+  <text x="410.0" y="30" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#1f2a36">Git Reflog Safety Net: Recovering Dangling Commits After Reset or Delete</text>
+  <rect x="30" y="70" width="220" height="105" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="140.0" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Active Branch (main)</text>
+  <text x="140.0" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">HEAD@{0}: reset to C1</text>
+  <text x="140.0" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Old tip C3 is now</text>
+  <text x="140.0" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">unreachable by refs</text>
+  <rect x="300" y="70" width="220" height="105" rx="8" fill="#f4f7fb" stroke="#c0392b" stroke-width="2"/>
+  <text x="410.0" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">.git/logs/HEAD (Reflog)</text>
+  <text x="410.0" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">HEAD@{0}: C1 (reset)</text>
+  <text x="410.0" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">HEAD@{1}: C3 (commit)</text>
+  <text x="410.0" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Retained 30-90 days</text>
+  <rect x="570" y="70" width="220" height="105" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="680.0" y="94" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Recovered Branch</text>
+  <text x="680.0" y="114" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">git switch -c rescue C3</text>
+  <text x="680.0" y="130" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Object C3 still intact</text>
+  <text x="680.0" y="146" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">until git gc --prune</text>
+  <line x1="250" y1="122" x2="300" y2="122" stroke="#3b5b85" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="275" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#3b5b85">records</text>
+  <line x1="520" y1="122" x2="570" y2="122" stroke="#c0392b" stroke-width="2" marker-end="url(#arrow-accent)"/>
+  <text x="545" y="112" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#c0392b">restore</text>
+  <text x="410" y="215" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" fill="#5a6b7d">Reflog is strictly local (never pushed); it tracks every movement of HEAD and branch tips.</text>
+</svg>

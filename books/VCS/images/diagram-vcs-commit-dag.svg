@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 315" role="img" aria-label="Git commit DAG showing immutable parent pointers and movable branch refs" style="color-scheme:light">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#3b5b85"/>
+    </marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#c0392b"/>
+    </marker>
+  </defs>
+  <rect width="820" height="315" fill="#ffffff" rx="8"/>
+  <text x="410.0" y="30" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#1f2a36">Git Commit Directed Acyclic Graph (DAG) and Object Pointers</text>
+  <rect x="40" y="80" width="150" height="75" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="115.0" y="104" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Commit C1</text>
+  <text x="115.0" y="124" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">parent: none</text>
+  <text x="115.0" y="140" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">tree: T1</text>
+  <rect x="240" y="80" width="150" height="75" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="315.0" y="104" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Commit C2</text>
+  <text x="315.0" y="124" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">parent: C1</text>
+  <text x="315.0" y="140" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">tree: T2</text>
+  <rect x="440" y="80" width="150" height="75" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="515.0" y="104" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Commit C3</text>
+  <text x="515.0" y="124" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">parent: C2</text>
+  <text x="515.0" y="140" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">tree: T3</text>
+  <rect x="440" y="190" width="150" height="75" rx="8" fill="#f4f7fb" stroke="#c0392b" stroke-width="2"/>
+  <text x="515.0" y="214" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Commit F1</text>
+  <text x="515.0" y="234" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">parent: C2</text>
+  <text x="515.0" y="250" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">tree: TF1</text>
+  <rect x="640" y="80" width="150" height="75" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="715.0" y="104" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">HEAD -&gt; main</text>
+  <text x="715.0" y="124" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">ref: refs/heads/main</text>
+  <text x="715.0" y="140" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">points to C3</text>
+  <rect x="640" y="190" width="150" height="75" rx="8" fill="#f4f7fb" stroke="#c0392b" stroke-width="2"/>
+  <text x="715.0" y="214" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">feature</text>
+  <text x="715.0" y="234" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">ref: refs/heads/feat</text>
+  <text x="715.0" y="250" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">points to F1</text>
+  <line x1="240" y1="117" x2="190" y2="117" stroke="#3b5b85" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="215" y="108" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#3b5b85">parent</text>
+  <line x1="440" y1="117" x2="390" y2="117" stroke="#3b5b85" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="415" y="108" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#3b5b85">parent</text>
+  <line x1="440" y1="227" x2="315" y2="155" stroke="#c0392b" stroke-width="2" marker-end="url(#arrow-accent)"/>
+  <text x="355" y="212" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#c0392b">parent</text>
+  <line x1="640" y1="117" x2="590" y2="117" stroke="#3b5b85" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="615" y="108" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#3b5b85">ref</text>
+  <line x1="640" y1="227" x2="590" y2="227" stroke="#c0392b" stroke-width="2" marker-end="url(#arrow-accent)"/>
+  <text x="615" y="218" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#c0392b">ref</text>
+  <text x="410" y="295" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" fill="#5a6b7d">Commits point backward to parents; branches are 41-byte movable pointers to commit hashes.</text>
+</svg>

@@ -76,4 +76,25 @@ Once you have a repository (next chapter’s neighbor, chapter 3):
 git log --oneline --graph --decorate --all
 ```
 
+![Git commit DAG showing immutable parent pointers and movable branch refs](../../../images/diagram-vcs-commit-dag.svg)
+
 `--decorate` prints the names (`main`, `HEAD`, tags) next to the commits they point at. The graph is the truth. Commands add objects and move names. If you hold the graph, `reset`, `rebase`, and `reflog` stop feeling like magic.
+
+## Hands-On Lab: Inspect the Raw DAG with Plumbing Commands
+
+Run this in a scratch directory to see that a branch is literally a 41-byte file holding a commit hash:
+
+```bash
+mkdir -p /tmp/vcs-dag-lab && cd /tmp/vcs-dag-lab
+git init -b main
+echo "v1" > app.txt && git add app.txt && git commit -m "init"
+git switch -c feat && echo "v2" > app.txt && git commit -am "feat change"
+
+# Inspect HEAD and branch pointers directly on disk
+cat .git/HEAD
+cat .git/refs/heads/main
+cat .git/refs/heads/feat
+
+# Inspect the raw commit object and its parent pointer
+git cat-file -p HEAD
+```

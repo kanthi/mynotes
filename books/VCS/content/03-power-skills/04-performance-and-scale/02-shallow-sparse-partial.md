@@ -1,118 +1,68 @@
 ---
-title: Shallow, sparse, and partial clones
+title: Shallow, Partial, and Sparse Clones
 ---
 
-# Shallow, sparse, and partial clones
+# Shallow, Partial, and Sparse Clones
 
-After this page you can clone with `--depth` for history truncation, use cone-mode `sparse-checkout` to materialize a subdirectory, and use `--filter=blob:none` partial clones so blobs download on demand.
+A standard `git clone` downloads every commit, every tree, and every version of every file ever committed, then checks out the entire directory tree onto disk. On a 20-year-old monorepo with millions of objects, that default takes tens of minutes and dozens of gigabytes. Modern Git gives you three orthogonal levers to download and materialize only what you need.
 
-## Thesis
+## Comparing the Three Scale Levers
 
-Full clones of huge monorepos waste time and disk. Git offers three related scalers:
+| Technique | Command Flag | What Is Omitted | Best Use Case |
+| :--- | :--- | :--- | :--- |
+| **Shallow clone** | `--depth=1` | Commit history older than N commits | Ephemeral CI jobs that only build `HEAD` |
+| **Blobless partial clone** | `--filter=blob:none` | Historical file blobs (fetched on demand) | Daily developer clones of huge repositories |
+| **Treeless partial clone** | `--filter=tree:0` | Historical trees and blobs (fetched on demand) | Fast throwaway builds needing full commit graph |
+| **Sparse checkout** | `git sparse-checkout set <dir>` | Unneeded working-tree directories on disk | Working on one service inside a monorepo |
 
-1. **Shallow** — fewer commits (`--depth`, `--shallow-since`).
-2. **Sparse checkout** — fewer files in the worktree.
-3. **Partial clone** — omit blobs (or trees) until needed (`--filter`).
+## Combining Blobless Partial Clone with Cone-Mode Sparse Checkout
 
-They combine. CI often wants depth 1 + sparse paths; developers may want partial clone + full history.
-
-Verified with **git 2.47.3** using local `file://` clones.
-
-## Lab
-
-<!-- file: shallow-lab.sh -->
-```bash
-#!/usr/bin/env bash
-set -euo pipefail
-# see chapter body for the verified sequence: depth-1 clone and
-# blob:none + sparse-checkout cone for d5/
-```
-
-Verified output:
-
-```text
-shallow_commits=1
-partial_tree:
-partial/d5/f.txt
-partial_commits=5
-```
-
-Depth-1 yielded a single commit; the partial+sparse worktree contained only `d5/f.txt` while still seeing five commits in history.
-
-## Commands to memorize
+The fastest developer workflow for a massive monorepo combines `--filter=blob:none` (keeps full commit history for `git log` and `git blame`, downloads blobs lazily) with **cone-mode sparse checkout** (only materializes the directories you actively edit, reducing `git status` scan time from seconds to milliseconds):
 
 ```bash
-git clone --depth 1 <url>
-git fetch --unshallow          # convert to full history later
+# 1. Clone commit/tree metadata without historical blobs or checking out all files
+git clone --filter=blob:none --sparse <repo-url> monorepo
+cd monorepo
 
-git clone --filter=blob:none --sparse <url>
-git sparse-checkout set path/to/dir
+# 2. Materialize only the specific service and shared libraries you need
+git sparse-checkout set --cone services/billing libs/auth
 
-git clone --filter=blob:none --no-checkout <url>
-cd <repo> && git sparse-checkout init --cone
-git sparse-checkout set apps/web
-git checkout
+# 3. Verify active sparse patterns
+git sparse-checkout list
 ```
 
-## Tradeoffs
+### Enabling the Sparse Index
 
-| Mode | Saves | Breaks / costs |
-|------|-------|----------------|
-| Shallow | Clone time, some disk | `blame` across boundary, some merges |
-| Sparse | Worktree size | Easy to miss files outside cone |
-| Partial | Initial bandwidth | Later fetches pay for blobs; needs server support |
+In repositories with hundreds of thousands of paths, pair cone mode with the **sparse index** so `.git/index` collapses outside directories into single tree entries instead of listing every skipped file:
 
-## Pitfalls
-
-1. Running history archaeology on `--depth 1` clones.
-2. Forgetting server-side filter support (ancient Git hosts).
-3. Sparse cone that excludes a submodule path you still need.
-4. Treating partial clone as offline-capable — first checkout may need network.
-
-## Summary
-
-- `--depth` truncates history; sparse truncates the tree; filters defer objects.
-- Combine deliberately for CI versus developer clones.
-- Unshallow or widen sparse cones when the task needs more.
-
-
-## Worked scenarios
-
-### Scenario A — CI checkout of one service
 ```bash
-git clone --depth 1 --filter=blob:none --sparse <url> app
-cd app
-git sparse-checkout set services/api
+git config index.sparse true
+git config core.untrackedCache true
 ```
 
-### Scenario B — deepen later for blame
+> [!WARNING]
+> Avoid `--depth=1` shallow clones for interactive developer work or pushes. Shallow repositories break `git merge-base` calculations across diverged branches and force expensive object renegotiation on `git fetch`. Prefer `--filter=blob:none` whenever you need history or branching.
+
+## Hands-On Lab: Measure Disk Savings with Sparse Checkout
+
+Create a local multi-service repository and verify how cone-mode sparse checkout trims the working tree without losing Git history:
+
 ```bash
-git fetch --deepen 100
-# or
-git fetch --unshallow
+mkdir -p /tmp/vcs-scale-lab/origin && cd /tmp/vcs-scale-lab/origin
+git init -b main
+mkdir -p services/api services/web services/ml
+for d in services/api services/web services/ml; do
+  echo "module $d" > "$d/README.md"
+done
+git add -A && git commit -m "initial monorepo layout"
+
+# Clone with sparse checkout enabled
+cd /tmp/vcs-scale-lab
+git clone --sparse /tmp/vcs-scale-lab/origin dev-checkout
+cd dev-checkout
+ls -la services/ 2>/dev/null || echo "Only root files checked out initially"
+
+# Materialize only services/api
+git sparse-checkout set --cone services/api
+find . -maxdepth 3 -not -path './.git*'
 ```
-
-### Scenario C — measure object counts
-```bash
-git rev-list --count HEAD
-git count-objects -vH
-```
-
-Compare depth-1 versus full clone when justifying CI settings.
-
-## Server requirements
-
-Partial clones need a Git server that understands filters (Git 2.19+ class hosts). `file://` and modern GitHub/GitLab do.
-
-## Common mistakes (extended)
-
-- Running `git gc` assumptions on partial clones without understanding rehydration.
-- Sparse-checkout excluding README/docs that CI still needs.
-- Publishing from a shallow clone when release tags are outside the depth window.
-
-
-## Sources
-
-- [git-clone(1)](https://git-scm.com/docs/git-clone)
-- [git-sparse-checkout(1)](https://git-scm.com/docs/git-sparse-checkout)
-- [Partial clone](https://git-scm.com/docs/partial-clone)

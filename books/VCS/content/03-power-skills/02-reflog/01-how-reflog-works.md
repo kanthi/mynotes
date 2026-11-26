@@ -1,247 +1,56 @@
 ---
-title: 'How the reflog works: HEAD movement as a safety net'
+title: How the Reflog Works
 ---
 
-# How the reflog works: HEAD movement as a safety net
+# How the Reflog Works
 
-After this page you can inspect Git's reference logs to trace every local update to `HEAD` and branch references, use reflog qualified syntax to inspect earlier states of your repository, and recover orphaned commits or deleted branch tips before garbage collection removes them.
+In Git, a commit is almost never destroyed immediately when you run `git reset --hard`, `git rebase`, or `git branch -D`. As long as an object was committed at least once, it stays inside `.git/objects/` as a **dangling commit** until garbage collection prunes it. The **reflog** is Git's local journal of every position `HEAD` and every local branch ref has pointed to, giving you exact coordinates to rescue lost work.
 
-## Thesis
+![Git reflog recovery flow showing how dangling commits are rescued from .git/logs/HEAD](../../../images/diagram-vcs-reflog-recovery.svg)
 
-Git's object database is append-only by design. When you amend a commit, rebase a topic branch, reset `HEAD`, or delete a local branch, Git does not immediately destroy the underlying commit objects. Instead, it updates reference pointers to point to new commit hashes. The **reflog** (*reference log*) acts as a local flight recorder that notes every time `HEAD` or a branch tip changes position.
+## What Git Records in `.git/logs/`
 
-Because the reflog tracks local reference movements rather than repository history, it provides a deterministic undo log for local administrative actions. As long as a commit was recorded locally and has not been pruned by garbage collection, you can find its SHA-1 hash in the reflog and restore your work.
-
-## How reference logs record history
-
-Git maintains reference log files inside the hidden `.git/logs/` directory. Each reference (such as `HEAD` or individual branches in `refs/heads/`) can have its own log file tracking updates.
+Every time a reference moves—via `commit`, `checkout`, `switch`, `merge`, `rebase`, `reset`, or `cherry-pick`—Git appends a line to `.git/logs/HEAD` and `.git/logs/refs/heads/<branch>`. Each line stores the old hash, the new hash, the committer identity and Unix timestamp, and a short reason string:
 
 ```text
-               Reference Movement Recorded by Reflog
-
-  Action: git reset --hard HEAD~1
-
-  [HEAD] ───► Commit C (d9574b3) ──(reset)──► Commit B (5bc1494)
-                 │                               │
-                 ▼                               ▼
-         .git/logs/HEAD                  .git/logs/HEAD
-      (Entry: HEAD@{1} -> C)          (Entry: HEAD@{0} -> B)
+0000000000... a1b2c3d4e5... User <user@example.org> 1732500000 +0000  commit (initial): init
+a1b2c3d4e5... f9e8d7c6b5... User <user@example.org> 1732500120 +0000  commit: add parser
+f9e8d7c6b5... a1b2c3d4e5... User <user@example.org> 1732500240 +0000  reset: moving to HEAD~1
 ```
 
-Every time a Git command modifies a reference, Git appends a record to the corresponding log file. An entry records four key pieces of information:
+You can address any historical entry with `HEAD@{n}` (steps ago) or time-based syntax like `main@{15 minutes ago}` or `HEAD@{yesterday}`.
 
-1. The previous object hash.
-2. The new object hash.
-3. The author identity and Unix timestamp of the update.
-4. A descriptive message stating the operation (for example, `commit`, `checkout`, `reset`, or `rebase`).
+## Retention Windows and Boundaries
 
-### Local scope and retention limits
+- **Reachable entries (`gc.reflogExpire`):** Retained for **90 days** by default.
+- **Unreachable entries (`gc.reflogExpireUnreachable`):** Retained for **30 days** by default, after which `git gc` expires the reflog entry and prunes the unreferenced commit objects.
+- **Strictly local:** Reflogs are never pushed or fetched. If you delete a local repository directory, its reflog goes with it.
+- **Only committed snapshots:** Uncommitted edits wiped by `git reset --hard` or `git checkout -- <file>` were never recorded in `.git/logs/HEAD` (though files staged via `git add` still exist briefly as dangling blobs discoverable via `git fsck --lost-found`).
 
-Reference logs are strictly local to your clone. They are never transmitted over the wire during `git push`, `git fetch`, or `git clone`. A newly cloned repository starts with a fresh reflog recording only the initial clone operation.
+> [!IMPORTANT]
+> When recovering from a bad rebase or reset, always inspect `git reflog` first and create a new rescue branch (`git switch -c rescue HEAD@{2}`) rather than immediately running another `reset --hard`.
 
-Reflog entries expire over time to prevent reference log files from growing indefinitely and to allow unreachable objects to be cleaned up. Git enforces two primary configuration thresholds for expiration:
+## Hands-On Lab: Deliberately Lose a Branch and Rescue It
 
-| Configuration Variable | Default Value | Description |
-|------------------------|---------------|-------------|
-| `gc.reflogExpire` | `90.days` | Retention period for reflog entries pointing to commits reachable from current branch tips. |
-| `gc.reflogExpireUnreachable` | `30.days` | Retention period for reflog entries pointing to unreachable (orphaned) commits. |
+Practice recovering a commit after both `git reset --hard` and `git branch -D`:
 
-When `git gc` runs (either automatically or manually), entries older than these windows are pruned from `.git/logs/`. Once an entry expires and the associated commit object becomes unreachable from any reference, the object database permanently purges the commit.
-
-## Lab: inspecting reflog and recovering deleted branch tips
-
-The following script initializes a repository, creates commits, manipulates local branches, and demonstrates how to inspect the reflog to recover a branch tip after accidental deletion.
-
-<!-- file: reflog-lab.sh -->
 ```bash
-#!/usr/bin/env bash
-set -euo pipefail
-
-# Prepare clean workspace
-rm -rf /tmp/reflog-demo
-mkdir -p /tmp/reflog-demo
-cd /tmp/reflog-demo
-
-# Initialize repository
+mkdir -p /tmp/vcs-reflog-lab && cd /tmp/vcs-reflog-lab
 git init -b main
-git config user.name "Lab User"
-git config user.email "user@example.com"
+echo "v1" > app.py && git add app.py && git commit -m "initial"
 
-# Create initial commit
-echo "first line" > file.txt
-git add file.txt
-git commit -m "one"
+# Create a feature branch with valuable work, then delete it forcefully
+git switch -c exp-feature
+echo "def important(): return 42" >> app.py
+git commit -am "implement important feature"
+git switch main
+git branch -D exp-feature
 
-# Create second commit
-echo "second line" >> file.txt
-git commit -am "two"
+# 1. Inspect the reflog to locate the deleted branch tip
+git reflog -n 10
 
-# Show basic reflog output for HEAD
-git reflog show HEAD -n 2
-
-# Create a temporary feature branch at current tip
-git branch feature-temp
-
-# Reset main back to first commit
-git reset --hard HEAD~1
-
-# Delete the feature branch pointer
-git branch -D feature-temp || true
-
-# Inspect reflog to identify orphaned commit
-git reflog show HEAD -n 3
-
-# Recreate branch from reflog syntax
-git branch recovered HEAD@{1}
-
-# Check out recovered commit directly as detached HEAD
-git checkout HEAD@{1}
-
-# Verify branch states
-git branch -v
+# 2. Recover the lost commit onto a new branch using its reflog entry
+LOST_HASH=$(git reflog --grep-reflog="implement important feature" -n 1 --format="%H")
+git switch -c recovered-feature "$LOST_HASH"
+cat app.py
 ```
-
-Running the laboratory setup script demonstrates how reference movements are recorded and retrieved.
-
-The following command displays the top entries of the `HEAD` reference log after two commits.
-
-```text
-d9574b3 HEAD@{0}: commit: two
-5bc1494 HEAD@{1}: commit (initial): one
-fatal: not a valid object name: ''
-* (HEAD detached at 5bc1494) 5bc1494 one
-  main                       d9574b3 two
-  recovered                  5bc1494 one
-```
-
-The following command displays the reference log entries after resetting `main` and attempting branch deletion.
-
-```text
-d9574b3 HEAD@{0}: commit: two
-5bc1494 HEAD@{1}: commit (initial): one
-fatal: not a valid object name: ''
-* (HEAD detached at 5bc1494) 5bc1494 one
-  main                       d9574b3 two
-  recovered                  5bc1494 one
-```
-
-The following command lists all local branches and detached states after branch recovery.
-
-```text
-d9574b3 HEAD@{0}: commit: two
-5bc1494 HEAD@{1}: commit (initial): one
-fatal: not a valid object name: ''
-* (HEAD detached at 5bc1494) 5bc1494 one
-  main                       d9574b3 two
-  recovered                  5bc1494 one
-```
-
-## Reflog syntax and qualifier operations
-
-Git provides several syntax variations to query reference logs by index or time window.
-
-### Relative positional notation (`@{n}`)
-
-The notation `ref@{n}` specifies the state of `ref` `n` operations ago within the reflog file.
-
-- `HEAD@{0}`: The current position of `HEAD`.
-- `HEAD@{1}`: The immediate prior position of `HEAD`.
-- `main@{2}`: The position of the `main` branch tip two operations ago.
-
- positional indices are relative and shift as new actions occur. `HEAD@{0}` always represents the current moment.
-
-### Time-based notation (`@{<date>}`)
-
-You can query the state of a reference at a specific point in wall-clock time using human-readable or calendar formats:
-
-- `HEAD@{yesterday}`
-- `main@{"2026-11-01 10:00:00"}`
-- `HEAD@{1.week.ago}`
-
-When evaluating time-based queries, Git inspects timestamps in `.git/logs/` and identifies the reference position closest to the specified timestamp.
-
-### Common `git reflog` subcommands
-
-```bash
-git reflog show HEAD           # Display log entries for HEAD (default)
-git reflog show main           # Display log entries for branch 'main'
-git reflog exists refs/heads/m # Exit 0 if reflog exists for reference
-git reflog expire --all        # Prune reflog entries older than threshold
-git reflog delete HEAD@{3}     # Remove a specific reflog entry manually
-```
-
-## Step-by-step branch tip recovery workflow
-
-When a branch tip is deleted, reset, or overwritten during an aggressive rebase, follow this structured recovery process.
-
-### Step 1: Inspect the reference log
-
-Run `git reflog` to examine recent movements of `HEAD`. Look for the operational context in the message column (e.g., `commit:`, `checkout: moving from`, `reset: moving to`).
-
-```bash
-git reflog
-```
-
-Locate the entry immediately preceding the destructive event and copy its commit hash or reflog specifier (such as `HEAD@{1}`).
-
-### Step 2: Inspect the target commit state
-
-Before restoring reference pointers, verify the contents of the target object using `git show` to ensure you selected the correct point in time.
-
-```bash
-git show HEAD@{1}
-```
-
-### Step 3: Attach a reference to the recovered commit
-
-To recover work safely without altering your current working tree state, create a new branch pointing directly to the recovered commit hash or reflog specifier.
-
-```bash
-git branch recovered-work HEAD@{1}
-```
-
-Alternatively, if you want to inspect the state interactively, check out the reflog target directly to enter a detached `HEAD` state:
-
-```bash
-git checkout HEAD@{1}
-```
-
-Once attached, verify that your files and commit history reflect the desired target state before continuing development.
-
-## Pitfalls
-
-1. **Assuming reflog survives repository clones.** Reflogs are purely local. If you delete a branch locally that was never pushed to a remote repository, another team member cannot use their reflog to restore your commits.
-2. **Relying on expired reflog entries.** Commits that become unreachable remain recoverable only until `git gc` prunes them based on `gc.reflogExpireUnreachable`. Do not delay recovering orphaned work.
-3. **Confusing commit history with reflog history.** `git log` traverses parent pointers backward through commit graph topology. `git reflog` reads a linear append-only file tracking local reference movement timestamps.
-4. **Modifying reflog entries manually.** Editing `.git/logs/` files directly can corrupt log formatting and lead to inaccurate date-based lookup resolution.
-5. **Relying on reflogs in bare repositories.** By default, bare repositories (such as those hosted on central git servers) do not enable reference logging (`core.logAllRefUpdates` is set to `false`).
-
-## Common mistakes
-
-### Confusing `HEAD~1` with `HEAD@{1}`
-
-A frequent source of errors is treating parent commit notation (`~`) and reflog index notation (`@{}`) as interchangeable.
-
-| Syntax | Target | Description |
-|--------|--------|-------------|
-| `HEAD~1` | Parent commit | Navigates backward along the commit tree structure relative to current commit. |
-| `HEAD@{1}` | Prior location | Navigates backward along the local sequence of `HEAD` pointer movements. |
-
-For example, if you execute `git checkout main` from a feature branch, `HEAD~1` evaluates to the commit prior to `main` on the tree, while `HEAD@{1}` evaluates to the tip of the feature branch you just left.
-
-### Running aggressive garbage collection prematurely
-
-Executing `git gc --prune=now` forcibly removes all unreachable objects immediately regardless of `gc.reflogExpireUnreachable` configuration. Avoid running manual aggressive pruning operations when attempting to locate missing work.
-
-## Summary
-
-- The reflog acts as a local safety net by recording every pointer change to `HEAD` and local branches.
-- Reference logs exist only in your local clone under `.git/logs/` and are never shared over the network.
-- Entries expire after configurable periods (defaults: 90 days for reachable entries, 30 days for unreachable entries).
-- Reflog syntax (`HEAD@{n}` or `HEAD@{date}`) allows inspecting and checking out historic states.
-- To recover lost commits or deleted branch tips, locate the target hash in `git reflog` and attach a branch via `git branch <name> <hash>`.
-
-## Sources
-
-- [git-reflog(1) Manual Page](https://git-scm.com/docs/git-reflog)
-- [git-checkout(1) Manual Page](https://git-scm.com/docs/git-checkout)
