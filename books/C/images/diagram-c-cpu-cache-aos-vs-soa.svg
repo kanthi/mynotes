@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 235" role="img" aria-label="CPU cache line layout comparing Array of Structs versus Struct of Arrays" style="color-scheme:light">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#3b5b85"/></marker>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 1 L 10 5 L 0 9 z" fill="#c0392b"/></marker>
+  </defs>
+  <rect width="820" height="235" fill="#ffffff" rx="8"/>
+  <text x="410.0" y="30" text-anchor="middle" font-family="system-ui,sans-serif" font-size="17" font-weight="700" fill="#1f2a36">CPU Cache Locality in C: Array-of-Structs (AoS) vs. Struct-of-Arrays (SoA)</text>
+  <rect x="30" y="65" width="360" height="145" rx="8" fill="#f4f7fb" stroke="#3b5b85" stroke-width="2"/>
+  <text x="210.0" y="89" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Array of Structs (AoS)</text>
+  <text x="210.0" y="109" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">[x0,y0,z0,pad][x1,y1,z1,pad]...</text>
+  <text x="210.0" y="125" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Hot loop reading only x loads unused y,z,pad</text>
+  <text x="210.0" y="141" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Wastes 60-75% of every 64-byte L1 cache line</text>
+  <text x="210.0" y="157" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Harder to auto-vectorize</text>
+  <rect x="430" y="65" width="360" height="145" rx="8" fill="#f4f7fb" stroke="#c0392b" stroke-width="2"/>
+  <text x="610.0" y="89" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#1f2a36">Struct of Arrays (SoA)</text>
+  <text x="610.0" y="109" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">x[0..N], y[0..N], z[0..N] contiguous</text>
+  <text x="610.0" y="125" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">16 floats fill one 64-byte L1 cache line</text>
+  <text x="610.0" y="141" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Zero wasted memory bandwidth</text>
+  <text x="610.0" y="157" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#5a6b7d">Direct AVX2/NEON SIMD loads</text>
+</svg>

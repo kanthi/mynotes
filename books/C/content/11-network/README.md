@@ -40,3 +40,28 @@ Before starting this module, you should have a solid understanding of:
 - Network error handling
 - Concurrent network programming
 - Network security principles
+## POSIX Socket Lifecycle Diagram & Byte-Order Verification Lab
+
+![POSIX C TCP server socket lifecycle from socket() through bind, listen, accept, and epoll](../../images/diagram-c-posix-socket-lifecycle.svg)
+
+Verify network byte order (`htons` / `htonl`) and address formatting (`inet_pton` / `inet_ntop`) with a portable C11 snippet:
+
+```c
+#include <arpa/inet.h>
+#include <stdio.h>
+
+int main(void) {
+    uint16_t host_port = 8080;
+    uint16_t net_port = htons(host_port);
+    printf("host=0x%04x -> net=0x%04x -> host=%u
+", host_port, net_port, ntohs(net_port));
+
+    struct in_addr addr;
+    inet_pton(AF_INET, "127.0.0.1", &addr);
+    char buf[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &addr, buf, sizeof(buf));
+    printf("round-tripped IPv4: %s
+", buf);
+    return 0;
+}
+```

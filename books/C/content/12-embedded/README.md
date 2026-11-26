@@ -42,3 +42,27 @@ Before starting this module, you should have a solid understanding of:
 - Power management
 - Cross-compilation for embedded targets
 - Hardware-software interface design
+## Embedded Memory Map Diagram & Safe Bitmask Register Lab
+
+![Embedded C memory-mapped IO volatile register access and linker memory map](../../images/diagram-c-mmio-volatile-registers.svg)
+
+Practice atomic-style bit set, clear, and toggle operations on a simulated `volatile uint32_t` hardware control register:
+
+```c
+#include <stdint.h>
+#include <stdio.h>
+
+#define BIT(n) (1u << (n))
+
+int main(void) {
+    volatile uint32_t gpio_odr = 0;
+    gpio_odr |= BIT(5);   // Enable LED on pin 5
+    gpio_odr |= BIT(2);   // Enable TX on pin 2
+    printf("After set:   0x%08X
+", gpio_odr);
+    gpio_odr &= ~BIT(5);  // Clear pin 5 without disturbing pin 2
+    printf("After clear: 0x%08X
+", gpio_odr);
+    return 0;
+}
+```

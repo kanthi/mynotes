@@ -60,3 +60,29 @@ Use `restrict` on hot kernels where the contract is "distinct buffers", document
 
 - ISO/IEC 9899:1999 §6.7.3 (`restrict`)
 - GCC manual: [Restricted Pointers](https://gcc.gnu.org/onlinedocs/gcc/Restricted-Pointers.html)
+## Architecture Diagram & Compiler Vectorization Lab
+
+![C pointer aliasing hazard versus restrict keyword enabling SIMD vectorization](../../images/diagram-c-restrict-aliasing.svg)
+
+Compile both functions with `-O3` and compare the generated assembly (`-S`) to observe how `restrict` eliminates alias checks and enables SIMD instructions:
+
+```c
+#include <stddef.h>
+
+void scale_add_plain(float *dst, const float *a, const float *b, size_t n) {
+    for (size_t i = 0; i < n; i++) {
+        dst[i] = a[i] + 2.0f * b[i];
+    }
+}
+
+void scale_add_restrict(float *restrict dst, const float *restrict a,
+                        const float *restrict b, size_t n) {
+    for (size_t i = 0; i < n; i++) {
+        dst[i] = a[i] + 2.0f * b[i];
+    }
+}
+```
+
+```bash
+cc -O3 -S -o /tmp/alias.s /tmp/alias.c && grep -E 'scale_add_|fmadd|vaddps|fmla' /tmp/alias.s | head -n 20
+```

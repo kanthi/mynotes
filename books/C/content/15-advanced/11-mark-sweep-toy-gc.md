@@ -69,3 +69,49 @@ Use a toy GC to learn the vocabulary (roots, mark bits, barriers). Do not invent
 
 - Jones, Hosking, Moss — *The Garbage Collection Handbook*
 - [Go GC guide](https://go.dev/doc/gc-guide) (production contrast)
+## Mark-and-Sweep Lifecycle Diagram & Reachability Lab
+
+![C mark-and-sweep garbage collector phases from root stack to sweep free-list](../../images/diagram-c-mark-sweep-gc.svg)
+
+Compile and run a minimal 2-object mark-and-sweep cycle check with AddressSanitizer (`-fsanitize=address`) to verify zero leaked allocations:
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct Obj {
+    int value;
+    unsigned char marked;
+    struct Obj *next_alloc;
+} Obj;
+
+int main(void) {
+    Obj *head = NULL;
+    for (int i = 0; i < 4; i++) {
+        Obj *o = calloc(1, sizeof(Obj));
+        o->value = i;
+        o->marked = (i % 2 == 0); // Simulate even objects reachable from roots
+        o->next_alloc = head;
+        head = o;
+    }
+
+    int freed = 0, kept = 0;
+    Obj **cur = &head;
+    while (*cur) {
+        if (!(*cur)->marked) {
+            Obj *dead = *cur;
+            *cur = dead->next_alloc;
+            free(dead);
+            freed++;
+        } else {
+            (*cur)->marked = 0;
+            cur = &(*cur)->next_alloc;
+            kept++;
+        }
+    }
+    printf("Sweep complete: kept=%d, freed=%d
+", kept, freed);
+    while (head) { Obj *tmp = head; head = head->next_alloc; free(tmp); }
+    return 0;
+}
+```

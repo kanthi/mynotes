@@ -70,3 +70,27 @@ After completing this module, proceed to **Module 6: Pointers and Memory Managem
 - Online tutorials on array and string algorithms
 - Debugging tools documentation (GDB, Valgrind)
 - Best practices guides for secure string handling
+## Array-to-Pointer Decay Diagram & Safe Length-Passing Lab
+
+![C array memory layout and array-to-pointer decay across function boundaries](../../images/diagram-c-array-decay-pointers.svg)
+
+Observe the classic `sizeof` decay trap directly and practice passing `(const int *arr, size_t len)` explicitly:
+
+```c
+#include <stddef.h>
+#include <stdio.h>
+
+static long sum_slice(const int *arr, size_t len) {
+    long total = 0;
+    for (size_t i = 0; i < len; i++) total += arr[i];
+    return total;
+}
+
+int main(void) {
+    int nums[] = {10, 20, 30, 40};
+    size_t count = sizeof(nums) / sizeof(nums[0]);
+    printf("count=%zu, sum=%ld
+", count, sum_slice(nums, count));
+    return 0;
+}
+```

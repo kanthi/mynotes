@@ -43,3 +43,27 @@ Before starting this module, you should have a solid understanding of:
 - Memory allocation strategies
 - Performance benchmarking
 - Trade-offs between performance and maintainability
+## Cache Locality Diagram & AoS vs. SoA Layout Lab
+
+![CPU cache line layout comparing Array of Structs versus Struct of Arrays](../../images/diagram-c-cpu-cache-aos-vs-soa.svg)
+
+Compare struct padding and cache-line density between poorly ordered structs and tightly packed SoA arrays:
+
+```c
+#include <stddef.h>
+#include <stdio.h>
+
+typedef struct { char tag; double x; char flag; } PaddedAoS;
+typedef struct { double x; char tag; char flag; } TightAoS;
+
+int main(void) {
+    printf("sizeof(PaddedAoS) = %zu bytes
+", sizeof(PaddedAoS));
+    printf("sizeof(TightAoS)  = %zu bytes
+", sizeof(TightAoS));
+    printf("Elements per 64B cache line: Padded=%zu, Tight=%zu
+",
+           64 / sizeof(PaddedAoS), 64 / sizeof(TightAoS));
+    return 0;
+}
+```
