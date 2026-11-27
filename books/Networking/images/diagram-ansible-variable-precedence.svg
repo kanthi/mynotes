@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 340" role="img" aria-label="Ansible variable precedence hierarchy from lowest role defaults to highest command-line extra vars">
+  <defs>
+    <style>
+      .bg { fill: #f8fafc; stroke: #cbd5e1; }
+      .title { font: 700 14px system-ui, -apple-system, sans-serif; fill: #0f172a; }
+      .lbl { font: 600 12px ui-monospace, SFMono-Regular, Menlo, monospace; fill: #0f172a; }
+      .desc { font: 500 11.5px system-ui, -apple-system, sans-serif; fill: #475569; }
+      .badge { font: 700 11px system-ui, -apple-system, sans-serif; fill: #ffffff; }
+    </style>
+  </defs>
+  <rect x="6" y="6" width="808" height="328" rx="12" class="bg"/>
+  <text x="24" y="34" class="title">Ansible Variable Precedence (Lowest to Highest Priority)</text>
+
+  <rect x="24" y="50" width="772" height="30" rx="6" fill="#fee2e2" stroke="#dc2626"/>
+  <rect x="30" y="55" width="76" height="20" rx="4" fill="#dc2626"/>
+  <text x="68" y="69" text-anchor="middle" class="badge">HIGHEST</text>
+  <text x="120" y="69" class="lbl">-e / --extra-vars</text>
+  <text x="410" y="69" class="desc">Always wins — CI overrides &amp; emergency targets</text>
+
+  <rect x="24" y="88" width="772" height="30" rx="6" fill="#ffedd5" stroke="#ea580c"/>
+  <text x="120" y="107" class="lbl">roles/&lt;role&gt;/vars/main.yml</text>
+  <text x="410" y="107" class="desc">Role-internal constants</text>
+
+  <rect x="24" y="126" width="772" height="30" rx="6" fill="#fef3c7" stroke="#d97706"/>
+  <text x="120" y="145" class="lbl">set_fact &amp; register</text>
+  <text x="410" y="145" class="desc">Runtime values computed from live device facts</text>
+
+  <rect x="24" y="164" width="772" height="30" rx="6" fill="#ecfccb" stroke="#65a30d"/>
+  <text x="120" y="183" class="lbl">play vars / vars_files</text>
+  <text x="410" y="183" class="desc">Playbook-scoped parameters</text>
+
+  <rect x="24" y="202" width="772" height="30" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="120" y="221" class="lbl">inventory/host_vars/&lt;host&gt;.yml</text>
+  <text x="410" y="221" class="desc">Device-specific loopbacks, BGP router-id, interfaces</text>
+
+  <rect x="24" y="240" width="772" height="30" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="120" y="259" class="lbl">inventory/group_vars/&lt;group&gt;.yml</text>
+  <text x="410" y="259" class="desc">Site, platform, and role standards (all.yml below)</text>
+
+  <rect x="24" y="278" width="772" height="30" rx="6" fill="#f1f5f9" stroke="#64748b"/>
+  <rect x="30" y="283" width="76" height="20" rx="4" fill="#64748b"/>
+  <text x="68" y="297" text-anchor="middle" class="badge">LOWEST</text>
+  <text x="120" y="297" class="lbl">roles/&lt;role&gt;/defaults/main.yml</text>
+  <text x="410" y="297" class="desc">Safe fallback defaults meant to be overridden</text>
+</svg>

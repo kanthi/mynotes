@@ -30,6 +30,7 @@ Learn networking from first principles to NetOps by designing, building, breakin
 8. Optional advanced tracks: [BGP security](content/08-bgp-security/index.md), [network forensics](content/08-network-forensics/index.md), and [transport, TLS/PKI, and HTTP/proxies](content/08-transport-and-applications/index.md).
 9. [Lab workbook](content/09-lab-workbook/index.md) (55+ multi-NOS exercises) and worked [capstone projects](content/09-projects/index.md) (C1–C4).
 10. [Command reference](content/10-command-reference/index.md): side-by-side NOS translation matrix and cheat sheets for FRR, Arista EOS/cEOS/vEOS, Nokia SR Linux, Containerlab/netlab/Linux, and Cisco/Junos.
+11. [Network automation with Ansible](content/11-network-automation-with-ansible/index.md): 34-chapter production track plus appendices covering Ansible core mechanics, connection plugins, Cisco/Junos/FortiOS resource modules, Jinja2, Source of Truth, compliance, testing, CI/CD, and AWX/AAP.
 
 Use the [workbook guide and learning paths](content/09-lab-workbook/00-workbook-guide.md) to choose exercises and prerequisites. Use each diagram to predict the path, build the lab, verify the control and data planes, then introduce a failure and explain what changed. The workbook includes optional cEOS exercises that require an independently obtained image; consult the image provider for access and licensing. The workbook complements the core chapters: choose labs that match your topic and available images. Cisco and Juniper labs may be added as optional tracks later.
 

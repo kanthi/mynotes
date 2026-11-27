@@ -415,6 +415,49 @@ book:
     - content/10-command-reference/04-sr-linux.md
     - content/10-command-reference/05-lab-tools.md
     - content/10-command-reference/06-cisco-junos-quickref.md
+  - part: Network Automation with Ansible
+    contents:
+    - content/11-network-automation-with-ansible/index.md
+    - content/11-network-automation-with-ansible/01-the-case-for-network-automation.md
+    - content/11-network-automation-with-ansible/02-ansible-in-the-network-landscape.md
+    - content/11-network-automation-with-ansible/03-the-prerequisites-you-actually-need.md
+    - content/11-network-automation-with-ansible/04-building-your-lab.md
+    - content/11-network-automation-with-ansible/05-installation-versions-and-collections.md
+    - content/11-network-automation-with-ansible/06-inventory.md
+    - content/11-network-automation-with-ansible/07-your-first-playbook.md
+    - content/11-network-automation-with-ansible/08-variables-facts-and-precedence.md
+    - content/11-network-automation-with-ansible/09-loops-conditionals-and-handlers.md
+    - content/11-network-automation-with-ansible/10-roles-and-reusability.md
+    - content/11-network-automation-with-ansible/11-error-handling-and-execution-control.md
+    - content/11-network-automation-with-ansible/12-connection-plugins-demystified.md
+    - content/11-network-automation-with-ansible/13-authentication-and-privilege.md
+    - content/11-network-automation-with-ansible/14-the-cisco-collections.md
+    - content/11-network-automation-with-ansible/15-resource-modules-in-depth.md
+    - content/11-network-automation-with-ansible/16-beyond-cisco-juniper-and-fortinet.md
+    - content/11-network-automation-with-ansible/17-parsing-device-output.md
+    - content/11-network-automation-with-ansible/18-jinja2-for-network-engineers.md
+    - content/11-network-automation-with-ansible/19-source-of-truth.md
+    - content/11-network-automation-with-ansible/20-template-driven-config-generation.md
+    - content/11-network-automation-with-ansible/21-golden-configurations-and-compliance.md
+    - content/11-network-automation-with-ansible/22-configuration-backup-and-restore.md
+    - content/11-network-automation-with-ansible/23-facts-reports-and-documentation.md
+    - content/11-network-automation-with-ansible/24-software-upgrades-and-device-onboarding.md
+    - content/11-network-automation-with-ansible/25-troubleshooting-and-validation-playbooks.md
+    - content/11-network-automation-with-ansible/26-campus-8021x-vlans-and-access-switching.md
+    - content/11-network-automation-with-ansible/27-wan-and-data-centre-bgp-mpls-and-fabric.md
+    - content/11-network-automation-with-ansible/28-security-automation-across-four-platforms.md
+    - content/11-network-automation-with-ansible/29-version-control-and-workflow.md
+    - content/11-network-automation-with-ansible/30-testing-your-automation.md
+    - content/11-network-automation-with-ansible/31-cicd-for-network-configuration.md
+    - content/11-network-automation-with-ansible/32-awx-and-ansible-automation-platform.md
+    - content/11-network-automation-with-ansible/33-secrets-security-and-governance.md
+    - content/11-network-automation-with-ansible/34-building-an-automation-practice.md
+    - content/11-network-automation-with-ansible/35-afterword-what-this-was-really-about.md
+    - content/11-network-automation-with-ansible/36-appendix-a-ansible-and-jinja2-quick-reference.md
+    - content/11-network-automation-with-ansible/37-appendix-b-module-cross-reference.md
+    - content/11-network-automation-with-ansible/38-appendix-c-lab-build-guide.md
+    - content/11-network-automation-with-ansible/39-appendix-d-glossary.md
+    - content/11-network-automation-with-ansible/40-appendix-e-repository-structure.md
 format:
   html:
     theme: auto

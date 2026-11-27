@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 270" role="img" aria-label="Ansible persistent connection daemon multiplexing tasks over a local Unix socket to network_cli, netconf, and httpapi transports">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0284c7"/>
+    </marker>
+    <style>
+      .bg { fill: #f8fafc; stroke: #cbd5e1; }
+      .b1 { fill: #e0f2fe; stroke: #0284c7; stroke-width: 1.8; }
+      .b2 { fill: #fef3c7; stroke: #d97706; stroke-width: 1.8; }
+      .b3 { fill: #dcfce7; stroke: #16a34a; stroke-width: 1.8; }
+      .t { font: 700 13.5px system-ui, -apple-system, sans-serif; fill: #0f172a; }
+      .m { font: 600 11px ui-monospace, SFMono-Regular, Menlo, monospace; fill: #1e293b; }
+      .s { font: 500 11px system-ui, -apple-system, sans-serif; fill: #475569; }
+      .l { stroke: #0284c7; stroke-width: 1.8; fill: none; marker-end: url(#arr); }
+    </style>
+  </defs>
+  <rect x="6" y="6" width="848" height="258" rx="12" class="bg"/>
+  <text x="24" y="32" class="t">Persistent Connection Lifecycle (ansible-connection Daemon)</text>
+
+  <rect x="24" y="56" width="180" height="176" rx="10" class="b1"/>
+  <text x="114" y="84" text-anchor="middle" class="t">Playbook Tasks</text>
+  <rect x="38" y="100" width="152" height="28" rx="5" fill="#ffffff" stroke="#7dd3fc"/>
+  <text x="114" y="118" text-anchor="middle" class="m">Task 1: ios_facts</text>
+  <rect x="38" y="138" width="152" height="28" rx="5" fill="#ffffff" stroke="#7dd3fc"/>
+  <text x="114" y="156" text-anchor="middle" class="m">Task 2: ios_vlans</text>
+  <rect x="38" y="176" width="152" height="28" rx="5" fill="#ffffff" stroke="#7dd3fc"/>
+  <text x="114" y="194" text-anchor="middle" class="m">Task 3: ios_config</text>
+
+  <rect x="272" y="76" width="236" height="136" rx="10" class="b2"/>
+  <text x="390" y="104" text-anchor="middle" class="t">ansible-connection</text>
+  <text x="390" y="124" text-anchor="middle" class="m">~/.ansible/pc/&lt;hash&gt;</text>
+  <text x="390" y="146" text-anchor="middle" class="s">Local Unix Domain Socket</text>
+  <text x="390" y="168" text-anchor="middle" class="s">Reuses 1 authenticated session</text>
+  <text x="390" y="188" text-anchor="middle" class="m">connect_timeout = 60s</text>
+
+  <rect x="578" y="56" width="256" height="176" rx="10" class="b3"/>
+  <text x="706" y="84" text-anchor="middle" class="t">Target Network Device</text>
+  <text x="706" y="114" text-anchor="middle" class="m">SSH PTY (network_cli)</text>
+  <text x="706" y="136" text-anchor="middle" class="s">terminal + cliconf plugins</text>
+  <text x="706" y="166" text-anchor="middle" class="m">NETCONF :830 / HTTPS :443</text>
+  <text x="706" y="188" text-anchor="middle" class="s">Structured XML / JSON RPC</text>
+
+  <path d="M 204 144 L 268 144" class="l"/>
+  <text x="236" y="134" text-anchor="middle" class="s">JSON-RPC</text>
+  <path d="M 508 144 L 574 144" class="l"/>
+  <text x="541" y="134" text-anchor="middle" class="s">1 Session</text>
+</svg>

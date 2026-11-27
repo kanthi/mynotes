@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 280" role="img" aria-label="AWX and Ansible Automation Platform architecture showing control plane, Execution Environments, and Receptor mesh to remote network segments">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7c3aed"/>
+    </marker>
+    <style>
+      .bg { fill: #f8fafc; stroke: #cbd5e1; }
+      .cp { fill: #f5f3ff; stroke: #7c3aed; stroke-width: 1.8; }
+      .ee { fill: #eff6ff; stroke: #2563eb; stroke-width: 1.8; }
+      .net { fill: #ecfdf5; stroke: #059669; stroke-width: 1.8; }
+      .t { font: 700 13.5px system-ui, -apple-system, sans-serif; fill: #0f172a; }
+      .m { font: 600 10.5px ui-monospace, SFMono-Regular, Menlo, monospace; fill: #1e293b; }
+      .s { font: 500 11px system-ui, -apple-system, sans-serif; fill: #475569; }
+      .l { stroke: #7c3aed; stroke-width: 1.8; fill: none; marker-end: url(#arr); }
+    </style>
+  </defs>
+  <rect x="6" y="6" width="848" height="268" rx="12" class="bg"/>
+  <text x="24" y="34" class="t">AWX / Ansible Automation Platform with Execution Environments</text>
+
+  <rect x="24" y="58" width="234" height="192" rx="10" class="cp"/>
+  <text x="141" y="84" text-anchor="middle" class="t">Control Plane (AWX / AAP)</text>
+  <rect x="40" y="100" width="202" height="32" rx="6" fill="#ffffff" stroke="#c4b5fd"/>
+  <text x="141" y="120" text-anchor="middle" class="m">Web UI, REST API &amp; RBAC</text>
+  <rect x="40" y="142" width="202" height="32" rx="6" fill="#ffffff" stroke="#c4b5fd"/>
+  <text x="141" y="162" text-anchor="middle" class="m">Vault / CyberArk Creds</text>
+  <rect x="40" y="184" width="202" height="48" rx="6" fill="#ffffff" stroke="#c4b5fd"/>
+  <text x="141" y="204" text-anchor="middle" class="m">Schedules &amp; Audit Logs</text>
+  <text x="141" y="222" text-anchor="middle" class="s">Git Projects + NetBox Sync</text>
+
+  <rect x="322" y="58" width="224" height="84" rx="10" class="ee"/>
+  <text x="434" y="84" text-anchor="middle" class="t">Execution Node (Campus)</text>
+  <text x="434" y="106" text-anchor="middle" class="m">OCI EE Container</text>
+  <text x="434" y="126" text-anchor="middle" class="s">ansible-core + cisco/junos</text>
+
+  <rect x="322" y="166" width="224" height="84" rx="10" class="ee"/>
+  <text x="434" y="192" text-anchor="middle" class="t">Execution Node (DMZ)</text>
+  <text x="434" y="214" text-anchor="middle" class="m">OCI EE Container</text>
+  <text x="434" y="234" text-anchor="middle" class="s">Receptor mTLS Mesh</text>
+
+  <rect x="614" y="58" width="218" height="84" rx="10" class="net"/>
+  <text x="723" y="88" text-anchor="middle" class="t">Campus &amp; DC Fabrics</text>
+  <text x="723" y="112" text-anchor="middle" class="s">OOB Mgmt VRF (SSH/NETCONF)</text>
+
+  <rect x="614" y="166" width="218" height="84" rx="10" class="net"/>
+  <text x="723" y="196" text-anchor="middle" class="t">Perimeter &amp; WAN Edge</text>
+  <text x="723" y="220" text-anchor="middle" class="s">Isolated DMZ (HTTPS/NETCONF)</text>
+
+  <path d="M 258 130 L 318 100" class="l"/>
+  <path d="M 258 178 L 318 208" class="l"/>
+  <path d="M 546 100 L 610 100" class="l"/>
+  <path d="M 546 208 L 610 208" class="l"/>
+</svg>

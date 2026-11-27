@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 230" role="img" aria-label="Data-driven automation pipeline from Source of Truth through dynamic inventory and Jinja2 templates to atomic device deployment">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb"/>
+    </marker>
+    <style>
+      .bg { fill: #f8fafc; stroke: #cbd5e1; }
+      .b1 { fill: #eff6ff; stroke: #2563eb; stroke-width: 1.8; }
+      .b2 { fill: #fef3c7; stroke: #d97706; stroke-width: 1.8; }
+      .b3 { fill: #ecfdf5; stroke: #059669; stroke-width: 1.8; }
+      .t { font: 700 13px system-ui, -apple-system, sans-serif; fill: #0f172a; }
+      .m { font: 600 10.5px ui-monospace, SFMono-Regular, Menlo, monospace; fill: #1e293b; }
+      .s { font: 500 11px system-ui, -apple-system, sans-serif; fill: #475569; }
+      .l { stroke: #2563eb; stroke-width: 1.8; fill: none; marker-end: url(#arr); }
+    </style>
+  </defs>
+  <rect x="6" y="6" width="868" height="218" rx="12" class="bg"/>
+  <text x="24" y="34" class="t">Data-Driven Configuration Pipeline (Source of Truth to Production)</text>
+
+  <rect x="24" y="62" width="174" height="128" rx="10" class="b1"/>
+  <text x="111" y="90" text-anchor="middle" class="t">1. Source of Truth</text>
+  <text x="111" y="114" text-anchor="middle" class="m">NetBox / Git YAML</text>
+  <text x="111" y="138" text-anchor="middle" class="s">IPAM, VLANs, ASNs</text>
+  <text x="111" y="158" text-anchor="middle" class="s">Intended state only</text>
+
+  <rect x="238" y="62" width="174" height="128" rx="10" class="b2"/>
+  <text x="325" y="90" text-anchor="middle" class="t">2. Template Render</text>
+  <text x="325" y="114" text-anchor="middle" class="m">build_configs.yml</text>
+  <text x="325" y="138" text-anchor="middle" class="s">Jinja2 + ipaddr</text>
+  <text x="325" y="158" text-anchor="middle" class="s">intended/configs/*.cfg</text>
+
+  <rect x="452" y="62" width="174" height="128" rx="10" class="b2"/>
+  <text x="539" y="90" text-anchor="middle" class="t">3. Diff &amp; Validate</text>
+  <text x="539" y="114" text-anchor="middle" class="m">--check --diff</text>
+  <text x="539" y="138" text-anchor="middle" class="s">JSON Schema + Batfish</text>
+  <text x="539" y="158" text-anchor="middle" class="s">Peer PR Review</text>
+
+  <rect x="666" y="62" width="188" height="128" rx="10" class="b3"/>
+  <text x="760" y="90" text-anchor="middle" class="t">4. Atomic Push</text>
+  <text x="760" y="114" text-anchor="middle" class="m">deploy_configs.yml</text>
+  <text x="760" y="138" text-anchor="middle" class="s">Checkpoint / Confirm</text>
+  <text x="760" y="158" text-anchor="middle" class="s">Post-change asserts</text>
+
+  <path d="M 198 126 L 234 126" class="l"/>
+  <path d="M 412 126 L 448 126" class="l"/>
+  <path d="M 626 126 L 662 126" class="l"/>
+</svg>
