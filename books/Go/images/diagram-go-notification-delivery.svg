@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 330" role="img" aria-label="Notification delivery architecture from API ingestion and idempotent outbox through preference/quiet-hours filter, per-channel priority queues, provider adapters (APNs/FCM, SMS, Email), and dead-letter queue." color-scheme="light">
+<defs><marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#2563eb"/></marker><marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#15803d"/></marker><marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#b45309"/></marker><marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#7c3aed"/></marker><marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#dc2626"/></marker><marker id="ah-slate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#64748b"/></marker>
+<style>
+.title{font-family:ui-sans-serif,system-ui,sans-serif;font-size:15.5px;font-weight:700;fill:#1f2933}
+.sub{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;fill:#52606d}
+.lbl{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11.5px;font-weight:600;fill:#1f2933}
+.note{font-family:ui-sans-serif,system-ui,sans-serif;font-size:10px;fill:#52606d}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9.8px;fill:#1f2933}
+.mono-m{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9.5px;fill:#52606d}
+</style></defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+
+<text class="title" x="20" y="28">Multi-Channel Notification Delivery Pipeline</text>
+<text class="sub" x="20" y="45">One logical notification fans out into per-channel delivery attempts with preference checks, rate limits, exponential backoff, and DLQ</text>
+<rect x="20" y="72" width="160" height="78" rx="8" fill="#e0ecff" stroke="#2563eb" stroke-width="1.4"/>
+<text class="lbl" x="100.0" y="100.5" text-anchor="middle">Notify API</text>
+<text class="mono-m" x="100.0" y="115.0" text-anchor="middle">Idempotency-Key</text>
+<text class="note" x="100.0" y="129.5" text-anchor="middle">1 logical notification</text>
+<rect x="215" y="72" width="175" height="78" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+<text class="lbl" x="302.5" y="100.5" text-anchor="middle">Router &amp; Policy</text>
+<text class="note" x="302.5" y="115.0" text-anchor="middle">Opt-out · quiet hours</text>
+<text class="note" x="302.5" y="129.5" text-anchor="middle">Template + locale</text>
+<rect x="425" y="72" width="175" height="78" rx="8" fill="#e3f6e8" stroke="#15803d" stroke-width="1.4"/>
+<text class="lbl" x="512.5" y="100.5" text-anchor="middle">Channel Queues</text>
+<text class="note" x="512.5" y="115.0" text-anchor="middle">OTP (high) vs Promo</text>
+<text class="mono-m" x="512.5" y="129.5" text-anchor="middle">Per-channel rate limit</text>
+<rect x="635" y="72" width="155" height="78" rx="8" fill="#f3e8ff" stroke="#7c3aed" stroke-width="1.4"/>
+<text class="lbl" x="712.5" y="100.5" text-anchor="middle">Provider Adapters</text>
+<text class="note" x="712.5" y="115.0" text-anchor="middle">Push · SMS · Email</text>
+<text class="note" x="712.5" y="129.5" text-anchor="middle">Circuit breaker</text>
+<rect x="825" y="72" width="115" height="78" rx="8" fill="#f5f7fa" stroke="#7b8794" stroke-width="1.4"/>
+<text class="lbl" x="882.5" y="100.5" text-anchor="middle">External</text>
+<text class="note" x="882.5" y="115.0" text-anchor="middle">FCM / APNs</text>
+<text class="note" x="882.5" y="129.5" text-anchor="middle">Twilio / SES</text>
+<rect x="20" y="212" width="285" height="80" rx="8" fill="#e0ecff" stroke="#2563eb" stroke-width="1.4"/>
+<text class="lbl" x="162.5" y="241.5" text-anchor="middle">Authoritative Delivery Ledger (PG)</text>
+<text class="mono-m" x="162.5" y="256.0" text-anchor="middle">notifications + delivery_attempts</text>
+<text class="note" x="162.5" y="270.5" text-anchor="middle">Tracks state per recipient + channel</text>
+<rect x="345" y="212" width="275" height="80" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+<text class="lbl" x="482.5" y="241.5" text-anchor="middle">Retry Scheduler &amp; Backoff</text>
+<text class="note" x="482.5" y="256.0" text-anchor="middle">Retryable 429/5xx -&gt; exp + jitter</text>
+<text class="mono-m" x="482.5" y="270.5" text-anchor="middle">Permanent 4xx -&gt; suppress token</text>
+<rect x="660" y="212" width="280" height="80" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+<text class="lbl" x="800.0" y="241.5" text-anchor="middle">Dead-Letter Queue (DLQ) &amp; Alerts</text>
+<text class="note" x="800.0" y="256.0" text-anchor="middle">Exhausted retries preserved for replay</text>
+<text class="mono-m" x="800.0" y="270.5" text-anchor="middle">Lag, drop-rate &amp; bounce dashboards</text>
+<line x1="180" y1="111" x2="215" y2="111" stroke="#2563eb" stroke-width="1.55" marker-end="url(#ah-blue)"/>
+<line x1="390" y1="111" x2="425" y2="111" stroke="#b45309" stroke-width="1.55" marker-end="url(#ah-amber)"/>
+<text class="note" x="407.0" y="103.0" text-anchor="middle">fan-out</text>
+<line x1="600" y1="111" x2="635" y2="111" stroke="#15803d" stroke-width="1.55" marker-end="url(#ah-green)"/>
+<line x1="790" y1="111" x2="825" y2="111" stroke="#7c3aed" stroke-width="1.55" marker-end="url(#ah-purple)"/>
+<line x1="100" y1="150" x2="100" y2="212" stroke="#2563eb" stroke-width="1.55" marker-end="url(#ah-blue)"/>
+<text class="note" x="130.0" y="184.0" text-anchor="middle">TX write</text>
+<path d="M 712 150 L 712 182 L 482 182 L 482 212" fill="none" stroke="#b45309" stroke-width="1.55" stroke-dasharray="5 3" marker-end="url(#ah-amber)"/>
+<text class="note" x="597.0" y="176.0" text-anchor="middle">5xx / timeout</text>
+<line x1="620" y1="252" x2="660" y2="252" stroke="#dc2626" stroke-width="1.55" stroke-dasharray="5 3" marker-end="url(#ah-red)"/>
+<text class="note" x="640.0" y="244.0" text-anchor="middle">max tries</text>
+</svg>

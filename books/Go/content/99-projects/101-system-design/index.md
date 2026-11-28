@@ -50,9 +50,13 @@ The source photos include 28 substantive chapter topics. Existing chapters carry
 | Payment system | [Orchestration and reconciliation](15-payment-system.md) |
 | Digital wallet | [Double-entry ledger](16-digital-wallet.md) |
 | Stock exchange | [Deterministic matching simulator](17-stock-exchange.md) |
+| Food delivery platform (end-to-end capstone) | [Three-sided marketplace, Sagas, dispatch & live tracking](18-food-delivery-platform.md) |
+| Enterprise workplace social ("Facebook for Office") | [Multi-tenant org graph, SCIM offboarding, RLS & hybrid ACL feed](19-enterprise-workplace-social.md) |
+| Enterprise team messaging & collaboration hub | [Sharded WebSockets, monotonic channel seq, presence & DLP](20-enterprise-realtime-collaboration-hub.md) |
+| Multi-tenant SaaS & metered billing control plane | [PostgreSQL RLS, RBAC entitlements, usage rating & HMAC webhooks](21-multi-tenant-saas-control-plane.md) |
 
 ## Suggested progression
 
-Start with the existing shortener, KV store, and chat builds. Then complete hashing, IDs, and the queue lab. For fan-out, work through notifications, feeds, and autocomplete. For large bytes, build object storage before video and file sync. For geospatial work, proceed from proximity to nearby friends to routes. Finish with reservations, payments, the wallet, and the matching engine, where transactional state and deterministic recovery are central.
+Start with the existing shortener, KV store, and chat builds. Then complete hashing, IDs, and the queue lab. For fan-out, work through notifications, feeds, and autocomplete. For large bytes, build object storage before video and file sync. For geospatial work, proceed from proximity to nearby friends to routes. Finish with reservations, payments, the wallet, the matching engine, and the four production capstones—[Food Delivery Platform](18-food-delivery-platform.md), [Enterprise Workplace Social](19-enterprise-workplace-social.md), [Enterprise Collaboration Hub](20-enterprise-realtime-collaboration-hub.md), and [Multi-Tenant SaaS Control Plane](21-multi-tenant-saas-control-plane.md)—which synthesize multi-tenancy, optimistic concurrency, transactional outbox, geospatial dispatch, real-time streaming, and PCI/compliance boundaries.
 
 Metrics and alerting apply throughout. Record throughput, p99 latency, oldest pending age, and memory under failure rather than treating a diagram as proof that a system scales. When a prototype loses data or duplicates an external effect, describe the precise boundary and the next mechanism needed to change that guarantee.

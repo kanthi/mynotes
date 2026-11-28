@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 560" role="img" aria-label="Delivery partner assignment engine using Redis GEOSEARCH, multi-factor scoring, Redis NX lease and PostgreSQL CAS lock, paired with the live location tracking pipeline from GPS ingestion through Kafka and Redis Pub/Sub to customer WebSocket/SSE." color-scheme="dark">
+<defs>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#60a5fa"/></marker><marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#4ade80"/></marker><marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#fbbf24"/></marker><marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#a78bfa"/></marker><marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#f87171"/></marker><marker id="ah-slate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#94a3b8"/></marker>
+<style>
+.title{font-family:ui-sans-serif,system-ui,sans-serif;font-size:16px;font-weight:700;fill:#e2e8f0}
+.sub{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11.5px;fill:#94a3b8}
+.sec{font-family:ui-sans-serif,system-ui,sans-serif;font-size:12px;font-weight:700;fill:#e2e8f0}
+.lbl{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11.5px;font-weight:600;fill:#e2e8f0}
+.note{font-family:ui-sans-serif,system-ui,sans-serif;font-size:10px;fill:#94a3b8}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9.8px;fill:#e2e8f0}
+.mono-m{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9.5px;fill:#94a3b8}
+</style>
+</defs>
+<rect width="100%" height="100%" fill="#0f172a"/>
+
+<text class="title" x="20" y="28">Delivery Partner Assignment Engine &amp; Live Location Tracking</text>
+<text class="sub" x="20" y="45">Top: 6-stage dispatch with dual Redis lease + DB CAS lock · Bottom: high-frequency purple GPS stream isolated from Orders DB</text>
+<rect x="20" y="62" width="1040" height="232" rx="10" fill="#111c33" stroke="#334155" stroke-width="1.2" stroke-dasharray="5 3"/>
+<text class="sec" x="32" y="81">1. Delivery Partner Assignment Engine (Push Offers, Zero Double-Assignment)</text>
+<rect x="36" y="96" width="150" height="74" rx="7" fill="#422006" stroke="#fbbf24" stroke-width="1.35"/>
+<text class="lbl" x="111.0" y="123.0" text-anchor="middle">1. Trigger</text>
+<text class="mono-m" x="111.0" y="137.0" text-anchor="middle">FoodPrepStarted</text>
+<text class="note" x="111.0" y="151.0" text-anchor="middle">arrive on time</text>
+<line x1="186" y1="133" x2="206" y2="133" stroke="#60a5fa" stroke-width="1.5" marker-end="url(#ah-blue)"/>
+<rect x="206" y="96" width="150" height="74" rx="7" fill="#1e3a5f" stroke="#60a5fa" stroke-width="1.35"/>
+<text class="lbl" x="281.0" y="123.0" text-anchor="middle">2. Geo Candidates</text>
+<text class="mono-m" x="281.0" y="137.0" text-anchor="middle">Redis GEOSEARCH</text>
+<text class="note" x="281.0" y="151.0" text-anchor="middle">4km radius, top 30</text>
+<line x1="356" y1="133" x2="376" y2="133" stroke="#60a5fa" stroke-width="1.5" marker-end="url(#ah-blue)"/>
+<rect x="376" y="96" width="150" height="74" rx="7" fill="#1e293b" stroke="#64748b" stroke-width="1.35"/>
+<text class="lbl" x="451.0" y="123.0" text-anchor="middle">3. Hard Filter</text>
+<text class="mono-m" x="451.0" y="137.0" text-anchor="middle">fresh GPS &lt;30s</text>
+<text class="note" x="451.0" y="151.0" text-anchor="middle">capacity &amp; zone</text>
+<line x1="526" y1="133" x2="546" y2="133" stroke="#60a5fa" stroke-width="1.5" marker-end="url(#ah-blue)"/>
+<rect x="546" y="96" width="150" height="74" rx="7" fill="#1e3a5f" stroke="#60a5fa" stroke-width="1.35"/>
+<text class="lbl" x="621.0" y="123.0" text-anchor="middle">4. Score &amp; Rank</text>
+<text class="mono-m" x="621.0" y="137.0" text-anchor="middle">0.55*ETA + 0.25*wait</text>
+<text class="note" x="621.0" y="151.0" text-anchor="middle">+ 0.20*active (min)</text>
+<line x1="696" y1="133" x2="716" y2="133" stroke="#60a5fa" stroke-width="1.5" marker-end="url(#ah-blue)"/>
+<rect x="716" y="96" width="150" height="74" rx="7" fill="#2e1065" stroke="#a78bfa" stroke-width="1.35"/>
+<text class="lbl" x="791.0" y="123.0" text-anchor="middle">5. Lease Offer</text>
+<text class="mono-m" x="791.0" y="137.0" text-anchor="middle">SET NX PX 30000</text>
+<text class="note" x="791.0" y="151.0" text-anchor="middle">order + partner lock</text>
+<line x1="866" y1="133" x2="886" y2="133" stroke="#60a5fa" stroke-width="1.5" marker-end="url(#ah-blue)"/>
+<rect x="886" y="96" width="150" height="74" rx="7" fill="#143524" stroke="#4ade80" stroke-width="1.35"/>
+<text class="lbl" x="961.0" y="123.0" text-anchor="middle">6. Accept CAS</text>
+<text class="mono-m" x="961.0" y="137.0" text-anchor="middle">Postgres UPDATE</text>
+<text class="note" x="961.0" y="151.0" text-anchor="middle">offer_id + expiry</text>
+<path d="M 791 170 L 791 196 L 621 196 L 621 170" fill="none" stroke="#f87171" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ah-red)"/>
+<text class="note" x="706.0" y="210.0" text-anchor="middle">reject / 30s timeout -&gt; next candidate (or widen 3km-&gt;5km-&gt;7km)</text>
+<rect x="36" y="224" width="1008" height="56" rx="7" fill="#143524" stroke="#4ade80" stroke-width="1.35"/>
+<text class="lbl" x="540.0" y="249.0" text-anchor="middle">Never Two Partners on One Order (and Never Two Live Offers to One Partner)</text>
+<text class="mono-m" x="540.0" y="263.0" text-anchor="middle">Redis lease blocks overlapping offers (SET offer:order:{id} {p} NX PX 30000), while PostgreSQL CAS is the real guard: WHERE status='OFFERED' AND offer_id=$1 AND offer_expires_at &gt; now().</text>
+<rect x="20" y="312" width="1040" height="228" rx="10" fill="#111c33" stroke="#334155" stroke-width="1.2" stroke-dasharray="5 3"/>
+<text class="sec" x="32" y="331">2. Live Location Tracking Pipeline (High-Volume Stream: ~100x-500x Order Rate)</text>
+<rect x="36" y="350" width="155" height="76" rx="7" fill="#2e1065" stroke="#a78bfa" stroke-width="1.35"/>
+<text class="lbl" x="113.5" y="371.0" text-anchor="middle">Partner Mobile App</text>
+<text class="note" x="113.5" y="385.0" text-anchor="middle">Adaptive GPS</text>
+<text class="mono-m" x="113.5" y="399.0" text-anchor="middle">3-5s on trip · idle slow</text>
+<text class="note" x="113.5" y="413.0" text-anchor="middle">send if moved &gt;20m</text>
+<rect x="224" y="350" width="170" height="76" rx="7" fill="#2e1065" stroke="#a78bfa" stroke-width="1.35"/>
+<text class="lbl" x="309.0" y="371.0" text-anchor="middle">Location Ingestion API</text>
+<text class="note" x="309.0" y="385.0" text-anchor="middle">Validate lat/lng</text>
+<text class="note" x="309.0" y="399.0" text-anchor="middle">Drop out-of-order ts</text>
+<text class="mono-m" x="309.0" y="413.0" text-anchor="middle">Reply 202 Accepted</text>
+<rect x="430" y="344" width="195" height="88" rx="7" fill="#450a0a" stroke="#f87171" stroke-width="1.35"/>
+<text class="lbl" x="527.5" y="371.0" text-anchor="middle">Redis Cluster (Hot State)</text>
+<text class="mono-m" x="527.5" y="385.0" text-anchor="middle">GEOADD partners:city</text>
+<text class="mono-m" x="527.5" y="399.0" text-anchor="middle">HSET pos:partner:{id}</text>
+<text class="mono-m" x="527.5" y="413.0" text-anchor="middle">PUBLISH track:order:{id}</text>
+<rect x="662" y="350" width="180" height="76" rx="7" fill="#1e3a5f" stroke="#60a5fa" stroke-width="1.35"/>
+<text class="lbl" x="752.0" y="371.0" text-anchor="middle">Customer Tracking GW</text>
+<text class="note" x="752.0" y="385.0" text-anchor="middle">WebSocket / SSE</text>
+<text class="note" x="752.0" y="399.0" text-anchor="middle">Authz: owns order_id</text>
+<text class="note" x="752.0" y="413.0" text-anchor="middle">Subscribes to Pub/Sub</text>
+<rect x="878" y="350" width="166" height="76" rx="7" fill="#1e3a5f" stroke="#60a5fa" stroke-width="1.35"/>
+<text class="lbl" x="961.0" y="371.0" text-anchor="middle">Customer App Map</text>
+<text class="note" x="961.0" y="385.0" text-anchor="middle">Moving Partner Pin</text>
+<text class="note" x="961.0" y="399.0" text-anchor="middle">Live Road ETA</text>
+<text class="note" x="961.0" y="413.0" text-anchor="middle">Stale banner &gt;30s</text>
+<rect x="224" y="456" width="200" height="68" rx="7" fill="#422006" stroke="#fbbf24" stroke-width="1.35"/>
+<text class="lbl" x="324.0" y="480.0" text-anchor="middle">Kafka: location-updates</text>
+<text class="mono-m" x="324.0" y="494.0" text-anchor="middle">key = partner_id</text>
+<text class="note" x="324.0" y="508.0" text-anchor="middle">Short retention (hours)</text>
+<rect x="462" y="456" width="260" height="68" rx="7" fill="#2e1065" stroke="#a78bfa" stroke-width="1.35"/>
+<text class="lbl" x="592.0" y="480.0" text-anchor="middle">Location Processor + Maps API</text>
+<text class="note" x="592.0" y="494.0" text-anchor="middle">Throttle ETA recompute (15-30s)</text>
+<text class="note" x="592.0" y="508.0" text-anchor="middle">Publish ETA delta to Redis Pub/Sub</text>
+<rect x="760" y="456" width="284" height="68" rx="7" fill="#1e293b" stroke="#64748b" stroke-width="1.35"/>
+<text class="lbl" x="902.0" y="480.0" text-anchor="middle">Cold History Sink (S3 / Parquet)</text>
+<text class="note" x="902.0" y="494.0" text-anchor="middle">Route replay · dispute resolution</text>
+<text class="note" x="902.0" y="508.0" text-anchor="middle">Hot Redis = seconds · S3 = cheap history</text>
+<line x1="191" y1="388" x2="224" y2="388" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#ah-purple)"/>
+<line x1="394" y1="388" x2="430" y2="388" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#ah-purple)"/>
+<line x1="625" y1="388" x2="662" y2="388" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#ah-purple)"/>
+<text class="note" x="643.0" y="380.0" text-anchor="middle">Pub/Sub</text>
+<line x1="842" y1="388" x2="878" y2="388" stroke="#60a5fa" stroke-width="1.5" marker-end="url(#ah-blue)"/>
+<text class="note" x="860.0" y="380.0" text-anchor="middle">WS/SSE</text>
+<line x1="309" y1="426" x2="309" y2="456" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ah-amber)"/>
+<line x1="424" y1="490" x2="462" y2="490" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ah-amber)"/>
+<path d="M 592 456 L 592 432" fill="none" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#ah-purple)"/>
+<line x1="722" y1="490" x2="760" y2="490" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ah-amber)"/>
+</svg>

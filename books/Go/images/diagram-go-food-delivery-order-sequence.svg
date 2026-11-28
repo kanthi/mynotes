@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 640" role="img" aria-label="Step-by-step order placement sequence diagram showing browse, menu cache-aside, signed pricing quote, idempotent order creation, payment gateway SDK checkout, HMAC webhook verification, transactional outbox to Kafka, and failure compensation branches." color-scheme="light">
+<defs>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#2563eb"/></marker><marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#15803d"/></marker><marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#b45309"/></marker><marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#7c3aed"/></marker><marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#dc2626"/></marker><marker id="ah-slate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#64748b"/></marker>
+<style>
+.title{font-family:ui-sans-serif,system-ui,sans-serif;font-size:16px;font-weight:700;fill:#1f2933}
+.sub{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11.5px;fill:#52606d}
+.sec{font-family:ui-sans-serif,system-ui,sans-serif;font-size:12px;font-weight:700;fill:#1f2933}
+.lbl{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11.5px;font-weight:600;fill:#1f2933}
+.note{font-family:ui-sans-serif,system-ui,sans-serif;font-size:10px;fill:#52606d}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9.8px;fill:#1f2933}
+.mono-m{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9.5px;fill:#52606d}
+</style>
+</defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+
+<text class="title" x="20" y="28">Placing an Order: Step-by-Step Sequence &amp; Failure Branches</text>
+<text class="sub" x="20" y="45">Happy path (green), async Kafka events (amber dashed), and Saga compensation when payment or restaurant fails (red dashed)</text>
+<rect x="2" y="60" width="116" height="36" rx="7" fill="#e0ecff" stroke="#2563eb" stroke-width="1.35"/>
+<text class="lbl" x="60.0" y="82.0" text-anchor="middle">Customer App</text>
+<line x1="60" y1="96" x2="60" y2="445" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+<rect x="137" y="60" width="116" height="36" rx="7" fill="#f5f7fa" stroke="#7b8794" stroke-width="1.35"/>
+<text class="lbl" x="195.0" y="82.0" text-anchor="middle">Menu / Pricing</text>
+<line x1="195" y1="96" x2="195" y2="445" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+<rect x="287" y="60" width="116" height="36" rx="7" fill="#e3f6e8" stroke="#15803d" stroke-width="1.35"/>
+<text class="lbl" x="345.0" y="82.0" text-anchor="middle">Order Service ★</text>
+<line x1="345" y1="96" x2="345" y2="445" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+<rect x="452" y="60" width="116" height="36" rx="7" fill="#fee2e2" stroke="#dc2626" stroke-width="1.35"/>
+<text class="lbl" x="510.0" y="82.0" text-anchor="middle">Payment Svc</text>
+<line x1="510" y1="96" x2="510" y2="445" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+<rect x="607" y="60" width="116" height="36" rx="7" fill="#fee2e2" stroke="#dc2626" stroke-width="1.35"/>
+<text class="lbl" x="665.0" y="82.0" text-anchor="middle">Payment Gateway</text>
+<line x1="665" y1="96" x2="665" y2="445" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+<rect x="757" y="60" width="116" height="36" rx="7" fill="#fef3c7" stroke="#b45309" stroke-width="1.35"/>
+<text class="lbl" x="815.0" y="82.0" text-anchor="middle">Kafka + Outbox</text>
+<line x1="815" y1="96" x2="815" y2="445" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+<rect x="912" y="60" width="116" height="36" rx="7" fill="#e3f6e8" stroke="#15803d" stroke-width="1.35"/>
+<text class="lbl" x="970.0" y="82.0" text-anchor="middle">Restaurant / Notif</text>
+<line x1="970" y1="96" x2="970" y2="445" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4 4"/>
+<line x1="60" y1="120" x2="195" y2="120" stroke="#15803d" stroke-width="1.5" marker-end="url(#ah-green)"/>
+<text class="note" x="127.5" y="115.0" text-anchor="middle">1. GET /menu + POST /quote (cart, coupon)</text>
+<line x1="195" y1="146" x2="60" y2="146" stroke="#64748b" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ah-slate)"/>
+<text class="note" x="127.5" y="141.0" text-anchor="middle">Signed quote_id (HMAC, ~10m TTL) + final bill</text>
+<line x1="60" y1="180" x2="345" y2="180" stroke="#15803d" stroke-width="1.5" marker-end="url(#ah-green)"/>
+<text class="note" x="202.5" y="175.0" text-anchor="middle">2. POST /orders (cart, quote_id) + Idempotency-Key: k-892</text>
+<line x1="345" y1="218" x2="510" y2="218" stroke="#15803d" stroke-width="1.5" marker-end="url(#ah-green)"/>
+<text class="note" x="427.5" y="213.0" text-anchor="middle">3. Initiate(order_id, amount_paise, attempt=1)</text>
+<line x1="510" y1="246" x2="665" y2="246" stroke="#15803d" stroke-width="1.5" marker-end="url(#ah-green)"/>
+<text class="note" x="587.5" y="241.0" text-anchor="middle">4. Create payment intent (idempotent)</text>
+<line x1="665" y1="276" x2="60" y2="276" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ah-blue)"/>
+<text class="note" x="362.5" y="271.0" text-anchor="middle">5. SDK checkout (UPI / Card / 3DS — PCI isolated)</text>
+<line x1="665" y1="312" x2="510" y2="312" stroke="#15803d" stroke-width="1.5" marker-end="url(#ah-green)"/>
+<text class="note" x="587.5" y="307.0" text-anchor="middle">6. Webhook: payment.captured (HMAC-SHA256)</text>
+<line x1="510" y1="348" x2="815" y2="348" stroke="#b45309" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ah-amber)"/>
+<text class="note" x="662.5" y="343.0" text-anchor="middle">7. Outbox -&gt; PaymentSucceeded</text>
+<line x1="815" y1="378" x2="345" y2="378" stroke="#b45309" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ah-amber)"/>
+<text class="note" x="580.0" y="373.0" text-anchor="middle">8. Order -&gt; PAYMENT_CONFIRMED</text>
+<line x1="345" y1="410" x2="815" y2="410" stroke="#b45309" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ah-amber)"/>
+<text class="note" x="580.0" y="405.0" text-anchor="middle">9. Outbox -&gt; OrderConfirmed</text>
+<line x1="815" y1="434" x2="970" y2="434" stroke="#b45309" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ah-amber)"/>
+<text class="note" x="892.5" y="429.0" text-anchor="middle">10. Ring tablet + Push customer</text>
+<rect x="274" y="188" width="142" height="22" rx="4" fill="#e3f6e8" stroke="#15803d" stroke-width="1.35"/>
+<text class="mono-m" x="345.0" y="203.0" text-anchor="middle">INSERT CREATED (UNIQUE key)</text>
+<rect x="436" y="320" width="148" height="22" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="1.35"/>
+<text class="mono-m" x="510.0" y="335.0" text-anchor="middle">Verify HMAC + dedupe evt_id</text>
+<rect x="20" y="464" width="1060" height="158" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="5 3"/>
+<text class="sec" x="32" y="483">When It Doesn't Go Green: Saga Compensation &amp; Idempotency</text>
+<rect x="34" y="494" width="330" height="114" rx="7" fill="#fee2e2" stroke="#dc2626" stroke-width="1.35"/>
+<text class="lbl" x="199.0" y="520.0" text-anchor="middle">A. Payment Fails or Times Out (~15m)</text>
+<text class="note" x="199.0" y="534.0" text-anchor="middle">PaymentFailed webhook or expiry timer fires.</text>
+<text class="mono-m" x="199.0" y="548.0" text-anchor="middle">Order: PAYMENT_PENDING -&gt; CANCELLED.</text>
+<text class="note" x="199.0" y="562.0" text-anchor="middle">Nothing captured -&gt; no refund needed.</text>
+<text class="note" x="199.0" y="576.0" text-anchor="middle">Retry = new attempt on SAME order_id (attempt-2).</text>
+<text class="note" x="199.0" y="590.0" text-anchor="middle">Client redirect is only a hint; webhook moves money.</text>
+<rect x="384" y="494" width="330" height="114" rx="7" fill="#fef3c7" stroke="#b45309" stroke-width="1.35"/>
+<text class="lbl" x="549.0" y="520.0" text-anchor="middle">B. Restaurant Rejects or Timeout (2-5m)</text>
+<text class="note" x="549.0" y="534.0" text-anchor="middle">RestaurantRejected event or accept timer fires.</text>
+<text class="mono-m" x="549.0" y="548.0" text-anchor="middle">Order: PAYMENT_CONFIRMED -&gt; REFUND_PENDING.</text>
+<text class="note" x="549.0" y="562.0" text-anchor="middle">Compensating action: Void auth or Refund capture.</text>
+<text class="note" x="549.0" y="576.0" text-anchor="middle">Refunded webhook -&gt; REFUNDED (terminal).</text>
+<text class="note" x="549.0" y="590.0" text-anchor="middle">No 2PC across Order DB, Payment DB &amp; Gateway.</text>
+<rect x="734" y="494" width="332" height="114" rx="7" fill="#e0ecff" stroke="#2563eb" stroke-width="1.35"/>
+<text class="lbl" x="900.0" y="520.0" text-anchor="middle">C. Idempotency + Reconciler Safety Net</text>
+<text class="mono-m" x="900.0" y="534.0" text-anchor="middle">POST /orders: UNIQUE(user_id, idempotency_key).</text>
+<text class="mono-m" x="900.0" y="548.0" text-anchor="middle">Webhooks: INSERT gateway_event_id ON CONFLICT.</text>
+<text class="note" x="900.0" y="562.0" text-anchor="middle">Stuck &gt; N min? Reconciler polls Gateway Status API.</text>
+<text class="note" x="900.0" y="576.0" text-anchor="middle">Late capture on CANCELLED order -&gt; auto-refund.</text>
+<text class="note" x="900.0" y="590.0" text-anchor="middle">Daily settlement file vs payments table check.</text>
+</svg>

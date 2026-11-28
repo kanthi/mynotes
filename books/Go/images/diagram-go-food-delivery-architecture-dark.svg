@@ -1,0 +1,173 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 680" role="img" aria-label="High-level Food Delivery Platform architecture: Clients connect through DNS, CDN, WAF, L7 Load Balancer, and API Gateway to 12 independent Go microservices backed by Kafka, per-service PostgreSQL databases, Redis Cluster, Elasticsearch, S3 Object Storage, and external providers." color-scheme="dark">
+<defs>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#60a5fa"/></marker><marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#4ade80"/></marker><marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#fbbf24"/></marker><marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#a78bfa"/></marker><marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#f87171"/></marker><marker id="ah-slate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#94a3b8"/></marker>
+<style>
+.title{font-family:ui-sans-serif,system-ui,sans-serif;font-size:16px;font-weight:700;fill:#e2e8f0}
+.sub{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11.5px;fill:#94a3b8}
+.sec{font-family:ui-sans-serif,system-ui,sans-serif;font-size:12px;font-weight:700;fill:#e2e8f0}
+.lbl{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11.5px;font-weight:600;fill:#e2e8f0}
+.note{font-family:ui-sans-serif,system-ui,sans-serif;font-size:10px;fill:#94a3b8}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9.8px;fill:#e2e8f0}
+.mono-m{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9.5px;fill:#94a3b8}
+</style>
+</defs>
+<rect width="100%" height="100%" fill="#0f172a"/>
+
+<text class="title" x="20" y="28">Food Delivery Platform: High-Level Architecture</text>
+<text class="sub" x="20" y="45">Three independent workflows (Customer, Restaurant, Delivery Partner) coordinated through stateless Go services, per-service databases, and Kafka events</text>
+<rect x="620" y="12" width="480" height="36" rx="6" fill="#111c33" stroke="#334155" stroke-width="1"/>
+<line x1="634" y1="30" x2="656" y2="30" stroke="#60a5fa" stroke-width="1.8" marker-end="url(#ah-blue)"/>
+<text class="note" x="661" y="33.5">Sync HTTP/gRPC</text>
+<line x1="752" y1="30" x2="774" y2="30" stroke="#fbbf24" stroke-width="1.8" stroke-dasharray="4 2" marker-end="url(#ah-amber)"/>
+<text class="note" x="779" y="33.5">Async Kafka</text>
+<line x1="850" y1="30" x2="872" y2="30" stroke="#a78bfa" stroke-width="1.8" marker-end="url(#ah-purple)"/>
+<text class="note" x="877" y="33.5">Live GPS/WS</text>
+<line x1="948" y1="30" x2="970" y2="30" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#ah-slate)"/>
+<text class="note" x="975" y="33.5">DB/Cache I/O</text>
+<line x1="1038" y1="30" x2="1060" y2="30" stroke="#f87171" stroke-width="1.8" stroke-dasharray="4 2" marker-end="url(#ah-red)"/>
+<text class="note" x="1065" y="33.5">Failure</text>
+<rect x="20" y="62" width="165" height="450" rx="10" fill="#111c33" stroke="#334155" stroke-width="1.2" stroke-dasharray="5 3"/>
+<text class="sec" x="32" y="81">Clients</text>
+<rect x="32" y="92" width="141" height="66" rx="7" fill="#1e3a5f" stroke="#60a5fa" stroke-width="1.35"/>
+<text class="lbl" x="102.5" y="115.0" text-anchor="middle">Customer App</text>
+<text class="note" x="102.5" y="129.0" text-anchor="middle">iOS / Android / Web</text>
+<text class="note" x="102.5" y="143.0" text-anchor="middle">browse · order · track</text>
+<rect x="32" y="174" width="141" height="66" rx="7" fill="#143524" stroke="#4ade80" stroke-width="1.35"/>
+<text class="lbl" x="102.5" y="197.0" text-anchor="middle">Restaurant Tablet</text>
+<text class="note" x="102.5" y="211.0" text-anchor="middle">Web / POS / KOT</text>
+<text class="note" x="102.5" y="225.0" text-anchor="middle">accept · prep · ready</text>
+<rect x="32" y="256" width="141" height="66" rx="7" fill="#2e1065" stroke="#a78bfa" stroke-width="1.35"/>
+<text class="lbl" x="102.5" y="279.0" text-anchor="middle">Delivery Partner App</text>
+<text class="note" x="102.5" y="293.0" text-anchor="middle">Android / iOS</text>
+<text class="note" x="102.5" y="307.0" text-anchor="middle">offers · nav · GPS</text>
+<rect x="32" y="338" width="141" height="66" rx="7" fill="#1e293b" stroke="#64748b" stroke-width="1.35"/>
+<text class="lbl" x="102.5" y="361.0" text-anchor="middle">Admin / Ops Portal</text>
+<text class="note" x="102.5" y="375.0" text-anchor="middle">Internal SSO Web</text>
+<text class="note" x="102.5" y="389.0" text-anchor="middle">overrides · zones</text>
+<text class="note" x="102" y="432" text-anchor="middle">Partner GPS (3-5s)</text>
+<text class="note" x="102" y="446" text-anchor="middle">streams via WS/HTTPS</text>
+<text class="note" x="102" y="460" text-anchor="middle">to Location Tracking</text>
+<rect x="205" y="62" width="175" height="450" rx="10" fill="#111c33" stroke="#334155" stroke-width="1.2" stroke-dasharray="5 3"/>
+<text class="sec" x="217" y="81">Edge Layer</text>
+<rect x="217" y="92" width="72" height="46" rx="7" fill="#1e293b" stroke="#64748b" stroke-width="1.35"/>
+<text class="lbl" x="253.0" y="112.0" text-anchor="middle">DNS</text>
+<text class="note" x="253.0" y="126.0" text-anchor="middle">Geo-route</text>
+<rect x="296" y="92" width="72" height="46" rx="7" fill="#1e293b" stroke="#64748b" stroke-width="1.35"/>
+<text class="lbl" x="332.0" y="112.0" text-anchor="middle">CDN</text>
+<text class="note" x="332.0" y="126.0" text-anchor="middle">Static/Img</text>
+<rect x="217" y="154" width="151" height="46" rx="7" fill="#450a0a" stroke="#f87171" stroke-width="1.35"/>
+<text class="lbl" x="292.5" y="174.0" text-anchor="middle">WAF</text>
+<text class="note" x="292.5" y="188.0" text-anchor="middle">DDoS · Bots · Rules</text>
+<rect x="217" y="216" width="151" height="52" rx="7" fill="#1e3a5f" stroke="#60a5fa" stroke-width="1.35"/>
+<text class="lbl" x="292.5" y="239.0" text-anchor="middle">L7 Load Balancer</text>
+<text class="note" x="292.5" y="253.0" text-anchor="middle">TLS · Health Checks</text>
+<rect x="217" y="286" width="151" height="150" rx="7" fill="#1e3a5f" stroke="#60a5fa" stroke-width="1.8"/>
+<text class="lbl" x="292.5" y="323.0" text-anchor="middle">API Gateway</text>
+<text class="note" x="292.5" y="337.0" text-anchor="middle">Stateless Go / Envoy</text>
+<text class="note" x="292.5" y="351.0" text-anchor="middle">· JWT / OAuth Auth</text>
+<text class="note" x="292.5" y="365.0" text-anchor="middle">· Redis Rate Limit</text>
+<text class="note" x="292.5" y="379.0" text-anchor="middle">· /v1 /v2 Routing</text>
+<text class="note" x="292.5" y="393.0" text-anchor="middle">· Idempotency Header</text>
+<text class="mono-m" x="292.5" y="407.0" text-anchor="middle">No business logic</text>
+<line x1="173" y1="125" x2="217" y2="177" stroke="#60a5fa" stroke-width="1.5" marker-end="url(#ah-blue)"/>
+<line x1="173" y1="207" x2="217" y2="238" stroke="#60a5fa" stroke-width="1.5" marker-end="url(#ah-blue)"/>
+<line x1="173" y1="289" x2="217" y2="330" stroke="#60a5fa" stroke-width="1.5" marker-end="url(#ah-blue)"/>
+<line x1="173" y1="371" x2="217" y2="371" stroke="#60a5fa" stroke-width="1.5" marker-end="url(#ah-blue)"/>
+<line x1="292" y1="200" x2="292" y2="216" stroke="#60a5fa" stroke-width="1.5" marker-end="url(#ah-blue)"/>
+<line x1="292" y1="268" x2="292" y2="286" stroke="#60a5fa" stroke-width="1.5" marker-end="url(#ah-blue)"/>
+<rect x="400" y="62" width="468" height="450" rx="10" fill="#111c33" stroke="#334155" stroke-width="1.2" stroke-dasharray="5 3"/>
+<text class="sec" x="412" y="81">Go Backend Services (one owner per DB · HTTP/gRPC + Kafka)</text>
+<rect x="412" y="92" width="142" height="60" rx="7" fill="#1e293b" stroke="#64748b" stroke-width="1.35"/>
+<text class="lbl" x="483.0" y="119.0" text-anchor="middle">User Service</text>
+<text class="note" x="483.0" y="133.0" text-anchor="middle">profiles · addresses</text>
+<rect x="566" y="92" width="142" height="60" rx="7" fill="#1e3a5f" stroke="#60a5fa" stroke-width="1.35"/>
+<text class="lbl" x="637.0" y="119.0" text-anchor="middle">Discovery Service</text>
+<text class="note" x="637.0" y="133.0" text-anchor="middle">open + nearby geo</text>
+<rect x="720" y="92" width="142" height="60" rx="7" fill="#1e3a5f" stroke="#60a5fa" stroke-width="1.35"/>
+<text class="lbl" x="791.0" y="119.0" text-anchor="middle">Search Service</text>
+<text class="note" x="791.0" y="133.0" text-anchor="middle">dishes · full-text ES</text>
+<rect x="412" y="168" width="142" height="60" rx="7" fill="#1e3a5f" stroke="#60a5fa" stroke-width="1.35"/>
+<text class="lbl" x="483.0" y="195.0" text-anchor="middle">Menu Service</text>
+<text class="note" x="483.0" y="209.0" text-anchor="middle">items · stock · cache</text>
+<rect x="566" y="168" width="142" height="60" rx="7" fill="#422006" stroke="#fbbf24" stroke-width="1.35"/>
+<text class="lbl" x="637.0" y="195.0" text-anchor="middle">Pricing &amp; Offers</text>
+<text class="note" x="637.0" y="209.0" text-anchor="middle">tax · surge · quote</text>
+<rect x="720" y="168" width="142" height="60" rx="7" fill="#143524" stroke="#4ade80" stroke-width="1.35"/>
+<text class="lbl" x="791.0" y="195.0" text-anchor="middle">Restaurant Service</text>
+<text class="note" x="791.0" y="209.0" text-anchor="middle">accept · prep · hours</text>
+<rect x="412" y="244" width="142" height="60" rx="7" fill="#1e293b" stroke="#64748b" stroke-width="1.35"/>
+<text class="lbl" x="483.0" y="271.0" text-anchor="middle">Cart Service</text>
+<text class="note" x="483.0" y="285.0" text-anchor="middle">Redis TTL carts</text>
+<rect x="566" y="244" width="142" height="60" rx="7" fill="#143524" stroke="#4ade80" stroke-width="2.0"/>
+<text class="lbl" x="637.0" y="271.0" text-anchor="middle">Order Service ★</text>
+<text class="note" x="637.0" y="285.0" text-anchor="middle">state machine · outbox</text>
+<rect x="720" y="244" width="142" height="60" rx="7" fill="#143524" stroke="#4ade80" stroke-width="1.35"/>
+<text class="lbl" x="791.0" y="271.0" text-anchor="middle">Delivery Assignment</text>
+<text class="note" x="791.0" y="285.0" text-anchor="middle">geo · score · lock</text>
+<rect x="412" y="320" width="142" height="60" rx="7" fill="#450a0a" stroke="#f87171" stroke-width="1.35"/>
+<text class="lbl" x="483.0" y="347.0" text-anchor="middle">Payment Service</text>
+<text class="note" x="483.0" y="361.0" text-anchor="middle">intents · webhooks</text>
+<rect x="566" y="320" width="142" height="60" rx="7" fill="#422006" stroke="#fbbf24" stroke-width="1.35"/>
+<text class="lbl" x="637.0" y="347.0" text-anchor="middle">Notification Service</text>
+<text class="note" x="637.0" y="361.0" text-anchor="middle">push · SMS · DLQ</text>
+<rect x="720" y="320" width="142" height="60" rx="7" fill="#2e1065" stroke="#a78bfa" stroke-width="1.35"/>
+<text class="lbl" x="791.0" y="347.0" text-anchor="middle">Location Tracking</text>
+<text class="note" x="791.0" y="361.0" text-anchor="middle">GPS ingest · WS/SSE</text>
+<rect x="412" y="396" width="142" height="60" rx="7" fill="#1e293b" stroke="#64748b" stroke-width="1.35"/>
+<text class="lbl" x="483.0" y="423.0" text-anchor="middle">Review &amp; Rating</text>
+<text class="note" x="483.0" y="437.0" text-anchor="middle">post-delivery agg</text>
+<rect x="566" y="396" width="142" height="60" rx="7" fill="#1e293b" stroke="#64748b" stroke-width="1.35"/>
+<text class="lbl" x="637.0" y="423.0" text-anchor="middle">Admin / Ops Service</text>
+<text class="note" x="637.0" y="437.0" text-anchor="middle">API-only overrides</text>
+<line x1="368" y1="340" x2="400" y2="340" stroke="#60a5fa" stroke-width="1.5" marker-end="url(#ah-blue)"/>
+<path d="M 32 289 L 10 289 L 10 492 L 791 492 L 791 380" fill="none" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#ah-purple)"/>
+<text class="note" x="450.0" y="485.0" text-anchor="middle">GPS stream (3-5s) / Customer WS/SSE</text>
+<rect x="400" y="530" width="468" height="66" rx="7" fill="#422006" stroke="#fbbf24" stroke-width="1.8"/>
+<text class="lbl" x="634.0" y="553.0" text-anchor="middle">Apache Kafka Event Bus (Partitioned Log)</text>
+<text class="mono-m" x="634.0" y="567.0" text-anchor="middle">order-events · payment-events · restaurant-events · delivery-events · location-updates</text>
+<text class="note" x="634.0" y="581.0" text-anchor="middle">Partition key = order_id (or partner_id) · At-least-once · Consumer groups · DLQ</text>
+<line x1="637" y1="512" x2="637" y2="530" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ah-amber)"/>
+<text class="note" x="676.0" y="523.0" text-anchor="middle">outbox pub</text>
+<line x1="595" y1="530" x2="595" y2="512" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ah-amber)"/>
+<text class="note" x="558.0" y="523.0" text-anchor="middle">consume</text>
+<rect x="888" y="62" width="212" height="355" rx="10" fill="#111c33" stroke="#334155" stroke-width="1.2" stroke-dasharray="5 3"/>
+<text class="sec" x="900" y="81">Data Stores (DB per Service)</text>
+<rect x="900" y="92" width="188" height="66" rx="7" fill="#1e3a5f" stroke="#60a5fa" stroke-width="1.35"/>
+<text class="lbl" x="994.0" y="115.0" text-anchor="middle">PostgreSQL (Primary + Replicas)</text>
+<text class="note" x="994.0" y="129.0" text-anchor="middle">Source of truth (ACID)</text>
+<text class="mono-m" x="994.0" y="143.0" text-anchor="middle">orders · payments · menus · users</text>
+<rect x="900" y="172" width="188" height="66" rx="7" fill="#450a0a" stroke="#f87171" stroke-width="1.35"/>
+<text class="lbl" x="994.0" y="195.0" text-anchor="middle">Redis Cluster</text>
+<text class="note" x="994.0" y="209.0" text-anchor="middle">Cache + Hot State (TTL)</text>
+<text class="mono-m" x="994.0" y="223.0" text-anchor="middle">menus · carts · GEO · locks · PubSub</text>
+<rect x="900" y="252" width="188" height="56" rx="7" fill="#422006" stroke="#fbbf24" stroke-width="1.35"/>
+<text class="lbl" x="994.0" y="277.0" text-anchor="middle">Elasticsearch</text>
+<text class="note" x="994.0" y="291.0" text-anchor="middle">Derived Search Index (CDC)</text>
+<rect x="900" y="322" width="188" height="56" rx="7" fill="#1e293b" stroke="#64748b" stroke-width="1.35"/>
+<text class="lbl" x="994.0" y="347.0" text-anchor="middle">Object Storage (S3)</text>
+<text class="note" x="994.0" y="361.0" text-anchor="middle">Food Images · Invoices · Replay</text>
+<rect x="888" y="432" width="212" height="224" rx="10" fill="#111c33" stroke="#334155" stroke-width="1.2" stroke-dasharray="5 3"/>
+<text class="sec" x="900" y="451">External Providers</text>
+<rect x="900" y="462" width="188" height="52" rx="7" fill="#450a0a" stroke="#f87171" stroke-width="1.35"/>
+<text class="lbl" x="994.0" y="485.0" text-anchor="middle">Payment Gateway (PCI)</text>
+<text class="note" x="994.0" y="499.0" text-anchor="middle">Cards · UPI · HMAC Webhooks</text>
+<rect x="900" y="526" width="188" height="52" rx="7" fill="#2e1065" stroke="#a78bfa" stroke-width="1.35"/>
+<text class="lbl" x="994.0" y="549.0" text-anchor="middle">Maps &amp; Routing API</text>
+<text class="note" x="994.0" y="563.0" text-anchor="middle">Road Distance · Live ETA</text>
+<rect x="900" y="590" width="188" height="52" rx="7" fill="#422006" stroke="#fbbf24" stroke-width="1.35"/>
+<text class="lbl" x="994.0" y="613.0" text-anchor="middle">FCM / APNs · SMS · Email</text>
+<text class="note" x="994.0" y="627.0" text-anchor="middle">Push Alerts · OTP · Receipts</text>
+<line x1="868" y1="130" x2="900" y2="130" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah-slate)"/>
+<line x1="868" y1="205" x2="900" y2="205" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah-slate)"/>
+<line x1="868" y1="280" x2="900" y2="280" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah-slate)"/>
+<line x1="868" y1="488" x2="900" y2="488" stroke="#f87171" stroke-width="1.5" marker-end="url(#ah-red)"/>
+<text class="note" x="884.0" y="482.0" text-anchor="middle">PCI</text>
+<line x1="868" y1="552" x2="900" y2="552" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#ah-purple)"/>
+<line x1="868" y1="616" x2="900" y2="616" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#ah-amber)"/>
+<rect x="20" y="530" width="360" height="126" rx="7" fill="#1e293b" stroke="#64748b" stroke-width="1.35"/>
+<text class="lbl" x="200.0" y="569.0" text-anchor="middle">Core Architectural Invariants</text>
+<text class="note" x="200.0" y="583.0" text-anchor="middle">1. No cross-service DB joins: call owner APIs or subscribe to events.</text>
+<text class="note" x="200.0" y="597.0" text-anchor="middle">2. Checkout never trusts cache: Order Svc re-verifies prices &amp; stock.</text>
+<text class="note" x="200.0" y="611.0" text-anchor="middle">3. Money moves only on verified HMAC webhooks or status API.</text>
+<text class="note" x="200.0" y="625.0" text-anchor="middle">4. GPS stream (~100x order rate) bypasses Orders DB via Kafka+Redis.</text>
+</svg>

@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 480" role="img" aria-label="Multi-tenant enterprise SaaS and metered billing control plane architecture with tenant onboarding, PostgreSQL Row-Level Security enforcement, RBAC policy engine, metered usage ingestion, rating engine, and circuit-broken HMAC webhook dispatcher." color-scheme="dark">
+<defs><marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#60a5fa"/></marker><marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#4ade80"/></marker><marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#fbbf24"/></marker><marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#a78bfa"/></marker><marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#f87171"/></marker><marker id="ah-slate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#94a3b8"/></marker>
+<style>
+.title{font-family:ui-sans-serif,system-ui,sans-serif;font-size:15.5px;font-weight:700;fill:#e2e8f0}
+.sub{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;fill:#94a3b8}
+.sec{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11.5px;font-weight:700;fill:#e2e8f0}
+.lbl{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11.5px;font-weight:600;fill:#e2e8f0}
+.note{font-family:ui-sans-serif,system-ui,sans-serif;font-size:10px;fill:#94a3b8}
+.mono-m{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9.5px;fill:#94a3b8}
+</style></defs>
+<rect width="100%" height="100%" fill="#0f172a"/>
+
+<text class="title" x="20" y="28">Multi-Tenant Enterprise SaaS &amp; Metered Billing Control Plane</text>
+<text class="sub" x="20" y="45">PostgreSQL Row-Level Security (RLS), RBAC entitlements, idempotent usage metering, and circuit-broken outbound webhooks</text>
+<rect x="20" y="74" width="165" height="84" rx="7" fill="#1e3a5f" stroke="#60a5fa" stroke-width="1.4"/>
+<text class="lbl" x="102.5" y="106.0" text-anchor="middle">Tenant API / UI</text>
+<text class="note" x="102.5" y="120.0" text-anchor="middle">API Key or OIDC JWT</text>
+<text class="mono-m" x="102.5" y="134.0" text-anchor="middle">X-Tenant-ID claim</text>
+<rect x="220" y="74" width="195" height="84" rx="7" fill="#422006" stroke="#fbbf24" stroke-width="1.4"/>
+<text class="lbl" x="317.5" y="106.0" text-anchor="middle">AuthN + RBAC Policy</text>
+<text class="note" x="317.5" y="120.0" text-anchor="middle">Role + Plan entitlements</text>
+<text class="mono-m" x="317.5" y="134.0" text-anchor="middle">Per-tenant quota (Redis)</text>
+<rect x="450" y="74" width="210" height="84" rx="7" fill="#143524" stroke="#4ade80" stroke-width="1.9"/>
+<text class="lbl" x="555.0" y="106.0" text-anchor="middle">Control Plane API ★</text>
+<text class="mono-m" x="555.0" y="120.0" text-anchor="middle">WithTenantTx(tenant_id)</text>
+<text class="mono-m" x="555.0" y="134.0" text-anchor="middle">SET LOCAL app.tenant_id</text>
+<rect x="695" y="74" width="175" height="84" rx="7" fill="#1e3a5f" stroke="#60a5fa" stroke-width="1.4"/>
+<text class="lbl" x="782.5" y="106.0" text-anchor="middle">PostgreSQL + RLS</text>
+<text class="mono-m" x="782.5" y="120.0" text-anchor="middle">FORCE ROW LEVEL SEC</text>
+<text class="note" x="782.5" y="134.0" text-anchor="middle">Pool · Bridge · Silo</text>
+<rect x="905" y="74" width="155" height="84" rx="7" fill="#450a0a" stroke="#f87171" stroke-width="1.4"/>
+<text class="lbl" x="982.5" y="106.0" text-anchor="middle">Audit &amp;amp; KMS</text>
+<text class="note" x="982.5" y="120.0" text-anchor="middle">Per-tenant DEK</text>
+<text class="mono-m" x="982.5" y="134.0" text-anchor="middle">Crypto-shredding</text>
+<rect x="20" y="214" width="240" height="94" rx="7" fill="#2e1065" stroke="#a78bfa" stroke-width="1.4"/>
+<text class="lbl" x="140.0" y="244.0" text-anchor="middle">Metered Usage Ingest</text>
+<text class="mono-m" x="140.0" y="258.0" text-anchor="middle">POST /v1/usage (event_id)</text>
+<text class="note" x="140.0" y="272.0" text-anchor="middle">Kafka: usage-events</text>
+<text class="note" x="140.0" y="286.0" text-anchor="middle">Idempotent per-hour rollup</text>
+<rect x="295" y="214" width="235" height="94" rx="7" fill="#143524" stroke="#4ade80" stroke-width="1.4"/>
+<text class="lbl" x="412.5" y="244.0" text-anchor="middle">Rating &amp;amp; Invoicing Engine</text>
+<text class="note" x="412.5" y="258.0" text-anchor="middle">Tiered/volume pricing plans</text>
+<text class="mono-m" x="412.5" y="272.0" text-anchor="middle">Integer minor units only</text>
+<text class="note" x="412.5" y="286.0" text-anchor="middle">Monthly invoice + PSP</text>
+<rect x="565" y="214" width="240" height="94" rx="7" fill="#422006" stroke="#fbbf24" stroke-width="1.4"/>
+<text class="lbl" x="685.0" y="244.0" text-anchor="middle">Outbound Webhook Engine</text>
+<text class="mono-m" x="685.0" y="258.0" text-anchor="middle">HMAC-SHA256 + timestamp</text>
+<text class="note" x="685.0" y="272.0" text-anchor="middle">Per-endpoint circuit breaker</text>
+<text class="note" x="685.0" y="286.0" text-anchor="middle">Exp backoff + DLQ replay</text>
+<rect x="840" y="214" width="220" height="94" rx="7" fill="#450a0a" stroke="#f87171" stroke-width="1.4"/>
+<text class="lbl" x="950.0" y="244.0" text-anchor="middle">Customer Webhook URL</text>
+<text class="mono-m" x="950.0" y="258.0" text-anchor="middle">Strict SSRF dial guard</text>
+<text class="note" x="950.0" y="272.0" text-anchor="middle">5s timeout · 2xx = ack</text>
+<text class="note" x="950.0" y="286.0" text-anchor="middle">Auto-disable after 72h fail</text>
+<rect x="20" y="344" width="1040" height="114" rx="7" fill="#1e293b" stroke="#64748b" stroke-width="1.4"/>
+<text class="lbl" x="540.0" y="384.0" text-anchor="middle">Defense-in-Depth Multi-Tenancy &amp;amp; Billing Invariants</text>
+<text class="note" x="540.0" y="398.0" text-anchor="middle">1. Never rely on WHERE tenant_id = $1 alone: enforce PostgreSQL FORCE ROW LEVEL SECURITY via SET LOCAL app.tenant_id inside every transaction.</text>
+<text class="note" x="540.0" y="412.0" text-anchor="middle">2. Usage billing is strictly idempotent: deduplicate usage event_id before summing billable units so network retries never double-bill a customer.</text>
+<text class="note" x="540.0" y="426.0" text-anchor="middle">3. Outbound webhooks isolate noisy tenants: each customer endpoint gets its own circuit breaker and SSRF-safe dialer blocking RFC 1918/metadata IPs.</text>
+<line x1="185" y1="116" x2="220" y2="116" stroke="#60a5fa" stroke-width="1.55" marker-end="url(#ah-blue)"/>
+<line x1="415" y1="116" x2="450" y2="116" stroke="#fbbf24" stroke-width="1.55" marker-end="url(#ah-amber)"/>
+<line x1="660" y1="116" x2="695" y2="116" stroke="#4ade80" stroke-width="1.55" marker-end="url(#ah-green)"/>
+<text class="note" x="677.0" y="108.0" text-anchor="middle">RLS TX</text>
+<line x1="870" y1="116" x2="905" y2="116" stroke="#f87171" stroke-width="1.55" stroke-dasharray="5 3" marker-end="url(#ah-red)"/>
+<text class="note" x="887.0" y="108.0" text-anchor="middle">DEK</text>
+<line x1="260" y1="261" x2="295" y2="261" stroke="#a78bfa" stroke-width="1.55" marker-end="url(#ah-purple)"/>
+<line x1="530" y1="261" x2="565" y2="261" stroke="#fbbf24" stroke-width="1.55" stroke-dasharray="5 3" marker-end="url(#ah-amber)"/>
+<text class="note" x="547.0" y="253.0" text-anchor="middle">outbox</text>
+<line x1="805" y1="261" x2="840" y2="261" stroke="#f87171" stroke-width="1.55" marker-end="url(#ah-red)"/>
+<text class="note" x="822.0" y="253.0" text-anchor="middle">HMAC</text>
+<line x1="555" y1="158" x2="660" y2="214" stroke="#fbbf24" stroke-width="1.55" stroke-dasharray="5 3" marker-end="url(#ah-amber)"/>
+</svg>

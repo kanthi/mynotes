@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 500" role="img" aria-label="Enterprise workplace social network architecture with SSO/OIDC and SCIM directory sync, tenant-scoped API gateway, Go services for Org Graph, Groups, Hybrid Feed, Live Presence, Search, and Compliance Audit backed by PostgreSQL RLS, Redis, Kafka, and Elasticsearch." color-scheme="light">
+<defs><marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#2563eb"/></marker><marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#15803d"/></marker><marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#b45309"/></marker><marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#7c3aed"/></marker><marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#dc2626"/></marker><marker id="ah-slate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#64748b"/></marker>
+<style>
+.title{font-family:ui-sans-serif,system-ui,sans-serif;font-size:15.5px;font-weight:700;fill:#1f2933}
+.sub{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;fill:#52606d}
+.sec{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11.5px;font-weight:700;fill:#1f2933}
+.lbl{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11.5px;font-weight:600;fill:#1f2933}
+.note{font-family:ui-sans-serif,system-ui,sans-serif;font-size:10px;fill:#52606d}
+.mono-m{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9.5px;fill:#52606d}
+</style></defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+
+<text class="title" x="20" y="28">Enterprise Workplace Social Network (&quot;Facebook for Office&quot;)</text>
+<text class="sub" x="20" y="45">Multi-tenant org graph, SCIM instant offboarding, hybrid feed with live group ACL checks, and compliance audit trail</text>
+<rect x="20" y="62" width="185" height="310" rx="9" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="5 3"/>
+<text class="sec" x="32" y="80">Identity &amp;amp; Clients</text>
+<rect x="32" y="92" width="161" height="64" rx="7" fill="#e0ecff" stroke="#2563eb" stroke-width="1.4"/>
+<text class="lbl" x="112.5" y="114.0" text-anchor="middle">Employee Web / Mobile</text>
+<text class="note" x="112.5" y="128.0" text-anchor="middle">Feed · Groups · Live Q&amp;A</text>
+<text class="mono-m" x="112.5" y="142.0" text-anchor="middle">SSE / WebSocket</text>
+<rect x="32" y="174" width="161" height="64" rx="7" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+<text class="lbl" x="112.5" y="196.0" text-anchor="middle">Corporate IdP (SSO)</text>
+<text class="mono-m" x="112.5" y="210.0" text-anchor="middle">OIDC / SAML 2.0</text>
+<text class="note" x="112.5" y="224.0" text-anchor="middle">Okta · Entra ID</text>
+<rect x="32" y="256" width="161" height="64" rx="7" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+<text class="lbl" x="112.5" y="278.0" text-anchor="middle">SCIM 2.0 Provisioner</text>
+<text class="note" x="112.5" y="292.0" text-anchor="middle">Dept / Group sync</text>
+<text class="mono-m" x="112.5" y="306.0" text-anchor="middle">Instant offboarding</text>
+<rect x="225" y="62" width="165" height="310" rx="9" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="5 3"/>
+<text class="sec" x="237" y="80">Edge &amp;amp; Tenant Guard</text>
+<rect x="237" y="92" width="141" height="66" rx="7" fill="#f5f7fa" stroke="#7b8794" stroke-width="1.4"/>
+<text class="lbl" x="307.5" y="122.0" text-anchor="middle">WAF + L7 LB</text>
+<text class="note" x="307.5" y="136.0" text-anchor="middle">mTLS · Rate Limit</text>
+<rect x="237" y="178" width="141" height="170" rx="7" fill="#e0ecff" stroke="#2563eb" stroke-width="1.8"/>
+<text class="lbl" x="307.5" y="232.0" text-anchor="middle">Tenant API Gateway</text>
+<text class="note" x="307.5" y="246.0" text-anchor="middle">Verify OIDC JWT</text>
+<text class="mono-m" x="307.5" y="260.0" text-anchor="middle">Extract tenant_id</text>
+<text class="mono-m" x="307.5" y="274.0" text-anchor="middle">Check revoked_at</text>
+<text class="note" x="307.5" y="288.0" text-anchor="middle">Inject traceparent</text>
+<text class="note" x="307.5" y="302.0" text-anchor="middle">Zero cross-tenant</text>
+<rect x="410" y="62" width="415" height="310" rx="9" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="5 3"/>
+<text class="sec" x="422" y="80">Go Domain Services (Tenant-Isolated)</text>
+<rect x="422" y="92" width="188" height="66" rx="7" fill="#e3f6e8" stroke="#15803d" stroke-width="1.4"/>
+<text class="lbl" x="516.0" y="115.0" text-anchor="middle">Org Graph &amp;amp; Groups</text>
+<text class="note" x="516.0" y="129.0" text-anchor="middle">Teams · Secret Groups</text>
+<text class="mono-m" x="516.0" y="143.0" text-anchor="middle">RBAC / ABAC ACLs</text>
+<rect x="624" y="92" width="188" height="66" rx="7" fill="#e3f6e8" stroke="#15803d" stroke-width="1.9"/>
+<text class="lbl" x="718.0" y="115.0" text-anchor="middle">Posts &amp;amp; Hybrid Feed ★</text>
+<text class="note" x="718.0" y="129.0" text-anchor="middle">Push normal · Pull All-Co</text>
+<text class="mono-m" x="718.0" y="143.0" text-anchor="middle">Live ACL re-check</text>
+<rect x="422" y="174" width="188" height="66" rx="7" fill="#e0ecff" stroke="#2563eb" stroke-width="1.4"/>
+<text class="lbl" x="516.0" y="197.0" text-anchor="middle">Reactions &amp;amp; Comments</text>
+<text class="note" x="516.0" y="211.0" text-anchor="middle">Optimistic counters</text>
+<text class="mono-m" x="516.0" y="225.0" text-anchor="middle">@mentions -&gt; Notify</text>
+<rect x="624" y="174" width="188" height="66" rx="7" fill="#f3e8ff" stroke="#7c3aed" stroke-width="1.4"/>
+<text class="lbl" x="718.0" y="197.0" text-anchor="middle">Live Presence &amp;amp; SSE</text>
+<text class="note" x="718.0" y="211.0" text-anchor="middle">Online status · Live Q&amp;A</text>
+<text class="mono-m" x="718.0" y="225.0" text-anchor="middle">Redis Pub/Sub fan-out</text>
+<rect x="422" y="256" width="188" height="66" rx="7" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+<text class="lbl" x="516.0" y="279.0" text-anchor="middle">Enterprise Search</text>
+<text class="note" x="516.0" y="293.0" text-anchor="middle">ACL-filtered queries</text>
+<text class="mono-m" x="516.0" y="307.0" text-anchor="middle">Per-tenant ES alias</text>
+<rect x="624" y="256" width="188" height="66" rx="7" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+<text class="lbl" x="718.0" y="279.0" text-anchor="middle">Compliance &amp;amp; Audit</text>
+<text class="note" x="718.0" y="293.0" text-anchor="middle">Legal Hold · Retention</text>
+<text class="mono-m" x="718.0" y="307.0" text-anchor="middle">Immutable WORM export</text>
+<rect x="845" y="62" width="215" height="310" rx="9" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="5 3"/>
+<text class="sec" x="857" y="80">Tenant-Scoped Stores</text>
+<rect x="857" y="92" width="191" height="66" rx="7" fill="#e0ecff" stroke="#2563eb" stroke-width="1.4"/>
+<text class="lbl" x="952.5" y="115.0" text-anchor="middle">PostgreSQL + RLS</text>
+<text class="mono-m" x="952.5" y="129.0" text-anchor="middle">SET LOCAL app.tenant_id</text>
+<text class="note" x="952.5" y="143.0" text-anchor="middle">posts · groups · members</text>
+<rect x="857" y="174" width="191" height="66" rx="7" fill="#fee2e2" stroke="#dc2626" stroke-width="1.4"/>
+<text class="lbl" x="952.5" y="197.0" text-anchor="middle">Redis Cluster</text>
+<text class="mono-m" x="952.5" y="211.0" text-anchor="middle">Timelines · Revoked JWTs</text>
+<text class="note" x="952.5" y="225.0" text-anchor="middle">Presence · Pub/Sub</text>
+<rect x="857" y="256" width="191" height="66" rx="7" fill="#fef3c7" stroke="#b45309" stroke-width="1.4"/>
+<text class="lbl" x="952.5" y="279.0" text-anchor="middle">Elasticsearch + S3</text>
+<text class="note" x="952.5" y="293.0" text-anchor="middle">ACL-tagged search docs</text>
+<text class="mono-m" x="952.5" y="307.0" text-anchor="middle">Encrypted media + Audit</text>
+<rect x="20" y="392" width="1040" height="88" rx="7" fill="#f5f7fa" stroke="#7b8794" stroke-width="1.4"/>
+<text class="lbl" x="540.0" y="419.0" text-anchor="middle">Kafka Event Bus (Partitioned by tenant_id:entity_id) &amp;amp; Enterprise Security Invariants</text>
+<text class="mono-m" x="540.0" y="433.0" text-anchor="middle">Topics: org-directory-events · post-events · group-acl-events · compliance-audit-events</text>
+<text class="note" x="540.0" y="447.0" text-anchor="middle">1. Offboarding via SCIM revokes active sessions in Redis in &lt; 1s.  2. Secret group posts never leak into All-Company feeds or Search.</text>
+<text class="note" x="540.0" y="461.0" text-anchor="middle">3. All-Company executive posts (&gt;10k staff) bypass push fan-out and merge lazily at read time with live group-membership checks.</text>
+<line x1="193" y1="124" x2="237" y2="124" stroke="#2563eb" stroke-width="1.55" marker-end="url(#ah-blue)"/>
+<line x1="193" y1="206" x2="237" y2="230" stroke="#dc2626" stroke-width="1.55" marker-end="url(#ah-red)"/>
+<text class="note" x="215.0" y="208.0" text-anchor="middle">JWT</text>
+<line x1="193" y1="288" x2="237" y2="288" stroke="#b45309" stroke-width="1.55" marker-end="url(#ah-amber)"/>
+<text class="note" x="215.0" y="280.0" text-anchor="middle">SCIM</text>
+<line x1="307" y1="158" x2="307" y2="178" stroke="#2563eb" stroke-width="1.55" marker-end="url(#ah-blue)"/>
+<line x1="378" y1="230" x2="410" y2="230" stroke="#2563eb" stroke-width="1.55" marker-end="url(#ah-blue)"/>
+<line x1="825" y1="125" x2="857" y2="125" stroke="#64748b" stroke-width="1.55" marker-end="url(#ah-slate)"/>
+<line x1="825" y1="207" x2="857" y2="207" stroke="#64748b" stroke-width="1.55" marker-end="url(#ah-slate)"/>
+<line x1="825" y1="289" x2="857" y2="289" stroke="#64748b" stroke-width="1.55" marker-end="url(#ah-slate)"/>
+<line x1="617" y1="372" x2="617" y2="392" stroke="#b45309" stroke-width="1.55" stroke-dasharray="5 3" marker-end="url(#ah-amber)"/>
+</svg>

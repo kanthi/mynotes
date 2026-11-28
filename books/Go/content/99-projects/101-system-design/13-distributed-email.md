@@ -4,36 +4,156 @@ title: 'Design Lab: A Distributed Email Service'
 
 # Design Lab: A Distributed Email Service
 
-Extend [notification delivery](02-notification-delivery.md) into a Go mailbox and mail-transport exercise. Use a local fake SMTP server and synthetic messages. Separate transport acceptance, mailbox persistence, indexing, and user-visible delivery state.
+Extend [notification delivery](02-notification-delivery.md) into a full Go mailbox and mail-transport architecture backed by a local fake SMTP server and synthetic messages. Separate **SMTP transport acceptance** ([RFC 5321](https://www.rfc-editor.org/info/rfc5321/)), **MIME blob persistence** ([RFC 5322](https://www.rfc-editor.org/info/rfc5322/)), **sharded mailbox metadata** ([IMAP4rev2 / RFC 9051](https://www.rfc-editor.org/info/rfc9051/)), and **asynchronous search indexing**.
 
-## Components and contract
+![Distributed email service architecture with SMTP submission/MTA, spam and DKIM/SPF checks, durable outbound retry queue, sharded mailbox metadata store, object storage for MIME attachments, and IMAP/API sync](../../../images/diagram-go-distributed-email.svg)
 
-Implement authenticated `POST /mail/send`, `GET /mailboxes/{id}/messages`, and message retrieval. Store immutable MIME bytes in object storage and mailbox metadata in a database. Give each accepted message an internal delivery ID; an RFC message header is not a trusted deduplication key for unrelated senders.
+## Components, workload axes, and authoritative schema
 
-An outgoing state machine can be:
+Mail systems have two orthogonal scaling axes:
+- **Mailbox reads/sync**: Partitioned by `mailbox_id` (user account), serving folder listings, unread counts, and `(received_at, delivery_id)` cursor pagination.
+- **Outbound MX delivery**: Partitioned by `destination_domain` (`gmail.com`, `outlook.com`), enforcing per-domain connection pools and exponential backoff on `4xx` transient codes so one slow receiver never blocks mail to other domains.
 
-```text
-accepted -> queued -> sending -> transport_accepted
-                       |
-                       +-> retry_wait / permanent_failure / uncertain
+### Authoritative schema (`migrations/001_email.sql`)
+
+Store immutable raw RFC 5322 MIME bodies and attachments in object storage (content-addressed by SHA-256) and keep small indexed metadata in PostgreSQL.
+
+```sql
+CREATE TABLE mail_blobs (
+    blob_id     CHAR(64) PRIMARY KEY, -- SHA-256 of raw MIME message
+    size_bytes  BIGINT NOT NULL CHECK (size_bytes > 0),
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE mailbox_messages (
+    delivery_id UUID PRIMARY KEY,
+    mailbox_id  UUID NOT NULL,
+    folder      TEXT NOT NULL DEFAULT 'INBOX', -- INBOX | SENT | ARCHIVE | TRASH
+    uid         BIGINT NOT NULL, -- Monotonic per-(mailbox_id, folder) for IMAP sync
+    blob_id     CHAR(64) NOT NULL REFERENCES mail_blobs(blob_id),
+    from_addr   TEXT NOT NULL,
+    subject     TEXT NOT NULL,
+    flags       TEXT[] NOT NULL DEFAULT '{}', -- \Seen, \Flagged
+    received_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    deleted_at  TIMESTAMPTZ,
+    UNIQUE (mailbox_id, folder, uid)
+);
+
+CREATE INDEX idx_mailbox_cursor
+    ON mailbox_messages (mailbox_id, folder, received_at DESC, delivery_id DESC)
+    WHERE deleted_at IS NULL;
+
+CREATE TABLE outbound_queue (
+    id                 UUID PRIMARY KEY,
+    sender_mailbox_id  UUID NOT NULL,
+    rcpt_domain        TEXT NOT NULL,
+    rcpt_addr          TEXT NOT NULL,
+    blob_id            CHAR(64) NOT NULL REFERENCES mail_blobs(blob_id),
+    status             TEXT NOT NULL DEFAULT 'QUEUED', -- QUEUED | SENT | BOUNCED | UNCERTAIN
+    attempts           INT NOT NULL DEFAULT 0,
+    next_attempt_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+    last_smtp_code     INT NOT NULL DEFAULT 0,
+    last_error         TEXT NOT NULL DEFAULT ''
+);
 ```
 
-Write outgoing metadata and an outbox event together. Sender workers use bounded per-domain concurrency and attempt budgets. A connection loss after the remote SMTP server accepted the message creates an ambiguous outcome; retries can duplicate mail. Expose that limitation instead of claiming exactly-once delivery.
+## Go implementation: Safe SMTP adapter, header-injection guard, and error classification
 
-## Go adapter and storage
+Keep transport behind a narrow `Submit(ctx, env, mimeReader)` interface. Never trust an RFC `Message-ID` header from external senders as a deduplication key; assign an internal `delivery_id`. Reject CR/LF characters in envelope addresses and header values to prevent SMTP header injection.
 
-Keep transport behind `Submit(ctx, envelope, mimeReader) (receipt, error)`. The envelope contains SMTP sender and recipient routing addresses; MIME headers contain presentation fields. Validate structured addresses and reject header injection when constructing messages.
+```go
+package email
 
-Go's [net/smtp package](https://pkg.go.dev/net/smtp) is a low-level, frozen implementation. It is not a complete mailbox server or deliverability stack. For the lab, wrap a local SMTP fake with controllable delays and responses. An external adapter needs an explicit TLS, authentication, timeout, and cancellation contract.
+import (
+	"context"
+	"errors"
+	"fmt"
+	"io"
+	"net/mail"
+	"strings"
+)
 
-For incoming mail, acknowledge only after the stated durable storage step. Insert one mailbox delivery row per recipient and publish an indexing event. Search indexing is asynchronous; label its lag. Deleting a mailbox row must eventually remove searchable visibility even if blob garbage collection is delayed.
+type Disposition string
 
-Pagination uses a stable `(received_at, delivery_id)` cursor. Authorization applies to every attachment and body fetch, including cached objects. Do not use user-provided attachment names as filesystem paths.
+const (
+	DispAccepted  Disposition = "TRANSPORT_ACCEPTED" // 250 OK
+	DispTransient Disposition = "RETRY_WAIT"         // 4xx tempfail
+	DispPermanent Disposition = "PERMANENT_FAILURE"  // 5xx bounce DSN
+	DispUncertain Disposition = "UNCERTAIN"          // Disconnect after DATA
+)
 
-## Distribution and evidence
+type Envelope struct {
+	DeliveryID string
+	MailFrom   string
+	RcptTo     string
+}
 
-Partition mailbox metadata by account and outgoing work by destination domain. These are different workload axes. One large domain can throttle sends independently of mailbox read traffic. A user mailbox migration needs a consistent routing version and replayable change log.
+type SMTPError struct {
+	Code    int
+	Message string
+	AfterData bool
+}
 
-Make the fake SMTP server accept DATA and then close before returning its final response. Verify the sender records an uncertain attempt and follows the chosen retry policy. Test permanent recipient rejection, transient failure, duplicate queue delivery, oversized MIME, and indexing outage. Assert a mailbox message remains retrievable while search is behind, and deleted mail disappears from authorized results.
+func (e *SMTPError) Error() string { return fmt.Sprintf("smtp %d: %s", e.Code, e.Message) }
 
-Record oldest unsent age, attempts by domain/outcome, mailbox write latency, index lag, and orphaned blob bytes. Add standards-compliant mail authentication and abuse controls only as explicit later milestones with their own protocol references.
+type Transport interface {
+	Submit(ctx context.Context, env Envelope, mime io.Reader) (queueRef string, err error)
+}
+
+// ValidateEnvelope parses RFC 5322 addresses and blocks CR/LF header injection.
+func ValidateEnvelope(env Envelope) error {
+	for _, raw := range []string{env.MailFrom, env.RcptTo} {
+		if strings.ContainsAny(raw, "\r\n") {
+			return errors.New("invalid address: contains CR/LF")
+		}
+		if _, err := mail.ParseAddress(raw); err != nil {
+			return fmt.Errorf("invalid email address %q: %w", raw, err)
+		}
+	}
+	return nil
+}
+
+// ClassifySMTP maps SMTP status codes and mid-DATA disconnects to retry states.
+func ClassifySMTP(err error) Disposition {
+	if err == nil {
+		return DispAccepted
+	}
+	var se *SMTPError
+	if errors.As(err, &se) {
+		if se.AfterData {
+			return DispUncertain
+		}
+		if se.Code >= 500 && se.Code < 600 {
+			return DispPermanent
+		}
+		if se.Code >= 400 && se.Code < 500 {
+			return DispTransient
+		}
+	}
+	if errors.Is(err, context.DeadlineExceeded) {
+		return DispUncertain
+	}
+	return DispTransient
+}
+```
+
+## Distribution, security, and acceptance evidence
+
+- **Ambiguous SMTP `DATA` disconnects**: If the TCP connection drops after sending the final `.` of `DATA` but before receiving `250 OK`, the remote server may have already accepted the message. Record `UNCERTAIN`, log clearly, and retry with bounded attempts—never claim exactly-once delivery across SMTP.
+- **Authorization on blobs**: Even if MIME bodies are content-addressed in S3, every body or attachment download must verify the caller owns a non-deleted `mailbox_messages` row pointing to `blob_id`, and never use user-provided attachment filenames as local paths.
+- **Search lag**: Index mailbox metadata asynchronously via outbox; deleting a message must immediately exclude it from authorized reads even while the search index catches up.
+
+### Acceptance drills (`go test -race ./...`)
+
+1. **Disconnect after `DATA`**: Configure the fake SMTP server to accept `DATA` and close TCP before `250 OK`; assert `ClassifySMTP` returns `DispUncertain` and the queue logs the attempt without losing the message.
+2. **Header injection**: Submit `"victim@example.com\r\nBcc: attacker@evil.test"` and assert `ValidateEnvelope` rejects it before touching the queue.
+3. **Domain isolation**: Stall `slow.example` with 421 tempfails while verifying mail to `fast.example` delivers immediately.
+4. **Search outage resilience**: Pause the indexer and confirm `GET /mailboxes/{id}/messages` still returns newly received mail in exact `(received_at, delivery_id)` order.
+
+## Reference materials
+
+- [RFC 5321 — Simple Mail Transfer Protocol (SMTP)](https://www.rfc-editor.org/info/rfc5321/)
+- [RFC 5322 — Internet Message Format](https://www.rfc-editor.org/info/rfc5322/)
+- [RFC 9051 — Internet Message Access Protocol (IMAP4rev2)](https://www.rfc-editor.org/info/rfc9051/)
+- [Go `net/smtp` Package](https://pkg.go.dev/net/smtp)
+- [Notification delivery lab](02-notification-delivery.md)

@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 500" role="img" aria-label="Order state machine showing valid state transitions from CREATED to DELIVERED, parallel delivery partner assignment while preparing, cancellation and refund terminal paths, and PostgreSQL optimistic concurrency SQL." color-scheme="light">
+<defs>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#2563eb"/></marker><marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#15803d"/></marker><marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#b45309"/></marker><marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#7c3aed"/></marker><marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#dc2626"/></marker><marker id="ah-slate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#64748b"/></marker>
+<style>
+.title{font-family:ui-sans-serif,system-ui,sans-serif;font-size:16px;font-weight:700;fill:#1f2933}
+.sub{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11.5px;fill:#52606d}
+.sec{font-family:ui-sans-serif,system-ui,sans-serif;font-size:12px;font-weight:700;fill:#1f2933}
+.lbl{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11.5px;font-weight:600;fill:#1f2933}
+.note{font-family:ui-sans-serif,system-ui,sans-serif;font-size:10px;fill:#52606d}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9.8px;fill:#1f2933}
+.mono-m{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9.5px;fill:#52606d}
+</style>
+</defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+
+<text class="title" x="20" y="28">Order State Machine &amp; Optimistic Concurrency</text>
+<text class="sub" x="20" y="45">Every transition is validated against an explicit transition table and persisted atomically with version CAS + outbox event</text>
+<rect x="24" y="90" width="115" height="44" rx="20" fill="#f5f7fa" stroke="#7b8794" stroke-width="1.35"/>
+<text class="mono" x="81.5" y="116.0" text-anchor="middle">CREATED</text>
+<rect x="178" y="90" width="148" height="44" rx="20" fill="#fef3c7" stroke="#b45309" stroke-width="1.35"/>
+<text class="mono" x="252.0" y="116.0" text-anchor="middle">PAYMENT_PENDING</text>
+<rect x="366" y="90" width="158" height="44" rx="20" fill="#e0ecff" stroke="#2563eb" stroke-width="1.35"/>
+<text class="mono" x="445.0" y="116.0" text-anchor="middle">PAYMENT_CONFIRMED</text>
+<rect x="564" y="90" width="174" height="44" rx="20" fill="#e0ecff" stroke="#2563eb" stroke-width="1.35"/>
+<text class="mono" x="651.0" y="116.0" text-anchor="middle">RESTAURANT_ACCEPTED</text>
+<rect x="778" y="90" width="120" height="44" rx="20" fill="#e3f6e8" stroke="#15803d" stroke-width="1.35"/>
+<text class="mono" x="838.0" y="116.0" text-anchor="middle">PREPARING</text>
+<line x1="139" y1="112" x2="178" y2="112" stroke="#15803d" stroke-width="1.5" marker-end="url(#ah-green)"/>
+<text class="note" x="158.0" y="104.0" text-anchor="middle">quote ok</text>
+<line x1="326" y1="112" x2="366" y2="112" stroke="#15803d" stroke-width="1.5" marker-end="url(#ah-green)"/>
+<text class="note" x="346.0" y="104.0" text-anchor="middle">paid</text>
+<line x1="524" y1="112" x2="564" y2="112" stroke="#15803d" stroke-width="1.5" marker-end="url(#ah-green)"/>
+<text class="note" x="544.0" y="104.0" text-anchor="middle">accepts</text>
+<line x1="738" y1="112" x2="778" y2="112" stroke="#15803d" stroke-width="1.5" marker-end="url(#ah-green)"/>
+<text class="note" x="758.0" y="104.0" text-anchor="middle">cooking</text>
+<path d="M 230 90 C 230 62, 275 62, 275 90" fill="none" stroke="#b45309" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ah-amber)"/>
+<text class="note" x="252.0" y="64.0" text-anchor="middle">new attempt</text>
+<rect x="748" y="182" width="180" height="44" rx="20" fill="#e3f6e8" stroke="#15803d" stroke-width="1.35"/>
+<text class="mono" x="838.0" y="208.0" text-anchor="middle">READY_FOR_PICKUP</text>
+<rect x="728" y="266" width="220" height="44" rx="20" fill="#f3e8ff" stroke="#7c3aed" stroke-width="1.35"/>
+<text class="mono" x="838.0" y="292.0" text-anchor="middle">DELIVERY_PARTNER_ASSIGNED</text>
+<rect x="530" y="266" width="130" height="44" rx="20" fill="#e3f6e8" stroke="#15803d" stroke-width="1.35"/>
+<text class="mono" x="595.0" y="292.0" text-anchor="middle">PICKED_UP</text>
+<rect x="320" y="266" width="160" height="44" rx="20" fill="#e3f6e8" stroke="#15803d" stroke-width="1.35"/>
+<text class="mono" x="400.0" y="292.0" text-anchor="middle">OUT_FOR_DELIVERY</text>
+<rect x="140" y="266" width="130" height="44" rx="20" fill="#e3f6e8" stroke="#15803d" stroke-width="2.0"/>
+<text class="mono" x="205.0" y="285.0" text-anchor="middle">DELIVERED ✓</text>
+<text class="note" x="205.0" y="299.0" text-anchor="middle">terminal</text>
+<line x1="838" y1="134" x2="838" y2="182" stroke="#15803d" stroke-width="1.5" marker-end="url(#ah-green)"/>
+<text class="note" x="876.0" y="162.0" text-anchor="middle">food ready</text>
+<line x1="838" y1="226" x2="838" y2="266" stroke="#7c3aed" stroke-width="1.5" marker-end="url(#ah-purple)"/>
+<text class="note" x="872.0" y="250.0" text-anchor="middle">assigned</text>
+<path d="M 898 112 L 976 112 L 976 288 L 948 288" fill="none" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ah-purple)"/>
+<text class="note" x="998.0" y="202.0" text-anchor="middle">parallel</text>
+<line x1="728" y1="288" x2="660" y2="288" stroke="#15803d" stroke-width="1.5" marker-end="url(#ah-green)"/>
+<text class="note" x="694.0" y="280.0" text-anchor="middle">handoff</text>
+<line x1="530" y1="288" x2="480" y2="288" stroke="#15803d" stroke-width="1.5" marker-end="url(#ah-green)"/>
+<line x1="320" y1="288" x2="270" y2="288" stroke="#15803d" stroke-width="1.5" marker-end="url(#ah-green)"/>
+<text class="note" x="295.0" y="280.0" text-anchor="middle">drop-off</text>
+<rect x="24" y="212" width="140" height="44" rx="20" fill="#fee2e2" stroke="#dc2626" stroke-width="1.8"/>
+<text class="mono" x="94.0" y="231.0" text-anchor="middle">CANCELLED</text>
+<text class="note" x="94.0" y="245.0" text-anchor="middle">terminal (no capture)</text>
+<rect x="220" y="182" width="146" height="44" rx="20" fill="#fee2e2" stroke="#dc2626" stroke-width="1.35"/>
+<text class="mono" x="293.0" y="208.0" text-anchor="middle">REFUND_PENDING</text>
+<rect x="410" y="182" width="130" height="44" rx="20" fill="#fee2e2" stroke="#dc2626" stroke-width="1.8"/>
+<text class="mono" x="475.0" y="201.0" text-anchor="middle">REFUNDED ✓</text>
+<text class="note" x="475.0" y="215.0" text-anchor="middle">terminal</text>
+<line x1="82" y1="134" x2="82" y2="212" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ah-red)"/>
+<text class="note" x="58.0" y="175.0" text-anchor="middle">invalid</text>
+<path d="M 205 134 L 125 212" fill="none" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ah-red)"/>
+<text class="note" x="145.0" y="166.0" text-anchor="middle">pay fail/ttl</text>
+<path d="M 420 134 L 315 182" fill="none" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ah-red)"/>
+<text class="note" x="342.0" y="154.0" text-anchor="middle">reject/timeout</text>
+<path d="M 620 134 L 350 182" fill="none" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ah-red)"/>
+<text class="note" x="520.0" y="164.0" text-anchor="middle">out of stock / cancel</text>
+<line x1="366" y1="204" x2="410" y2="204" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ah-red)"/>
+<text class="note" x="388.0" y="196.0" text-anchor="middle">webhook</text>
+<rect x="24" y="344" width="992" height="134" rx="7" fill="#f5f7fa" stroke="#7b8794" stroke-width="1.5"/>
+<text class="lbl" x="520.0" y="380.0" text-anchor="middle">Atomic Optimistic Concurrency Transition (PostgreSQL Single Transaction)</text>
+<text class="mono" x="520.0" y="394.0" text-anchor="middle">UPDATE orders SET status = $new, version = version + 1, updated_at = now()</text>
+<text class="mono" x="520.0" y="408.0" text-anchor="middle">WHERE id = $order_id AND status = $expected_from AND version = $expected_version;</text>
+<text class="note" x="520.0" y="422.0" text-anchor="middle">RowsAffected == 0 -&gt; illegal move or concurrent writer (409 Conflict) · Never blindly overwrite status.</text>
+<text class="note" x="520.0" y="436.0" text-anchor="middle">In the SAME sql.Tx: INSERT INTO order_status_history (...) + INSERT INTO outbox_events (...).</text>
+<text class="note" x="520.0" y="450.0" text-anchor="middle">Terminal states (DELIVERED, CANCELLED, REFUNDED) have zero outgoing transitions; post-delivery disputes use a separate refund ticket.</text>
+</svg>

@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 500" role="img" aria-label="Payment architecture and transactional outbox pattern showing PCI boundary isolation, idempotent intent creation, HMAC webhook verification and deduplication, refund worker, reconciler, and PostgreSQL ACID outbox relay to Kafka." color-scheme="light">
+<defs>
+<marker id="ah-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#2563eb"/></marker><marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#15803d"/></marker><marker id="ah-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#b45309"/></marker><marker id="ah-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#7c3aed"/></marker><marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#dc2626"/></marker><marker id="ah-slate" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#64748b"/></marker>
+<style>
+.title{font-family:ui-sans-serif,system-ui,sans-serif;font-size:16px;font-weight:700;fill:#1f2933}
+.sub{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11.5px;fill:#52606d}
+.sec{font-family:ui-sans-serif,system-ui,sans-serif;font-size:12px;font-weight:700;fill:#1f2933}
+.lbl{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11.5px;font-weight:600;fill:#1f2933}
+.note{font-family:ui-sans-serif,system-ui,sans-serif;font-size:10px;fill:#52606d}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9.8px;fill:#1f2933}
+.mono-m{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9.5px;fill:#52606d}
+</style>
+</defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+
+<text class="title" x="20" y="28">Payment Architecture, PCI Isolation &amp; Transactional Outbox</text>
+<text class="sub" x="20" y="45">Money moves only on cryptographically verified facts · DB commit and Kafka publish never disagree</text>
+<rect x="20" y="62" width="545" height="418" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="5 3"/>
+<text class="sec" x="32" y="81">Payment Service (Owns payments DB · Zero Card/CVV Storage)</text>
+<rect x="36" y="94" width="152" height="74" rx="7" fill="#e0ecff" stroke="#2563eb" stroke-width="1.35"/>
+<text class="lbl" x="112.0" y="114.0" text-anchor="middle">Intent API</text>
+<text class="mono-m" x="112.0" y="128.0" text-anchor="middle">POST /intents</text>
+<text class="note" x="112.0" y="142.0" text-anchor="middle">Key = order+attempt</text>
+<text class="note" x="112.0" y="156.0" text-anchor="middle">Amount in paise/cents</text>
+<rect x="210" y="94" width="165" height="74" rx="7" fill="#fee2e2" stroke="#dc2626" stroke-width="1.35"/>
+<text class="lbl" x="292.5" y="114.0" text-anchor="middle">Webhook Handler</text>
+<text class="mono-m" x="292.5" y="128.0" text-anchor="middle">Verify HMAC-SHA256</text>
+<text class="note" x="292.5" y="142.0" text-anchor="middle">Dedupe event_id</text>
+<text class="note" x="292.5" y="156.0" text-anchor="middle">Update + Outbox TX</text>
+<rect x="396" y="94" width="152" height="74" rx="7" fill="#fef3c7" stroke="#b45309" stroke-width="1.35"/>
+<text class="lbl" x="472.0" y="114.0" text-anchor="middle">Refund Worker</text>
+<text class="note" x="472.0" y="128.0" text-anchor="middle">Consumes Cancel</text>
+<text class="note" x="472.0" y="142.0" text-anchor="middle">Void auth or Refund</text>
+<text class="mono-m" x="472.0" y="156.0" text-anchor="middle">Idempotent key</text>
+<rect x="36" y="198" width="512" height="72" rx="7" fill="#fee2e2" stroke="#dc2626" stroke-width="1.6" stroke-dasharray="5 3"/>
+<text class="lbl" x="292.0" y="224.0" text-anchor="middle">External Payment Gateway (PCI-DSS Scope — Card/UPI SDK Runs Here)</text>
+<text class="note" x="292.0" y="238.0" text-anchor="middle">Authorize at checkout (cards) -&gt; capture on RestaurantAccepted (reject = void).</text>
+<text class="note" x="292.0" y="252.0" text-anchor="middle">Immediate debit (UPI / wallets) -&gt; reject triggers idempotent Refund Worker.</text>
+<rect x="36" y="304" width="240" height="76" rx="7" fill="#f5f7fa" stroke="#7b8794" stroke-width="1.35"/>
+<text class="lbl" x="156.0" y="325.0" text-anchor="middle">Reconciler (Cron / Ticker)</text>
+<text class="note" x="156.0" y="339.0" text-anchor="middle">Polls stuck INITIATED &gt; 15m</text>
+<text class="note" x="156.0" y="353.0" text-anchor="middle">Late capture on CANCELLED -&gt; refund</text>
+<text class="note" x="156.0" y="367.0" text-anchor="middle">Daily settlement file vs payments DB</text>
+<rect x="300" y="304" width="248" height="76" rx="7" fill="#e3f6e8" stroke="#15803d" stroke-width="1.35"/>
+<text class="lbl" x="424.0" y="325.0" text-anchor="middle">Payments PostgreSQL (ACID)</text>
+<text class="mono-m" x="424.0" y="339.0" text-anchor="middle">payments · refunds · webhook_events</text>
+<text class="mono-m" x="424.0" y="353.0" text-anchor="middle">outbox_events (same TX!)</text>
+<text class="note" x="424.0" y="367.0" text-anchor="middle">Only gateway token + last4</text>
+<rect x="36" y="400" width="512" height="64" rx="7" fill="#f5f7fa" stroke="#7b8794" stroke-width="1.35"/>
+<text class="lbl" x="292.0" y="422.0" text-anchor="middle">Security &amp; Correctness Rules</text>
+<text class="mono-m" x="292.0" y="436.0" text-anchor="middle">1. Never store PAN/CVV. 2. Integer minor units only (int64). 3. Constant-time hmac.Equal.</text>
+<text class="note" x="292.0" y="450.0" text-anchor="middle">4. Return HTTP 200 on duplicate webhook so gateway stops retrying.</text>
+<line x1="112" y1="168" x2="112" y2="198" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ah-blue)"/>
+<text class="note" x="90.0" y="186.0" text-anchor="middle">create</text>
+<line x1="292" y1="198" x2="292" y2="168" stroke="#dc2626" stroke-width="1.5" marker-end="url(#ah-red)"/>
+<text class="note" x="322.0" y="186.0" text-anchor="middle">webhook</text>
+<line x1="472" y1="168" x2="472" y2="198" stroke="#b45309" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ah-amber)"/>
+<text class="note" x="496.0" y="186.0" text-anchor="middle">refund</text>
+<line x1="156" y1="304" x2="156" y2="270" stroke="#64748b" stroke-width="1.5" marker-end="url(#ah-slate)"/>
+<text class="note" x="174.0" y="290.0" text-anchor="middle">poll</text>
+<line x1="276" y1="342" x2="300" y2="342" stroke="#64748b" stroke-width="1.5" marker-end="url(#ah-slate)"/>
+<rect x="585" y="62" width="455" height="418" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="5 3"/>
+<text class="sec" x="597" y="81">Transactional Outbox &amp; At-Least-Once Kafka Consumers</text>
+<rect x="605" y="96" width="415" height="76" rx="7" fill="#e3f6e8" stroke="#15803d" stroke-width="1.35"/>
+<text class="lbl" x="812.5" y="124.0" text-anchor="middle">1. Single Local ACID Transaction (Order or Payment DB)</text>
+<text class="mono-m" x="812.5" y="138.0" text-anchor="middle">BEGIN; UPDATE orders SET status=..., version=version+1;</text>
+<text class="mono-m" x="812.5" y="152.0" text-anchor="middle">INSERT INTO outbox (id, topic, key, payload, sent=false); COMMIT;</text>
+<rect x="605" y="202" width="190" height="68" rx="7" fill="#fef3c7" stroke="#b45309" stroke-width="1.35"/>
+<text class="lbl" x="700.0" y="226.0" text-anchor="middle">2. Outbox Relay / CDC</text>
+<text class="note" x="700.0" y="240.0" text-anchor="middle">SKIP LOCKED poll or Debezium</text>
+<text class="mono-m" x="700.0" y="254.0" text-anchor="middle">Publish -&gt; mark sent=true</text>
+<rect x="830" y="202" width="190" height="68" rx="7" fill="#fef3c7" stroke="#b45309" stroke-width="1.35"/>
+<text class="lbl" x="925.0" y="226.0" text-anchor="middle">3. Kafka Topic</text>
+<text class="mono-m" x="925.0" y="240.0" text-anchor="middle">key = order_id</text>
+<text class="note" x="925.0" y="254.0" text-anchor="middle">Strict per-order sequence</text>
+<rect x="605" y="306" width="270" height="74" rx="7" fill="#e0ecff" stroke="#2563eb" stroke-width="1.35"/>
+<text class="lbl" x="740.0" y="326.0" text-anchor="middle">4. Idempotent Consumer Group</text>
+<text class="mono-m" x="740.0" y="340.0" text-anchor="middle">INSERT processed_events(event_id)</text>
+<text class="mono-m" x="740.0" y="354.0" text-anchor="middle">ON CONFLICT DO NOTHING</text>
+<text class="note" x="740.0" y="368.0" text-anchor="middle">Commit Kafka offset AFTER DB commit</text>
+<rect x="900" y="306" width="120" height="74" rx="7" fill="#fee2e2" stroke="#dc2626" stroke-width="1.35"/>
+<text class="lbl" x="960.0" y="333.0" text-anchor="middle">DLQ + Alert</text>
+<text class="note" x="960.0" y="347.0" text-anchor="middle">After N retries</text>
+<text class="note" x="960.0" y="361.0" text-anchor="middle">Replayable</text>
+<rect x="605" y="400" width="415" height="64" rx="7" fill="#f5f7fa" stroke="#7b8794" stroke-width="1.35"/>
+<text class="lbl" x="812.5" y="422.0" text-anchor="middle">Why Kafka EOS Is Not Enough</text>
+<text class="note" x="812.5" y="436.0" text-anchor="middle">Kafka transactions cover Kafka-&gt;Kafka only. External side effects (SMS, push,</text>
+<text class="note" x="812.5" y="450.0" text-anchor="middle">refunds) require their own idempotency keys and deduplication tables.</text>
+<line x1="700" y1="172" x2="700" y2="202" stroke="#b45309" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ah-amber)"/>
+<text class="note" x="736.0" y="190.0" text-anchor="middle">poll / WAL</text>
+<line x1="795" y1="236" x2="830" y2="236" stroke="#b45309" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ah-amber)"/>
+<path d="M 925 270 L 925 290 L 740 290 L 740 306" fill="none" stroke="#2563eb" stroke-width="1.5" marker-end="url(#ah-blue)"/>
+<text class="note" x="832.0" y="285.0" text-anchor="middle">at-least-once</text>
+<line x1="875" y1="343" x2="900" y2="343" stroke="#dc2626" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ah-red)"/>
+</svg>

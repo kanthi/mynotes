@@ -88,7 +88,7 @@ toolchain/blink -> button/IRQ -> timed sensor UART -> cooperative tasks -> I2C m
 
 ## System-design capstones
 
-The [System Design in Go track](101-system-design/index.md) maps 28 design topics to this book. It extends the shortener, KV store, and chat builds with durability and multi-instance exercises, then adds 17 labs covering feeds, crawling, autocomplete, notifications, object storage, media, file sync, geospatial queries, routing, event aggregation, reservations, email, leaderboards, payments, wallets, and matching engines. Shared queue and monitoring labs live in Distributed Infrastructure and Observability.
+The [System Design in Go track](101-system-design/index.md) maps 28 design topics plus 4 end-to-end production capstones to this book. It extends the shortener, KV store, and chat builds with durability and multi-instance exercises, then provides 21 deep design-and-build labs covering feeds, crawling, autocomplete, notifications, object storage, media, file sync, geospatial queries, routing, event aggregation, reservations, email, leaderboards, payments, wallets, matching engines, and full production platforms ([Food Delivery](101-system-design/18-food-delivery-platform.md), [Enterprise Workplace Social](101-system-design/19-enterprise-workplace-social.md), [Enterprise Collaboration Hub](101-system-design/20-enterprise-realtime-collaboration-hub.md), and [Multi-Tenant SaaS Control Plane](101-system-design/21-multi-tenant-saas-control-plane.md)). Shared queue and monitoring labs live in Distributed Infrastructure and Observability.
 
 ## What You Will Practice
 
